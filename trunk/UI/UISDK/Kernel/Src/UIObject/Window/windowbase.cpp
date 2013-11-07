@@ -879,6 +879,9 @@ LRESULT WindowBase::_OnSize( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHan
 		::GetWindowRect(m_hWnd, &rcWindow);
         ::GetClientRect(m_hWnd, &m_rcParent);
 
+		SetConfigWidth(rcWindow.right-rcWindow.left);
+		SetConfigHeight(rcWindow.bottom-rcWindow.top);
+
         bHandled = TRUE;
         m_pRenderChain->OnWindowResize(wParam, LOWORD(lParam), HIWORD(lParam));  // 在窗口刷新之前更新窗口缓冲区大小
         
@@ -975,6 +978,12 @@ LRESULT WindowBase::_OnNcDestroy( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 }
 LRESULT WindowBase::_OnHandleMouseMessage(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
+	if (m_bSizeMove)  // 拖拽过程中不处理
+	{
+		bHandled = FALSE;
+		return 0;
+	}
+
 	bHandled = FALSE;
 	LRESULT lRet = this->m_MgrMouse.HandleMouseMessage(uMsg, wParam, lParam, &bHandled);
 

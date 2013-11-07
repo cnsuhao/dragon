@@ -1502,6 +1502,10 @@ void  LayeredWindowWrap::OnMouseMove()
 	// 注意：m_rcParent的更新千万不能使用GetWindowRect。因为窗口的大小现在就没有变
 	//       所以这里也就没有采用SendMessage(WM_SIZE)的方法
 	SetRect(&m_pWindow->m_rcParent, 0,0, m_sizeWindow.cx, m_sizeWindow.cy);
+
+	m_pWindow->SetConfigWidth(m_sizeWindow.cx);
+	m_pWindow->SetConfigHeight(m_sizeWindow.cy);
+
 	m_pWindow->UpdateLayout(false);
 
 	m_pWindow->SetCanRedraw(true);
@@ -1532,6 +1536,7 @@ void  LayeredWindowWrap::OnMouseMove()
 }
 void  LayeredWindowWrap::OnEnterSizeMove(UINT nHitTest)
 {
+	SendMessage(m_pWindow->m_hWnd, WM_ENTERSIZEMOVE, 0, 0);
 	SetCapture(m_pWindow->m_hWnd);
 	m_nHitTestFlag = nHitTest;
 
@@ -1563,6 +1568,7 @@ void  LayeredWindowWrap::OnExitSizeMove()
 	m_ptWindowOld.y = 0;
 	m_sizeWindowOld.cx = 0;
 	m_sizeWindowOld.cy = 0;
+	SendMessage(m_pWindow->m_hWnd, WM_EXITSIZEMOVE, 0, 0);
 }
 
 // 当窗口最小化了的时候，如果再次用原point/size, Commit，会导致窗口又恢复到最小化之前的位置

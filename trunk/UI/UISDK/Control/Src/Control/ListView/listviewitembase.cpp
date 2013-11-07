@@ -110,6 +110,8 @@ void  ListViewItemBase::OnPaint(IRenderTarget* pRenderTarget)
     }
 
     // ÎÄ±¾
+	if (!m_pShareData)
+		return;
     if (!m_pShareData->pColumnInfo)
         return;
 

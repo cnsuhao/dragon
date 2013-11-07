@@ -1124,8 +1124,16 @@
 							</File>
 						</Filter>
 						<Filter
-							Name="04."
+							Name="04. button"
 							>
+							<File
+								RelativePath="..\..\Control\Src\Control\PropertyCtrl\item\propertyctrlbuttonitem.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Control\Src\Control\PropertyCtrl\item\propertyctrlbuttonitem.h"
+								>
+							</File>
 						</Filter>
 					</Filter>
 				</Filter>

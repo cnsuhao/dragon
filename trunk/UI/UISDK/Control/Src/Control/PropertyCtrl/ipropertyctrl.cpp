@@ -4,7 +4,7 @@
 #include "UISDK\Control\Src\Control\PropertyCtrl\item\propertyctrlgroupitem.h"
 #include "UISDK\Control\Src\Control\PropertyCtrl\item\propertyctrledititem.h"
 #include "UISDK\Control\Src\Control\PropertyCtrl\item\propertyctrlcomboboxitem.h"
-
+#include "UISDK\Control\Src\Control\PropertyCtrl\item\propertyctrlbuttonitem.h"
 
 namespace UI
 {
@@ -15,6 +15,8 @@ UI_IMPLEMENT_Ixxx_INTERFACE(IPropertyCtrlGroupItem, PropertyCtrlGroupItem, Norma
 UI_IMPLEMENT_Ixxx_INTERFACE2(IPropertyCtrlEditItemShareData, PropertyCtrlEditItemShareData, IListItemTypeShareData);
 UI_IMPLEMENT_Ixxx_INTERFACE2(IPropertyCtrlComboBoxItem, PropertyCtrlComboBoxItem, IListItemBase);
 UI_IMPLEMENT_Ixxx_INTERFACE2(IPropertyCtrlComboBoxItemShareData, PropertyCtrlComboBoxItemShareData, IListItemTypeShareData);
+UI_IMPLEMENT_Ixxx_INTERFACE2(IPropertyCtrlButtonItem, PropertyCtrlButtonItem, IListItemBase);
+UI_IMPLEMENT_Ixxx_INTERFACE2(IPropertyCtrlButtonItemShareData, PropertyCtrlButtonItemShareData, IListItemTypeShareData);
 
 IPropertyCtrlGroupItem*  IPropertyCtrl::InsertGroupItem(const TCHAR* szName, const TCHAR* szDesc, 
                                          IListItemBase* pParent, IListItemBase* pInsertAfter, LISTITEM_OPFLAGS nInsertFlags)
@@ -40,6 +42,12 @@ IPropertyCtrlComboBoxItem*   IPropertyCtrl::InsertComboBoxProperty(const TCHAR* 
 	return m_pPropertyCtrlImpl->InsertComboBoxProperty(szText, szValue, szDesc, szKey, pParentItem, pInsertAfter, nInsertFlags);
 }
 
+IPropertyCtrlButtonItem*   IPropertyCtrl::InsertButtonProperty(const TCHAR* szText, const TCHAR* szValue, const TCHAR* szDesc, const TCHAR* szKey,
+												  IListItemBase* pParentItem, IListItemBase* pInsertAfter, LISTITEM_OPFLAGS nInsertFlags)
+{
+	return m_pPropertyCtrlImpl->InsertButtonProperty(szText, szValue, szDesc, szKey, pParentItem, pInsertAfter, nInsertFlags);
+}
+
 void  IPropertyCtrlEditItem::SetValueText(const TCHAR* szText)    { m_pPropertyCtrlEditItemImpl->SetValueText(szText); }
 void  IPropertyCtrlEditItem::SetDefaultValueText(const TCHAR* szText)  { m_pPropertyCtrlEditItemImpl->SetDefaultValueText(szText); }
 void  IPropertyCtrlEditItem::SetKeyText(const TCHAR* szText)      { m_pPropertyCtrlEditItemImpl->SetKeyText(szText); }
@@ -48,4 +56,8 @@ void  IPropertyCtrlComboBoxItem::SetValueText(const TCHAR* szText)    { m_pPrope
 void  IPropertyCtrlComboBoxItem::SetDefaultValueText(const TCHAR* szText)  { m_pPropertyCtrlComboBoxItemImpl->SetDefaultValueText(szText); }
 void  IPropertyCtrlComboBoxItem::SetKeyText(const TCHAR* szText)      { m_pPropertyCtrlComboBoxItemImpl->SetKeyText(szText); }
 void  IPropertyCtrlComboBoxItem::AddOption(const TCHAR* szItemText, const TCHAR* szItemValue)  { m_pPropertyCtrlComboBoxItemImpl->AddOption(szItemText, szItemValue); }
+
+void  IPropertyCtrlButtonItem::SetValueText(const TCHAR* szText)    { m_pPropertyCtrlButtonItemImpl->SetValueText(szText); }
+void  IPropertyCtrlButtonItem::SetDefaultValueText(const TCHAR* szText)  { m_pPropertyCtrlButtonItemImpl->SetDefaultValueText(szText); }
+void  IPropertyCtrlButtonItem::SetKeyText(const TCHAR* szText)      { m_pPropertyCtrlButtonItemImpl->SetKeyText(szText); }
 }

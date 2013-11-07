@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <skin>
 	<layout>
-		<CustomWindow id="chatdlg" width="653" height="420" minwidth="450" minheight="400" title="会话" transparent.type="layered" istransparent="1" xtransparent.maskalpha="200" bkgnd.render.type="null" font="normal">
+		<CustomWindow id="chatdlg" width="653" height="420" minwidth="550" minheight="400" text="二人会话" transparent.type="layered" istransparent="1" xtransparent.maskalpha="200" bkgnd.render.type="null" font="normal">
 			<Panel id="right_panel" layout.right="0" width="215" layout.top="0" layout.bottom="0" bkgnd.render.type="image" bkgnd.render.image="rightbkg.png" bkgnd.render.image.drawtype="stretch" bkgnd.render.image.9region="1,20,20,20" padding="10,20,10,20">
 				<!--
 				<QQContactMgrListView id="listview" layout.left="0" layout.top="0" layout.right="0" layout.bottom="0" istransparent="1" headerctrl.splitline.render.type="image" headerctrl.splitline.render.image="headsplitline" headerctrl.splitline.render.image.drawtype="center" headerctrl.bkgnd.render.type="imagelist" headerctrl.bkgnd.render.image="listhead.png" headerctrl.bkgnd.render.image.drawtype="stretch" bkgnd.render.type="image" bkgnd.render.image="list_bkg_border_.png" bkgnd.render.image.drawtype="stretch" bkgnd.render.image.9region="2"/>

@@ -206,13 +206,27 @@ void Object::UpdateLayout(bool bUpdate)
             if (pParent->GetParentObject())
             {
                 pObjectToUpdate = pParent;
-                pParent = pParent->GetParentObject();  // 有点乱... 当是窗口的时候size为window rect，sizeOld为client rect，因此肯定不一样
+                pParent = pParent->GetParentObject();  // TODO: 有点乱... 当是窗口的时候size为window rect，sizeOld为client rect，因此肯定不一样
                 continue;                              // 所以在这里如果发现是window( parent==null )则继续往下处理
             }
 			else if (pParent->GetObjectType() == OBJ_WINDOW)
 			{
-				SetWindowPos(GetHWND(), 0, 0,0, size.cx, size.cy, SWP_NOZORDER|SWP_NOMOVE|SWP_NOACTIVATE);
-				return;
+				HWND hWnd = GetHWND();
+
+				CRect rcWndNow;
+				::GetWindowRect(hWnd, rcWndNow);
+				if (rcWndNow.Width() == size.cx && rcWndNow.Height() == size.cy)  // 当大小没有改变时，不会触发WM_SIZE，也就不会更新了
+				{
+					
+				}
+				else
+				{
+					UINT nFlag = SWP_NOZORDER|SWP_NOMOVE|SWP_NOACTIVATE;
+					if (!bUpdate) 
+						nFlag |= SWP_NOREDRAW;   // 有用吗？需要再测试
+					SetWindowPos(GetHWND(), 0, 0,0, size.cx, size.cy, nFlag);
+					return;
+				}
 			}
         }
 

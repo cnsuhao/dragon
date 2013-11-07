@@ -17,10 +17,15 @@ static const GUID IID_UI_IPropertyCtrlGroupItem =
 static const GUID IID_UI_IPropertyCtrlComboBoxItem = 
 { 0x19236792, 0x9745, 0x4d21, { 0xb0, 0x4f, 0xa4, 0x4f, 0xeb, 0x74, 0xb, 0x2b } };
 
+// {320CA5CF-9DD6-4032-996F-9B4C04AF2C9D}
+static const GUID IID_UI_IPropertyCtrlButtonItem = 
+{ 0x320ca5cf, 0x9dd6, 0x4032, { 0x99, 0x6f, 0x9b, 0x4c, 0x4, 0xaf, 0x2c, 0x9d } };
+
 
 #define LISTITEM_TYPE_PropertyCtrlGroup     LISTITEM_TYPE_TREEITEM_NORMAL
 #define LISTITEM_TYPE_PropertyCtrlEdit      136151908
 #define LISTITEM_TYPE_PropertyCtrlCombobox  132321222
+#define LISTITEM_TYPE_PropertyCtrlButton    132372059
 
 // 属性控件线条及背景颜色
 #define PROPERTYCTRL_LINE_COLOR 212,208,200,255  //(233,236,250,255);
@@ -106,6 +111,23 @@ interface UICTRLAPI IPropertyCtrlComboBoxItem : public IListItemBase
 	void  AddOption(const TCHAR* szItemText, const TCHAR* szItemValue);
 };
 
+
+class PropertyCtrlButtonItemShareData;
+interface IPropertyCtrlButtonItemShareData : public IListItemTypeShareData
+{
+	UI_DECLARE_Ixxx_INTERFACE(IPropertyCtrlButtonItemShareData, PropertyCtrlButtonItemShareData);
+};
+
+class PropertyCtrlButtonItem;
+interface UICTRLAPI IPropertyCtrlButtonItem : public IListItemBase
+{
+	UI_DECLARE_Ixxx_INTERFACE(IPropertyCtrlButtonItem, PropertyCtrlButtonItem);
+
+	void  SetValueText(const TCHAR* szText);
+	void  SetDefaultValueText(const TCHAR* szText);
+	void  SetKeyText(const TCHAR* szText);
+};
+
 class PropertyCtrlGroupItem;
 interface UICTRLAPI IPropertyCtrlGroupItem : public INormalTreeItem
 {
@@ -128,6 +150,10 @@ interface UICTRLAPI IPropertyCtrl : public ITreeView
 
 	IPropertyCtrlComboBoxItem*   InsertComboBoxProperty(const TCHAR* szText, const TCHAR* szValue, const TCHAR* szDesc, const TCHAR* szKey,
 		IListItemBase* pParentItem, IListItemBase* pInsertAfter = UITVI_LAST, LISTITEM_OPFLAGS nInsertFlags=0);
+
+	IPropertyCtrlButtonItem*   InsertButtonProperty(const TCHAR* szText, const TCHAR* szValue, const TCHAR* szDesc, const TCHAR* szKey,
+		IListItemBase* pParentItem, IListItemBase* pInsertAfter = UITVI_LAST, LISTITEM_OPFLAGS nInsertFlags=0);
+
 };
 
 }

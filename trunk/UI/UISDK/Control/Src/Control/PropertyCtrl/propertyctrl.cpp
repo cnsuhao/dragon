@@ -262,6 +262,43 @@ IPropertyCtrlComboBoxItem*  PropertyCtrl::InsertComboBoxProperty(
 	return pItem;
 }
 
+IPropertyCtrlButtonItem*   PropertyCtrl::InsertButtonProperty(
+	const TCHAR* szText, 
+	const TCHAR* szValue, 
+	const TCHAR* szDesc, 
+	const TCHAR* szKey,
+	IListItemBase* pParentItem, 
+	IListItemBase* pInsertAfter, 
+	LISTITEM_OPFLAGS nInsertFlags)
+{
+	// TODO: 先查找该key是否已经存在
+	if (pParentItem)
+	{
+
+	}
+	else
+	{
+
+	}
+
+
+	IPropertyCtrlButtonItem*  pItem = NULL;
+	IPropertyCtrlButtonItem::CreateInstance(m_pIPropertyCtrl->GetUIApplication(), &pItem);
+
+	pItem->SetText(szText);
+	pItem->SetToolTip(szDesc);
+	pItem->SetValueText(szValue);
+	pItem->SetKeyText(szKey);
+
+	if (false == m_pIPropertyCtrl->InsertItem(pItem, pParentItem, pInsertAfter, nInsertFlags))
+	{
+		SAFE_DELETE_Ixxx(pItem);
+		return NULL;
+	}
+
+	return pItem;
+}
+
 void  PropertyCtrl::OnSize(UINT nType, int cx, int cy)
 {
     m_nSplitterLinePos = cx * m_nSplitterLinePercent >> 10;

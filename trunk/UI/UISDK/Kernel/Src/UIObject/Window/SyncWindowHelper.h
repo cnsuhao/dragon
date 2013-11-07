@@ -655,7 +655,7 @@ public:
 
 
 
-private:
+protected:
 	vector<SyncWindowData>   m_vecAnchorItems;
 	HWND   m_hHostWnd;                 // 表示自己当前要跟随哪个窗口进行移动。如果为NULL则表示自己不跟随其它窗口
 	bool   m_bSendByDeferWindowPos;    // WM_WINDOWPOSCHANGING消息的发送者

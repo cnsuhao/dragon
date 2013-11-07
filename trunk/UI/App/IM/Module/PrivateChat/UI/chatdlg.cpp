@@ -146,7 +146,7 @@ void CChatDlg::OnInitWindow()
 // 		m_pListView->UpdateItemRect(m_pListView->GetFirstItem(), false);
 // 	}
 
-	SetWindowText(GetHWND(), _T("IM2012_Demo"));
+//	SetWindowText(GetHWND(), _T("IM2012_Demo"));
 }
 
 void  CChatDlg::SetPrivateChatUI(CPrivateChatUI* p)

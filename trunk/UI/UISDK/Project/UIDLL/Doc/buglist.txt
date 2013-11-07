@@ -227,3 +227,4 @@ void DrawDragRect(LPCRECT lpRect, SIZE size, LPCRECT lpRectLast, SIZE sizeLast, 
 216. 2013.8.19 22:44 Player 在打开OptionDlg和视觉效果combobox下拉列表后换肤出现崩溃。资源又出问题了，对于不换肤的窗口     
 217. 2013.8.20 11:51 Player let's seven 的皮肤播放列表拖拽窗口大小时圆角有问题
 218. 2013.11.02 18:45 zip皮肤格式下面ico无法显示
+219. 2013.11.07 23:25 IM Chat Dlg右侧隐藏后无法拖拽 + 最大化后没占满全屏。  想个办法绕过去

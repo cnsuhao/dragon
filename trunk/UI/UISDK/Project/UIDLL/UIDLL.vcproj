@@ -1652,7 +1652,7 @@
 						>
 					</File>
 					<File
-						RelativePath="..\..\Kernel\Inc\Interface\iuibuilder.h"
+						RelativePath="..\..\Kernel\Inc\Interface\iuieditor.h"
 						>
 					</File>
 					<File

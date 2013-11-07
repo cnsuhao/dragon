@@ -425,6 +425,7 @@ public:
         interfacename::_CreatorClass::UICreateInstance(p, pp); \
     }
 
+// 非UIObject，但也采用pimpl模式(不会被继承)，
 #define UI_IMPLEMENT_Ixxx_INTERFACE_Construct2(interfacename, classname) \
     interfacename::interfacename()                          \
     {                                                       \
@@ -447,6 +448,8 @@ public:
     {                                                       \
         return m_p##classname##Impl->nvProcessMessage(pMsg, nMsgMapID, bDoHook); \
     }
+
+// 当前模块继承
 #define UI_IMPLEMENT_Ixxx_INTERFACE_CreateImpl(interfacename,classname,baseclass) \
     void  interfacename::CreateImpl(classname* p)           \
     {                                                       \
@@ -467,6 +470,7 @@ public:
         return m_p##classname##Impl;                        \
     }
 
+// 跨模块继承
 #define UI_IMPLEMENT_Ixxx_INTERFACE_CreateImpl2(interfacename,classname,baseinterface) \
     void  interfacename::CreateImpl(classname* p)           \
     {                                                       \
@@ -487,7 +491,7 @@ public:
         return m_p##classname##Impl;                        \
     }
 
-// 没有父类有情况下使用
+// 没有父类的情况下使用
 #define UI_IMPLEMENT_Ixxx_INTERFACE_CreateImpl3(interfacename,classname) \
     void  interfacename::CreateImpl(classname* p)           \
     {                                                       \
