@@ -1,10 +1,11 @@
 #include "stdafx.h"
 #include "SkinDlg.h"
+#include "skinui.h"
 #include "UISDK\Control\Inc\Interface\ibutton.h"
 #include "UISDK\Control\Inc\Interface\isliderctrl.h"
 #include "UISDK\Kernel\Inc\Util\iimage.h"
+#include "UISDK\Control\Inc\Interface\ilistbox.h"
 #include "App\IM\IM_Ctrls\inc\ipluginbtnlistboxitem.h"
-#include "skinui.h"
 #include "App/IM/include/main_inc.h"
 
 bool  MainDlgToolbarListItemCompareProc(UI::IListItemBase* p1, UI::IListItemBase* p2)

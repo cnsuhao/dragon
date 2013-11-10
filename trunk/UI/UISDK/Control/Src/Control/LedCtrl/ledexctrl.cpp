@@ -50,6 +50,20 @@ namespace UI
         }
     }
 
+	void  LEDExCtrl::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
+	{
+		__super::OnEditorGetAttrList(pData);
+
+		IUIEditor* pEditor = pData->pEditor;
+		const TCHAR* szPrefix = pData->szPrefix;
+
+		IUIEditorGroupAttribute*  pLEDExCtrlGroup = pEditor->CreateGroupAttribute(pData->pGroupAttr, LEDExCtrl::GetXmlName(), NULL);
+		pEditor->CreateTextAttribute(pLEDExCtrlGroup, XML_TEXT, szPrefix, NULL, L"文字");
+		pEditor->CreateBoolAttribute(pLEDExCtrlGroup, XML_LEDEXCTRL_SAMEWIDTH, false, szPrefix, NULL, L"如果大小相同的话，就不用配置posmap属性了");
+		pEditor->CreateTextAttribute(pLEDExCtrlGroup, XML_LEDEXCTRL_POSMAP, szPrefix, NULL, L"图片项位置映射关系  0,10;10,16;16,6;22,6;28,6;34,6;40,6;46,6;52,6;58,6;64,6 ...");
+	}
+
+
     void  LEDExCtrl::GetDesiredSize(SIZE* pSize)
     {
         pSize->cx = m_pILEDExCtrl->GetNonClientW();

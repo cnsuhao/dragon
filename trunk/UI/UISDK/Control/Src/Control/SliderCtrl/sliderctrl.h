@@ -26,6 +26,7 @@ public:
         UIMSG_WM_GETOBJECTINFO(OnGetObjectInfo)
         UIMSG_WM_RESETATTRIBUTE(ResetAttribute)
         UIMSG_WM_SETATTRIBUTE(SetAttribute)
+		UIMSG_WM_EDITORGETATTRLIST(OnEditorGetAttrList)
         UIMSG_WM_FINALCONSTRUCT(FinalConstruct)
 		// 按钮的事件
 	UIALT_MSG_MAP(1)   
@@ -42,6 +43,7 @@ public:
     HRESULT  FinalConstruct(IUIApplication* p);
     void  ResetAttribute();
     void  SetAttribute(IMapAttribute* pMapAttr, bool bReload);
+	void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
 
     int   SetPos(int nPos, bool bUpdate=true);
     int   SetPage(int nPage, bool bUpdate=true);

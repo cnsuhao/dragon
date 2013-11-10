@@ -36,6 +36,7 @@ void ListViewItemReportLayout::Arrange(IListItemBase* pStartToArrange, SIZE* pSi
     {
         CRect rc(0, 0, nWidth, nItemHeight);
         pItem->SetParentRect(&rc);
+		nTotalHeight += rc.Height();
 
         yPrevItemBottom = rc.bottom;
         pItem = pItem->GetNextVisibleItem();

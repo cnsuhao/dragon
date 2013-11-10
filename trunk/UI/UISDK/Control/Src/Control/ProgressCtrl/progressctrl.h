@@ -19,6 +19,7 @@ public:
         UIMSG_WM_GETDESIREDSIZE(GetDesiredSize)
         UIMSG_WM_RESETATTRIBUTE(ResetAttribute)
         UIMSG_WM_SETATTRIBUTE(SetAttribute)
+		UIMSG_WM_EDITORGETATTRLIST(OnEditorGetAttrList)
         UIMSG_WM_FINALCONSTRUCT(FinalConstruct)
     UI_END_MSG_MAP_CHAIN_PARENT_Ixxx(ProgressCtrl, IControl)
 
@@ -28,6 +29,7 @@ protected:
     void  ResetAttribute();
     void  SetAttribute(IMapAttribute* pMapAttr, bool bReload);
     void  GetDesiredSize(SIZE* pSize);
+	void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
 
 public:
     void  SetIProgressCtrl(IProgressCtrl* p) { m_pIProgressCtrl = p; SetIMessageProxy(static_cast<IMessage*>(p)); }

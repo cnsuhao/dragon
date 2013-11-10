@@ -27,6 +27,7 @@ public:
         UIMSG_WM_GETOBJECTINFO(OnGetObjectInfo)
         UIMSG_WM_SETATTRIBUTE(SetAttribute)
         UIMSG_WM_RESETATTRIBUTE(ResetAttribute)
+		UIMSG_WM_EDITORGETATTRLIST(OnEditorGetAttrList)
 	UIALT_MSG_MAP(1)
 		UIMSG_WM_STATECHANGED2(OnChildObjStateChanged)
 	UI_END_MSG_MAP_CHAIN_PARENT(ButtonBase)
@@ -37,6 +38,7 @@ public:
     void  OnSize(UINT nType, int cx, int cy);
 	void  ResetAttribute();
 	void  SetAttribute(IMapAttribute* pMatAttrib, bool bReload);
+	void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
 	void  GetDesiredSize(SIZE* pSize);
 	void  DrawFocus(IRenderTarget*);
 	

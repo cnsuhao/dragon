@@ -118,6 +118,29 @@ void  Label::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
     }
 }
 
+
+void  Label::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
+{
+	DO_PARENT_PROCESS(ILabel, IControl);
+
+	IUIEditor* pEditor = pData->pEditor;
+	const TCHAR* szPrefix = pData->szPrefix;
+
+	IUIEditorGroupAttribute*  pLabelGroup = pEditor->CreateGroupAttribute(pData->pGroupAttr, Label::GetXmlName(), NULL);
+	pEditor->CreateTextAttribute(pLabelGroup, XML_TEXT, szPrefix, NULL, L"ÎÄ×Ö");
+
+	IUIEditorGroupAttribute* pTextRenderGroup = pEditor->CreateGroupAttribute(pLabelGroup, XML_TEXTRENDER, NULL);
+	pEditor->CreateTextAttribute(pTextRenderGroup, XML_TEXTRENDER_TYPE, szPrefix);
+	if (m_pILabel->GetTextRender())
+	{
+		EDITORGETOBJECTATTRLISTDATA  data;
+		data.pEditor = pEditor;
+		data.szPrefix = szPrefix;
+		data.pGroupAttr = pTextRenderGroup;
+		UISendMessage(m_pILabel->GetTextRender(), UI_EDITOR_GETOBJECTATTRLIST, (WPARAM)&data);
+	}
+}
+
 void Label::GetDesiredSize(SIZE* pSize)
 {
 	pSize->cx = pSize->cy = 0;
@@ -236,6 +259,19 @@ void GifCtrl::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 		}
 	}
 }
+
+
+void  GifCtrl::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
+{
+	DO_PARENT_PROCESS(IGifCtrl, IControl);
+
+	IUIEditor* pEditor = pData->pEditor;
+	const TCHAR* szPrefix = pData->szPrefix;
+
+	IUIEditorGroupAttribute*  pGifCtrlGroup = pEditor->CreateGroupAttribute(pData->pGroupAttr, GifCtrl::GetXmlName(), NULL);
+	pEditor->CreateTextAttribute(pGifCtrlGroup, XML_GIFCTRL_GIF, szPrefix, NULL, L"gif×ÊÔ´id");
+}
+
 
 void  GifCtrl::OnPaint(IRenderTarget* pRenderTarget)
 {

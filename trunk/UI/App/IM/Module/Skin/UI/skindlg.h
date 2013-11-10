@@ -7,6 +7,7 @@ namespace UI
 {
     interface IButton;
     interface ISliderCtrl;
+    interface IListBox;
 }
 namespace IM
 {

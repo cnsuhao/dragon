@@ -25,7 +25,8 @@ public:
 		UIMSG_WM_STYLECHANGED(OnStyleChanged)
 		UIMSG_WM_LBUTTONDOWN(OnLButtonDown)
         UIMSG_WM_LBUTTONDBLCLK(OnLButtonDown)
-        UIMSG_WM_SETATTRIBUTE(SetAttribute)
+		UIMSG_WM_SETATTRIBUTE(SetAttribute)
+		UIMSG_WM_EDITORGETATTRLIST(OnEditorGetAttrList)
         UIMSG_WM_RESETATTRIBUTE(ResetAttribute)
         UIMSG_WM_FINALCONSTRUCT(FinalConstruct)
 
@@ -59,6 +60,7 @@ protected:
 	void  SetAttribute(IMapAttribute* pMapAttrib, bool bReload);
 	void  ResetAttribute();
 	void  GetAutoSize(SIZE* pSize);
+	void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
 
 public:
 	
@@ -104,6 +106,7 @@ public:
         UIMSG_WM_QUERYINTERFACE(QueryInterface)
         UIMSG_WM_RESETATTRIBUTE(ResetAttribute)
         UIMSG_WM_SETATTRIBUTE(SetAttribute)
+		UIMSG_WM_EDITORGETATTRLIST(OnEditorGetAttrList)
         UIMSG_WM_FINALCONSTRUCT(FinalConstruct)
         UIMSG_WM_FINALRELEASE(FinalRelease)
     
@@ -125,11 +128,12 @@ public:
 protected:
     void  OnPaint(IRenderTarget*);
     HRESULT  FinalConstruct(IUIApplication* p);
-    void     FinalRelease();
+    void  FinalRelease();
     HRESULT  OnDropDown(WPARAM, LPARAM);
-    void     SetAttribute(IMapAttribute* pMapAttrib, bool bReload);
-    void     ResetAttribute();
-    void     OnLCNSelChanged(IMessage* pMsgFrom, IListItemBase* pOldSelItem, IListItemBase* pSelItem);
+    void  SetAttribute(IMapAttribute* pMapAttrib, bool bReload);
+    void  ResetAttribute();
+	void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
+    void  OnLCNSelChanged(IMessage* pMsgFrom, IListItemBase* pOldSelItem, IListItemBase* pSelItem);
     LRESULT  OnLCNClick(WPARAM, LPARAM);
 
 protected:

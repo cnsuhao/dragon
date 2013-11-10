@@ -833,8 +833,6 @@ void Menu::OnMouseMove(UINT nFlags, CPoint point)
 }
 void Menu::OnMouseLeave()
 {
-    DO_PARENT_PROCESS(IMenu, IListCtrlBase);
-
     // 为了解决从父菜单的popup menu item直接移动到子菜单上面时,
     // 会收到一个MOUSELEAVE消息，导致hover item闪烁一下的问题。
     // 当发现鼠标是移到了子菜单上面时，不去清空当前的hover item
@@ -845,6 +843,10 @@ void Menu::OnMouseLeave()
     {
         SetMsgHandled(TRUE);
     }
+	else
+	{
+		DO_PARENT_PROCESS(IMenu, IListCtrlBase);
+	}
 
     // 取消将要显示的菜单动作
     if (0 != m_nTimerIDShowPopupSubMenu)

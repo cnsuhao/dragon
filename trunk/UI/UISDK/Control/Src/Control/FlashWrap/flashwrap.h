@@ -172,6 +172,7 @@ public:
         UIMSG_WM_GETOBJECTINFO(OnGetObjectInfo)
         UIMSG_WM_RESETATTRIBUTE(ResetAttribute)
         UIMSG_WM_SETATTRIBUTE(SetAttribute)
+		UIMSG_WM_EDITORGETATTRLIST(OnEditorGetAttrList)
         UIMSG_WM_FINALCONSTRUCT(FinalConstruct)
 	UI_END_MSG_MAP_CHAIN_PARENT_Ixxx(FlashWrap, IControl)
 
@@ -189,6 +190,7 @@ public:
 	void  GetDesiredSize(SIZE* pSize);
 	void  ResetAttribute();
 	void  SetAttribute(IMapAttribute* pMapAttr, bool bReload);
+	void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
 
 	void   SetFlashInvalidateListener(IFlashInvalidateListener* p);
 	void   OnPaint(IRenderTarget* pRenderTarget);  // <- 做成public的，便于render layer中直接调用

@@ -124,6 +124,59 @@ void ComboBoxBase::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
         }
 	}
 }
+
+void  ComboBoxBase::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
+{
+	DO_PARENT_PROCESS(IComboBoxBase, IControl);
+
+	IUIEditor* pEditor = pData->pEditor;
+	const TCHAR* szPrefix = pData->szPrefix;
+
+	IUIEditorGroupAttribute*  pComboBoxBaseGroup = pEditor->CreateGroupAttribute(pData->pGroupAttr, _T("ComboBoxBase"), NULL);
+	
+	if (m_pEdit)
+	{
+		IUIEditorGroupAttribute* pEditGroup = pEditor->CreateGroupAttribute(pComboBoxBaseGroup, XML_COMBOBOX_EDIT_PRIFIX, NULL);
+
+		String strPrefix;
+		if (szPrefix)
+			strPrefix.append(szPrefix);
+		strPrefix.append(XML_COMBOBOX_EDIT_PRIFIX);
+
+		EDITORGETOBJECTATTRLISTDATA  data;
+		data.pEditor = pEditor;
+		data.szPrefix = strPrefix.c_str();
+		data.pGroupAttr = pEditGroup;
+		UISendMessage(m_pEdit, UI_EDITOR_GETOBJECTATTRLIST, (WPARAM)&data);
+	}
+	if (m_pButton)
+	{
+		IUIEditorGroupAttribute* pButtonGroup = pEditor->CreateGroupAttribute(pComboBoxBaseGroup, XML_COMBOBOX_BUTTON_PRIFIX, NULL);
+
+		String strPrefix;
+		if (szPrefix)
+			strPrefix.append(szPrefix);
+		strPrefix.append(XML_COMBOBOX_BUTTON_PRIFIX);
+
+		EDITORGETOBJECTATTRLISTDATA  data;
+		data.pEditor = pEditor;
+		data.szPrefix = strPrefix.c_str();
+		data.pGroupAttr = pButtonGroup;
+		UISendMessage(m_pButton, UI_EDITOR_GETOBJECTATTRLIST, (WPARAM)&data);
+	}
+
+	IUIEditorGroupAttribute* pTextRenderGroup = pEditor->CreateGroupAttribute(pComboBoxBaseGroup, XML_TEXTRENDER, NULL);
+	pEditor->CreateTextAttribute(pTextRenderGroup, XML_TEXTRENDER_TYPE, szPrefix);
+	if (m_pIComboBoxBase->GetTextRender())
+	{
+		EDITORGETOBJECTATTRLISTDATA  data;
+		data.pEditor = pEditor;
+		data.szPrefix = szPrefix;
+		data.pGroupAttr = pTextRenderGroup;
+		UISendMessage(m_pIComboBoxBase->GetTextRender(), UI_EDITOR_GETOBJECTATTRLIST, (WPARAM)&data);
+	}
+}
+
 void ComboBoxBase::ResetAttribute()
 {
 	DO_PARENT_PROCESS(IComboBoxBase, IControl);
@@ -594,6 +647,32 @@ void  ComboBox::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
         }
     }
 }
+
+void  ComboBox::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
+{
+	__super::OnEditorGetAttrList(pData);
+
+	IUIEditor* pEditor = pData->pEditor;
+	const TCHAR* szPrefix = pData->szPrefix;
+
+	IUIEditorGroupAttribute*  pComboBoxGroup = pEditor->CreateGroupAttribute(pData->pGroupAttr, ComboBox::GetXmlName(), NULL);
+	if (m_pDropDownCtrl)
+	{
+		IUIEditorGroupAttribute* pListGroup = pEditor->CreateGroupAttribute(pComboBoxGroup, XML_COMBOBOX_LISTBOX_PRIFIX, NULL);
+
+		String strPrefix;
+		if (szPrefix)
+			strPrefix.append(szPrefix);
+		strPrefix.append(XML_COMBOBOX_LISTBOX_PRIFIX);
+
+		EDITORGETOBJECTATTRLISTDATA  data;
+		data.pEditor = pEditor;
+		data.szPrefix = strPrefix.c_str();
+		data.pGroupAttr = pListGroup;
+		UISendMessage(m_pDropDownCtrl, UI_EDITOR_GETOBJECTATTRLIST, (WPARAM)&data);
+	}
+}
+
 void  ComboBox::ResetAttribute()
 {
     __super::ResetAttribute();

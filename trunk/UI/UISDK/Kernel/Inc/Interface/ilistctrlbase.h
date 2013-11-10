@@ -2,45 +2,6 @@
 #define ILISTCTRLBASE_H_B087355B_4D7A_4e74_AE27_5FF37A91293C
 #include "UISDK\Kernel\Inc\Interface\icontrol.h"
 
-namespace UI
-{
-class ListCtrlBase;
-interface IListItemBase;
-interface IScrollBarManager;
-interface IListCtrlLayout;
-interface IListItemTypeShareData;
-
-typedef bool (*ListItemCompareProc)(IListItemBase* p1, IListItemBase* p2);
-typedef bool (*ListItemEnumProc)(IListItemBase* pItem, WPARAM, LPARAM);   // 返回false时停止enum
-
-enum LISTITEM_VISIBLE_POS_TYPE
-{
-    LISTITEM_UNVISIBLE_TOP = 1,      
-    LISTITEM_VISIBLE_COVERTOP,       
-    LISTITEM_VISIBLE,
-    LISTITEM_VISIBLE_COVERBOTTOM,
-    LISTITEM_UNVISIBLE_BOTTOM,
-};
-
-#define UITVI_ROOT    ((UI::IListItemBase*)TVI_ROOT)
-#define UITVI_FIRST   ((UI::IListItemBase*)TVI_FIRST)
-#define UITVI_LAST    ((UI::IListItemBase*)TVI_LAST)
-
-
-// 添加列表项的一些标识，主要是用于提高批量添加时的效率
-#define LISTITEM_OPFLAG_NOREDRAW           0x0001    // 不刷新 
-#define LISTITEM_OPFLAG_NOUPDATEITEMRECT   0x0002    // 不去计算每个子项的位置。最后必须调用一次UpdateItemRectAndScrollRange(NULL);
-#define LISTITEM_OPFLAG_NOSORT             0x0004    // 不去排序。最后必须调用一次
-#define LISTITEM_OPFLAG_NOALL   (LISTITEM_OPFLAG_NOREDRAW|LISTITEM_OPFLAG_NOUPDATEITEMRECT|LISTITEM_OPFLAG_NOSORT)
-typedef int LISTITEM_OPFLAGS;
-
-// 消息映射ID分类 
-// #define LISTCTRLBASE_KEYBOARDMOUSEMGR_PREMSG_ID   1   // mousemgr处理前先发给listctrl处理的消息映射ID
-// #define LISTCTRLBASE_KEYBOARDMOUSEMGR_POSTMSG_ID  2   // mousemgr处理后再发给listctrl处理的消息映射ID
-// #define LISTCTRLBASE_INNER_CONTROL_MSG_ID  3  // 内部控件ID。当内部控件调用DoNotify是，将发到这个ID上	
-#define LISTCTRLBASE_EDIT_CONTROL_MSG_ID   4  // 编辑控件消息通知ID
-
-
 
 //////////////////////////////////////////////////////////////////////////
 // ListCtrl Notify/Message
@@ -73,7 +34,6 @@ typedef int LISTITEM_OPFLAGS;
 //		lparam:  IListItemBase* pNew
 #define UI_LCN_SELCHANGED_SELF  135311304   // 给自己派生类发送的
 #define UI_LCN_SELCHANGED  135311305  // 给自己发送的
-
 
 
 //  listctrl当前hover项改变\
@@ -126,6 +86,44 @@ typedef int LISTITEM_OPFLAGS;
 // Code:    UI_LCN_REMOVEALLITEM
 #define UI_LCN_POST_ALLITEMREMOVE 136131223
 
+
+namespace UI
+{
+class ListCtrlBase;
+interface IListItemBase;
+interface IScrollBarManager;
+interface IListCtrlLayout;
+interface IListItemTypeShareData;
+
+typedef bool (*ListItemCompareProc)(IListItemBase* p1, IListItemBase* p2);
+typedef bool (*ListItemEnumProc)(IListItemBase* pItem, WPARAM, LPARAM);   // 返回false时停止enum
+
+enum LISTITEM_VISIBLE_POS_TYPE
+{
+    LISTITEM_UNVISIBLE_TOP = 1,      
+    LISTITEM_VISIBLE_COVERTOP,       
+    LISTITEM_VISIBLE,
+    LISTITEM_VISIBLE_COVERBOTTOM,
+    LISTITEM_UNVISIBLE_BOTTOM,
+};
+
+#define UITVI_ROOT    ((UI::IListItemBase*)TVI_ROOT)
+#define UITVI_FIRST   ((UI::IListItemBase*)TVI_FIRST)
+#define UITVI_LAST    ((UI::IListItemBase*)TVI_LAST)
+
+
+// 添加列表项的一些标识，主要是用于提高批量添加时的效率
+#define LISTITEM_OPFLAG_NOREDRAW           0x0001    // 不刷新 
+#define LISTITEM_OPFLAG_NOUPDATEITEMRECT   0x0002    // 不去计算每个子项的位置。最后必须调用一次UpdateItemRectAndScrollRange(NULL);
+#define LISTITEM_OPFLAG_NOSORT             0x0004    // 不去排序。最后必须调用一次
+#define LISTITEM_OPFLAG_NOALL   (LISTITEM_OPFLAG_NOREDRAW|LISTITEM_OPFLAG_NOUPDATEITEMRECT|LISTITEM_OPFLAG_NOSORT)
+typedef int LISTITEM_OPFLAGS;
+
+// 消息映射ID分类 
+// #define LISTCTRLBASE_KEYBOARDMOUSEMGR_PREMSG_ID   1   // mousemgr处理前先发给listctrl处理的消息映射ID
+// #define LISTCTRLBASE_KEYBOARDMOUSEMGR_POSTMSG_ID  2   // mousemgr处理后再发给listctrl处理的消息映射ID
+// #define LISTCTRLBASE_INNER_CONTROL_MSG_ID  3  // 内部控件ID。当内部控件调用DoNotify是，将发到这个ID上	
+#define LISTCTRLBASE_EDIT_CONTROL_MSG_ID   4  // 编辑控件消息通知ID
 
 interface UISDKAPI IListCtrlBase : public IControl
 {

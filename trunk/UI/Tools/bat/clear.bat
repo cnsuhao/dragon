@@ -94,4 +94,20 @@ del ..\..\UISDK\Project\UIUtil\UIUtil.vcproj.*.user
 rd  ..\..\UISDK\Project\UIEditor\Debug /S /Q
 rd  ..\..\UISDK\Project\UIEditor\Release /S /Q
 del ..\..\UISDK\Project\UIEditor\UIEditor.vcproj.*.user
+
+rd ..\gft_2_png\Debug /S /Q
+del ..\gft_2_png\Release\*.htm
+del ..\gft_2_png\Release\*.obj
+del ..\gft_2_png\Release\*.manifest
+del ..\gft_2_png\Release\*.pch
+del ..\gft_2_png\Release\*.res
+del ..\gft_2_png\Release\*.dep
+del ..\gft_2_png\Release\*.idb
+del ..\gft_2_png\Release\*.pdb
+del ..\gft_2_png\gft_2_png.vcproj.*.user
+
+
+rd ..\imagemergetools\Debug /S /Q
+rd ..\imagemergetools\Release /S /Q
+del ..\imagemergetools\imagemergetools.vcproj.*.user
 pause

@@ -22,6 +22,7 @@ public:
         UIMSG_WM_GETOBJECTINFO(OnGetObjectInfo)
         UIMSG_WM_RESETATTRIBUTE(ResetAttribute)
         UIMSG_WM_SETATTRIBUTE(SetAttribute)
+		UIMSG_WM_EDITORGETATTRLIST(OnEditorGetAttrList)
     UI_END_MSG_MAP_CHAIN_PARENT_Ixxx(LEDCtrl, IControl)
 
     void  SetILEDCtrl(ILEDCtrl* p) { m_pILEDCtrl = p; SetIMessageProxy(static_cast<IMessage*>(p)); }
@@ -34,6 +35,7 @@ protected:
 	void  OnPaint(IRenderTarget*);
 	void  ResetAttribute();
 	void  SetAttribute(IMapAttribute* pMapAttr, bool bReload);
+	void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
 	void  GetDesiredSize(SIZE* pSize);
     void  OnLButtonUp(UINT nFlags, POINT point);
 

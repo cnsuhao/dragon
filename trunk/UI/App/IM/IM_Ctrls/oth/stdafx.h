@@ -14,7 +14,6 @@
 #include "UISDK\Project\UIUtil\h\Util.h"
 #include "UISDK\Kernel\Inc\Base\inc.h"
 #include "UISDK\Control\Inc\Base\inc.h"
-#include "App\Player\Player_Ctrls\Inc\inc.h"
 
 #pragma comment(lib, "uiutil.lib")
 #pragma comment(lib,"uisdk.lib")

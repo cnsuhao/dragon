@@ -87,6 +87,17 @@ void ProgressCtrl::SetAttribute(IMapAttribute* pMapAttr, bool bReload)
     }
 }
 
+void  ProgressCtrl::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
+{
+	DO_PARENT_PROCESS(IProgressCtrl, IControl);
+
+	IUIEditor* pEditor = pData->pEditor;
+	const TCHAR* szPrefix = pData->szPrefix;
+
+	IUIEditorGroupAttribute*  pProgressCtrlGroup = pEditor->CreateGroupAttribute(pData->pGroupAttr, ProgressCtrl::GetXmlName(), NULL);
+	pEditor->CreateTextAttribute(pProgressCtrlGroup, XML_PROGRESSCTRL_DIRECTION, szPrefix, NULL, L"方向\r取值：lefttoright、bottomtotop、righttoleft、toptobottom");
+}
+
 void  ProgressCtrl::GetDesiredSize(SIZE* pSize)
 {
     pSize->cx = pSize->cy = 0;

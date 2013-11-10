@@ -829,7 +829,7 @@ LRESULT WindowBase::_OnEraseBkgnd( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 		bHandled = TRUE;
 		if (m_bFirsetEraseBkgnd)
 		{
-			m_bFirsetEraseBkgnd = false;
+			//m_bFirsetEraseBkgnd = false;
 
 			// TODO: 如果什么也不做，会导致窗口第一次显示时，窗口先显示一次黑色，例如combobox.listbox/menu
 			// 但这样可能还是会导致别的闪烁问题，因为最终显示的界面不一定就是白色的
@@ -879,8 +879,10 @@ LRESULT WindowBase::_OnSize( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHan
 		::GetWindowRect(m_hWnd, &rcWindow);
         ::GetClientRect(m_hWnd, &m_rcParent);
 
-		SetConfigWidth(rcWindow.right-rcWindow.left);
-		SetConfigHeight(rcWindow.bottom-rcWindow.top);
+		if (GetConfigWidth() > 0)
+			SetConfigWidth(rcWindow.right-rcWindow.left);
+		if (GetConfigHeight() > 0)
+			SetConfigHeight(rcWindow.bottom-rcWindow.top);
 
         bHandled = TRUE;
         m_pRenderChain->OnWindowResize(wParam, LOWORD(lParam), HIWORD(lParam));  // 在窗口刷新之前更新窗口缓冲区大小

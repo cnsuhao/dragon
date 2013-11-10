@@ -9,9 +9,11 @@
 #include "UISDK\Control\Inc\Interface\icheckbutton.h"
 #include "UISDK\Control\Inc\Interface\icombobox.h"
 #include "UISDK\Kernel\Inc\Util\ibuffer.h"
+#include "UISDK\Control\Inc\Interface\ilistbox.h"
 
 #define FRAME_SHADOW_SIZE  6
 #define ANIMATE_ID_RIGHT_PANEL  1
+#define RIGHT_PANEL_WIDTH  209
 
 CChatDlg::CChatDlg(void)
 {
@@ -202,6 +204,23 @@ void CChatDlg::OnBnClickAnimate()
 	{
         pMoveAlgo->SetParam1(0, m_nRightPanelConfigWidth, 300);
 		m_eRightPanelState = RIGHT_PANEL_STATE_ANIMATING_EXPAND;
+
+        // -- 有bug，SetWindowPos之后会有残留阴影，无法解决，以后再看。
+        // 增加窗口大小，用于显示左侧面板
+//         if (!::IsZoomed(GetHWND()))
+//         {
+//             if (m_pLeftPanel)
+//             {
+//                 m_pLeftPanel->SetConfigRight(RIGHT_PANEL_WIDTH);
+//             }
+// 
+//             CRect rcWindow;
+//             ::GetWindowRect(GetHWND(), &rcWindow);
+//             rcWindow.right += RIGHT_PANEL_WIDTH;
+//             GetRenderChain()->SetCanCommit(false);
+//             ::SetWindowPos(GetHWND(), 0, 0, 0, rcWindow.Width(), rcWindow.Height(), SWP_NOZORDER|SWP_NOMOVE);
+//             GetRenderChain()->SetCanCommit(true);
+//         }
 	}
 	else
 	{
@@ -249,6 +268,20 @@ void CChatDlg::OnAnimateTick(int nCount, UI::IStoryboard** ppArray)
 					else
 					{
 						m_eRightPanelState = RIGHT_PANEL_STATE_COLLAPSE;
+
+                        // 修改窗口大小，否则在拖拽窗口时预览大小不正确
+//                         if (!::IsZoomed(GetHWND()))
+//                         {
+//                             if (m_pLeftPanel)
+//                             {
+//                                 m_pLeftPanel->SetConfigRight(0);
+//                             }
+// 
+//                             CRect rcWindow;
+//                             ::GetWindowRect(GetHWND(), &rcWindow);
+//                             int nWidth = rcWindow.Width() - RIGHT_PANEL_WIDTH;
+//                             ::SetWindowPos(GetHWND(), 0, 0, 0, nWidth, rcWindow.Height(), SWP_NOZORDER|SWP_NOMOVE|SWP_NOACTIVATE|SWP_NOREDRAW);
+//                         }
 					}
                     
                     // 动画过程中，动画按钮的位置改变了，但hover样式却没有修改。

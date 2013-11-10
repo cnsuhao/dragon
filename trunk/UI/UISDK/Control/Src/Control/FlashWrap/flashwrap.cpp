@@ -330,6 +330,22 @@ void FlashWrap::SetAttribute(IMapAttribute* pMapAttr, bool bReload)
 		CreateControl();
 }
 
+void  FlashWrap::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
+{
+	DO_PARENT_PROCESS(IFlashWrap, IControl);
+
+	IUIEditor* pEditor = pData->pEditor;
+	const TCHAR* szPrefix = pData->szPrefix;
+
+	IUIEditorGroupAttribute*  pFlashWrapGroup = pEditor->CreateGroupAttribute(pData->pGroupAttr, FlashWrap::GetXmlName(), NULL);
+	pEditor->CreateTextAttribute(pFlashWrapGroup, XML_FLASH_URI, szPrefix, NULL, L"flash文件地址");
+	pEditor->CreateComboBoxAttribute(pFlashWrapGroup, XML_FLASH_WMODE, szPrefix, NULL, L"窗口模式")
+		->AddOption(XML_FLASH_WMODE_WINDOW)
+		->AddOption(XML_FLASH_WMODE_OPAQUE)
+		->AddOption(XML_FLASH_WMODE_TRANSPARENT);
+}
+
+
 void FlashWrap::OnPaint(IRenderTarget* pRenderTarget)
 {
 	if (NULL == m_pFlash)

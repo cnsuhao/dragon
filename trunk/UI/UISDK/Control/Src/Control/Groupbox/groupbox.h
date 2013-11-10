@@ -19,6 +19,7 @@ public:
         UIMSG_WM_GETOBJECTINFO(OnGetObjectInfo)
         UIMSG_WM_RESETATTRIBUTE(ResetAttribute)
         UIMSG_WM_SETATTRIBUTE(SetAttribute)
+		UIMSG_WM_EDITORGETATTRLIST(OnEditorGetAttrList)
 	UI_END_MSG_MAP_CHAIN_PARENT_Ixxx(GroupBox, IPanel)
 
     void  SetIGroupBox(IGroupBox* p) { m_pIGroupBox = p; SetIMessageProxy(static_cast<IMessage*>(p)); }
@@ -27,6 +28,7 @@ public:
 
 	void  ResetAttribute();
 	void  SetAttribute(IMapAttribute* pMapAttr, bool bReload);
+	void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
 
     void  SetText(const TCHAR* szText);
 

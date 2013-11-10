@@ -424,10 +424,6 @@ void ImageListRender::SetAttribute(SetAttrPrefixData* pData)
 	strAttrib.append(XML_RENDER_IMAGELIST_ALPHA_ANIMATE);
     pMapAttrib->GetAttr_bool(strAttrib.c_str(), pData->bErase, &m_bUseAlphaAnimate);
 	
-// 	strAttrib = strPrefix;
-// 	strAttrib.append(XML_RENDER_IMAGELIST_ALPHA_ANIMATE_HOVER_ON_NORMAL);
-//     pMapAttrib->GetAttr_bool(strAttrib.c_str(), pData->bErase, &m_bHoverBaseOnNormal);
-
 	strAttrib = strPrefix;
 	strAttrib.append(XML_RENDER_IMAGE);
 	const TCHAR* szText = pMapAttrib->GetAttr(strAttrib.c_str(), pData->bErase);

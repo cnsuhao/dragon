@@ -973,7 +973,7 @@ void Edit::SetAttribute(IMapAttribute* pMatAttrib, bool bReload)
 
             if (!bPaddingConfig)
             {
-                CRegion4 r(3,0,3,0);
+                CRegion4 r(2,2,2,2);
                 m_pIEdit->SetPaddingRegion(&r);
             }
         }
@@ -1047,6 +1047,32 @@ void Edit::SetAttribute(IMapAttribute* pMatAttrib, bool bReload)
     {
         m_nDrawFlags |= EDIT_DRAW_FLAG_CARET_HEIGHT_CONFIGED;
     }
+}
+
+void  Edit::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
+{
+	DO_PARENT_PROCESS(IEdit, IControl);
+
+	IUIEditor* pEditor = pData->pEditor;
+	const TCHAR* szPrefix = pData->szPrefix;
+
+	IUIEditorGroupAttribute*  pEditGroup = pEditor->CreateGroupAttribute(pData->pGroupAttr, Edit::GetXmlName(), NULL);
+	pEditor->CreateTextAttribute(pEditGroup, XML_EDIT_COLOR, szPrefix, NULL, L"文字显示颜色");
+	pEditor->CreateTextAttribute(pEditGroup, XML_EDIT_SELECT_COLOR, szPrefix, NULL, L"文字选中颜色");
+	pEditor->CreateTextAttribute(pEditGroup, XML_EDIT_SELECT_BK_COLOR, szPrefix, NULL, L"文字被选中时背景的颜色");
+	pEditor->CreateTextAttribute(pEditGroup, XML_EDIT_MAX_LENGTH, szPrefix, NULL, L"长度限制");
+	pEditor->CreateTextAttribute(pEditGroup, XML_EDIT_CARET_HEIGHT, szPrefix, NULL, L"光标及选中文本背景的高度");
+
+	IUIEditorGroupAttribute* pTextRenderGroup = pEditor->CreateGroupAttribute(pEditGroup, XML_TEXTRENDER, NULL);
+	pEditor->CreateTextAttribute(pTextRenderGroup, XML_TEXTRENDER_TYPE, szPrefix);
+	if (m_pIEdit->GetTextRender())
+	{
+		EDITORGETOBJECTATTRLISTDATA  data;
+		data.pEditor = pEditor;
+		data.szPrefix = szPrefix;
+		data.pGroupAttr = pTextRenderGroup;
+		UISendMessage(m_pIEdit->GetTextRender(), UI_EDITOR_GETOBJECTATTRLIST, (WPARAM)&data);
+	}
 }
 
 void  Edit::GetDesiredSize(SIZE* pSize)

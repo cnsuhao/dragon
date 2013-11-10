@@ -33,7 +33,27 @@ void CompoundButton::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
     if (m_pLayout)
         m_pLayout->SetAttribute(pMapAttrib);
 }
+void  CompoundButton::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
+{
+	ButtonBase::OnEditorGetAttrList(pData);
 
+	IUIEditor* pEditor = pData->pEditor;
+	const TCHAR* szPrefix = pData->szPrefix;
+
+	IUIEditorGroupAttribute*  pCompoundButtonGroup = pEditor->CreateGroupAttribute(pData->pGroupAttr, CompoundButton::GetXmlName(), NULL);
+
+	IUIEditorGroupAttribute*  pLayoutGroup = pEditor->CreateGroupAttribute(pCompoundButtonGroup, XML_LAYOUT, NULL);
+	pEditor->CreateTextAttribute(pLayoutGroup, XML_LAYOUT, pData->szPrefix);
+	if (m_pLayout)
+	{
+		EDITORGETOBJECTATTRLISTDATA data = {0};
+		data.pEditor = pEditor;
+		data.pGroupAttr = pLayoutGroup;
+		data.szPrefix = pData->szPrefix;
+		m_pLayout->OnEditorGetAttrList(&data);
+	}
+
+}
 void  CompoundButton::OnSize(UINT nType, int cx, int cy)
 {
     SetMsgHandled(FALSE);

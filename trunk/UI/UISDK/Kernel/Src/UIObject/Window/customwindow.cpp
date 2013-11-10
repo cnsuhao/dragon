@@ -1614,7 +1614,8 @@ void  LayeredWindowWrap::Commit2LayeredWindow()
 		}
 	}
 
-    // 最小化了也要刷新，否则最还原之后会发现画面不连贯了。因为在显示出来的那一瞬间，还是最小化前的画面
+    // 1. 最小化了也要刷新，否则最还原之后会发现画面不连贯了。因为在显示出来的那一瞬间，还是最小化前的画面
+    // 2. 当m_sizeWindow大于memDC大小时，会导致绘图失败，并且直接以当前画面的最后一像素并0 alpha进行平铺，平铺面积为memDC大小，但窗口为sizeWindow大小
      BOOL  bRet = ::UpdateLayeredWindow(
                         m_pWindow->m_hWnd, NULL, 
                         IsMinimized() ? NULL : &m_ptWindow, 

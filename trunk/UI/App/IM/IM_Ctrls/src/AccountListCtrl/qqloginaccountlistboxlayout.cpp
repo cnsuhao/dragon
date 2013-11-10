@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "qqloginaccountlistboxlayout.h"
+#include "App/IM/IM_Ctrls/inc/iqqloginaccountlistbox.h"
 
 void  QQLoginAccountListBoxLayout::Release()
 {

@@ -71,6 +71,7 @@ public:
         UIMSG_WM_GETOBJECTINFO( OnGetObjectInfo ) 
         UIMSG_WM_RESETATTRIBUTE( ResetAttribute )
         UIMSG_WM_SETATTRIBUTE( SetAttribute )
+		UIMSG_WM_EDITORGETATTRLIST(OnEditorGetAttrList)
         UIMSG_WM_FINALCONSTRUCT( FinalConstruct )
 	UI_END_MSG_MAP_CHAIN_PARENT_Ixxx( RichEdit, IControl )
 
@@ -89,12 +90,13 @@ public:
 
 protected:
     HRESULT  FinalConstruct(IUIApplication* p);
-    void     SetAttribute(IMapAttribute* pMapAttrib, bool bReload);
-    void     ResetAttribute();
+    void  SetAttribute(IMapAttribute* pMapAttrib, bool bReload);
+    void  ResetAttribute();
+	void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
 
-	void     OnObjectLoaded();
-	void     OnEraseBkgnd(IRenderTarget* pRenderTarget);
-	void     OnPaint(IRenderTarget* pRenderTarget);
+	void  OnObjectLoaded();
+	void  OnEraseBkgnd(IRenderTarget* pRenderTarget);
+	void  OnPaint(IRenderTarget* pRenderTarget);
 	LRESULT  OnRedrawObject(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	LRESULT  OnForwardMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);

@@ -19,6 +19,7 @@ public:
         UIMSG_WM_QUERYINTERFACE(QueryInterface)
         UIMSG_WM_RESETATTRIBUTE(ResetAttribute)
         UIMSG_WM_SETATTRIBUTE(SetAttribute)
+		UIMSG_WM_EDITORGETATTRLIST(OnEditorGetAttrList)
         UIMSG_WM_FINALCONSTRUCT(FinalConstruct)
 	UI_END_MSG_MAP_CHAIN_PARENT(Button)
 
@@ -28,6 +29,7 @@ protected:
     HRESULT  FinalConstruct(IUIApplication* p);
     void  SetAttribute(IMapAttribute* pMapAttrib, bool bReload);
     void  ResetAttribute();
+	void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
 	BOOL  OnSetCursor( HWND hWnd, UINT nHitTest, UINT message );
     void  OnClicked();
     UINT  OnGetDlgCode(LPMSG lpMsg) { return 0; }

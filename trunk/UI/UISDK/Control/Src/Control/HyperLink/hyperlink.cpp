@@ -71,6 +71,16 @@ void HyperLink::SetAttribute(IMapAttribute* pMapAttrib, bool bReload )
     }
 }
 
+void  HyperLink::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
+{
+	__super::OnEditorGetAttrList(pData);
+
+	IUIEditor* pEditor = pData->pEditor;
+	const TCHAR* szPrefix = pData->szPrefix;
+
+	IUIEditorGroupAttribute*  pHyperLinkGroup = pEditor->CreateGroupAttribute(pData->pGroupAttr, HyperLink::GetXmlName(), NULL);
+	pEditor->CreateTextAttribute(pHyperLinkGroup, XML_HYPERLINK_HREF, szPrefix, NULL, L"≥¨¡¥Ω”µÿ÷∑");
+}
 
 void  HyperLink::ResetAttribute()
 {

@@ -28,6 +28,7 @@ public:
         UIMSG_WM_GETDESIREDSIZE(GetDesiredSize)
         UIMSG_WM_RESETATTRIBUTE(ResetAttribute)
         UIMSG_WM_SETATTRIBUTE(SetAttribute)
+		UIMSG_WM_EDITORGETATTRLIST(OnEditorGetAttrList)
         UIMESSAGE_HANDLER_EX(UI_WM_SCROLLBAR_SETISCROLLBARMGR, OnSetIScrollBarMgr)
 
 	UIALT_MSG_MAP(ALT_MSG_ID_BUTTON1)
@@ -49,6 +50,7 @@ public:
 	void  CalcScrollBarVisible();
 	void  ResetAttribute();
 	void  SetAttribute(IMapAttribute* pMapAttrib, bool bReload);
+	void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
 	void  GetDesiredSize(SIZE* pSize);
 
 protected:

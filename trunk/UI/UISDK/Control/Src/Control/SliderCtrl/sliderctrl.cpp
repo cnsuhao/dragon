@@ -133,6 +133,33 @@ void SliderCtrl::SetAttribute(IMapAttribute* pMapAttr, bool bReload)
     }
 }
 
+void  SliderCtrl::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
+{
+	DO_PARENT_PROCESS(ISliderCtrl, IControl);
+
+	IUIEditor* pEditor = pData->pEditor;
+	const TCHAR* szPrefix = pData->szPrefix;
+
+	IUIEditorGroupAttribute*  pSliderCtrlGroup = pEditor->CreateGroupAttribute(pData->pGroupAttr, SliderCtrl::GetXmlName(), NULL);
+	pEditor->CreateTextAttribute(pSliderCtrlGroup, XML_PROGRESSCTRL_DIRECTION, szPrefix, NULL, L"方向\r取值：lefttoright、bottomtotop、righttoleft、toptobottom");
+	pEditor->CreateTextAttribute(pSliderCtrlGroup, XML_SLIDERCTRL_THUMB_POINT_DIRECTION, szPrefix, NULL, L"滑块按钮的指向\r取值：both、left、top、right、bottom");
+
+
+	if (m_pButton)
+	{
+		IUIEditorGroupAttribute* pButtonGroup = pEditor->CreateGroupAttribute(pSliderCtrlGroup, XML_SLIDERCTRL_BUTTON_ATTR_PRIFIX, NULL);
+
+		EDITORGETOBJECTATTRLISTDATA  data;
+		data.pEditor = pEditor;
+		String  strPrefix;
+		if (szPrefix)
+			strPrefix.append(szPrefix);
+		strPrefix.append(XML_SLIDERCTRL_BUTTON_ATTR_PRIFIX);
+		data.szPrefix = strPrefix.c_str();
+		data.pGroupAttr = pButtonGroup;
+		UISendMessage(m_pButton, UI_EDITOR_GETOBJECTATTRLIST, (WPARAM)&data);
+	}
+}
 
 int SliderCtrl::SetPos(int nPos, bool bUpdate)
 {

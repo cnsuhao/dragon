@@ -103,6 +103,30 @@ void  RichEdit::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
         p->SetVisible(false, false, false);
     }
 }
+
+void  RichEdit::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
+{
+	DO_PARENT_PROCESS(IRichEdit, IControl);
+
+	IUIEditor* pEditor = pData->pEditor;
+	const TCHAR* szPrefix = pData->szPrefix;
+
+	IUIEditorGroupAttribute*  pRichEditGroup = pEditor->CreateGroupAttribute(pData->pGroupAttr, RichEdit::GetXmlName(), NULL);
+
+	IUIEditorGroupAttribute* pTextRenderGroup = pEditor->CreateGroupAttribute(pRichEditGroup, XML_TEXTRENDER, NULL);
+	pEditor->CreateTextAttribute(pTextRenderGroup, XML_TEXTRENDER_TYPE, szPrefix);
+	if (m_pIRichEdit->GetTextRender())
+	{
+		EDITORGETOBJECTATTRLISTDATA  data;
+		data.pEditor = pEditor;
+		data.szPrefix = szPrefix;
+		data.pGroupAttr = pTextRenderGroup;
+		UISendMessage(m_pIRichEdit->GetTextRender(), UI_EDITOR_GETOBJECTATTRLIST, (WPARAM)&data);
+	}
+
+
+}
+
 void RichEdit::ResetAttribute()
 {
 	DO_PARENT_PROCESS(IRichEdit, IControl);

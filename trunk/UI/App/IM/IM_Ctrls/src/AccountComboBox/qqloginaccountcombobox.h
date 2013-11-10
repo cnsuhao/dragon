@@ -1,5 +1,8 @@
 #pragma once
+#include "UISDK\Kernel\Inc\Interface\ilistctrlbase.h"
 #include "App\IM\IM_Ctrls\inc\iqqloginaccountcombobox.h"
+
+interface IQQLoginAccountListBox;
 
 class QQLoginAccountComboBox : public UI::MessageProxy
 {

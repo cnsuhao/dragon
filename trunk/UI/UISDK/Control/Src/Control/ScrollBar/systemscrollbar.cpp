@@ -135,6 +135,61 @@ void  SystemScrollBar::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 	    m_pBtnThumb->SetAttributeByPrefix(XML_SCROLLBAR_THUMB_BUTTON_ATTR_PRIFIX, pMapAttrib, false, true);
 }
 
+void  SystemScrollBar::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
+{
+	DO_PARENT_PROCESS(ISystemScrollBar, IControl);
+
+	IUIEditor* pEditor = pData->pEditor;
+	const TCHAR* szPrefix = pData->szPrefix;
+
+	IUIEditorGroupAttribute*  pSystemScrollBarGroup = pEditor->CreateGroupAttribute(pData->pGroupAttr, _T("SystemScrollBar"), NULL);
+	pEditor->CreateBoolAttribute(pSystemScrollBarGroup, XML_SCROLLBAR_NO_LINEBTN, false, szPrefix, NULL, L"ÊÇ·ñÏÔÊ¾lineup/linedown/lineleft/lineright°´Å¥");
+
+	String strPrefix;
+	if (szPrefix)
+		strPrefix.append(szPrefix);
+
+	if (m_pBtnLineUpLeft)
+	{
+		IUIEditorGroupAttribute* pUpLeftGroup = pEditor->CreateGroupAttribute(pSystemScrollBarGroup, XML_SCROLLBAR_LINE_BUTTON1_ATTR_PRIFIX, NULL);
+
+		String strBtnPrefix = strPrefix;
+		strBtnPrefix.append(XML_SCROLLBAR_LINE_BUTTON1_ATTR_PRIFIX);
+
+		EDITORGETOBJECTATTRLISTDATA  data;
+		data.pEditor = pEditor;
+		data.szPrefix = strBtnPrefix.c_str();
+		data.pGroupAttr = pUpLeftGroup;
+		UISendMessage(m_pBtnLineUpLeft, UI_EDITOR_GETOBJECTATTRLIST, (WPARAM)&data);
+	}
+	if (m_pBtnLineDownRight)
+	{
+		IUIEditorGroupAttribute* pDownRightGroup = pEditor->CreateGroupAttribute(pSystemScrollBarGroup, XML_SCROLLBAR_LINE_BUTTON2_ATTR_PRIFIX, NULL);
+
+		String strBtnPrefix = strPrefix;
+		strBtnPrefix.append(XML_SCROLLBAR_LINE_BUTTON2_ATTR_PRIFIX);
+
+		EDITORGETOBJECTATTRLISTDATA  data;
+		data.pEditor = pEditor;
+		data.szPrefix = strBtnPrefix.c_str();
+		data.pGroupAttr = pDownRightGroup;
+		UISendMessage(m_pBtnLineDownRight, UI_EDITOR_GETOBJECTATTRLIST, (WPARAM)&data);
+	}
+	if (m_pBtnThumb)
+	{
+		IUIEditorGroupAttribute* pThumbGroup = pEditor->CreateGroupAttribute(pSystemScrollBarGroup, XML_SCROLLBAR_THUMB_BUTTON_ATTR_PRIFIX, NULL);
+
+		String strBtnPrefix = strPrefix;
+		strBtnPrefix.append(XML_SCROLLBAR_THUMB_BUTTON_ATTR_PRIFIX);
+
+		EDITORGETOBJECTATTRLISTDATA  data;
+		data.pEditor = pEditor;
+		data.szPrefix = strBtnPrefix.c_str();
+		data.pGroupAttr = pThumbGroup;
+		UISendMessage(m_pBtnThumb, UI_EDITOR_GETOBJECTATTRLIST, (WPARAM)&data);
+	}
+}
+
 
 IObject*  SystemScrollBar::GetBindObject() 
 { 

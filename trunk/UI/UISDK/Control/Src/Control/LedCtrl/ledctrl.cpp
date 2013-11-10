@@ -41,6 +41,19 @@ void  LEDCtrl::SetAttribute(IMapAttribute* pMapAttr, bool bReload)
 	}
 }
 
+void  LEDCtrl::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
+{
+	DO_PARENT_PROCESS(ILEDCtrl, IControl);
+
+	IUIEditor* pEditor = pData->pEditor;
+	const TCHAR* szPrefix = pData->szPrefix;
+
+	IUIEditorGroupAttribute*  pLEDCtrlGroup = pEditor->CreateGroupAttribute(pData->pGroupAttr, LEDCtrl::GetXmlName(), NULL);
+	pEditor->CreateTextAttribute(pLEDCtrlGroup, XML_TEXT, szPrefix, NULL, L"文字");
+	pEditor->CreateTextAttribute(pLEDCtrlGroup, XML_LEDCTRL_INDEXMAP, szPrefix, NULL, L"图片索引映射关系");
+}
+
+
 void  LEDCtrl::GetDesiredSize(SIZE* pSize)
 {
     pSize->cx = m_pILEDCtrl->GetNonClientW();

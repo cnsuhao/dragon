@@ -108,6 +108,30 @@ void GroupBox::SetAttribute(IMapAttribute* pMapAttr, bool bReload)
         }
 	}
 }
+void  GroupBox::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
+{
+	DO_PARENT_PROCESS(IGroupBox, IPanel);
+
+	IUIEditor* pEditor = pData->pEditor;
+	const TCHAR* szPrefix = pData->szPrefix;
+
+	IUIEditorGroupAttribute*  pGroupBoxGroup = pEditor->CreateGroupAttribute(pData->pGroupAttr, GroupBox::GetXmlName(), NULL);
+	pEditor->CreateTextAttribute(pGroupBoxGroup, XML_GROUPBOX_TEXTINDENT, szPrefix, NULL, L"文字缩进值");
+	pEditor->CreateTextAttribute(pGroupBoxGroup, XML_GROUPBOX_TEXTMARGIN, szPrefix, NULL, L"文字与边框的间距");
+	pEditor->CreateTextAttribute(pGroupBoxGroup, XML_GROUPBOX_TEXTALIGN, szPrefix, NULL, L"文字对齐方式。left|top|right|bottom|center|vcenter");
+	pEditor->CreateTextAttribute(pGroupBoxGroup, XML_TEXT, szPrefix, NULL, L"文字");
+
+	IUIEditorGroupAttribute* pTextRenderGroup = pEditor->CreateGroupAttribute(pGroupBoxGroup, XML_TEXTRENDER, NULL);
+	pEditor->CreateTextAttribute(pTextRenderGroup, XML_TEXTRENDER_TYPE, szPrefix);
+	if (m_pIGroupBox->GetTextRender())
+	{
+		EDITORGETOBJECTATTRLISTDATA  data;
+		data.pEditor = pEditor;
+		data.szPrefix = szPrefix;
+		data.pGroupAttr = pTextRenderGroup;
+		UISendMessage(m_pIGroupBox->GetTextRender(), UI_EDITOR_GETOBJECTATTRLIST, (WPARAM)&data);
+	}
+}
 
 void GroupBox::OnEraseBkgnd(IRenderTarget* pRenderTarget)
 {

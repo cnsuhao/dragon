@@ -8,5 +8,3 @@
 
 extern "C"
 __declspec(dllexport) bool IM_Ctrl_RegisterUIObject(UI::IUIApplication* p);
-
-#include "App\IM\IM_Ctrls\inc\iqqloginaccountlistbox.h"

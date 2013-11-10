@@ -147,6 +147,7 @@ public:
         UIMSG_WM_GETOBJECTINFO(OnGetObjectInfo)
         UIMSG_WM_RESETATTRIBUTE(ResetAttribute)
         UIMSG_WM_SETATTRIBUTE(SetAttribute)
+		UIMSG_WM_EDITORGETATTRLIST(OnEditorGetAttrList)
 	UI_END_MSG_MAP_CHAIN_PARENT_Ixxx(Edit, IControl)
 
     void  SetIEdit(IEdit* p) { m_pIEdit = p; SetIMessageProxy(static_cast<IMessage*>(p)); }
@@ -201,6 +202,7 @@ protected:
    
     void  ResetAttribute();
     void  SetAttribute(IMapAttribute* pMatAttrib, bool bReload);
+	void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
     void  GetDesiredSize(SIZE* pSize); 
 
 public:

@@ -51,9 +51,9 @@
 		<image id="list_bkg_border_.png" path="Img\Common\listitem\list_bkg_border_.png"/>
 		<!-- ScrollBar -->
 		<image id="vscrollbar_bkgnd" path="Img\Common\ScrollBar\vscrollbar_bkg.png"/>
-		<imagelist id="vscrollbar_thumb" path="Img\Common\ScrollBar\vscrollbarthumb.png" direction="h" count="3"/>
+		<imagelist id="vscrollbar_thumb" path="Img\Common\ScrollBar\vscrollbarthumb.png" layout="h" count="3"/>
 		<image id="hscrollbar_bkgnd" path="Img\Common\ScrollBar\hscrollbar_horz_bkg.png"/>
-		<imagelist id="hscrollbar_thumb" path="Img\Common\ScrollBar\hscrollbarthumb.png" direction="v" count="3"/>
+		<imagelist id="hscrollbar_thumb" path="Img\Common\ScrollBar\hscrollbarthumb.png" layout="v" count="3"/>
 		<!-- 登录窗口-->
 		<imagelist id="btn_login_set.png" path="Img\login\btn_login_set.png" count="3"/>
 		<image id="login_bk_img" path="Img\login\noon_.jpg"/>

@@ -48,7 +48,7 @@ void CControlDemoWindow::OnInitWindow()
 //         }
 //     }
 
-    UI::IListView* pListView = (UI::IListView*)FindChildObject(_T("test_listview"));
+    UI::IListView* pListView = (UI::IListView*)FindChildObject(_T("imagelistview"));
     if (pListView)
     {
         UI::IHeaderListCtrl*  pHeader = pListView->GetHeaderCtrl();

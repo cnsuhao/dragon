@@ -178,7 +178,6 @@ enum
 // #define XML_RENDER_IMAGELIST_LAYOUT_H     _T("h")                       // 图片横向排列
 // #define XML_RENDER_IMAGELIST_LAYOUT_V     _T("v")                       // 图片纵向排列
 #define XML_RENDER_IMAGELIST_ALPHA_ANIMATE _T("render.imagelist.alphaanimate") // 是否启用alpha渐变动画
-//#define XML_RENDER_IMAGELIST_ALPHA_ANIMATE_HOVER_ON_NORMAL  _T("render.imagelist.alphaanimate.hoveronnormal")  // 在启用hover动画时，绘制hover是否先得绘制normal使得动画更衔接
 
 #define XML_RENDER_IMAGELISTITEM_INDEX    _T("render.imagelistitem.index")  // 图片列表项的索引值
 
@@ -206,6 +205,7 @@ enum IMAGELIST_LAYOUT_TYPE
     IMAGELIST_LAYOUT_TYPE_V
 };
 
+#define XML_TEXTRENDER                      _T("textrender")            // 文字渲染
 #define XML_TEXTRENDER_TYPE                 _T("textrender.type")       // 设置文字渲染类型
 #define XML_TEXTRENDER_TYPE_NORMAL          _T("normal")                // color + font
 #define XML_TEXTRENDER_TYPE_COLORLIST       _T("colorlist")             // color list + font
@@ -558,7 +558,7 @@ enum BUTTON_RENDER_AUTO_SIZE_TYPE
 //////////////////////////////////////////////////////////////////////////
 // ProgressCtrl / SliderCtrl
 
-#define  XML_PROGRESSCTRL_DIRECTION            _T("direction")       // 滚动条的方向，可取值为 x,y，默认为x
+#define  XML_PROGRESSCTRL_DIRECTION            _T("direction")       // 滚动条的方向
 #define  XML_PROGRESSCTRL_DIRECTION_LEFTRIGHT  _T("lefttoright")       // 左->右
 #define  XML_PROGRESSCTRL_DIRECTION_BOTTOMTOP  _T("bottomtotop")       // 下->上
 #define  XML_PROGRESSCTRL_DIRECTION_RIGHTLEFT  _T("righttoleft")       // 右->左
@@ -671,7 +671,7 @@ enum SCROLLBAR_DIRECTION_TYPE
 // ledctrl
 #define  XML_LEDCTRL_INDEXMAP                     _T("indexmap")    // 图片索引映射关系
 #define  XML_LEDEXCTRL_SAMEWIDTH                  _T("samewidth")   // bool，如果大小相同的话，就不用配置posmap属性了
-#define  XML_LEDEXCTRL_POSMAP                     _T("posmap")      // 图片项位置映射关系  0,20;20,40;40,60; ...
+#define  XML_LEDEXCTRL_POSMAP                     _T("posmap")      // 图片项位置映射关系  0,10;10,16;16,6;22,6;28,6;34,6;40,6;46,6;52,6;58,6;64,6 ...
 
 // menu
 #define  XML_MENU                 _T("Menu")      // layout.xml中菜单结点的tag name

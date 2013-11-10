@@ -1,4 +1,5 @@
 #pragma once
+#include "UISDK\Kernel\Inc\Interface\ilistctrlbase.h"
 
 class QQLoginAccountListBoxLayout : public UI::IListCtrlLayout
 {

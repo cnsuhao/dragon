@@ -21,7 +21,8 @@ public:
         UIMSG_WM_SIZE(OnSize)
 
         UIMSG_WM_RESETATTRIBUTE(ResetAttribute)
-        UIMSG_WM_SETATTRIBUTE(SetAttribute)
+		UIMSG_WM_SETATTRIBUTE(SetAttribute)
+		UIMSG_WM_EDITORGETATTRLIST(OnEditorGetAttrList)
         UIMSG_WM_OBJECTLOADED(OnObjectLoaded)
         UIMSG_WM_GETOBJECTINFO(OnGetObjectInfo)
         UIMSG_WM_QUERYINTERFACE(QueryInterface)
@@ -46,6 +47,7 @@ public:
 protected:
     void  ResetAttribute();
     void  SetAttribute(IMapAttribute* pMapAttr, bool bReload);
+	void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
     void  OnObjectLoaded();
     void  OnSize(UINT nType, int cx, int cy);
 

@@ -95,6 +95,47 @@ void  SplitterBar::SetAttribute(IMapAttribute* pMapAttr, bool bReload)
         pMapAttr->GetAttr_int(XML_SPLITTERBAR_RIGHT_PREFIX XML_SPLITTERBAR_OBJ_MAXSIZE, true, &m_nRightMax);
     }
 }
+
+void  SplitterBar::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
+{
+	DO_PARENT_PROCESS(ISplitterBar, IPanel);
+
+	IUIEditor* pEditor = pData->pEditor;
+	const TCHAR* szPrefix = pData->szPrefix;
+
+	IUIEditorGroupAttribute*  pSplitterBarGroup = pEditor->CreateGroupAttribute(pData->pGroupAttr, SplitterBar::GetXmlName(), NULL);
+	pEditor->CreateComboBoxAttribute(pSplitterBarGroup, XML_SPLITTERBAR_DIRECTION, szPrefix, NULL, L"")
+		->AddOption(XML_SPLITTERBAR_DIRECTION_H)
+		->AddOption(XML_SPLITTERBAR_DIRECTION_V);
+
+	pEditor->CreateComboBoxAttribute(pSplitterBarGroup, XML_SPLITTERBAR_ALIGN, szPrefix, NULL, L"当窗口大小改变时，以哪个对象作为基准")
+		->AddOption(XML_SPLITTERBAR_ALIGN_LEFT)
+		->AddOption(XML_SPLITTERBAR_ALIGN_TOP)
+		->AddOption(XML_SPLITTERBAR_ALIGN_RIGHT)
+		->AddOption(XML_SPLITTERBAR_ALIGN_BOTTOM);
+
+	if (IsHorz())
+	{
+		pEditor->CreateTextAttribute(pSplitterBarGroup, XML_SPLITTERBAR_TOP_PREFIX XML_SPLITTERBAR_OBJ_MINSIZE, szPrefix, NULL, NULL);
+		pEditor->CreateTextAttribute(pSplitterBarGroup, XML_SPLITTERBAR_BOTTOM_PREFIX XML_SPLITTERBAR_OBJ_MINSIZE, szPrefix, NULL, NULL);
+
+		pEditor->CreateTextAttribute(pSplitterBarGroup, XML_SPLITTERBAR_TOP_PREFIX XML_SPLITTERBAR_OBJ_MAXSIZE, szPrefix, NULL, NULL);
+		pEditor->CreateTextAttribute(pSplitterBarGroup, XML_SPLITTERBAR_BOTTOM_PREFIX XML_SPLITTERBAR_OBJ_MAXSIZE, szPrefix, NULL, NULL);
+	}
+	else
+	{
+		pEditor->CreateTextAttribute(pSplitterBarGroup, XML_SPLITTERBAR_LEFT_PREFIX XML_SPLITTERBAR_OBJ_MINSIZE, szPrefix, NULL, NULL);
+		pEditor->CreateTextAttribute(pSplitterBarGroup, XML_SPLITTERBAR_RIGHT_PREFIX XML_SPLITTERBAR_OBJ_MINSIZE, szPrefix, NULL, NULL);
+
+		pEditor->CreateTextAttribute(pSplitterBarGroup, XML_SPLITTERBAR_LEFT_PREFIX XML_SPLITTERBAR_OBJ_MAXSIZE, szPrefix, NULL, NULL);
+		pEditor->CreateTextAttribute(pSplitterBarGroup, XML_SPLITTERBAR_RIGHT_PREFIX XML_SPLITTERBAR_OBJ_MAXSIZE, szPrefix, NULL, NULL);
+	}
+
+	pEditor->CreateTextAttribute(pSplitterBarGroup, XML_SPLITTERBAR_TOP_PREFIX XML_SPLITTERBAR_OBJ_ID, szPrefix, NULL, NULL);
+	pEditor->CreateTextAttribute(pSplitterBarGroup, XML_SPLITTERBAR_BOTTOM_PREFIX XML_SPLITTERBAR_OBJ_ID, szPrefix, NULL, NULL);
+}
+
+
 void  SplitterBar::OnObjectLoaded()
 {
     IObject* pParent = m_pISplitterBar->GetParentObject();

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<skin>
+	<layout>
+		<Window id="imageviewdlg" width="500" height="500">
+			<ListView id="imagelistview" layout.left="10" layout.top="10" width="200" layout.bottom="10"/>
+		</Window>
+	</layout>
+</skin>

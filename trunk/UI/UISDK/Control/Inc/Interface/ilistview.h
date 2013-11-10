@@ -2,6 +2,7 @@
 #define ILISTVIEW_H_2999C69E_54BD_473e_9DE6_06EA7AB660F6
 #include "UISDK\Kernel\Inc\Interface\ilistctrlbase.h"
 #include "UISDK\Kernel\Inc\Interface\ilistitembase.h"
+#include "UISDK\Control\Inc\Interface\iheaderctrl.h"
 
 namespace UI
 {

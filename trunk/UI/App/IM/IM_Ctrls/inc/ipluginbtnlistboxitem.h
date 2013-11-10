@@ -1,5 +1,7 @@
 #ifndef IPLUGINBTNLISTBOXITEM_H_7617AE14_D713_467a_980C_D167E76165F5
 #define IPLUGINBTNLISTBOXITEM_H_7617AE14_D713_467a_980C_D167E76165F5
+#include "UISDK/Kernel/Inc/Interface/ilistitembase.h"
+#include "UISDK/Kernel/Inc/Interface/ilistctrlbase.h"
 
 interface IPluginBtnListBoxItem;
 

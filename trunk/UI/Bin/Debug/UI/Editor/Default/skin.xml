@@ -5,4 +5,5 @@
   <include>createwindowdlg.xml</include>
   <include>projecttreedlg.xml</include>
   <include>otherdlg.xml</include>
+  <include>imageviewdlg.xml</include>
 </skin>
