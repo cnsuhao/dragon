@@ -189,8 +189,11 @@ void Object::UpdateLayout(bool bUpdate)
     while (pParent)
     {
         int nObjType = pParent->GetObjectType();
-        if (OBJ_PANEL != nObjType && OBJ_WINDOW != nObjType)
+        if (OBJ_PANEL != nObjType && OBJ_WINDOW != nObjType)  // 例如listview中的headerctrl，它的父对象不是panel
+		{
+			UISendMessage(pParent, WM_SIZE, 0, MAKELPARAM(pParent->GetWidth(), pParent->GetHeight()));
             return;
+		}
 
         ILayout* pLayout = ((Panel*)pParent)->GetLayout();
         if (NULL == ((Panel*)pParent)->GetLayout())

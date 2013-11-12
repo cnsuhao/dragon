@@ -41,7 +41,7 @@ CLoginDlg::CLoginDlg(void)
     m_pPanelLoginInput = NULL;
     m_pPanelLogining = NULL;
     m_pGifLoadding = NULL;
-    m_pBtnLogonCacel = NULL;
+    m_pBtnLogonCancel = NULL;
     m_nTrailPointCount = 1;
     m_pLabelLoginingText = NULL;
 }
@@ -72,7 +72,7 @@ void CLoginDlg::OnInitWindow()
         }
         if (m_pPanelLogining)
         {
-            m_pBtnLogonCacel = (UI::IButton*)m_pPanelLogining->FindChildObject(_T("btn_login_cancel"));
+            m_pBtnLogonCancel = (UI::IButton*)m_pPanelLogining->FindChildObject(_T("btn_login_cancel"));
             m_pGifLoadding = (UI::IGifCtrl*)m_pPanelLogining->FindChildObject(_T("gif_logining_loading"));
             m_pLabelLoginingText = (UI::ILabel*)m_pPanelLogining->FindChildObject(_T("logining_text"));
         }
@@ -325,6 +325,9 @@ void CLoginDlg::OnBtnLogin()
 
     String  strPassword;
     m_pLoginUI->Login(szAccount, strPassword.c_str());
+	if (m_pBtnSet)
+		m_pBtnSet->SetEnable(false, false);
+    
     return;
 }
 
@@ -345,6 +348,10 @@ void CLoginDlg::ShowLogining(const TCHAR* szAccount)
 	{ 
         m_pFlashCtrl->CallFlashFunction(_T("logon"), _T("<true/>"), NULL);
 	}
+
+    // 由于btnlogoncancel的渐变效果，导致还无法直接显示成hover，还继续加些接口进行优化
+//     if (m_pBtnLogon->IsHover() && m_pBtnLogonCancel)
+//         m_pBtnLogonCancel->SetHover(true, false);
     
     m_pPanelLoginInput->SetVisible(false, false, false);
     m_pPanelLogining->SetVisible(true, false, true);
@@ -387,6 +394,9 @@ void  CLoginDlg::OnCancelLoginOk()
 
     GetUIApplication()->KillTimerById(TIMER_ID_LOGING_TEXT_TRAIL_POINT, this);
     m_nTrailPointCount = 1;
+
+	if (m_pBtnSet)
+		m_pBtnSet->SetEnable(true, false);
 
     this->UpdateObject();
     

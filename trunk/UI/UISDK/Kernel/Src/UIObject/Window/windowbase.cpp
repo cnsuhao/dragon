@@ -829,7 +829,7 @@ LRESULT WindowBase::_OnEraseBkgnd( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 		bHandled = TRUE;
 		if (m_bFirsetEraseBkgnd)
 		{
-			//m_bFirsetEraseBkgnd = false;
+			m_bFirsetEraseBkgnd = false;
 
 			// TODO: 如果什么也不做，会导致窗口第一次显示时，窗口先显示一次黑色，例如combobox.listbox/menu
 			// 但这样可能还是会导致别的闪烁问题，因为最终显示的界面不一定就是白色的
@@ -914,29 +914,19 @@ LRESULT WindowBase::_OnCreate( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 			pTopWndMgr->GetImpl()->AddTopWindowObject(this);
 	}
 
-    // 设置默认对象
-    m_MgrMouse.SetDefaultObject(m_MgrMouse.GetOriginDefaultObject(), false);
+	// 布局
+	if (m_nStyle&WINDOW_STYLE_ATTACH)  // attach的窗口直接使用外部的大小
+	{
+		::GetClientRect(m_hWnd, &m_rcParent);
 
-    // 布局
-    if (m_nStyle&WINDOW_STYLE_ATTACH)  // attach的窗口直接使用外部的大小
-    {
-        ::GetClientRect(m_hWnd, &m_rcParent);
-
-        // 因为Attach到的窗口初始化时已经收不到WM_SIZE了，因此自己再发一次，
-        // 通知创建RenderTarget，否则后面的一些刷新将失败
-        BOOL bHandled = FALSE;
-        this->_OnSize(WM_SIZE, 0, MAKELPARAM(m_rcParent.Width(), m_rcParent.Height()), bHandled);
-
-        this->UpdateLayout(true); 
-
-        CRect rcWindow;    // 避免此时调用GetDesiredSize又去测量窗口大小了
-        ::GetWindowRect(m_hWnd, &rcWindow);
+		CRect rcWindow;               // 避免此时调用GetDesiredSize又去测量窗口大小了，导致窗口被修改为自适应大小 
+		::GetWindowRect(m_hWnd, &rcWindow);
 		SetConfigWidth(rcWindow.Width());
 		SetConfigHeight(rcWindow.Height());
-    }
+	}
     else
     {
-        DesktopLayout dl;
+        DesktopLayout dl;  // 不能放在 OnInitialize 后面。因为有可能OnInitialize中已经调用过 SetWindowPos
         dl.Arrange(this);
     }
 
@@ -946,8 +936,20 @@ LRESULT WindowBase::_OnCreate( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
     // 防止在实现显示动画时，先显示了一些初始化中刷新的内容。注：不能只限制一个layer
     m_pRenderChain->SetCanCommit(false);  
     UISendMessage(this, UI_WM_INITIALIZE);
-    m_pRenderChain->SetCanCommit(true);
-                                
+	m_pRenderChain->SetCanCommit(true);
+
+	// 设置默认对象
+	m_MgrMouse.SetDefaultObject(m_MgrMouse.GetOriginDefaultObject(), false);
+
+	// 布局
+	if (m_nStyle&WINDOW_STYLE_ATTACH)  // attach的窗口直接使用外部的大小
+	{
+		// 因为Attach到的窗口初始化时已经收不到WM_SIZE了，因此自己再发一次，
+		// 通知创建RenderTarget，否则后面的一些刷新将失败
+		m_pRenderChain->OnWindowResize(0, m_rcParent.Width(), m_rcParent.Height());  // 在窗口刷新之前更新窗口缓冲区大小
+		m_pRenderChain->OnWindowPaint(NULL);
+	}
+	
 	return 0;
 }
 LRESULT WindowBase::_OnNcDestroy( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)

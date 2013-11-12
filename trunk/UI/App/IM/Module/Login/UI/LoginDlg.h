@@ -27,7 +27,7 @@ public:
 		UIMSG_BN_CLICKED2(m_pBtnLoginState, OnBtnClickLoginStatus)
 		UIMSG_BN_CLICKED2(m_pBtnNetSetCancel, OnBtnNetSetCancel)
 		UIMSG_BN_CLICKED2(m_pBtnLogon, OnBtnLogin)
-        UIMSG_BN_CLICKED2(m_pBtnLogonCacel, OnBtnLogonCancel)
+        UIMSG_BN_CLICKED2(m_pBtnLogonCancel, OnBtnLogonCancel)
 		UIMESSAGE_HANDLER_EX(UI_WM_TRAYICON, OnTrayIconNotify)
 		UICHAIN_MSG_MAP_POINT_MEMBER(m_pTrayIcon)
         UIMSG_WM_INITIALIZE(OnInitWindow)
@@ -75,7 +75,7 @@ private:
 	UI::IButton*  m_pBtnLoginState;
 	UI::IButton*  m_pBtnNetSetCancel;
 	UI::IButton*  m_pBtnLogon;
-    UI::IButton*  m_pBtnLogonCacel;
+    UI::IButton*  m_pBtnLogonCancel;
 	UI::IPanel*   m_pPanelLogin;
     UI::IPanel*   m_pPanelLoginInput;
     UI::IPanel*   m_pPanelLogining;

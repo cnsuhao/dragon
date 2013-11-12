@@ -42,25 +42,7 @@ void GdiplusImageListRenderBitmap::CreateInstance(IRenderBitmap** ppOutRef)
     p->AddRef();
 	*ppOutRef = p;
 }
-void GdiplusImageListRenderBitmap::SetAttribute(IMapAttribute* pMapAttrib)
-{
-	__super::SetAttribute(pMapAttrib);
 
-    pMapAttrib->GetAttr_int(XML_IMAGE_IMAGELIST_COUNT, false, &m_nCount);
-
-    const TCHAR* szText = pMapAttrib->GetAttr(XML_IMAGE_IMAGELIST_LAYOUT, false);
-	if (szText)
-	{
-		if (0 == _tcscmp(szText, XML_IMAGE_IMAGELIST_LAYOUT_H))
-		{
-			m_eLayout = IMAGELIST_LAYOUT_TYPE_H;
-		}
-		else if (0 == _tcscmp(szText, XML_IMAGE_IMAGELIST_LAYOUT_V))
-		{
-			m_eLayout = IMAGELIST_LAYOUT_TYPE_V;
-		}
-	}
-}
 int GdiplusImageListRenderBitmap::GetItemWidth()
 {
 	if (0 == m_nCount)
@@ -100,6 +82,14 @@ int GdiplusImageListRenderBitmap::GetItemCount()
 IMAGELIST_LAYOUT_TYPE GdiplusImageListRenderBitmap::GetLayoutType()
 {
 	return m_eLayout;
+}
+void  GdiplusImageListRenderBitmap::SetItemCount(int n)
+{
+    m_nCount = n;
+}
+void  GdiplusImageListRenderBitmap::SetLayoutType(IMAGELIST_LAYOUT_TYPE e)
+{
+    m_eLayout = e;
 }
 bool GdiplusImageListRenderBitmap::GetIndexPos(int nIndex, POINT* pPoint)
 {
@@ -145,14 +135,6 @@ void GdiplusIconRenderBitmap::CreateInstance(IRenderBitmap** ppOutRef)
 	*ppOutRef = p;
 }
 
-void GdiplusIconRenderBitmap::SetAttribute(IMapAttribute* pMapAttrib)
-{
-	__super::SetAttribute(pMapAttrib);
-
-    pMapAttrib->GetAttr_int(XML_IMAGE_ICON_WIDTH,  false, &m_nIconWidth);
-    pMapAttrib->GetAttr_int(XML_IMAGE_ICON_HEIGHT, false, &m_nIconHeight);
-}
-
 // 强制加载为支持32位alpha的
 bool GdiplusIconRenderBitmap::LoadFromFile(const TCHAR* szPath, bool bCreateAlphaChannel)
 {
@@ -184,4 +166,18 @@ bool GdiplusIconRenderBitmap::LoadFromFile(const TCHAR* szPath, bool bCreateAlph
 	m_hBitmapToFixIcon = image.Detach();    // Bitmap不负责保存bits数据，因此image.m_hBitmap不能提前释放，需要增加一个成员变量保存该句柄
 #endif
 	return true;
+}
+
+SIZE  GdiplusIconRenderBitmap::GetDrawSize()
+{
+    SIZE s = { m_nIconWidth, m_nIconHeight };
+    return s;
+}
+void  GdiplusIconRenderBitmap::SetDrawSize(SIZE* ps)
+{
+    if (!ps)
+        return;
+
+    ps->cx = m_nIconWidth;
+    ps->cy = m_nIconHeight;
 }

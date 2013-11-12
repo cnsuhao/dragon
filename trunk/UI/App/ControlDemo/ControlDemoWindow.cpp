@@ -48,6 +48,13 @@ void CControlDemoWindow::OnInitWindow()
 //         }
 //     }
 
+	UI::IHeaderListCtrl* pHeader = (UI::IHeaderListCtrl*)FindChildObject(_T("header"));
+	if (pHeader)
+	{
+		pHeader->AddColumn(_T("AAAAAA"), 100);
+		pHeader->AddColumn(_T("bbbbbb"), 100);
+	}
+
     UI::IListView* pListView = (UI::IListView*)FindChildObject(_T("imagelistview"));
     if (pListView)
     {

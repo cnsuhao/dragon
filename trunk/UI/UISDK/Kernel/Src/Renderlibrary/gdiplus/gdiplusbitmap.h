@@ -23,7 +23,6 @@ public:
 		UI_LOG_DEBUG(_T("GdiplusRenderBitmap Delete. ptr=0x%08X"), this);
 	}
 
-	virtual void  SetAttribute(IMapAttribute* pMapAttrib){};
 	virtual GRAPHICS_RENDER_LIBRARY_TYPE GetGraphicsRenderLibraryType() { return GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS; }
 	Gdiplus::Bitmap*  GetBitmap() { return m_pBitmap; }
 
@@ -87,6 +86,11 @@ public:
 			return true;
 	}
 
+    virtual void  Destroy()
+    {
+        SAFE_DELETE(m_pBitmap);
+        SAFE_DELETE(m_pBitmapData);
+    }
 	virtual int   GetWidth()
 	{
 		if (NULL == m_pBitmap)
@@ -352,16 +356,18 @@ public:
 	static  void CreateInstance( IRenderBitmap** pOutRef );
     virtual IMAGE_ITEM_TYPE  GetImageType() { return IMAGE_ITEM_TYPE_IMAGE; }
 };
-class GdiplusIconRenderBitmap : public GdiplusRenderBitmap
+class GdiplusIconRenderBitmap : public GdiplusRenderBitmapImpl<IRenderResourceImpl<IImageIconRenderBitmap > > // : public GdiplusRenderBitmap
 {
 protected:
 	GdiplusIconRenderBitmap();
 public:
 	~GdiplusIconRenderBitmap();
 	static  void  CreateInstance( IRenderBitmap** pOutRef );
-	virtual void  SetAttribute(IMapAttribute* pMapAttrib);
 	virtual bool  LoadFromFile(const TCHAR* szPath, bool bCreateAlphaChannel);
     virtual IMAGE_ITEM_TYPE  GetImageType() { return IMAGE_ITEM_TYPE_ICON; }
+
+    virtual SIZE  GetDrawSize();
+    virtual void  SetDrawSize(SIZE* ps);
 
 protected:
 	int    m_nIconWidth;
@@ -378,7 +384,6 @@ protected:
 
 public:
 	static  void CreateInstance(IRenderBitmap** pOutRef );
-	virtual void SetAttribute(IMapAttribute* pMapAttrib);
 
 	virtual int  GetItemWidth();
 	virtual int  GetItemHeight();
@@ -386,6 +391,8 @@ public:
 	virtual bool GetIndexPos(int nIndex, POINT* pPoint);
 	virtual int  GetItemCount();
     virtual IMAGE_ITEM_TYPE  GetImageType() { return IMAGE_ITEM_TYPE_IMAGE_LIST; }
+    virtual void  SetItemCount(int);
+    virtual void  SetLayoutType(IMAGELIST_LAYOUT_TYPE);
 
 private:
 	IMAGELIST_LAYOUT_TYPE   m_eLayout;

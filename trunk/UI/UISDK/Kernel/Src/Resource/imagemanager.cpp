@@ -130,95 +130,97 @@ void ImageManager::Clear()
 	m_resImage.Clear();
 }
 
-IImageResItem* ImageManager::InsertImageItem(const TCHAR* szId, const TCHAR* szPath)
+IImageResItem* ImageManager::InsertImageItem(IMAGE_ITEM_TYPE eType, const TCHAR* szId, const TCHAR* szPath)
 {
 	if (NULL == szId || NULL == szPath)
 		return NULL;
 
-	ImageResItem* p = m_resImage.InsertImage(szId, szPath);
+	ImageResItem* p = m_resImage.InsertImage(eType, szId, szPath);
     if (!p)
 	{
 		UI_LOG_ERROR(_T("%s m_resImage.InsertImage Id=%s, Path=%s Failed. "), FUNC_NAME, szId, szPath);
 		return NULL;
 	}
 
-    IUIElement* pElem = NULL;
-    m_pUIElement->AddChild(_T("image"), &pElem);
-    if (pElem)
-    {
-        pElem->AddAttrib(XML_ID, szId);
-        pElem->AddAttrib(XML_PATH, szPath);
-        
-        IUIEditor* pEditor = m_pSkinRes->GetUIApplication()->GetUIEditorPtr();
-        if (pEditor)
-        {
-            pEditor->OnImageItemLoad(p->GetIImageResItem(), pElem);
-        }
-
-        SAFE_RELEASE(pElem);
-    }
 	return p->GetIImageResItem();
 }
 
-HRESULT ImageManager::ModifyImageItem(const TCHAR* szId, const TCHAR* szPath)
+bool ImageManager::ModifyImageItem(const TCHAR* szId, const TCHAR* szPath)
 {
 	if (NULL == szId || NULL == szPath)
-		return E_INVALIDARG;
+		return false;
 
 	if (false == m_resImage.ModifyImage(szId, szPath))
 	{
 		UI_LOG_ERROR(_T("%s m_resImage.ModifyImage strID=%s, strPath=%s Failed."), FUNC_NAME, szId, szPath);
-		return E_FAIL;
+		return false;
 	}
 
-	return S_OK;
+	return true;
 }
-HRESULT ImageManager::ModifyImageItemInRunTime(const TCHAR* szId, const TCHAR* szPath)
+bool ImageManager::ModifyImageItemInRunTime(const TCHAR* szId, const TCHAR* szPath)
 {
 	if (NULL == szId || NULL == szPath)
-		return E_INVALIDARG;
+		return false;
 
 	if (false == m_resImage.ModifyImage(szId, szPath))
 	{
 		UI_LOG_ERROR(_T("%s m_resImage.ModifyImage strID=%s,strPath=%s Failed. "), FUNC_NAME, szId, szPath);
-		return E_FAIL;
+		return false;
 	}
 
 	// TODO: 保存到用户配置文件中
 	UI_LOG_DEBUG(_T("%s TODO: 保存到用户配置文件中"), FUNC_NAME);
 	
-	return S_OK;
+	return true;
 }
 
-HRESULT ImageManager::ModifyImageItemAlpha(const TCHAR* szId, int nAlphaPercent)
+bool ImageManager::ModifyImageItemAlpha(const TCHAR* szId, int nAlphaPercent)
 {
 	if (NULL == szId || nAlphaPercent < 0 || nAlphaPercent > 100)
-		return E_INVALIDARG;
+		return false;
 
 	if (false == m_resImage.ModifyImageItemAlpha(szId, nAlphaPercent))
 	{
 		UI_LOG_ERROR(_T("%s m_resImage.ModifyImageItemAlpha strID=%s,nAlphaPercent=%d Failed. "), FUNC_NAME, szId, nAlphaPercent);
-		return E_FAIL;
+		return false;
 	}
 
 	// TODO: 保存到用户配置文件中
 	UI_LOG_DEBUG(_T("%s TODO: 保存到用户配置文件中"), FUNC_NAME);
 
-	return S_OK;
+	return true;
 }
 
-HRESULT ImageManager::RemoveImageItem(const TCHAR* szId)
+bool ImageManager::RemoveImageItem(const TCHAR* szId)
 {
 	if (NULL == szId)
-		return E_INVALIDARG;
+		return false;
 
-	if (false == m_resImage.RemoveImage(szId))
-	{
-		UI_LOG_ERROR(_T("%s m_resImage.RemoveImage strID=%s Failed. "), FUNC_NAME, szId);
-		return E_FAIL;
-	}
+    IUIApplication* pUIApp = m_pSkinRes->GetUIApplication();
+    if (!pUIApp->IsDesignMode())
+    {
+	    if (false == m_resImage.RemoveImage(szId))
+	    {
+		    UI_LOG_ERROR(_T("%s m_resImage.RemoveImage strID=%s Failed. "), FUNC_NAME, szId);
+		    return false;
+	    }
+    }
+    else
+    {
+        IImageResItem* pItem = m_resImage.GetImageResItem(szId);
+        if (!pItem)
+            return false;
 
-	return S_OK;
+        IUIEditor* pEditor = pUIApp->GetUIEditorPtr();
+        if (pEditor)
+        {
+            pEditor->OnImageItemDeleteInd(pItem);
+        }
+        return m_resImage.RemoveImage(pItem);
+    }
+
+	return true;
 }
 
 int ImageManager::GetImageCount( )
@@ -295,7 +297,7 @@ void  ImageManager::OnNewChild(IUIElement* pElem)
     // 获取路径
     CComBSTR  bstrPath;
     pElem->GetData(&bstrPath);
-
+    
     if (0 == bstrPath.Length())
         bstrPath = pMapAttrib->GetAttr(XML_PATH, true);  // 如果没有配置在内容中，就检查一下是否是配置成属性了
     
@@ -304,6 +306,10 @@ void  ImageManager::OnNewChild(IUIElement* pElem)
         SAFE_RELEASE(pMapAttrib);
         return;
     }
+
+    String strPath;
+    if (bstrPath)
+        strPath = CW2T(bstrPath);
 
     // REMOVED 2013.5.29 交给datasource去判断
 //     String  strFullPath;
@@ -321,7 +327,7 @@ void  ImageManager::OnNewChild(IUIElement* pElem)
 
     if (bstrTagName == XML_IMAGE_ITEM_CURSOR)
     {
-        CursorResItem* p = m_resCursor.LoadItem(pMapAttrib, (BSTR)bstrPath);
+        CursorResItem* p = m_resCursor.LoadItem(pMapAttrib, strPath.c_str());
         if (p)
         {
             IUIEditor* pEditor = m_pSkinRes->GetUIApplication()->GetUIEditorPtr();
@@ -332,12 +338,12 @@ void  ImageManager::OnNewChild(IUIElement* pElem)
         }
         else
         {
-            UI_LOG_WARN(_T("%s insert cursor failed. path=%s"), FUNC_NAME, (BSTR)bstrPath);
+            UI_LOG_WARN(_T("%s insert cursor failed. path=%s"), FUNC_NAME, strPath.c_str());
         }
     }
     else if (bstrTagName == XML_IMAGE_ITEM_GIF)
     {
-        GifResItem* p = m_resGif.LoadItem(pMapAttrib, (BSTR)bstrPath);
+        GifResItem* p = m_resGif.LoadItem(pMapAttrib, strPath);
         if (p)
         {
             IUIEditor* pEditor = m_pSkinRes->GetUIApplication()->GetUIEditorPtr();
@@ -348,12 +354,12 @@ void  ImageManager::OnNewChild(IUIElement* pElem)
         }
         else
         {
-            UI_LOG_WARN(_T("%s insert gif failed. path=%s"), FUNC_NAME, (BSTR)bstrPath);
+            UI_LOG_WARN(_T("%s insert gif failed. path=%s"), FUNC_NAME, strPath.c_str());
         }
     }
     else
     {
-        ImageResItem* p = m_resImage.LoadItem((BSTR)bstrTagName, pMapAttrib, (BSTR)bstrPath);
+        ImageResItem* p = m_resImage.LoadItem(CW2T(bstrTagName), pMapAttrib, strPath.c_str());
         if (p)
         {
             IUIEditor* pEditor = m_pSkinRes->GetUIApplication()->GetUIEditorPtr();
@@ -364,9 +370,14 @@ void  ImageManager::OnNewChild(IUIElement* pElem)
         }
         else
         {
-            UI_LOG_WARN(_T("%s insert image failed. path=%s"), FUNC_NAME, (BSTR)bstrPath);
+            UI_LOG_WARN(_T("%s insert image failed. path=%s"), FUNC_NAME, strPath.c_str());
         }
     }
 
     SAFE_RELEASE(pMapAttrib);
+}
+
+IUIElement*  ImageManager::GetImageXmlElem()
+{
+    return m_pUIElement;
 }

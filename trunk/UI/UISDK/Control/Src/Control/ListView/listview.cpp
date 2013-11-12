@@ -21,7 +21,7 @@ HRESULT  ListView::FinalConstruct(IUIApplication* p)
     if (FAILED(GetCurMsg()->lRet))
         return GetCurMsg()->lRet;
 
-	m_pIListView->ModifyStyle(LISTCTRLBASE_STYLE_MULTIPLE_SEL, 0, false);
+//	m_pIListView->ModifyStyle(LISTCTRLBASE_STYLE_MULTIPLE_SEL, 0, true);
 
     m_pIListView->SetLayout(ListViewItemReportLayout::CreateInstance());
 

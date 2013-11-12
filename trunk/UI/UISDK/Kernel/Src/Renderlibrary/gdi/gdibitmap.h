@@ -29,7 +29,6 @@ public:
 //		UI_LOG_DEBUG(_T("GDIRenderBitmap Delete. ptr=0x%08X"), this);
 	}
 
-	virtual void SetAttribute(IMapAttribute* pMapAttrib){};
 	virtual GRAPHICS_RENDER_LIBRARY_TYPE GetGraphicsRenderLibraryType() { return GRAPHICS_RENDER_LIBRARY_TYPE_GDI; }
 
 	Image*  GetBitmap() { return &m_image; }
@@ -166,6 +165,10 @@ public:
         m_nFlag &= ~(GDI_RENDERBITMAP_FLAG_ATTACH_DELETE|GDI_RENDERBITMAP_FLAG_ATTACH);
         return m_image.Detach(); 
     }
+    virtual void  Destroy()
+    {
+        m_image.Destroy();
+    }
 protected:
 	Image   m_image;
     int  m_nFlag;
@@ -177,17 +180,19 @@ public:
 	static  void CreateInstance( IRenderBitmap** ppOutRef );
     virtual IMAGE_ITEM_TYPE  GetImageType() { return IMAGE_ITEM_TYPE_IMAGE; }
 };
-class GDIIconRenderBitmap : public GDIRenderBitmap
+class GDIIconRenderBitmap : public GDIRenderBitmapImpl<IRenderResourceImpl<IImageIconRenderBitmap > >// : public GDIRenderBitmap
 {
 public:
 	GDIIconRenderBitmap();
 
 	static  void  CreateInstance(IRenderBitmap** pOutRef);
-	virtual void  SetAttribute(IMapAttribute* pMapAttrib);
 	virtual bool  LoadFromFile(const TCHAR* szPath, bool bCreateAlphaChannel);
     virtual bool  LoadFromData(byte* pData, int nSize, bool bCreateAlphaChannel);
     
     virtual IMAGE_ITEM_TYPE  GetImageType() { return IMAGE_ITEM_TYPE_ICON; }
+
+    virtual SIZE  GetDrawSize();
+    virtual void  SetDrawSize(SIZE* ps);
 private:
 	int    m_nIconWidth;
 	int    m_nIconHeight;
@@ -199,14 +204,15 @@ protected:
 	GDIImageListRenderBitmap();
 
 public:
-	static  void CreateInstance(IRenderBitmap** pOutRef );
-	virtual void SetAttribute(IMapAttribute* pMapAttrib);
+	static  void CreateInstance(IRenderBitmap** pOutRef);
 
 	virtual int  GetItemWidth();
 	virtual int  GetItemHeight();
 	virtual IMAGELIST_LAYOUT_TYPE GetLayoutType();
 	virtual bool GetIndexPos(int nIndex, POINT* pPoint);
 	virtual int  GetItemCount() { return m_nCount; }
+    virtual void  SetItemCount(int);
+    virtual void  SetLayoutType(IMAGELIST_LAYOUT_TYPE);
 
     virtual IMAGE_ITEM_TYPE  GetImageType() { return IMAGE_ITEM_TYPE_IMAGE_LIST; }
 private:

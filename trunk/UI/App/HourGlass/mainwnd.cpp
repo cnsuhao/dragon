@@ -83,6 +83,7 @@ void  CMainWnd::OnRing()
 		return;
 
     Reset();
+    SetWindowPos(GetHWND(), HWND_TOPMOST, 0,0,0,0, SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE);  // 总是出现不置顶的情况，原因未知
 }
 
 void  CMainWnd::OnTimer(UINT_PTR nIDEvent, LPARAM lParam)

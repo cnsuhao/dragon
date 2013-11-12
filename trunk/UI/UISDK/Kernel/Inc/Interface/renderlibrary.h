@@ -101,6 +101,7 @@ interface IRenderBitmap : public IRenderResource
 	virtual bool  LoadFromFile(const TCHAR* szPath, bool bCreateAlphaChannel) = 0;
     virtual bool  LoadFromData(byte* pData, int nSize, bool bCreateAlphaChannel) = 0;
 	virtual bool  Create(int nWidth, int nHeight) = 0;
+    virtual void  Destroy() = 0;
 	virtual int   GetWidth() = 0;
 	virtual int   GetHeight() = 0;
 	virtual int   GetBPP() = 0;
@@ -114,8 +115,6 @@ interface IRenderBitmap : public IRenderResource
 	virtual bool  SaveBits(ImageData* pImageData) = 0;
 	virtual bool  ChangeHLS(const ImageData* pOriginImageData, short h, short l, short s, int nFlag) = 0;
 	virtual IMAGE_ITEM_TYPE  GetImageType() = 0;
-
-	virtual void  SetAttribute(IMapAttribute* pMapAttrib) = 0;
 };
 
 interface IImageListRenderBitmap : public IRenderBitmap
@@ -125,7 +124,16 @@ public:
 	virtual int  GetItemHeight() = 0;
 	virtual int  GetItemCount() = 0;
 	virtual IMAGELIST_LAYOUT_TYPE GetLayoutType() = 0;
+    virtual void  SetItemCount(int) = 0;
+    virtual void  SetLayoutType(IMAGELIST_LAYOUT_TYPE) = 0;
 	virtual bool GetIndexPos(int nIndex, POINT* pPoint) = 0;
+};
+
+interface IImageIconRenderBitmap : public IRenderBitmap
+{
+public:
+    virtual SIZE  GetDrawSize() = 0;
+    virtual void  SetDrawSize(SIZE* ps) = 0;
 };
 
 class RenderBitmapFactory

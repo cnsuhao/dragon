@@ -118,6 +118,9 @@ namespace UI
         virtual void  OnImageItemLoad(__in IImageResItem*  pItem, __in IUIElement* pXmlElem) = 0;
         virtual void  OnGifItemLoad(__in IGifResItem*  pItem, __in IUIElement* pXmlElem) = 0;
         virtual void  OnCursorItemLoad(__in ICursorResItem*  pItem, __in IUIElement* pXmlElem) = 0;
+        virtual void  OnImageItemDeleteInd(__in IImageResItem*  pItem) = 0;
+        virtual void  OnGifItemDeleteInd(__in IGifResItem*  pItem) = 0;
+        virtual void  OnCursorItemDeleteInd(__in ICursorResItem*  pItem) = 0;
 
 		virtual IUIEditorAttrBase*  CreateAttribute(UIEDITOR_ATTR_TYPE, IUIEditorGroupAttribute* pParent) = 0;
 		virtual IUIEditorGroupAttribute*  CreateGroupAttribute(

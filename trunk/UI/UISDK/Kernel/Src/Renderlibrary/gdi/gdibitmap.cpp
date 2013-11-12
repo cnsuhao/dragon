@@ -27,25 +27,7 @@ void GDIImageListRenderBitmap::CreateInstance(IRenderBitmap** ppOutRef)
     p->AddRef();
 	*ppOutRef = p;
 }
-void GDIImageListRenderBitmap::SetAttribute(IMapAttribute* pMapAttrib)
-{
-	__super::SetAttribute(pMapAttrib);
 
-    pMapAttrib->GetAttr_int(XML_IMAGE_IMAGELIST_COUNT, false, &m_nCount);
-
-    const TCHAR* szText = pMapAttrib->GetAttr(XML_IMAGE_IMAGELIST_LAYOUT, false);
-	if (szText)
-	{
-		if (0 == _tcscmp(szText, XML_IMAGE_IMAGELIST_LAYOUT_H))
-		{
-			m_eLayout = IMAGELIST_LAYOUT_TYPE_H;
-		}
-		else if (0 == _tcscmp(szText, XML_IMAGE_IMAGELIST_LAYOUT_V))
-		{
-			m_eLayout = IMAGELIST_LAYOUT_TYPE_V;
-		}
-	}
-}
 int GDIImageListRenderBitmap::GetItemWidth()
 {
 	if (0 == m_nCount)
@@ -77,6 +59,14 @@ int GDIImageListRenderBitmap::GetItemHeight()
 	}
 
 	return 0;
+}
+void  GDIImageListRenderBitmap::SetItemCount(int n)
+{
+    m_nCount = n;
+}
+void  GDIImageListRenderBitmap::SetLayoutType(IMAGELIST_LAYOUT_TYPE e)
+{
+    m_eLayout = e;
 }
 IMAGELIST_LAYOUT_TYPE GDIImageListRenderBitmap::GetLayoutType()
 {
@@ -119,14 +109,6 @@ void GDIIconRenderBitmap::CreateInstance(IRenderBitmap** ppOutRef)
 	GDIIconRenderBitmap* p = new GDIIconRenderBitmap();
     p->AddRef();
 	*ppOutRef = p;
-}
-
-void GDIIconRenderBitmap::SetAttribute(IMapAttribute* pMapAttrib)
-{
-	__super::SetAttribute(pMapAttrib);
-
-    pMapAttrib->GetAttr_int(XML_IMAGE_ICON_WIDTH,  false, &m_nIconWidth);
-    pMapAttrib->GetAttr_int(XML_IMAGE_ICON_HEIGHT, false, &m_nIconHeight);
 }
 
 //
@@ -292,4 +274,19 @@ bool  GDIIconRenderBitmap::LoadFromData(byte* pData, int nSize, bool bCreateAlph
         return false;
     else
         return true;
+}
+
+
+SIZE  GDIIconRenderBitmap::GetDrawSize()
+{
+    SIZE s = { m_nIconWidth, m_nIconHeight };
+    return s;
+}
+void  GDIIconRenderBitmap::SetDrawSize(SIZE* ps)
+{
+    if (!ps)
+        return;
+
+    ps->cx = m_nIconWidth;
+    ps->cy = m_nIconHeight;
 }

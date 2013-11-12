@@ -7,17 +7,17 @@
 
 namespace UI
 {
-ColumnsInfoMgr::ColumnsInfoMgr(HeaderListCtrl* p)
+ColumnsInfoImpl::ColumnsInfoImpl(HeaderListCtrl* p)
 {
     m_pCtrl = p;
     m_nCount = 0;
     m_ppArray = NULL;
 }
-ColumnsInfoMgr::~ColumnsInfoMgr()
+ColumnsInfoImpl::~ColumnsInfoImpl()
 {
     Destroy();
 }
-void  ColumnsInfoMgr::Destroy()
+void  ColumnsInfoImpl::Destroy()
 {
     if (m_ppArray)
     {
@@ -30,7 +30,7 @@ void  ColumnsInfoMgr::Destroy()
     m_nCount = 0;
 }
 
-void  ColumnsInfoMgr::Rebuild()
+void  ColumnsInfoImpl::Rebuild()
 {
     Destroy();
     IListItemBase*  pItem = m_pCtrl->GetIHeaderListCtrl()->GetFirstItem();
@@ -52,7 +52,7 @@ void  ColumnsInfoMgr::Rebuild()
         pItem = pItem->GetNextItem();
     }
 }
-void  ColumnsInfoMgr::UpdateWidth()
+void  ColumnsInfoImpl::UpdateWidth()
 {
     for (UINT i = 0; i < m_nCount; i++)
     {
@@ -71,7 +71,7 @@ void  ColumnsInfoMgr::UpdateWidth()
     }
 }
 
-ColumnInfo*  ColumnsInfoMgr::GetItemInfo(UINT n)
+ColumnInfo*  ColumnsInfoImpl::GetItemInfo(UINT n)
 {   
     if (n >= m_nCount)
         return NULL;
@@ -82,7 +82,7 @@ ColumnInfo*  ColumnsInfoMgr::GetItemInfo(UINT n)
     //////////////////////////////////////////////////////////////////////////
 
 
-HeaderListCtrl::HeaderListCtrl() : m_MgrColumnInfo(this)
+HeaderListCtrl::HeaderListCtrl() : m_pColumnsInfo(this)
 {
     m_pIHeaderListCtrl = NULL;
     m_pSortArrowRender = NULL;
@@ -194,7 +194,7 @@ void  HeaderListCtrl::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
         }
         if (NULL == m_pCursorDragDividerHidden)
         {
-            pCursorRes->GetCursor(XML_CURSOR_IDC_SPLITBAR_H, &m_pCursorDragDividerHidden);
+            pCursorRes->GetCursor(XML_CURSOR_IDC_SPLITBAR_V, &m_pCursorDragDividerHidden);
         }
     }
 }
@@ -587,7 +587,7 @@ int HeaderListCtrl::GetColumnItemIndex(IListItemBase* pTestItem)
 // 通知外部header ctrl的宽度发生改变
 void  HeaderListCtrl::FireTotalWidthChanged()
 {
-    m_MgrColumnInfo.UpdateWidth();
+    m_pColumnsInfo.UpdateWidth();
 
     UIMSG  msg;
     msg.pMsgFrom = m_pIHeaderListCtrl;
@@ -686,7 +686,7 @@ LRESULT  HeaderListCtrl::OnAddItem(WPARAM w, LPARAM l)
     if (l & LISTITEM_OPFLAG_NOUPDATEITEMRECT)
         m_pIHeaderListCtrl->UpdateItemRect((IListItemBase*)w, false);
 
-    m_MgrColumnInfo.Rebuild();
+    m_pColumnsInfo.Rebuild();
     FireTotalWidthChanged();
 
     return 0;
@@ -695,7 +695,7 @@ LRESULT  HeaderListCtrl::OnPostRemoveItem(WPARAM w, LPARAM l)
 {
     SetMsgHandled(FALSE);
 
-    m_MgrColumnInfo.Rebuild();
+    m_pColumnsInfo.Rebuild();
     FireTotalWidthChanged();
     return 0;
 }
@@ -703,7 +703,7 @@ LRESULT  HeaderListCtrl::OnPostRemoveAllItem(WPARAM w, LPARAM l)
 {
     SetMsgHandled(FALSE);
 
-    m_MgrColumnInfo.Destroy();
+    m_pColumnsInfo.Destroy();
     FireTotalWidthChanged();
 
     return 0;

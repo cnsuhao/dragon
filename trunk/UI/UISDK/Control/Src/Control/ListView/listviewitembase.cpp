@@ -169,35 +169,45 @@ void  ListViewItemBase::OnDrawSubItem(DrawSubItemData* pSubItem)
   
 }
 
+bool  ListViewItemBase::SetSubItemText(int nSub, const TCHAR* szText)
+{
+	UINT nIndex = (UINT)nSub;
+	if (0 == nIndex)
+	{
+		m_pIListViewItemBase->SetText(szText);
+		return true;
+	}
+
+	if (nIndex > m_nSubItemCount)
+		return false;
+
+	if (szText)
+		m_ppSubItem[nIndex-1]->m_strText = szText;
+	else
+		m_ppSubItem[nIndex-1]->m_strText.clear();
+
+	return true;
+}
 LRESULT  ListViewItemBase::OnSetSubItemText(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    UINT nIndex = (UINT)wParam;
-    if (0 == nIndex)
-    {
-        m_pIListViewItemBase->SetText((const TCHAR*)lParam);
-        return 0;
-    }
+	SetSubItemText((int)wParam, (const TCHAR*)lParam);
+	return 0;
+}
 
-    if (nIndex > m_nSubItemCount)
-        return 0;
+const TCHAR*  ListViewItemBase::GetSubItemText(int nSub)
+{
+	UINT nIndex = (UINT)nSub;
+	if (0 == nIndex)
+		return m_pIListViewItemBase->GetText();
 
-    if (lParam)
-        m_ppSubItem[nIndex-1]->m_strText = (const TCHAR*)lParam;
-    else
-        m_ppSubItem[nIndex-1]->m_strText.clear();
+	if (nIndex > m_nSubItemCount)
+		return NULL;
 
-    return 0;
+	return m_ppSubItem[nIndex-1]->m_strText.c_str();
 }
 LRESULT  ListViewItemBase::OnGetSubItemText(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    UINT nIndex = (UINT)wParam;
-    if (0 == nIndex)
-        return (LRESULT)m_pIListViewItemBase->GetText();
-
-    if (nIndex > m_nSubItemCount)
-        return NULL;
-
-    return (LRESULT)m_ppSubItem[nIndex-1]->m_strText.c_str();
+	return (LRESULT)GetSubItemText((int)wParam);
 }
 
 LRESULT  ListViewItemBase::OnAddColumn(UINT uMsg, WPARAM wParam, LPARAM lParam)

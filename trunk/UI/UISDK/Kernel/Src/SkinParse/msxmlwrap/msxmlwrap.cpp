@@ -242,7 +242,11 @@ void  UIMarkupElement::GetAttribList(IMapAttribute** ppMapAttrib)
         }
         else
         {
-            (*ppMapAttrib)->AddAttr(bstrKey, var.bstrVal);
+#ifdef _UNICODE
+            (*ppMapAttrib)->AddAttr((const TCHAR*)bstrKey, (const TCHAR*)var.bstrVal);
+#else
+            (*ppMapAttrib)->AddAttr(CW2T(bstrKey), CW2T(var.bstrVal));
+#endif
         }
     }
 }
@@ -274,7 +278,11 @@ void  UIMarkupElement::GetAttribList2(IListAttribute** ppListAttrib)
         }
         else
         {
-            (*ppListAttrib)->AddAttr(bstrKey, var.bstrVal);
+#ifdef _UNICODE
+            (*ppListAttrib)->AddAttr((const TCHAR*)bstrKey, (const TCHAR*)var.bstrVal);
+#else
+            (*ppListAttrib)->AddAttr(CW2T(bstrKey), CW2T(var.bstrVal));
+#endif
         }
     }
 }

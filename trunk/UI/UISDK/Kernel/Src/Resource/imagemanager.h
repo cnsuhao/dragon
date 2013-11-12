@@ -22,13 +22,14 @@ public:
 	IImageRes*   GetImageRes();
 	ICursorRes*  GetCursorRes();
 	IGifRes*     GetGifRes();
+    IUIElement*  GetImageXmlElem();
 
-	IImageResItem*  InsertImageItem(const TCHAR* szID, const TCHAR* szPath);
-	HRESULT  ModifyImageItem(const TCHAR* szID, const TCHAR* szPath);
-	HRESULT  RemoveImageItem(const TCHAR* szID);
+	IImageResItem*  InsertImageItem(IMAGE_ITEM_TYPE eType, const TCHAR* szID, const TCHAR* szPath);
+	bool  ModifyImageItem(const TCHAR* szID, const TCHAR* szPath);
+	bool  RemoveImageItem(const TCHAR* szID);
 
-	HRESULT  ModifyImageItemInRunTime(const TCHAR* szID, const TCHAR* szPath);
-	HRESULT  ModifyImageItemAlpha(const TCHAR* szID, int nAlphaPercent);
+	bool  ModifyImageItemInRunTime(const TCHAR* szID, const TCHAR* szPath);
+	bool  ModifyImageItemAlpha(const TCHAR* szID, int nAlphaPercent);
 
     static HRESULT  UIParseSkinElement(IUIElement*, ISkinRes* pSkinRes);
 

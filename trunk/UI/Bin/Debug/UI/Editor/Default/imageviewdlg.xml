@@ -2,7 +2,11 @@
 <skin>
 	<layout>
 		<Window id="imageviewdlg" width="500" height="500">
-			<ListView id="imagelistview" layout.left="10" layout.top="10" width="200" layout.bottom="10"/>
+      <Button id="btn_add"  text="add" layout.left="10" layout.top="10" width="100" height="24"/>
+      <Button id="btn_del"  text="del" layout.left="110" layout.top="10" width="100" height="24"/>
+      <Button id="btn_next" text="next" layout.left="210" layout.top="10" width="100" height="24"/>
+      <Button id="btn_prev" text="prev" layout.left="310" layout.top="10" width="100" height="24"/>
+			<ListView id="imagelistview" layout.left="10" layout.top="40" width="300" layout.bottom="10"/>
 		</Window>
 	</layout>
 </skin>

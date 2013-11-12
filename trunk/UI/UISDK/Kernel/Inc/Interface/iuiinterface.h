@@ -151,13 +151,14 @@ namespace UI
         IImageRes*   GetImageRes();
         ICursorRes*  GetCursorRes();
         IGifRes*     GetGifRes();
+        IUIElement*  GetImageXmlElem();
 
-        IImageResItem*  InsertImageItem(const TCHAR* szID, const TCHAR* szPath);
-        HRESULT  ModifyImageItem(const TCHAR* szID, const TCHAR* szPath);
-        HRESULT  RemoveImageItem(const TCHAR* szID);
+        IImageResItem*  InsertImageItem(IMAGE_ITEM_TYPE eType, const TCHAR* szID, const TCHAR* szPath);
+        bool  ModifyImageItem(const TCHAR* szID, const TCHAR* szPath);
+        bool  RemoveImageItem(const TCHAR* szID);
 
-        HRESULT  ModifyImageItemInRunTime(const TCHAR* szID, const TCHAR* szPath);
-        HRESULT  ModifyImageItemAlpha(const TCHAR* szID, int nAlphaPercent);
+        bool  ModifyImageItemInRunTime(const TCHAR* szID, const TCHAR* szPath);
+        bool  ModifyImageItemAlpha(const TCHAR* szID, int nAlphaPercent);
     private:
         ImageManager*  m_pImpl;
     };
@@ -238,17 +239,46 @@ namespace UI
         IImageResItem(ImageResItem* p);
         ImageResItem*  GetImpl(); 
 
-        const TCHAR*  GetID();
+        void  SetId(const TCHAR*);
+        void  SetPath(const TCHAR*);
+        const TCHAR*  GetId();
         const TCHAR*  GetPath();
         bool  GetUseSkinHLS();
         bool  GetNeedAntiAliasing();
         void  SetUseSkinHLS(bool b);
         void  SetNeedAntiAliasing(bool b);
         bool  ModifyImage(const TCHAR*  szPath);
+        IMAGE_ITEM_TYPE  GetImageItemType();
+//        void  SetImageItemType(IMAGE_ITEM_TYPE e);
 
     private:
         ImageResItem*  m_pImpl;
     };
+    class ImageListResItem;
+    interface UISDKAPI IImageListResItem : public IImageResItem
+    {
+        IImageListResItem(ImageListResItem* p);
+        ImageListResItem*  GetImpl(); 
+
+        IMAGELIST_LAYOUT_TYPE  GetLayoutType();
+        int  GetItemCount();
+        void  SetLayoutType(IMAGELIST_LAYOUT_TYPE);
+        void  SetItemCount(int);
+
+    private:
+        ImageListResItem*  m_pImpl;
+    };
+
+    class ImageIconResItem;
+    interface UISDKAPI IImageIconResItem : public IImageResItem
+    {
+        IImageIconResItem(ImageIconResItem* p);
+        ImageIconResItem*  GetImpl(); 
+
+    private:
+        ImageIconResItem*  m_pImpl;
+    };
+
 
     class CursorRes;
     interface UISDKAPI ICursorRes : public IRootInterface

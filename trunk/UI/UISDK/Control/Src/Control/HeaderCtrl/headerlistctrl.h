@@ -19,11 +19,11 @@ enum HEADERLISTCTRL_HITTEST
 
 class HeaderListCtrl;
 
-class ColumnsInfoMgr : public IColumnsInfo
+class ColumnsInfoImpl : public IColumnsInfo
 {
 public:
-    ColumnsInfoMgr(HeaderListCtrl* p);
-    ~ColumnsInfoMgr();
+    ColumnsInfoImpl(HeaderListCtrl* p);
+    ~ColumnsInfoImpl();
     void  Destroy();
 
     void  Rebuild();
@@ -82,7 +82,7 @@ public:
     void  SetHScrollOffset(int nhScrollOffset); 
     int   GetHScrollOffset();
     int   GetColumnTotalWidth();
-    ColumnsInfoMgr*  GetColumnsInfo() { return &m_MgrColumnInfo; }
+    ColumnsInfoImpl*  GetColumnsInfo() { return &m_pColumnsInfo; }
 
     IListItemBase*  HitTest(POINT ptWindow, HEADERLISTCTRL_HITTEST* peHitTest);
 
@@ -110,7 +110,7 @@ private:
 
 private:
     IHeaderListCtrl*  m_pIHeaderListCtrl;
-    ColumnsInfoMgr  m_MgrColumnInfo;
+    ColumnsInfoImpl  m_pColumnsInfo;
 
     POINT  m_ptLastDragDivider; // 鼠标按下进行拖拽时的位置
     int    m_nOldDragingColoumnWidth;  // 正在拖拽的列的原始宽度

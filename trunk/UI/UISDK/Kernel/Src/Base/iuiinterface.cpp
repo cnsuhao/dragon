@@ -146,13 +146,14 @@ ImageManager*  IImageManager::GetImpl() { return m_pImpl; }
 IImageRes*   IImageManager::GetImageRes() { return m_pImpl->GetImageRes(); }
 ICursorRes*  IImageManager::GetCursorRes(){ return m_pImpl->GetCursorRes(); }
 IGifRes*     IImageManager::GetGifRes() { return m_pImpl->GetGifRes(); }
+IUIElement*  IImageManager::GetImageXmlElem()  { return m_pImpl->GetImageXmlElem(); }
 
-IImageResItem*  IImageManager::InsertImageItem(const TCHAR* szID, const TCHAR* szPath) { return m_pImpl->InsertImageItem(szID, szPath); }
-HRESULT  IImageManager::ModifyImageItem(const TCHAR* szID, const TCHAR* szPath) { return m_pImpl->ModifyImageItem(szID, szPath); }
-HRESULT  IImageManager::RemoveImageItem(const TCHAR* szID) { return m_pImpl->RemoveImageItem(szID); }
+IImageResItem*  IImageManager::InsertImageItem(IMAGE_ITEM_TYPE eType, const TCHAR* szID, const TCHAR* szPath) { return m_pImpl->InsertImageItem(eType, szID, szPath); }
+bool  IImageManager::ModifyImageItem(const TCHAR* szID, const TCHAR* szPath) { return m_pImpl->ModifyImageItem(szID, szPath); }
+bool  IImageManager::RemoveImageItem(const TCHAR* szID) { return m_pImpl->RemoveImageItem(szID); }
 
-HRESULT  IImageManager::ModifyImageItemInRunTime(const TCHAR* szID, const TCHAR* szPath) { return m_pImpl->ModifyImageItemInRunTime(szID, szPath); }
-HRESULT  IImageManager::ModifyImageItemAlpha(const TCHAR* szID, int nAlphaPercent) { return m_pImpl->ModifyImageItemAlpha(szID, nAlphaPercent); }
+bool  IImageManager::ModifyImageItemInRunTime(const TCHAR* szID, const TCHAR* szPath) { return m_pImpl->ModifyImageItemInRunTime(szID, szPath); }
+bool  IImageManager::ModifyImageItemAlpha(const TCHAR* szID, int nAlphaPercent) { return m_pImpl->ModifyImageItemAlpha(szID, nAlphaPercent); }
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -213,13 +214,57 @@ HBITMAP  IImageRes::LoadBitmap(const TCHAR* szId)  { return m_pImpl->LoadBitmap(
 IImageResItem::IImageResItem(ImageResItem* p) { m_pImpl = p; }
 ImageResItem*  IImageResItem::GetImpl() { return m_pImpl; }
 
-const TCHAR*  IImageResItem::GetID() { return m_pImpl->GetID(); }
+void  IImageResItem::SetId(const TCHAR* szText) { m_pImpl->SetId(szText); }
+void  IImageResItem::SetPath(const TCHAR* szText) { m_pImpl->SetPath(szText); }
+const TCHAR*  IImageResItem::GetId() { return m_pImpl->GetId(); }
 const TCHAR*  IImageResItem::GetPath() { return m_pImpl->GetPath(); }
 bool  IImageResItem::ModifyImage(const TCHAR*  szPath) { return m_pImpl->ModifyImage(szPath); }
 bool  IImageResItem::GetUseSkinHLS() { return m_pImpl->GetUseSkinHLS(); }
 bool  IImageResItem::GetNeedAntiAliasing() { return m_pImpl->GetNeedAntiAliasing(); }
-void  IImageResItem::SetUseSkinHLS(bool b) { return m_pImpl->SetNeedAntiAliasing(b); }
+void  IImageResItem::SetUseSkinHLS(bool b) { return m_pImpl->SetUseSkinHLS(b); }
 void  IImageResItem::SetNeedAntiAliasing(bool b) { return m_pImpl->SetNeedAntiAliasing(b); }
+IMAGE_ITEM_TYPE  IImageResItem::GetImageItemType()
+{
+    return m_pImpl->GetImageItemType();
+}
+// void  IImageResItem::SetImageItemType(IMAGE_ITEM_TYPE e)
+// {
+//     m_pImpl->SetImageItemType(e);
+// }
+
+//////////////////////////////////////////////////////////////////////////
+
+IImageListResItem::IImageListResItem(ImageListResItem* p):IImageResItem(static_cast<ImageResItem*>(p))
+{
+    m_pImpl = p; 
+}
+ImageListResItem*  IImageListResItem::GetImpl() { return m_pImpl; }
+
+IMAGELIST_LAYOUT_TYPE  IImageListResItem::GetLayoutType()
+{
+    return m_pImpl->GetLayoutType();
+}
+int  IImageListResItem::GetItemCount()
+{
+    return m_pImpl->GetItemCount();
+}
+void  IImageListResItem::SetLayoutType(IMAGELIST_LAYOUT_TYPE e)
+{
+    m_pImpl->SetLayoutType(e);
+}
+void  IImageListResItem::SetItemCount(int n)
+{
+    m_pImpl->SetItemCount(n);
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+IImageIconResItem::IImageIconResItem(ImageIconResItem* p):IImageResItem(static_cast<ImageResItem*>(p))
+{
+    m_pImpl = p; 
+}
+ImageIconResItem*  IImageIconResItem::GetImpl() { return m_pImpl; }
+
 
 //////////////////////////////////////////////////////////////////////////
 

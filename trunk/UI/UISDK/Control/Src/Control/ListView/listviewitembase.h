@@ -60,6 +60,8 @@ public:
 public:
     void  SetIListViewItemBase(IListViewItemBase* p) 
     { m_pIListViewItemBase = p; SetIMessageProxy(static_cast<IMessage*>(p)); }
+	bool  SetSubItemText(int nSub, const TCHAR* szText);
+	const TCHAR*  GetSubItemText(int nSub);
 
 protected:
     void  OnInitialize();

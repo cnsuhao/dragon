@@ -15,4 +15,12 @@ IListViewItemBase*  IListView::AddTextItem(const TCHAR* szText)      { return m_
 IListViewItemBase*  IListView::InsertTextItem(int nIndex, const TCHAR* szText) { return m_pListViewImpl->InsertTextItem(nIndex, szText); }
 bool  IListView::SetItemText(int nItem, int nSubItem, const TCHAR* szText, bool bUpdate)  { return m_pListViewImpl->SetItemText(nItem, nSubItem, szText, bUpdate); }
 
+bool  IListViewItemBase::SetSubItemText(int nSub, const TCHAR* szText)
+{
+	return m_pListViewItemBaseImpl->SetSubItemText(nSub, szText);
+}
+const TCHAR*  IListViewItemBase::GetSubItemText(int nSub)
+{
+	return m_pListViewItemBaseImpl->GetSubItemText(nSub);
+}
 }

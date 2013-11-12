@@ -95,6 +95,10 @@ rd  ..\..\UISDK\Project\UIEditor\Debug /S /Q
 rd  ..\..\UISDK\Project\UIEditor\Release /S /Q
 del ..\..\UISDK\Project\UIEditor\UIEditor.vcproj.*.user
 
+rd  ..\..\UISDK\Project\UIEditorCtrl\Debug /S /Q
+rd  ..\..\UISDK\Project\UIEditorCtrl\Release /S /Q
+del ..\..\UISDK\Project\UIEditorCtrl\UIEditorCtrl.vcproj.*.user
+
 rd ..\gft_2_png\Debug /S /Q
 del ..\gft_2_png\Release\*.htm
 del ..\gft_2_png\Release\*.obj

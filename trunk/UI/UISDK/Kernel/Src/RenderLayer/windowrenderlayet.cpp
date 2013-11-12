@@ -11,7 +11,12 @@ void  WindowRenderLayer::Draw()
         return;
 
     if (NULL == m_pRenderTarget)
+	{
+#ifdef _DEBUG
+		::MessageBox(NULL, _T("NULL == m_pRenderTarget, 是否是外部拦截了窗口WM_SIZE消息?"), _T("Error"), MB_OK|MB_ICONERROR);
+#endif
         return;
+	}
 
     if (m_pRenderTarget->BeginDraw(NULL, 0))
     {

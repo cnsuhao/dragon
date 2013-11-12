@@ -169,6 +169,7 @@
 	</image>
 	<font>
 		<item id="normal" facename="微软雅黑" facename2="宋体" size="9" cleartype="0"/>
+    <item id="login_account_edit" facename="微软雅黑" facename2="宋体" size="10" cleartype="0"/>
 		<item id="normal_bold" facename="微软雅黑" facename2="宋体" size="10" bold="1" cleartype="0"/>
 		<item id="main_dlg_nickname" facename="微软雅黑" facename2="宋体" size="19" bold="0" cleartype="0"/>
 	</font>

@@ -34,6 +34,9 @@ class ListViewItemBase;
 interface UICTRLAPI IListViewItemBase : public IListItemBase
 {
     UI_DECLARE_Ixxx_INTERFACE(IListViewItemBase, ListViewItemBase);
+	bool  SetSubItemText(int nSub, const TCHAR* szText);
+	const TCHAR*  GetSubItemText(int nSub);
+
 };
 
 class ListViewItemBaseShareData;
