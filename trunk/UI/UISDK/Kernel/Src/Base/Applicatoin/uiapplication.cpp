@@ -335,10 +335,10 @@ ILayoutRes*  UIApplication::GetActiveSkinLayoutRes()
 //	一个空的窗口过程，因为UI这个窗口类的窗口过程最终要被修改成为一个类的成员函数，
 //  因此这里的窗口过程只是用来填充WNDCLASS参数。
 //
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	return ::DefWindowProc( hWnd, message, wParam, lParam );
-}
+// LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+// {
+// 	return ::DefWindowProc( hWnd, message, wParam, lParam );
+// }
 
 /*
 **	[private] void  RegisterWndClass()
