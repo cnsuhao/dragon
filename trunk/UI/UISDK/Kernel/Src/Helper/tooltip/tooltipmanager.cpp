@@ -17,7 +17,7 @@ public:
 	}
 	~CSystemTooltip()
 	{
-		SAFE_RELEASE(m_pUIApp);
+		m_pUIApp = NULL;  // 不维护uiapp的引用计数
 	}
 
 	virtual bool  Create()
@@ -37,14 +37,6 @@ public:
 						NULL,
 						NULL
 						);
-
-		::SetWindowPos(m_hToolTip,
-						HWND_TOPMOST,
-						0,
-						0,
-						0,
-						0,
-						SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
 		/*
 			如果#define _WIN32_WINNT 0x0500，那么tooltip一切正常
@@ -154,7 +146,7 @@ public:
 		}
 		return true;
 	}
-	virtual bool  Show()
+	virtual bool  Show(HWND hWndParent)
 	{
 		if (NULL == m_hToolTip)
 		{
@@ -179,14 +171,9 @@ public:
 	
 	virtual bool  SetUIApplication(IUIApplication* p)
 	{
-		SAFE_RELEASE(m_pUIApp);
+        // 尽量少维护UIApp的引用计数
 		m_pUIApp = p;
-		
-		if (m_pUIApp)
-			m_pUIApp->AddRef();
-
 		return true;
-
 	}
 protected:
 	//
@@ -245,21 +232,22 @@ protected:
 #pragma endregion
 //////////////////////////////////////////////////////////////////////////
 
-ToolTipManager::ToolTipManager(UIApplication* p)
+ToolTipManager::ToolTipManager()
 {
 	m_pToolTipUI = NULL;
 	m_nTimerWait2Show = 0;
-    m_pUIApplication = p;
-
-	Init();
+    m_pUIApplication = NULL;
 }
+
 ToolTipManager::~ToolTipManager()
 {
 	this->Release();
 }
 
-void ToolTipManager::Init(IToolTipUI* pTooltipUI)
+void ToolTipManager::Init(UIApplication* p, IToolTipUI* pTooltipUI)
 {
+    m_pUIApplication = p;
+
 	if (m_pToolTipUI)
 	{
 		m_pToolTipUI->Destroy();
@@ -270,6 +258,7 @@ void ToolTipManager::Init(IToolTipUI* pTooltipUI)
 	else
 		m_pToolTipUI = pTooltipUI;
 
+    m_pToolTipUI->SetUIApplication(m_pUIApplication->GetIUIApplication());
 	m_thunk.Init(ToolTipManager::ToolTipManagerTimerProc, this);
 }
 
@@ -365,6 +354,9 @@ void ToolTipManager::OnTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTim
 				return;  // 失败
 		}
 
-		m_pToolTipUI->Show();
+        if (m_tooltipItem.pNotifyObj)
+		    m_pToolTipUI->Show(m_tooltipItem.pNotifyObj->GetHWND());
+        else
+            m_pToolTipUI->Show(NULL);
 	}
 }

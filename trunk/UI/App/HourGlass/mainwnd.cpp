@@ -88,6 +88,7 @@ void  CMainWnd::OnRing()
 
 void  CMainWnd::OnTimer(UINT_PTR nIDEvent, LPARAM lParam)
 {
+
     int nTickCount = GetTickCount();
     int nElapse = nTickCount - m_nStartTickCount;
     int nRemain = (m_nTotalMS - nElapse)/1000;
@@ -105,6 +106,16 @@ void  CMainWnd::OnTimer(UINT_PTR nIDEvent, LPARAM lParam)
     int m = temp/60;
     int s = temp%60; 
 
+    static int h_prev = 0;
+    static int m_prev = 0;
+    static int s_prev = 0;
+
+    if (h_prev == h && m_prev == m && s_prev == s)
+        return;
+    h_prev = h;
+    m_prev = m;
+    s_prev = s;
+
     TCHAR szText[16] = _T("");
     _stprintf(szText, _T("%02d:%02d:%02d"), h, m, s);
     m_pLEDCtrl->SetText(szText);
@@ -120,7 +131,7 @@ void  CMainWnd::SetTotalTime(int nHour, int nMinute, int nSecond)
         KillTimer(GetHWND(), m_nTimerId);;
         m_nTimerId = 0;
     }
-    m_nTimerId = SetTimer(GetHWND(), 1, 400, NULL);
+    m_nTimerId = SetTimer(GetHWND(), 1, 50, NULL);
 
     m_nStartTickCount = GetTickCount();
     m_nTotalMS = 1000*(nHour*3600 + nMinute*60 + nSecond);

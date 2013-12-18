@@ -137,6 +137,7 @@
 		<image id="rightbkg.png" path="Img\chat\rightbkg.png"/>
     <imagelist id="sendbtnleft" path="Img\chat\sendbtnleft.png" count="5" layout="h"/>
     <imagelist id="sendbtnright" path="Img\chat\sendbtnright.png" count="5" layout="h"/>
+    <imagelist id="chat.setbtn" path="Img\chat\setbtn.png" count="3" layout="h"/>
     
     
 		<!-- 好友管理器 -->

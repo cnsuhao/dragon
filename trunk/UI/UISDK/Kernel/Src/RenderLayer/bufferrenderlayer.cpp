@@ -27,7 +27,12 @@ void  BufferRenderLayer::OnSize(UINT nType, int nWidth, int nHeight)
     SetMsgHandled(FALSE);
     if (nType == SIZE_MINIMIZED)
         return;
-     
+ 
+    CreateBuffer(nWidth, nHeight);
+}
+
+void  BufferRenderLayer::CreateBuffer(int nWidth, int nHeight)
+{
     if (!m_buffer.IsNull() && m_buffer.GetWidth() == nWidth && m_buffer.GetHeight()==nHeight)
         return;
 
@@ -63,6 +68,14 @@ bool  BufferRenderLayer::SaveLayer(const TCHAR*  szPath)
         return false;
 
     return SUCCEEDED(m_buffer.Save(szPath, Gdiplus::ImageFormatPNG))? true:false;
+}
+
+void  BufferRenderLayer::Clear()
+{
+    if (m_buffer.IsNull())
+        return;
+
+    m_buffer.Clear();
 }
 
 #if 0  // 由于不支持裁剪，废弃
@@ -176,6 +189,10 @@ PIXEL_LOOP:
 }
 #endif
 
+Image*  BufferRenderLayer::GetMemoryLayerBuffer() 
+{
+    return &m_buffer; 
+}
 void  BufferRenderLayer::Commit(HDC hDstDC)
 {
     // 组合

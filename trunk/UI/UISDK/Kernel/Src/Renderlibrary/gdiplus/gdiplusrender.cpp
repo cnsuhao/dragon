@@ -1299,13 +1299,13 @@ void GdiplusRenderTarget::DrawBitmapEx(Gdiplus::Graphics* pGraphics, HDC hBindDC
             {
                 byte* pAlpha = pBits + (ptAlpha0[i].y*nPitch + (ptAlpha0[i].x<<2));
                 byte a = ((int)*(pAlpha+3)) >> 4;
-                *pAlpha = (*pAlpha) * a >> 8;
+                *pAlpha = (*pAlpha) * a >> 8;   // r
                 pAlpha++;
-                *pAlpha = (*pAlpha) * a >> 8;
+                *pAlpha = (*pAlpha) * a >> 8;   // g
                 pAlpha++;
-                *pAlpha = (*pAlpha) * a >> 8;
+                *pAlpha = (*pAlpha) * a >> 8;   // b
                 pAlpha++;
-                *pAlpha = a;
+                *pAlpha = a;                    // a
             }
 
             // 50%͸

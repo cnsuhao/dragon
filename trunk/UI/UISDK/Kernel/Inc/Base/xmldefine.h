@@ -239,6 +239,12 @@ enum IMAGELIST_LAYOUT_TYPE
 #define  XML_WINDOW_MIN_WIDHT                           _T("minwidth")
 #define  XML_WINDOW_MIN_HEIGHT                          _T("minheight")
 
+#define  XML_WINDOW_RESIZE_BORDER                       _T("resizeborder")     // int类型，拖拽区域大小
+#define  XML_WINDOW_RESIZE_CAPABILITY                   _T("resizecapability") // 拖拽能力
+#define  XML_WINDOW_RESIZE_CAPABILITY_NONE              _T("none")             // 禁止拖拽
+#define  XML_WINDOW_RESIZE_CAPABILITY_CAPTION           _T("caption")          // 只能拖拽，不能修改大小
+#define  XML_WINDOW_RESIZE_CAPABILITY_ALL               _T("all")              // 能拖拽，能修改大小
+
 // window rgn
 #define  XML_WINDOW_TRANSPARENT_TYPE                    _T("transparent.type")
 #define  XML_WINDOW_TRANSPARENT_PART                    _T("transparent.part") // 窗口透明区域类型

@@ -5,6 +5,6 @@
 namespace UI
 {
 
-UI_IMPLEMENT_Ixxx_INTERFACE2(IIEWrap, IEWrap, IControl);
+UI_IMPLEMENT_Ixxx_INTERFACE2(IIEWrap, IEWrap, IHwndHost);
 
 }

@@ -1,5 +1,8 @@
 #include "stdafx.h"
-#include "line.h"
+#include "2dline.h"
+
+namespace UI
+{
 
 Line::Line()
 {
@@ -8,7 +11,7 @@ Line::Line()
 	m_pt2.x = m_pt2.y = 0;
 }
 
-LINE_INTERSECT HorzLine::Calc2lineIntersect(Line* pLine, DPOINT* pPt)
+LINE_INTERSECT HorzLine::Calc2lineIntersect(Line* pLine, POINTF* pPt)
 {
 	LINE_INTERSECT eRet = LINE_INTERSECT_NO;
 	bool  bIntersect = false;
@@ -32,7 +35,7 @@ LINE_INTERSECT HorzLine::Calc2lineIntersect(Line* pLine, DPOINT* pPt)
 	case LINE_NORMAL:
 		{
 			pPt->y = y;
-			pPt->x = ((NormalLine*)pLine)->GetX(y);
+			((NormalLine*)pLine)->GetX(y, &pPt->x);
 			bIntersect = true;
 		}
 		break;
@@ -66,12 +69,12 @@ LINE_INTERSECT HorzLine::Calc2lineIntersect(Line* pLine, DPOINT* pPt)
 }
 
 
-double HorzLine::CalcPosPercent(const DPOINT& pt) 
+float HorzLine::CalcPosPercent(const POINTF& pt) 
 {
 	return (pt.x - m_pt1.x)/(m_pt2.x - m_pt1.x);
 }
 
-LINE_INTERSECT VertLine::Calc2lineIntersect(Line* pLine, DPOINT* pPt)
+LINE_INTERSECT VertLine::Calc2lineIntersect(Line* pLine, POINTF* pPt)
 {
 	LINE_INTERSECT eRet = LINE_INTERSECT_NO;
 	bool  bIntersect = false;
@@ -95,7 +98,7 @@ LINE_INTERSECT VertLine::Calc2lineIntersect(Line* pLine, DPOINT* pPt)
 	case LINE_NORMAL:
 		{
 			pPt->x = x;
-			pPt->y = ((NormalLine*)pLine)->GetY(x);
+			((NormalLine*)pLine)->GetY(x, &pPt->y);
 			bIntersect = true;
 		}
 		break;
@@ -129,11 +132,11 @@ LINE_INTERSECT VertLine::Calc2lineIntersect(Line* pLine, DPOINT* pPt)
 }
 
 
-double VertLine::CalcPosPercent(const DPOINT& pt) 
+float VertLine::CalcPosPercent(const POINTF& pt) 
 {
 	return (pt.y - m_pt1.y)/(m_pt2.y - m_pt1.y);
 }
-LINE_INTERSECT PointLine::Calc2lineIntersect(Line* pLine, DPOINT* pPt)
+LINE_INTERSECT PointLine::Calc2lineIntersect(Line* pLine, POINTF* pPt)
 {
 	LINE_INTERSECT eRet = LINE_INTERSECT_NO;
 	bool  bIntersect = false;
@@ -179,7 +182,11 @@ LINE_INTERSECT PointLine::Calc2lineIntersect(Line* pLine, DPOINT* pPt)
 	case LINE_NORMAL:
 		{
 			NormalLine* p = (NormalLine*)pLine;
-			if (pt.y - p->GetY(pt.x) == 0)
+
+            float y = 0.0f;
+            p->GetY(pt.x, &y);
+
+			if (pt.y - y == 0)
 			{
 				pPt->y = pt.y;
 				pPt->x = pt.x;
@@ -188,7 +195,7 @@ LINE_INTERSECT PointLine::Calc2lineIntersect(Line* pLine, DPOINT* pPt)
 		}
 		break;
 	}
-	
+
 	if (bIntersect)
 	{
 		eRet = LINE_INTERSECT_IN;
@@ -196,7 +203,7 @@ LINE_INTERSECT PointLine::Calc2lineIntersect(Line* pLine, DPOINT* pPt)
 	return eRet;
 }
 
-LINE_INTERSECT NormalLine::Calc2lineIntersect(Line* pLine, DPOINT* pPt)
+LINE_INTERSECT NormalLine::Calc2lineIntersect(Line* pLine, POINTF* pPt)
 {
 	LINE_INTERSECT eRet = LINE_INTERSECT_NO;
 	bool  bIntersect = false;
@@ -206,7 +213,11 @@ LINE_INTERSECT NormalLine::Calc2lineIntersect(Line* pLine, DPOINT* pPt)
 	case LINE_POINT:
 		{
 			PointLine* p = ((PointLine*)pLine);
-			if (p->pt.y - GetY(p->pt.x) == 0)
+
+            float y = 0.0f;
+            GetY(p->pt.x, &y);
+
+			if (p->pt.y - y == 0)
 			{
 				pPt->y = p->pt.y;
 				pPt->x = p->pt.x;
@@ -218,7 +229,7 @@ LINE_INTERSECT NormalLine::Calc2lineIntersect(Line* pLine, DPOINT* pPt)
 	case LINE_HORZ:
 		{
 			pPt->y = ((HorzLine*)pLine)->y;
-			pPt->x = GetX(pPt->y);
+			GetX(pPt->y, &pPt->x);
 			bIntersect = true;
 		}
 		break;
@@ -226,7 +237,7 @@ LINE_INTERSECT NormalLine::Calc2lineIntersect(Line* pLine, DPOINT* pPt)
 	case LINE_VERT:
 		{
 			pPt->x = ((VertLine*)pLine)->x;
-			pPt->y = GetY(pPt->x);
+			GetY(pPt->x, &pPt->y);
 			bIntersect = true;
 		}
 		break;
@@ -241,7 +252,7 @@ LINE_INTERSECT NormalLine::Calc2lineIntersect(Line* pLine, DPOINT* pPt)
 			else
 			{
 				pPt->x = (p->b- b)/(k - p->k);
-				pPt->y = GetY(pPt->x);
+				GetY(pPt->x, &pPt->y);
 				bIntersect = true;
 			}
 		}
@@ -263,18 +274,18 @@ LINE_INTERSECT NormalLine::Calc2lineIntersect(Line* pLine, DPOINT* pPt)
 	return eRet;
 }
 
-double NormalLine::CalcPosPercent(const DPOINT& pt)
+float NormalLine::CalcPosPercent(const POINTF& pt)
 {
 	return (pt.x - m_pt1.x)/(m_pt2.x - m_pt1.x);
 }
 Line* Line::CreateLine(const POINT& pt1, const POINT& pt2)
 {
-	DPOINT dpt1 = {pt1.x, pt1.y};
-	DPOINT dpt2 = {pt2.x, pt2.y};
+	POINTF dpt1 = {(float)pt1.x, (float)pt1.y};
+	POINTF dpt2 = {(float)pt2.x, (float)pt2.y};
 
 	return Line::CreateLine(dpt1, dpt2);
 }
-Line* Line::CreateLine(const DPOINT& pt1, const DPOINT& pt2)
+Line* Line::CreateLine(const POINTF& pt1, const POINTF& pt2)
 {
 	Line* pRet = NULL;
 	if (pt1.x == pt2.x && pt1.y == pt2.y)
@@ -308,7 +319,7 @@ Line* Line::CreateLine(const DPOINT& pt1, const DPOINT& pt2)
 		pRet = p;
 	}
 
-	if (NULL != pRet)
+	if (pRet)
 	{
 		pRet->m_pt1.x = pt1.x;
 		pRet->m_pt2.x = pt2.x;
@@ -316,4 +327,6 @@ Line* Line::CreateLine(const DPOINT& pt1, const DPOINT& pt2)
 		pRet->m_pt2.y = pt2.y;
 	}
 	return pRet;
+}
+
 }

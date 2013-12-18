@@ -10,6 +10,7 @@
 #include "UISDK\Kernel\Src\UIObject\ListCtrl\MouseKeyboard\popuplistctrlmkmgr.h"
 #include "UISDK\Kernel\Src\UIObject\ListCtrl\MouseKeyboard\multisellistctrlmkmgr.h"
 #include "UISDK\Kernel\Src\UIObject\ListCtrl\MouseKeyboard\menumkmgr.h"
+#include "UISDK\Kernel\Src\Animate\3dwrap\ui3dwrap.h"
 
 namespace UI
 {
@@ -2176,6 +2177,13 @@ void  ListCtrlBase::RedrawItem(ListItemBase** ppItemArray, int nCount)
 {
 	if (NULL == ppItemArray && 0 == nCount)
 		return;
+
+    // 先这么处理吧，要再单个处理好麻烦呀……
+    if (m_pObject3DWrap && m_pObject3DWrap->IsRunning())
+    {
+        this->UpdateObject();  
+        return;
+    }
 
 	for (int i = 0; i < nCount; i++)  // 检测一下是否全是NULL
 	{

@@ -13,6 +13,8 @@
 #include <ShellAPI.h>     // ShellExecute
 #include <atlbase.h>
 #include <atlwin.h>
+#include <set>
+using std::set;
 
 #include <Imm.h>
 #pragma comment(lib, "Imm32.lib")

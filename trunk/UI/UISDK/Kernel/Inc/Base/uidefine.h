@@ -144,6 +144,7 @@ enum LAYER_TYPE
 {
     LAYER_DIRECT   = 1 << CONTROL_TYPE_OFFSET,
     LAYER_BUFFER   = 2 << CONTROL_TYPE_OFFSET,
+    LAYER_3D       = 3 << CONTROL_TYPE_OFFSET,
 };
 
 inline OBJ_TYPE GetObjectMajorType(int type)  { return  (OBJ_TYPE)((type)&0xFF000000);  } 
@@ -293,6 +294,7 @@ inline CONTROL_TYPE GetObjectExtentType(int type) { return  (CONTROL_TYPE)((type
 // window style
 #define WINDOW_STYLE_DESTROYED          0x00001000    // 表示该窗口已经被销毁了(WM_NCDESTROY)，用于触发OnFinalMessage
 #define WINDOW_STYLE_ATTACH             0x00002000    // 表示该窗口是attach的，创建、销毁由外部来控制
+#define WINDOW_STYLE_SETCREATERECT      0x00004000    // 创建窗口时指针了窗口大小，不用再进行窗口布局了
 
 // control style
 #define CONTROL_STYLE_TABSTOP           0x00001000    // 是否接受TAB快捷键的焦点

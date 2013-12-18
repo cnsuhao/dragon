@@ -6,8 +6,6 @@ namespace UI
 
 CacheBitmap::CacheBitmap()
 {
-    m_hCacheBitmap = NULL;
-    m_nWidth = m_nHeight = 0;
 }
 CacheBitmap::~CacheBitmap()
 {
@@ -16,56 +14,61 @@ CacheBitmap::~CacheBitmap()
 
 void  CacheBitmap::Destroy()
 {
-    ::DeleteObject(m_hCacheBitmap);
-    m_hCacheBitmap = NULL;
-    m_nWidth = m_nHeight = 0;
+    if (!m_buffer.IsNull())
+    {
+        m_buffer.Destroy();
+    }
 }
 
 HBITMAP  CacheBitmap::Create(int nWidth, int nHeight)
 {
-    if (m_nHeight < nHeight || m_nWidth < nWidth)
+    Image* p = CreateEx(nWidth, nHeight);
+    if (p)
+        return p->GetHBITMAP();
+
+    return NULL;
+}
+
+Image*  CacheBitmap::CreateEx(int nWidthReq, int nHeightReq)
+{
+    int nWidth = 0; 
+    int nHeight = 0;
+    AdjustWH(nWidthReq, nHeightReq, nWidth, nHeight);
+
+    if (!m_buffer.IsNull() && 
+        (m_buffer.GetHeight() < nHeight || m_buffer.GetWidth() < nWidth))
     {
         Destroy();
     }
 
-    if (NULL == m_hCacheBitmap)
+    if (m_buffer.IsNull())
     {
-        Image  image;
-        image.Create(nWidth, -nHeight, 32, Image::createAlphaChannel);  // 负数表示创建一个top-down DIB,这样坐标与位图能够直接对应，便于计算
-        m_hCacheBitmap = image.Detach();
-        m_nWidth = nWidth;
-        m_nHeight = nHeight;
-
-        return m_hCacheBitmap;
+        m_buffer.Create(nWidth, -nHeight, 32, Image::createAlphaChannel);  // 负数表示创建一个top-down DIB,这样坐标与位图能够直接对应，便于计算
     }
     else
     {
-        HDC hDC = Image::GetCacheDC();
-        HBITMAP hOldBitmap = (HBITMAP)SelectObject(hDC, m_hCacheBitmap);
+        HDC hDC = m_buffer.GetDC();
         RECT rc = {0, 0, nWidth, nHeight};
         ::FillRect(hDC, &rc, (HBRUSH)::GetStockObject(BLACK_BRUSH));
-        ::SelectObject(hDC, hOldBitmap);
-        Image::ReleaseCacheDC(hDC);
+        m_buffer.ReleaseDC();
     }
 
-    return m_hCacheBitmap;
+    return &m_buffer;
 }
 
 void  CacheBitmap::Clear(DWORD dwColor, RECT* prc)
 {
-    if (NULL == m_hCacheBitmap || NULL == prc)
+    if (m_buffer.IsNull() || NULL == prc)
         return;
 
     RECT rcDst;
-    RECT rcTemp = { 0, 0, m_nWidth, m_nHeight };
+    RECT rcTemp = { 0, 0, m_buffer.GetWidth(), m_buffer.GetHeight() };
     if (!IntersectRect(&rcDst, &rcTemp, prc))
         return;
 
-    BITMAP  bm;
-    ::GetObject(m_hCacheBitmap, sizeof(bm), &bm);
-    byte* pBits = (byte*)bm.bmBits;
+    byte* pBits = (byte*)m_buffer.GetBits();
 
-    pBits = (pBits + (rcDst.top * bm.bmWidthBytes + prc->left*4));
+    pBits = (pBits + (rcDst.top * m_buffer.GetPitch() + prc->left*4));
     int nSize = (rcDst.right-rcDst.left)*4;
     for (int y = rcDst.top; y < rcDst.bottom; y++)
     {
@@ -74,7 +77,7 @@ void  CacheBitmap::Clear(DWORD dwColor, RECT* prc)
         {
             *p = dwColor;
         }
-        pBits += bm.bmWidthBytes;
+        pBits += m_buffer.GetPitch();
     }
 }
 // 
@@ -105,5 +108,30 @@ void  CacheBitmap::Clear(DWORD dwColor, RECT* prc)
 //         pBits += bm.bmWidthBytes;
 //     }
 // }
+
+void  CacheBitmap::AdjustWH(int nWidth, int nHeight, int& nLastWidth, int& nLastHeight)
+{
+#if 0
+    nLastWidth = nWidth;
+    nLastHeight = nHeight;
+#else
+    nLastWidth = CalcMin2(nWidth);  // 将pitch作成2的n次方，加快定位
+    nLastHeight = nHeight;
+#endif
+}
+
+// 计算2的平方
+int  CacheBitmap::CalcMin2(int n)
+{
+    int test = 1;
+    for (int i = 1; i <= 20; i++)
+    {
+        test <<= 1;
+        if (n <= test)
+            return test;
+    }
+
+    return n;
+}
 
 }

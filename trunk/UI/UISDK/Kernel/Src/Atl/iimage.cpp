@@ -8,11 +8,19 @@ namespace UI
 IImage::IImage()
 {
     m_pImageImpl = new Image;
+	m_bCreateImage = TRUE;
 }
 
 IImage::~IImage()
 {
-    SAFE_DELETE(m_pImageImpl);
+	if (m_bCreateImage)
+		SAFE_DELETE(m_pImageImpl);
+}
+
+IImage::IImage(Image* p)
+{
+	m_pImageImpl = p;
+	m_bCreateImage = FALSE;
 }
 
 Image*  IImage::GetImpl() { return m_pImageImpl; }
@@ -56,6 +64,7 @@ int   IImage::GetHeight(){ return m_pImageImpl->GetHeight();}
 int   IImage::GetPitch() { return m_pImageImpl->GetPitch(); }
 byte* IImage::GetBits()  { return (byte*)m_pImageImpl->GetBits(); }
 int   IImage::GetBPP()   { return m_pImageImpl->GetBPP(); }
+HBITMAP  IImage::GetHBITMAP()  { return m_pImageImpl->GetHBITMAP(); }
 
 HDC   IImage::BeginDrawToMyself()        { return m_pImageImpl->BeginDrawToMyself(); }
 void  IImage::EndDrawToMyself()          { return m_pImageImpl->EndDrawToMyself(); }

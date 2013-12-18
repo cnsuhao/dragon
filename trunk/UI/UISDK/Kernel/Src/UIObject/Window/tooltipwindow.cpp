@@ -40,7 +40,7 @@ void TooltipWindow::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 	CRegion4 r(4,3,4,3);
 	this->SetPaddingRegion(&r);      // ÎÄ×ÖÓë±ßÔµµÄ¼ä¾à
 
-	this->SetWindowResizeType(WRSB_NONE);  // ½ûÖ¹ÍÏ×§
+	this->SetResizeCapability(WRSB_NONE);  // ½ûÖ¹ÍÏ×§
 
 	::SetWindowPos(m_hWnd,HWND_TOPMOST,0,0,0,0,SWP_NOSIZE|SWP_NOACTIVATE|SWP_NOMOVE|SWP_FRAMECHANGED);
 }
@@ -78,7 +78,7 @@ bool TooltipWindow::Create()
 // 	CRegion4 r(4,3,4,3);
 // 	this->SetPaddingRegion(&r);      // ÎÄ×ÖÓë±ßÔµµÄ¼ä¾à
 // 
-// 	this->SetWindowResizeType(WRSB_NONE);  // ½ûÖ¹ÍÏ×§
+// 	this->SetResizeCapability(WRSB_NONE);  // ½ûÖ¹ÍÏ×§
 // 
 // 	::SetWindowPos(m_hWnd,HWND_TOPMOST,0,0,0,0,SWP_NOSIZE|SWP_NOACTIVATE|SWP_NOMOVE|SWP_FRAMECHANGED);
 	return true;

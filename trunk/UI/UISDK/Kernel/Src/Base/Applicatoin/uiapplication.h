@@ -61,6 +61,7 @@ class UIApplication
 public:
 	UIApplication(IUIApplication* p);
 	~UIApplication(void);
+    void  x_Init();  // 内部初始化，避免在构造函数中调用太多东西
 
 	// ---------- 
     HRESULT  SetSkinDirection(const TCHAR* szDir);

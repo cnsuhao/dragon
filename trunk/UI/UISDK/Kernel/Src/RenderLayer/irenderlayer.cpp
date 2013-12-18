@@ -4,6 +4,7 @@
 #include "directrenderlayer.h"
 #include "renderchain.h"
 #include "windowrenderlayet.h"
+#include "3dlayer.h"
 
 namespace UI
 {
@@ -13,6 +14,7 @@ UI_IMPLEMENT_Ixxx_INTERFACE(IBufferRenderLayer, BufferRenderLayer, RenderLayer);
 UI_IMPLEMENT_Ixxx_INTERFACE(IControlRenderLayer, ControlRenderLayer, BufferRenderLayer);
 UI_IMPLEMENT_Ixxx_INTERFACE(IWindowRenderLayer, WindowRenderLayer, BufferRenderLayer);
 UI_IMPLEMENT_Ixxx_INTERFACE(IDirectRenderLayer, DirectRenderLayer, RenderLayer);
+UI_IMPLEMENT_Ixxx_INTERFACE(ILayer3d, Layer3d, ControlRenderLayer);
 
 HDC  IRenderLayer::GetMemoryLayerDC()            { return m_pRenderLayerImpl->GetMemoryLayerDC(); }
 IRenderTarget*  IRenderLayer::GetRenderTarget()  { return m_pRenderLayerImpl->GetRenderTarget(); }
@@ -44,3 +46,4 @@ void  IRenderChain::EndRedrawObjectPart(IRenderTarget* pRenderTarget, RECT* prcA
 
 void  IRenderChain::SetCanCommit(bool b) { m_pImpl->SetCanCommit(b); }
 bool  IRenderChain::CanCommit() { return m_pImpl->CanCommit(); }
+void  IRenderChain::Commit(RECT* prc) { return m_pImpl->Commit(prc); }

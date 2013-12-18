@@ -72,3 +72,8 @@ bool  IGifImage::SetTransparentColor(COLORREF colTransparent)
 {
     return m_pImpl->SetTransparentColor(colTransparent);
 }
+
+IImage*  IGifImage::GetFrameIImage( int nIndex )
+{
+	return m_pImpl->GetFrameIImage(nIndex);
+}

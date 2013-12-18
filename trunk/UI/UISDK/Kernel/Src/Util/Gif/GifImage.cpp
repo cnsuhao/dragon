@@ -3,6 +3,7 @@
 #include "UISDK\Kernel\Inc\Interface\imessage.h"
 #include "UISDK\Kernel\Inc\Interface\iskindatasource.h"
 #include "UISDK\Kernel\Src\SkinParse\datasource\skindatasource.h"
+#include "UISDK\Kernel\Inc\Util\iimage.h"
 
 Gif_Timer::Gif_Timer()
 {
@@ -328,6 +329,29 @@ Gif_Timer_Factory::~Gif_Timer_Factory()
 
 //////////////////////////////////////////////////////////////////////////
 #pragma region
+GIF_Frame::GIF_Frame()
+{
+	nRealDelayTime = 100;   // 居然还有的gif没有control块..
+	pImageWrap = NULL;
+}
+
+GIF_Frame::~GIF_Frame()
+{
+	SAFE_DELETE(pImageWrap);
+}
+
+UI::IImage*  GIF_Frame::GetIImage()
+{
+	if (pImageWrap)
+		return pImageWrap;
+
+	pImageWrap = new UI::IImage(&image);
+	return pImageWrap;
+}
+#pragma endregion
+
+//////////////////////////////////////////////////////////////////////////
+#pragma region
 
 GifImageRender::GifImageRender(GifImageBase* pGifImage, Gif_Timer_Notify* pNotify, HWND hForwardMsgHWND)
 {
@@ -424,6 +448,11 @@ bool GifImageRender::ModifyRenderParam(Gif_Timer_Notify* pNotify)
 
 	LeaveCriticalSection(&m_pGifImage->m_sect);
 	return true;
+}
+
+IGifImage*  GifImageRender::GetIGifImage()
+{
+	return m_pGifImage->GetIGifImage();
 }
 
 void GifImageRender::Release()
@@ -1014,6 +1043,24 @@ GIF_Frame* GifImageBase::GetFrame(int nIndex)
 		return NULL;
 
 	return m_vFrame[nIndex];
+}
+
+Image*  GifImageBase::GetFrameImage( int nIndex )
+{
+	GIF_Frame* pFrame = GetFrame(nIndex);
+	if (!pFrame)
+		return NULL;
+
+	return &pFrame->image;
+}
+
+IImage*  GifImageBase::GetFrameIImage( int nIndex )
+{
+	GIF_Frame* pFrame = GetFrame(nIndex);
+	if (!pFrame)
+		return NULL;
+
+	return pFrame->GetIImage();
 }
 
 //

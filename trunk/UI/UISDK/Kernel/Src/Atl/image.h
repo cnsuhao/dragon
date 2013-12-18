@@ -299,6 +299,7 @@ namespace UI
 		bool   SetAlpha(int nAlpha);
 		bool   FixGDIAlphaChannel(int nAlphaIsZero=1);
         void   AlphaEdge(int nEdge, int nSpeed=5);
+        void   Clear();
 		
 		// libo add 20121027 增加一个向该Bitmap绘制内容的方法
 		HDC    BeginDrawToMyself() { this->GetDC(); return m_hDC; }
@@ -2577,6 +2578,7 @@ namespace UI
 	// libo add 20120401 增加图像列表绘制方法
 	inline bool Image::ImageList_Draw(HDC hDestDC, int x, int y, int col, int row, int cx, int cy )
 	{
+        assert(m_hBitmap);
 		assert( col >= 0 );
 		assert( row >= 0 );
 		assert( cx >= 0 );
@@ -2600,6 +2602,7 @@ namespace UI
 	// 修改图片的透明度
 	inline bool Image::ModifyAlpha(ImageData* pOriginImageData, int nAlphaPercent)
 	{
+        assert(m_hBitmap);
 		if (m_nBPP != 32)
 			return false;
 
@@ -2641,6 +2644,7 @@ namespace UI
 	// 设置该图片中所有位置的alpha值。该图一般是一个临时图片，用于在分层窗口上使用HDC进行绘制
 	inline bool  Image::SetAlpha(int nAlpha)
 	{
+        assert(m_hBitmap);
 		if (m_nBPP != 32)
 			return false;
 
@@ -2657,6 +2661,22 @@ namespace UI
 		return true;
 	}
 
+    // 将数据全部清0
+    inline void  Image::Clear()
+    {
+        assert(m_hBitmap);
+
+        if ( m_nPitch < 0)  // 倒序
+        {
+            int nBitsSize = (m_nPitch * m_nHeight);
+            byte* pDstBits = (byte*)m_pBits  + (nBitsSize - m_nPitch);
+            ZeroMemory(pDstBits, -nBitsSize);
+        }
+        else
+        {
+            ZeroMemory(m_pBits, m_nPitch * m_nHeight);
+        }
+    }
 
 };  // namespace 
 

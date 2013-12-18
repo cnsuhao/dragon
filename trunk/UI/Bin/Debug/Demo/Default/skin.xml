@@ -1,31 +1,60 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <skin>
 
-<log enable="1">
-  <item name="ui" enable="1" path="log\ui.log" level="debug" flag="dbgview"  fileflag="disable"/>
-</log>
-  
-<layout>
-  <Window id="mainwindow" minwidth="200" minheight="200">
-    <xHeaderListCtrl id="header" layout.left="10" layout.top="10" width="200" height="30"/>
-    <ListView id="imagelistview" layout.left="10" layout.top="10" width="400" layout.bottom="10"/>
-  </Window>
-</layout>
-  
-<image>
-</image>
-  
-<font>
-   <item id="normal" facename="微软雅黑" size="9" bold="0"/>
-   <item id="normal2" facename="宋体" size="9"/>
-</font>
-  
-<color>
-  <item id="border">0,0,0,255</item>
-  <item id="dlgbk">255,255,255,255</item>
-  <item id="white">255,255,255,255</item>"
-  <item id="black">0,0,0,255</item>"
-</color>
-  
-<style/>
+  <log enable="1">
+    <item name="ui" enable="1" path="log\ui.log" level="debug" flag="dbgview"  fileflag="disable"/>
+  </log>
+
+  <include>clock.xml</include>
+  <layout>
+    <Window id="mainwindow" minwidth="200" minheight="200">
+      <Button id="btnStart" layout.left="30" layout.top="10" width="100" height="28" text="Start"
+              bkgnd.render.type="imagelist" bkgnd.render.image="btn" bkgnd.render.image.9region="10"
+              bkgnd.render.image.drawtype="stretch" istransparent="1" drawfocus="0"/>
+
+      <Button id="btnEnd" layout.left="150" layout.top="10" width="100" height="28" text="End"
+              bkgnd.render.type="imagelist" bkgnd.render.image="btn" bkgnd.render.image.9region="10"
+              bkgnd.render.image.drawtype="stretch" istransparent="1" drawfocus="0"/>
+
+      <PictureCtrl id="pic" layout.left="50" layout.top="70" width="300" height="300" istransparent="1"
+              xbkgnd.render.type="image" bkgnd.render.image="test" bkgnd.render.image.drawtype="stretch"
+              bkgnd.render.type="color" bkgnd.render.color="black"
+              bkgnd.render.border="1" bkgnd.render.border.color="border"/>
+
+      <PictureCtrl id="pic2" layout.left="400" layout.top="70" width="300" height="300" istransparent="1"
+              xbkgnd.render.type="image" bkgnd.render.image="test" bkgnd.render.image.drawtype="stretch"
+              bkgnd.render.type="color" bkgnd.render.color="black"
+              bkgnd.render.border="1" bkgnd.render.border.color="border"/>
+
+      <PictureCtrl id="pic3" layout.left="800" layout.top="70" width="300" height="300" istransparent="1"
+              xbkgnd.render.type="image" bkgnd.render.image="test" bkgnd.render.image.drawtype="stretch"
+              bkgnd.render.type="color" bkgnd.render.color="black"
+              bkgnd.render.border="1" bkgnd.render.border.color="border"/>
+    </Window>
+  </layout>
+
+  <image>
+    <imagelist id="btn" path="button3.png" count="3"/>
+    <image id="test" path="test.png" count="3"/>
+    
+    <!-- 时钟demo -->
+    <image id="clock_bk" path="clock.jpg"/>
+    <image id="clock_hour" path="hourhand.png"/>
+    <image id="clock_min"  path="minhand.png"/>
+    <image id="clock_sec"  path="sechand.png"/>
+  </image>
+
+  <font>
+    <item id="normal" facename="微软雅黑" size="9" bold="0"/>
+    <item id="normal2" facename="宋体" size="9"/>
+  </font>
+
+  <color>
+    <item id="border">255,0,0,255</item>
+    <item id="dlgbk">255,255,255,255</item>
+    <item id="white">255,255,255,255</item>"
+    <item id="black">0,0,0,255</item>"
+  </color>
+
+  <style/>
 </skin>

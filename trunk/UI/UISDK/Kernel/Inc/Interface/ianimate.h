@@ -23,7 +23,6 @@ namespace UI
 	interface ITimeline : public IRootInterface
 	{
 		virtual void     Destroy() = 0;
-//		virtual void     SetDuration(int n) = 0;
 		virtual void     SetRepeateCount(int n) = 0;
         virtual void     SetTimeType(TIMELINE_TIME_TYPE eType) = 0;
 		virtual bool     IsFinish() = 0;

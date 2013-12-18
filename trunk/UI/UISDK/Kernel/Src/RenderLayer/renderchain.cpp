@@ -9,6 +9,7 @@
 #include "UISDK\Kernel\Src\RenderLayer\bufferrenderlayer.h"
 #include "UISDK\Kernel\Src\RenderLayer\directrenderlayer.h"
 #include "UISDK\Kernel\Src\Helper\layout\canvaslayout.h"
+#include "UISDK\Kernel\Src\RenderLayer\3dlayer.h"
 
 // layout.xml RenderChain标签解析
 HRESULT  RenderChain::LoadRenderChain(IUIElement* pUIElement, IUIApplication*, IObject* pObjParent, IObject**)
@@ -96,10 +97,12 @@ RenderChain::RenderChain(IRenderChain* pIRenderChain)
 	m_nLayerCount = 0;
 	m_pWindowLayer = NULL;
     m_pFirstLayer = NULL;
+    m_p3DLayer = NULL;
     m_lRefCanCommit = 0;
 
     m_bFirstTimePaintWindow = true;
     SetCanCommit(false);
+
 }
 RenderChain::~RenderChain()
 {
@@ -235,6 +238,54 @@ bool RenderChain::InsertLayer(RenderLayer*  p)
 	return true;
 }
 
+void  RenderChain::RemoveLayer(RenderLayer*  pRenderLayer)
+{
+    if (!pRenderLayer)
+        return;
+
+    if (pRenderLayer == static_cast<RenderLayer*>(m_pWindowLayer))
+        return;
+
+
+    RenderLayer* pLayer = m_pFirstLayer;
+    while (pLayer)
+    {
+        RenderLayer* pLayerNext = pLayer->GetNextLayer();
+        if (pLayer == pRenderLayer)
+        {
+            RenderLayer* pLayerPrev = pLayer->GetPrevLayer();
+            if (pLayerNext)
+                pLayerNext->SetPrevLayer(pLayerPrev);
+            if (pLayerPrev)
+                pLayerPrev->SetNextLayer(pLayerNext);
+
+            if (m_pFirstLayer == pRenderLayer)
+                m_pFirstLayer = pLayerNext;
+
+            if (pLayer == static_cast<RenderLayer*>(m_p3DLayer))
+                m_p3DLayer = NULL;
+
+            pLayer->GetIRenderLayer()->delete_this();
+            m_nLayerCount --;
+            if (1 == m_nLayerCount)
+            {
+                this->DestroyDoubleBuffer();
+            }
+            break;
+        }
+        pLayer = pLayerNext;
+    }
+}
+
+void  RenderChain::Commit(RECT* prc)
+{
+	CombineAllLayer(NULL);
+	if (CanCommit())
+	{
+		m_pWindow->CommitDoubleBuffet2Window(NULL, prc, prc?1:0);
+	}
+}
+
 void RenderChain::CombineAllLayer(HRGN hRgn)
 {
 	if (hRgn)
@@ -356,23 +407,35 @@ void RenderChain::UpdateObject(Object* pObj, bool bOnlyRedrawBkgnd, bool bUpdate
     RenderLayer*    pLayer = NULL;
     IRenderTarget*  pRenderTarget = NULL;
 
-    // 获取对象在层上的可见区域
-     CRect rcObjVisible;
-     if (false == pObj->GetObjectVisibleRect(&rcObjVisible, false))   
-     { 
-         return;  // 该对象在窗口上不可见，不绘制
-     }
-
     pLayer = pObj->GetRenderLayer();
-    if (NULL == pLayer)
+    if (!pLayer)
         return;
-    
+
+    if (m_p3DLayer && pLayer == m_p3DLayer)
+    {
+        m_p3DLayer->SetDirty(true);
+        if (bUpdateNow)
+        {
+            m_p3DLayer->Draw();
+
+            CombineAllLayer(NULL);
+            if (CanCommit())
+                m_pWindow->CommitDoubleBuffet2Window(NULL, NULL);
+        }
+        return;
+    }
+
     if (!pLayer->IsLayerEnable() || !pLayer->CanRedraw())
         return;
 
     pRenderTarget = pLayer->GetRenderTarget();
-    if (NULL == pRenderTarget)
+    if (!pRenderTarget)
         return;
+
+    // 获取对象在层上的可见区域
+     CRect rcObjVisible;
+     if (false == pObj->GetObjectVisibleRect(&rcObjVisible, false))   
+         return;  // 该对象在窗口上不可见，不绘制
 
     // 不需要维持剪裁区域，由rendertarget begindraw一次性搞定即可
     RenderContext roc(&rcObjVisible, false);  
@@ -402,16 +465,25 @@ void RenderChain::UpdateObject(Object* pObj, bool bOnlyRedrawBkgnd, bool bUpdate
     {
         pRenderTarget->EndDraw();
 
-        // 转成窗口上的可见区域
-        rcObjVisible.OffsetRect(pLayer->GetParentRectL(), pLayer->GetParentRectT());
+//         if (m_p3DLayer)
+//         {
+//             CombineAllLayer(NULL);
+//             if (bUpdateNow && CanCommit())
+//                 m_pWindow->CommitDoubleBuffet2Window(NULL, NULL);
+//         }
+//         else
+        {
+            // 转成窗口上的可见区域
+            rcObjVisible.OffsetRect(pLayer->GetParentRectL(), pLayer->GetParentRectT());
 
-        HRGN hRgn = ::CreateRectRgnIndirect(&rcObjVisible);
-        CombineAllLayer(hRgn);
-        SAFE_DELETE_GDIOBJECT(hRgn);
+            HRGN hRgn = ::CreateRectRgnIndirect(&rcObjVisible);
+            CombineAllLayer(hRgn);
+            SAFE_DELETE_GDIOBJECT(hRgn);
 
-        // 显示
-        if (bUpdateNow && CanCommit())
-            m_pWindow->CommitDoubleBuffet2Window(NULL, &rcObjVisible);
+            // 显示
+            if (bUpdateNow && CanCommit())
+                m_pWindow->CommitDoubleBuffet2Window(NULL, &rcObjVisible);
+        }
     }
 }
 
@@ -487,12 +559,6 @@ void  RenderChain::EndRedrawObjectPart(IRenderTarget* pRenderTarget, RECT* prcAr
 //
 void  RenderChain::CreateDoubleBuffer(int nWidth, int nHeight)
 {
-	if (nWidth <= 0 || nHeight <=0)
-	{
-		UI_LOG_ERROR(_T("%s nWidth:%d, nHeight:%d"), FUNC_NAME, nWidth, nHeight);
-		return;
-	}
-
     if (m_hMultiLayerMemDC)
     {
 	    ::SelectObject(m_hMultiLayerMemDC, m_hOldBitmap);
@@ -504,6 +570,9 @@ void  RenderChain::CreateDoubleBuffer(int nWidth, int nHeight)
 	    ::SetBkMode(m_hMultiLayerMemDC, TRANSPARENT);
 	    ::SetStretchBltMode(m_hMultiLayerMemDC, HALFTONE);
     }
+
+	if (nWidth <= 0 || nHeight <=0)  // 注：只有创建了m_hMultiLayerMemDC，在OnWindowResize中才会继续创建multi layer buffer
+		return;
 
 	m_MultiLayerBuffer.Create(nWidth, nHeight, 32, Image::createAlphaChannel);
 	m_hOldBitmap = (HBITMAP)::SelectObject(m_hMultiLayerMemDC, (HBITMAP)m_MultiLayerBuffer);
@@ -529,4 +598,63 @@ void  RenderChain::SetCanCommit(bool b)
         m_lRefCanCommit --;
     else
         m_lRefCanCommit ++;
+}
+
+bool  RenderChain::CanCommit() 
+{ 
+    return 0 == m_lRefCanCommit; 
+}
+
+Layer3d*  RenderChain::Get3DLayer() 
+{
+    return m_p3DLayer; 
+}
+void  RenderChain::On3dObjectBegin()
+{   
+    if (!m_pWindow)
+        return;
+
+    if (!m_p3DLayer)
+    {
+        ILayer3d* p3DLayer = NULL;
+        ILayer3d::CreateInstance(m_pWindow->GetUIApplication(), &p3DLayer);
+        if (p3DLayer)
+        {
+            m_p3DLayer = p3DLayer->GetImpl();
+            m_p3DLayer->SetWindowPtr(m_pWindow); 
+            m_p3DLayer->SetRenderChainPtr(this);
+            m_p3DLayer->SetConfigLeft(0);
+            m_p3DLayer->SetConfigRight(0);
+            m_p3DLayer->SetConfigTop(0);
+            m_p3DLayer->SetConfigBottom(0);
+
+            InsertLayer(m_p3DLayer);
+
+            int nWidth = m_pWindow->GetWidth();
+            int nHeight = m_pWindow->GetHeight();
+
+            if (!m_hMultiLayerMemDC || m_MultiLayerBuffer.IsNull())
+            {
+                CreateDoubleBuffer(nWidth, nHeight);
+            }
+
+            m_p3DLayer->CreateBuffer(nWidth, nHeight);   // 这个时候有可能还没有创建multi layer buffer
+            CanvasLayout::ArrangeObject(m_p3DLayer, nWidth, nHeight);
+        }
+    }
+
+    if (m_p3DLayer)
+    {
+        m_p3DLayer->AddRef();
+    }
+}
+void  RenderChain::On3dObjectEnd()
+{
+    if (m_p3DLayer)
+    {
+        if (0 == m_p3DLayer->Release())
+        {
+            this->RemoveLayer(m_p3DLayer);  // m_p3DLayer将被置空
+        }
+    }
 }

@@ -1,4 +1,6 @@
 #pragma once
+#include <math.h>
+
 namespace UI
 {
 
@@ -585,6 +587,10 @@ typedef struct tagCAMERA
 #define FIXP16_WP_MASK   0xffff0000
 #define FIXP16_ROUND_UP  0x00008000
 
+#define FIXP22_SHIFT     22
+#define FIXP28_SHIFT     28
+#define FIXP6_SHIFT      6  // (28 - 22)
+
 // 从16.16格式的定点数中提取整数部分和小数部分
 #define FIXP16_WP(fp) ((fp) >> FIXP16_SHIFT)
 #define FIXP16_DP(fp) ((fp) && FIXP16_DP_MASK)
@@ -596,11 +602,19 @@ typedef struct tagCAMERA
 // 将定点数转换为浮点数
 #define FIXP16_TO_FLOAT(fp) ( ((float)fp)/FIXP16_MAG)
 
+// 浮点数转整数。 注意：默认的fistp是四舍五入模式。需要通过调用_control87(_MCW_RC, _RC_DOWN);进行调整
+// 注：将汇编定义成宏每行后面不能加；而且每一行都得加一个__asm
+#define FLOAT_TO_INT(f,i) __asm \
+{ \
+    __asm fld   f \
+    __asm fistp i \
+}
 
 // storage for our lookup tables
 extern float cos_look[361]; // 1 extra so we can store 0-360 inclusive
 extern float sin_look[361]; // 1 extra so we can store 0-360 inclusive
 
+extern bool  g_bInitSinCosTable; 
 void  Build_Sin_Cos_Tables(void);
 
 // trig functions
@@ -611,5 +625,87 @@ float Fast_Cos(float theta);
 int   Fast_Distance_2D(int x, int y);
 float Fast_Distance_3D(float x, float y, float z);
 
+
+//
+//   A ┌---------------┐ B
+//     |               |
+//     |               |
+//     |               |
+//   D └---------------┘ C
+//
+// 四边形
+struct Quad
+{
+    union
+    {
+        int pos[8];
+
+        struct
+        {
+            int Ax;
+            int Ay;
+            int Bx;
+            int By;
+            int Cx;
+            int Cy;
+            int Dx;
+            int Dy;
+        };
+    };
+
+    float  Az;  // 纹理映射时需要用到的z缓存
+    float  Bz;
+    float  Cz;
+    float  Dz;
+
+
+    bool SetByRect(LPRECT prc)
+    {
+        if (NULL == prc)
+            return false;
+
+        Ax = Dx = prc->left;
+        Bx = Cx = prc->right;
+        Ay = By = prc->top;
+        Cy = Dy = prc->bottom;
+
+        Az = Bz = Cz = Dz = 0.0f;
+        return true;
+    }
+    
+    void  Offset(POINT pt)
+    {
+        Offset(pt.x, pt.y);
+    }
+    void  Offset(int x, int y)
+    {
+        Ax += x;
+        Ay += y;
+
+        Bx += x;
+        By += y;
+
+        Cx += x;
+        Cy += y;
+
+        Dx += x;
+        Dy += y;
+    }
+};
+
+// 带纹理位置数据的顶点结构
+struct TexturePoint
+{
+    int x;  // 源坐标
+    int y;
+    
+    int u;  // 纹理坐标
+    int v;
+
+	int xt; // 转换后的坐标
+	int yt;
+
+    float z;  // 在相机中的z坐标，用于z缓存计算
+};
 }
 #include "3dmatrix.h"

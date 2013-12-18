@@ -246,10 +246,26 @@ void  DesktopLayout::Arrange(WindowBase*  pWindow)
     //nCXScreen = ::GetSystemMetrics( SM_CXSCREEN );
     //nCYScreen = ::GetSystemMetrics( SM_CYSCREEN );
 
-    CRect rcWorkSize;
-    SystemParametersInfo(SPI_GETWORKAREA, 0, &rcWorkSize, 0);
-    nCXScreen = rcWorkSize.Width();
-    nCYScreen = rcWorkSize.Height();
+    if (GetWindowLong(pWindow->m_hWnd, GWL_STYLE)&WS_CHILD)
+    {
+        CRect rcParent;
+        rcParent.SetRectEmpty();
+
+        HWND hWndParent = GetParent(pWindow->m_hWnd);
+        if (hWndParent)
+        {
+            ::GetClientRect(hWndParent, &rcParent);
+        }
+        nCXScreen = rcParent.Width();
+        nCYScreen = rcParent.Height();
+    }
+    else
+    {
+        CRect rcWorkSize;
+        SystemParametersInfo(SPI_GETWORKAREA, 0, &rcWorkSize, 0);
+        nCXScreen = rcWorkSize.Width();
+        nCYScreen = rcWorkSize.Height();
+    }
 	
     // 如果同时指定了left/right,则忽略width属性
     if (left != NDEF && right != NDEF)

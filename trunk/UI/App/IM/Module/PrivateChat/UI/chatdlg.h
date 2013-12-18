@@ -1,7 +1,5 @@
 #pragma once
-//#include "..\IM_Ctrls\QQContactMgrListView.h"
-#include "UISDK\Kernel\Inc\Interface\icustomwindow.h"
-#include "emotiondlg.h"
+#include "chatdlgbase.h"
 
 namespace UI
 {
@@ -16,7 +14,7 @@ namespace UI
 }
 class CPrivateChatUI;
 
-class CChatDlg : public UI::ICustomWindow
+class CChatDlg : public CChatDlgBase
 {
 public:
 	CChatDlg(void);
@@ -42,7 +40,7 @@ public:
 		UIMSG_WM_SYSCOMMAND(OnSysCommand)
         UIMSG_WM_CLOSE(OnClose)
         UIMSG_WM_INITIALIZE(OnInitWindow)
-    UI_END_MSG_MAP_CHAIN_PARENT(UI::ICustomWindow)
+    UI_END_MSG_MAP_CHAIN_PARENT(CChatDlgBase)
 
 public:
 	void  OnInitWindow();
@@ -66,8 +64,7 @@ public:
     LRESULT  OnEmotionDlgHide(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT  OnInsertEmotion(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-    void  SetPrivateChatUI(CPrivateChatUI* p);
-    void  SetSkin(UI::IRenderBase* p);
+    virtual void  SetSkin(UI::IRenderBase* p);
 private:
 	UI::IButton*   m_pBtnAnimate;
 	UI::IPanel*    m_pRightPanel;
@@ -103,7 +100,5 @@ private:
 	RIGHT_PANEL_STATE m_eRightPanelState;
 	int m_nRightPanelConfigWidth;
 	int m_nLeftPanelWidth;
-
-    CPrivateChatUI*  m_pPrivateChatUI;
 };
 

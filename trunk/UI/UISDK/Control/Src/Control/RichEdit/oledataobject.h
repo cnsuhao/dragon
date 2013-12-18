@@ -4,6 +4,7 @@
 
 namespace UI
 {
+	class RichEditOleObjectManager;
     struct OleDataObjectItem
     {
         FORMATETC  formatetc;
@@ -15,7 +16,7 @@ namespace UI
 	class OleDataObject : public IDataObject
 	{
 	public:
-		OleDataObject();
+		OleDataObject(RichEditOleObjectManager* pMgr);
 		~OleDataObject();
 
 		// IUnknown  Interface
@@ -37,8 +38,10 @@ namespace UI
 
 	protected:
 		list<OleDataObjectItem*>   m_list;
-		long     m_dwRef;
+		long     m_dwRef; 
 //		/*IMarshal*/IUnknown* m_pMarshal;
+
+		RichEditOleObjectManager*  m_pREOleObjMgr;
 
 		friend class IEnumFORMATETCImpl;
 	};
@@ -68,7 +71,7 @@ namespace UI
 		OleDataObject*  m_pDataObject;
 		long     m_dwRef;
 		int      m_nCurIndex;
+
 	}; 
 
-	
 }

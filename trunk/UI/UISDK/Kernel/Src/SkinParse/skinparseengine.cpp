@@ -102,7 +102,11 @@ HRESULT  SkinParseEngine::UIParseIncludeElement(IUIElement* pElement, ISkinRes* 
         return E_FAIL;
 
     SkinParseEngine parse(pSkinRes->GetUIApplication(), pSkinRes->GetImpl());
+#ifdef _UNICODE
     if (!parse.ProcessFile((BSTR)bstrFilePath))
+#else
+    if (!parse.ProcessFile(CW2A((BSTR)bstrFilePath)))
+#endif
         return E_FAIL;
 
     return S_OK;

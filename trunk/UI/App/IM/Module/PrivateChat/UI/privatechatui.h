@@ -1,7 +1,7 @@
 #pragma once
 #include "App\IM\include\framework_inc.h"
 #include "App\IM\include\privatechat_inc.h"
-class CChatDlg;
+class CChatDlgBase;
 namespace IM
 {
     struct ISkinUI;
@@ -20,7 +20,7 @@ public:
 
 public:
     String  m_strUserId;
-    CChatDlg*  m_pChatDlg;
+    CChatDlgBase*  m_pChatDlg;
 };
 
 class CPrivateChatUI : public IM::IUI
@@ -31,17 +31,17 @@ public:
 
     virtual long  ExecuteCommand(long nCommand, WPARAM wParam, LPARAM lParam);
 
-    void  DelayDestroyDlg(CChatDlg* p);
+    void  DelayDestroyDlg(CChatDlgBase* p);
     void  ShowEmotionDlg(HWND hWnd, POINT pt);
 
     long  OnOpenPrivateChatDlg(IM::OpenPrivateChatDlgReqTask* pTask);
 
 protected:
     
-    void  DestroyDlg(CChatDlg* p);
+    void  DestroyDlg(CChatDlgBase* p);
 
     PrivateChatDlgInfo*  FindDlg(const TCHAR* szUserId);
-    PrivateChatDlgInfo*  FindDlg2(CChatDlg* pDlg);
+    PrivateChatDlgInfo*  FindDlg2(CChatDlgBase* pDlg);
 
 public:
     vector<PrivateChatDlgInfo*>  m_vecPrivateChatDlg;

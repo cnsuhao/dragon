@@ -1,6 +1,8 @@
 #ifndef IGIFIMAGE_H_C186D14A_0339_4606_A0FA_FC39C9732836
 #define IGIFIMAGE_H_C186D14A_0339_4606_A0FA_FC39C9732836
 
+#include "UISDK\Kernel\Inc\Util\iimage.h"
+
 namespace UI
 {
 interface  IGifImageRender;
@@ -83,7 +85,9 @@ public:
     bool  ModifyRender(Gif_Timer_Notify* pNotify, int nIndex=-1);
     bool  DeleteRender(int nIndex=-1);
 
-   bool   SetTransparentColor(COLORREF colTransparent = GetSysColor(COLOR_BTNFACE));
+    bool  SetTransparentColor(COLORREF colTransparent = GetSysColor(COLOR_BTNFACE));
+	IImage*  GetFrameIImage( int nIndex );
+
 private:
     GifImageBase*  m_pImpl;
     bool  m_bCreateGifImageImpl;
@@ -112,6 +116,7 @@ interface  IGifImageRender
     virtual void  OnPaint(HDC hDC, int x, int y) = 0;
     virtual void  OnAlphaPaint(HDC hDC, int x, int y) = 0;
     virtual GIF_DRAW_STATUS GetStatus() = 0;
+	virtual IGifImage*  GetIGifImage() = 0;
 };
 
 }

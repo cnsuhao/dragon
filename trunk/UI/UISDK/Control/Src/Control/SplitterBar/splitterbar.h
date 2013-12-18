@@ -3,6 +3,7 @@
 
 namespace UI
 {
+// 注：由于splitter要在自己加载完之后就获取相应控件，因此需要将splitterbar放在两个控件的后面
 
 class SplitterBar : public MessageProxy
 {

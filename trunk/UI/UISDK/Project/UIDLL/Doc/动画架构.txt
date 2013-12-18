@@ -15,3 +15,29 @@ SetLayeredWindowAttributes/UpdateLayeredWindow跟3D没有关系，是纯软件方式实现的，
 层混合渲染。为了效率，分层窗口被约束成必须是一个静态的图片，或者拥有固定的ALPHA值，桌
 面渲染这些图层的效率达到了极致，纯软件混合的速度几乎赶上了硬件。但限制也是很强的，跟渲
 染相关的窗口消息被禁止了，保留的是鼠标、键盘、命中测试等低功耗消息。
+
+
+-- webkit 分层原理  -----------
+http://www.wumii.com/item/M9dceGHl
+
+ (1)在RenderBoxModelObject::styleDidChange()函数里，会根据requiresLayer()函数的返回值，来决定是否
+创建一个RenderLayer。requiresLayer()函数的定义为：
+      virtual bool requiresLayer() const { return isRoot() || isPositioned() || isRelPositioned() || isTransparent() || hasOverflowClip() || 
+hasTransform() || hasMask() || hasReflection(); }
+      在其定义中：
+      isRoot()判断是否为根节点；
+      isPositioned()判断是否为absolute定位方式，或者fixed定位方式；
+      isRelPositioned()判断是否为relative定位方式；
+      isTransparent()对应于css属性的opacity（透明度），只有当opacity小于1.0时，返回值才为真。
+      后面几个条件为内部的条件，与css属性无关。
+      如果要创建一个RenderLayer,就需要上面的requiresLayer()返回为真，所以能够触发创建一个RenderLayer的css属性为：
+position：absolute，relative，fixed（static不能，它为无特殊定位，对象遵循HTML定位规则）；opacity：小于1 (大于1，isTransparent()
+函数返回假，不会创建RenderLayer；小于0的时候，该函数也返回真，会创建RenderLayer）。
+      创建RenderLayer代码：m_layer = new (renderArena()) RenderLayer(this);
+
+      (2)在RenderBoxModelObject::styleDidChange()函数里，创建RenderLayer之后，必须调用setHasLayer(true)函数，否则该RenderLayer
+不会被渲染，即被视为没有RenderLayer。
+
+      (3)在RenderBoxModelObject::styleDidChange()函数里将新创建的RenderLayer插入RenderLayer树中去。
+代码： m_layer->insertOnlyThisLayer();
+

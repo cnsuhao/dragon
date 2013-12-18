@@ -9,6 +9,9 @@ class HwndHost;
 interface UISDKAPI IHwndHost : public IObject
 {
     UI_DECLARE_Ixxx_INTERFACE(IHwndHost, HwndHost);
+
+	void  Attach(HWND hWnd);
+	HWND  Detach();
 };
 
 }

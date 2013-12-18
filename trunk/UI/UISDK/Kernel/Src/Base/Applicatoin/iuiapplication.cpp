@@ -4,6 +4,7 @@
 #include "UISDK\Kernel\Inc\Interface\iobject.h"
 #include "UISDK\Kernel\Src\Atl\image.h"
 #include "UISDK\Kernel\Src\Helper\timer\timermanager.h"
+#include "UISDK\Kernel\Src\UIEffect\CacheBitmap\cachebitmap.h"
 
 namespace UI
 {
@@ -117,6 +118,11 @@ void  IUIApplication::ReleaseCacheDC(HDC hDC)
 {
     return Image::ReleaseCacheDC(hDC);
 }  
+HBITMAP  IUIApplication::GetCacheBitmap(int nWidth, int nHeight)
+{
+    return CacheBitmap::GetInstance()->Create(nWidth, nHeight);
+}
+
 bool     IUIApplication::IsUnderXpOS() { return m_pImpl->IsUnderXpOS(); }
 bool     IUIApplication::IsVistaOrWin7etc() { return m_pImpl->IsVistaOrWin7etc(); }
 

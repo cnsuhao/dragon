@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "privatechatui.h"
 #include "chatdlg.h"
+#include "chatdlg2.h"
 #include "App\IM\include\task.h"
 #include "App\IM\include\privatechat_inc.h"
 #include "App\IM\include\skin_inc.h"
@@ -44,7 +45,7 @@ long CPrivateChatUI::ExecuteCommand( long nCommand, WPARAM wParam, LPARAM lParam
         {
         case PRIVATECHAT_UI_CMD_DESTROYPRIVATECHATDLG:
             {
-                DestroyDlg((CChatDlg*)pTask->GetwParam());
+                DestroyDlg((CChatDlgBase*)pTask->GetwParam());
             }
             break;
         }
@@ -89,7 +90,7 @@ PrivateChatDlgInfo*  CPrivateChatUI::FindDlg(const TCHAR* szUserId)
     return NULL;
 }
 
-PrivateChatDlgInfo*  CPrivateChatUI::FindDlg2(CChatDlg* pDlg)
+PrivateChatDlgInfo*  CPrivateChatUI::FindDlg2(CChatDlgBase* pDlg)
 {
     if (NULL == pDlg)
         return NULL;
@@ -107,7 +108,7 @@ PrivateChatDlgInfo*  CPrivateChatUI::FindDlg2(CChatDlg* pDlg)
     return NULL;
 }
 
-void  CPrivateChatUI::DelayDestroyDlg(CChatDlg* p)
+void  CPrivateChatUI::DelayDestroyDlg(CChatDlgBase* p)
 {
     IM::GetFramework()->PostTask(
         IM::CreateTask(
@@ -116,7 +117,7 @@ void  CPrivateChatUI::DelayDestroyDlg(CChatDlg* p)
             (WPARAM)p, 0));
 }
 
-void  CPrivateChatUI::DestroyDlg(CChatDlg* p)
+void  CPrivateChatUI::DestroyDlg(CChatDlgBase* p)
 {
     if (!p)
         return;
@@ -157,12 +158,29 @@ long  CPrivateChatUI::OnOpenPrivateChatDlg(IM::OpenPrivateChatDlgReqTask* pTask)
         return 0;
     }
 
-    pInfo = new PrivateChatDlgInfo;
-    pInfo->m_strUserId = pTask->m_szUserId;
+	static bool bSwitch = true;
+	bSwitch = !bSwitch;
 
-    CChatDlg::CreateInstance(IM::GetUIApplication(), &pInfo->m_pChatDlg);
-    pInfo->m_pChatDlg->SetPrivateChatUI(this);
-    pInfo->m_pChatDlg->Create(IM::GetUIApplication(), _T("chatdlg"));
+	pInfo = new PrivateChatDlgInfo;
+	pInfo->m_strUserId = pTask->m_szUserId;
+
+	if (bSwitch)
+	{
+		CChatDlg* p = NULL;
+		CChatDlg::CreateInstance(IM::GetUIApplication(), &p);
+		pInfo->m_pChatDlg = static_cast<CChatDlgBase*>(p);
+		pInfo->m_pChatDlg->SetPrivateChatUI(this);
+		pInfo->m_pChatDlg->Create(IM::GetUIApplication(), _T("chatdlg"));
+	}
+	else
+	{
+		CChatDlg2* p = NULL;
+		CChatDlg2::CreateInstance(IM::GetUIApplication(), &p);
+		pInfo->m_pChatDlg = static_cast<CChatDlgBase*>(p);
+		pInfo->m_pChatDlg->SetPrivateChatUI(this);
+		pInfo->m_pChatDlg->Create(IM::GetUIApplication(), _T("chatdlg2"));
+	}
+
 
     if (NULL == m_pSkinUI)
     {

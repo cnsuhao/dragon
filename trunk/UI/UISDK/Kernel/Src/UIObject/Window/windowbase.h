@@ -132,7 +132,7 @@ public:
     Object*  GetHoverObject();
     Object*  GetPressObject();
 
-	bool  Create(IUIApplication* pUIApp, const TCHAR* szID,  HWND hWndParent = NULL);
+	bool  Create(IUIApplication* pUIApp, const TCHAR* szID,  HWND hWndParent = NULL, RECT* prc = NULL);
 	long  DoModal(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent );
 	long  DoModal(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndParent);
 	HWND  DoModeless(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndOnwer );

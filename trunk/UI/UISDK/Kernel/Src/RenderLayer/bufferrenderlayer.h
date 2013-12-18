@@ -23,7 +23,9 @@ public:
 public:
     bool  SaveLayer(const TCHAR*  szPath);
     void  ReCreateRenderTarget();
-    Image*  GetMemoryLayerBuffer() { return &m_buffer; }
+    Image*  GetMemoryLayerBuffer();
+    void  CreateBuffer(int nWidth, int nHeight);
+    void  Clear();
 
     virtual void  Commit(HDC hDstDC);
     

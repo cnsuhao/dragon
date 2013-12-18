@@ -754,12 +754,12 @@ Edit::~Edit()
 
 const TCHAR*  Edit::GetText()
 {
-    return this->m_EditData.GetText().c_str();
+    return this->m_EditData.GetTextRef().c_str();
 }
 
 int Edit::GetTextLength()
 {
-	return this->m_EditData.GetText().length();
+	return this->m_EditData.GetTextRef().length();
 }
 // int Edit::GetText(TCHAR* szBuffer, int nBufferSize)
 // {
@@ -774,7 +774,7 @@ int Edit::GetTextLength()
 // 
 // 	int nCpy = min(nBufferSize-1, nLength);
 // 
-// 	_tcsncpy(szBuffer, m_EditData.GetText().c_str(), nCpy);
+// 	_tcsncpy(szBuffer, m_EditData.GetTextRef().c_str(), nCpy);
 // 	szBuffer[nCpy] = _T('');
 // 
 // 	return nCpy;
@@ -1077,7 +1077,7 @@ void  Edit::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
 
 void  Edit::GetDesiredSize(SIZE* pSize)
 {
-	String strTest = this->m_EditData.GetText();
+	String strTest = this->m_EditData.GetTextRef();
 	if (strTest.empty())
 	{
 		strTest = _T("T");  // 当text为空时，不能让GetTextExtentPoint32返回的高度为0
@@ -1133,7 +1133,7 @@ void Edit::DrawNormal(IRenderTarget* pRenderTarget)
     if (GRAPHICS_RENDER_LIBRARY_TYPE_GDI == pFont->GetGraphicsRenderLibraryType())
     {
         if (m_pIEdit->GetTextRender())
-            m_pIEdit->GetTextRender()->DrawState(pRenderTarget, &rcClient, EDIT_TEXTREDNER_STATE_NORMAL, m_EditData.GetText().c_str());
+            m_pIEdit->GetTextRender()->DrawState(pRenderTarget, &rcClient, EDIT_TEXTREDNER_STATE_NORMAL, m_EditData.GetTextRef().c_str());
 
         return;
     }
@@ -1154,7 +1154,7 @@ void Edit::DrawNormal(IRenderTarget* pRenderTarget)
   		    hDC, rcClient.left, rcText.top, 
   		    ETO_CLIPPED, 
   		    &rcText, 
-  		    m_EditData.GetText().c_str(), 
+  		    m_EditData.GetTextRef().c_str(), 
   		    m_EditData.GetTextLength(), NULL);
 
         ::SetTextColor(hDC, oldTextCol);
@@ -1163,7 +1163,7 @@ void Edit::DrawNormal(IRenderTarget* pRenderTarget)
 #ifdef _DEBUG
 	{
 	//	UI_LOG_DEBUG(_T("Edit::Draw, CaretIndex:%d, CaretPos:%d, ScrollX:%d, String:%s"),
-	//		m_EditData.GetCaretIndex(), m_nXCaretPos, m_nXScroll, m_EditData.GetText().c_str());
+	//		m_EditData.GetCaretIndex(), m_nXCaretPos, m_nXScroll, m_EditData.GetTextRef().c_str());
 	}
 #endif
 }
@@ -1536,6 +1536,7 @@ void Edit::OnChar( UINT nChar, UINT nRepCnt, UINT nFlags)
 
 	return ;
 }
+
 void Edit::OnInputChar(UINT nChar)
 {
 	if (IsReadOnly())

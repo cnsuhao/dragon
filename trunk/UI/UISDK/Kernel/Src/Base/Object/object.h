@@ -14,6 +14,7 @@ class RenderLayer;
 class RenderChain;
 class WindowBase;
 interface ILayoutParam;
+class Object3DWrap;
 
 class Object : public ObjTree
 {
@@ -144,6 +145,7 @@ public:
 	void  WindowPoint2ObjectClientPoint_CalcScroll(const POINT* ptWindow, POINT* ptObj);
 	void  ObjectPoint2ObjectClientPoint(const POINT* ptWindow, POINT* ptObj);
 	void  ClientRect2ObjectRect(const RECT* rcClient, RECT* rcObj);
+    void  WindowRect2ObjectClientRect(const RECT* rcWindow, RECT* rcObj);
 	bool  GetScrollOffset(int* pxOffset, int* pyOffset);
 	bool  GetScrollRange(int* pxRange, int* pyRange);
 	bool  GetObjectVisibleRect(RECT* prc, bool bInWindowOrLayer);
@@ -215,6 +217,12 @@ public:
 
 public:
 #pragma  endregion
+
+#pragma region // 3d op
+    Object3DWrap*  Begin3D();
+    void  End3D();
+    Object3DWrap*  Get3DWrap();
+#pragma endregion
 
 	IRenderFont*  GetRenderFont();
 	ITextRenderBase*  GetTextRender();
@@ -323,6 +331,7 @@ protected:
     IRenderBase*   m_pForegndRender;         // 前景渲染
     ITextRenderBase*  m_pTextRender;         // 文字渲染
     IUICursor*  m_pCursor;                   // 对象的鼠标样式
+    Object3DWrap*  m_pObject3DWrap;          // 3d包装器
     
     void**  m_ppOutRef;                      // 为了解决一个类成员对象，有可能被自己的父对象删除后，这个类却不知道，再删除该对象时崩溃了.
     IUIApplication*  m_pUIApplication;       // 该对象所在的App(为了实现多实例，将app不再做为全局变量，每个Object能够快速引用到app接口)

@@ -3,6 +3,7 @@
 #include "UISDK\Kernel\Src\Base\Object\object.h"
 #include "UISDK\Kernel\Src\UIObject\Window\windowbase.h"
 #include "UISDK\Kernel\Src\RenderLayer\renderchain.h"
+#include "UISDK\Kernel\Src\Animate\3dwrap\ui3dwrap.h"
 
 namespace UI
 {
@@ -476,4 +477,24 @@ bool  IObject::SetMouseCapture(int nNotifyMsgId){ return m_pObjectImpl->SetMouse
 bool  IObject::ReleaseMouseCapture(){ return m_pObjectImpl->ReleaseMouseCapture(); }
 bool  IObject::SetKeyboardCapture(int nNotifyMsgId){ return m_pObjectImpl->SetKeyboardCapture(nNotifyMsgId); }
 bool  IObject::ReleaseKeyboardCapture() { return m_pObjectImpl->ReleaseKeyboardCapture(); }
+
+IObject3DWrap*  IObject::Begin3D()
+{
+    Object3DWrap* p = m_pObjectImpl->Begin3D(); 
+    if (p)
+        return p->GetIObject3DWrap();
+    return NULL;
+}
+void  IObject::End3D()
+{
+    m_pObjectImpl->End3D();
+}
+IObject3DWrap*  IObject::Get3DWrap()
+{
+    Object3DWrap* p = m_pObjectImpl->Get3DWrap(); 
+    if (p)
+        return p->GetIObject3DWrap();
+    return NULL;
+}
+
 }

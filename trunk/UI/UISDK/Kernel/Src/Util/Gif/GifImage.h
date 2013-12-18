@@ -275,16 +275,20 @@ struct GIF_ImageDescriptor                // 图像描述块
 //	
 struct GIF_Frame
 {
-	GIF_Frame()
-	{
-		nRealDelayTime = 100;   // 居然还有的gif没有control块..
-	}
+	GIF_Frame();
+	~GIF_Frame();
 
+	UI::IImage*  GetIImage();
+
+public:
 	GIF_GraphicControlExtension  control;      // 包含了这一帧图像的延时
 	GIF_ImageDescriptor          descriptor;   // 包含了这一帧图像的偏移和大小
 
 	int           nRealDelayTime;              // = control.delay_time*10，避免重复计算
 	UI::Image     image;                       // 重要：图片解析器
+
+private:
+	UI::IImage*   pImageWrap;                  // 返回给外部使用的指针，由内部负责维护其生命周期
 };
 
 
@@ -302,19 +306,19 @@ protected:
 
 public:
 
-	void   Start();
-	void   Pause();
-	void   Stop();
-	void   OnAlphaPaint(HDC hDC, int x, int y);
-	void   OnPaint(HDC hDC, int x, int y);
-	GIF_DRAW_STATUS GetStatus();
-	bool   ModifyRenderParam(Gif_Timer_Notify* pNotify); 
-	void   Release();
-
-	int    GetWidth();
-	int    GetHeight();
+	virtual void   Start();
+	virtual void   Pause();
+	virtual void   Stop();
+	virtual void   OnAlphaPaint(HDC hDC, int x, int y);
+	virtual void   OnPaint(HDC hDC, int x, int y);
+	virtual GIF_DRAW_STATUS GetStatus();
+	virtual void   Release();
+	virtual int    GetWidth();
+	virtual int    GetHeight();
+	virtual IGifImage*  GetIGifImage();
 
 	GifImageBase*  GetGifImage() { return m_pGifImage; }
+	bool   ModifyRenderParam(Gif_Timer_Notify* pNotify); 	
 
 protected:
 	void   draw_frame(GIF_Frame* pFrame);
@@ -377,7 +381,10 @@ public:
 	int    GetWidth()  { return m_nImageWidth; }
 	int    GetHeight() { return m_nImageHeight; }
 	int    GetFrameCount() { return (int)m_vFrame.size(); }
-	GIF_Frame* GetFrame( int nIndex );
+	GIF_Frame*  GetFrame( int nIndex );
+	Image*   GetFrameImage( int nIndex );
+	IImage*  GetFrameIImage( int nIndex );
+	
 
 protected:   // 内部接口
 	GifImageRender*  GetDrawItemByIndex(int nIndex);

@@ -135,7 +135,7 @@ void  SplitterBar::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
 	pEditor->CreateTextAttribute(pSplitterBarGroup, XML_SPLITTERBAR_BOTTOM_PREFIX XML_SPLITTERBAR_OBJ_ID, szPrefix, NULL, NULL);
 }
 
-
+// 
 void  SplitterBar::OnObjectLoaded()
 {
     IObject* pParent = m_pISplitterBar->GetParentObject();

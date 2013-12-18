@@ -72,7 +72,7 @@ public:
 
 	// 公共方法
 public:
-	void  SetWindowResizeType(UINT nType);
+	void  SetResizeCapability(UINT nType);
 	bool  IsWindowLayered();
 	void  SetWindowLayered(bool b);
     void  SetWindowAreo(bool b);
@@ -150,16 +150,14 @@ protected:
 	
 	bool     m_bNeedToSetWindowRgn;   // 是否需要重新设置窗口异形区域
 	WINDOW_TRANSPARENT_PART_TYPE   m_eTransparentRgnType;
-	Image9Region    m_TransparentRgn9Region;
-	HRGN     m_hRgn_topleft;
-	HRGN     m_hRgn_topright;
-	HRGN     m_hRgn_bottomleft;
-	HRGN     m_hRgn_bottomright;
+	Image9Region  m_TransparentRgn9Region;
+	HRGN  m_hRgn_topleft;
+	HRGN  m_hRgn_topright;
+	HRGN  m_hRgn_bottomleft;
+	HRGN  m_hRgn_bottomright;
 
-	//
-	// 窗口伸缩能力标识位
-	//
-	int      m_nResizeBit;         // 窗口边缘伸缩标志位
+	int   m_nResizeCapability;  // 窗口边缘伸缩能力标志位
+	int   m_nResizeBorder;  // 用于拖拽的边缘区域大小
 
 	//
 	// 分层窗口功能

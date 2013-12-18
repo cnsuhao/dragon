@@ -581,6 +581,14 @@
 					Name="14. ie"
 					>
 					<File
+						RelativePath="..\..\Control\Src\Control\IE\iesite.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Control\Src\Control\IE\iesite.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\Control\Src\Control\IE\iewrap.cpp"
 						>
 					</File>

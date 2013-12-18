@@ -425,6 +425,11 @@ bool  UIMarkup::LoadFile(const TCHAR* szFile)
 {
     return Load(szFile, NULL, true);
 }
+
+// {F5078F1B-C551-11D3-89B9-0000F81FE221}
+const GUID CLSID_MSXML2_DOMDocument26 = 
+{ 0xF5078F1B, 0xC551, 0x11D3, { 0x89, 0xb9, 0x00, 0x00, 0xF8, 0x1F, 0xE2, 0x21 } };
+
 bool  UIMarkup::Load(const TCHAR* szFile, BSTR bstrContent, bool bFileOrContent)
 {
     HRESULT hr = S_OK;
@@ -432,10 +437,14 @@ bool  UIMarkup::Load(const TCHAR* szFile, BSTR bstrContent, bool bFileOrContent)
     {
         if (FAILED(m_pDoc.CoCreateInstance(__uuidof(MSXML2::DOMDocument60))))
         {
-            if (FAILED(m_pDoc.CoCreateInstance(__uuidof(MSXML2::DOMDocument26))))  // xp下
+            if (FAILED(m_pDoc.CoCreateInstance(CLSID_MSXML2_DOMDocument26/*__uuidof(MSXML2::DOMDocument26)*/)))  // xp下创建
             {
                 MessageBox(NULL, _T("创建xml解析器失败"), _T("Error"), MB_OK);
                 return false;
+            }
+            else
+            {
+                MessageBox(NULL, _T("创建xml解析器成功"), _T("Error"), MB_OK);
             }
         }
     }

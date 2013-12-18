@@ -1,12 +1,15 @@
 #include "stdafx.h"
 #include "oledataobject.h"
+#include "richeditolemgr.h"
 
 BOOL _AfxCopyStgMedium(CLIPFORMAT cfFormat, LPSTGMEDIUM lpDest, LPSTGMEDIUM lpSource);
 void _AfxOleCopyFormatEtc(LPFORMATETC petcDest, LPFORMATETC petcSrc);
 
-OleDataObject::OleDataObject()
+OleDataObject::OleDataObject(RichEditOleObjectManager* pMgr)
 {
 	m_dwRef = 0;
+	m_pREOleObjMgr = pMgr;
+
 //	m_pMarshal = NULL;
 //	::CoCreateFreeThreadedMarshaler(static_cast<IUnknown*>(this), &m_pMarshal);
 }
@@ -24,9 +27,13 @@ OleDataObject::~OleDataObject()
 		if (pItem->formatetc.ptd)
 			CoTaskMemFree(pItem->formatetc.ptd);
 		::ReleaseStgMedium(&pItem->stgmedium);
+
+		SAFE_DELETE(pItem);
 	}
+
 //	SAFE_RELEASE(m_pMarshal);
 }
+
 
 HRESULT STDMETHODCALLTYPE OleDataObject::QueryInterface(REFIID riid,void **ppvObject)
 {
@@ -59,6 +66,9 @@ ULONG   STDMETHODCALLTYPE OleDataObject::Release(void)
 	-- m_dwRef;
 	if (0 == m_dwRef)
 	{
+		UIASSERT(m_pREOleObjMgr);
+		m_pREOleObjMgr->OnDataObjectRelease(this);
+
 		delete this;
 		return 0;
 	}

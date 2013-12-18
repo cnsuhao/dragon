@@ -14,6 +14,7 @@
 #include "UISDK\Kernel\Src\RenderLayer\renderchain.h"
 #include "UISDK\Kernel\Src\Helper\layout\layout.h"
 #include "UISDK\Kernel\Src\Helper\layout\canvaslayout.h"
+#include "UISDK\Kernel\Src\Animate\3dwrap\ui3dwrap.h"
 
 namespace UI
 {
@@ -42,6 +43,7 @@ Object::Object()
 	m_pTextRender = NULL;
 	m_pCursor = NULL;
     m_pIMapAttributeRemain = NULL;
+    m_pObject3DWrap = NULL;
     m_pLayoutParam = NULL;
 }
 
@@ -57,6 +59,12 @@ Object::~Object(void)
 
     SAFE_RELEASE(m_pIMapAttributeRemain);
     SAFE_RELEASE(m_pLayoutParam);
+
+    if (m_pObject3DWrap)
+    {
+        m_pObject3DWrap->EndByDestroy();
+        SAFE_DELETE(m_pObject3DWrap);
+    }
 }
 
 HRESULT Object::FinalConstruct(IUIApplication* p)
@@ -979,7 +987,14 @@ bool Object::DrawObject(IRenderTarget* pRenderTarget, RenderContext roc)
 {
 	if (this->IsMySelfVisible() && this->CanRedraw())
     {
-        RealDrawObject(pRenderTarget, roc);
+        if (m_pObject3DWrap)
+        {
+            m_pObject3DWrap->OnDrawObject(pRenderTarget, roc);
+        }
+        else
+        {
+            RealDrawObject(pRenderTarget, roc);
+        }
         return true;
     }
     return false;
@@ -1200,6 +1215,19 @@ void Object::ClientRect2ObjectRect(const RECT* rcClient, RECT* rcObj)
 	::OffsetRect(rcObj, m_rcNonClient.left, m_rcNonClient.top);
 }
 
+void  Object::WindowRect2ObjectClientRect(const RECT* rcWindow, RECT* rcObj)
+{
+    UIASSERT(rcWindow && rcObj);
+
+    POINT ptWindow = {rcWindow->left, rcWindow->top};
+    POINT ptClient = {0};
+
+    this->WindowPoint2ObjectClientPoint(&ptWindow, &ptClient);
+    rcObj->left = ptClient.x;
+    rcObj->top = ptClient.y;
+    rcObj->right = rcObj->left + (rcWindow->right-rcWindow->left);
+    rcObj->bottom = rcObj->top + (rcWindow->bottom-rcWindow->top);
+}
 
 void Object::GetWindowRect(CRect* lprc)
 {
@@ -2289,9 +2317,23 @@ void Object::SetObjectPos(int x, int y, int cx, int cy, int nFlag)
 	}
 	else if (nObjType == OBJ_HWNDHOST)
 	{
+        m_rcParent.SetRect(x, y, x+cx, y+cy);
+
+        // 转化为窗口坐标，而不是父对象坐标
 		HwndHost* pThis = (HwndHost*)this;
-		::SetWindowPos(pThis->m_hWnd, NULL, x, y, cx, cy, SWP_NOZORDER|SWP_NOACTIVATE);
-		::GetClientRect(pThis->m_hWnd, &m_rcParent);
+        if (pThis->m_hWnd)
+        {
+            CRect rcWindow;
+            pThis->GetWindowRect(&rcWindow);
+		    ::SetWindowPos(pThis->m_hWnd, NULL, 
+                rcWindow.left, rcWindow.top, rcWindow.Width(), rcWindow.Height(), 
+                SWP_NOZORDER|SWP_NOACTIVATE);
+        }
+
+		if (!(nFlag&SWP_NOUPDATELAYOUTPOS))
+		{
+			UpdateLayoutPos();
+		}
 		return;
 	}
 	else
@@ -2623,4 +2665,28 @@ bool  Object::ReleaseKeyboardCapture()
     pWindow->GetMouseMgr()->ReleaseKeyboardCapture(m_pIObject);
     return true;
 }
+
+Object3DWrap*  Object::Begin3D()
+{
+    if (m_pObject3DWrap)
+        return m_pObject3DWrap;
+
+    m_pObject3DWrap = new Object3DWrap(this);
+    m_pObject3DWrap->Begin();
+
+    return m_pObject3DWrap;
+}
+void  Object::End3D()
+{
+    if (!m_pObject3DWrap)
+        return;
+
+    m_pObject3DWrap->End();
+    SAFE_DELETE(m_pObject3DWrap);
+}
+Object3DWrap*  Object::Get3DWrap()
+{
+    return m_pObject3DWrap;
+}
+
 }

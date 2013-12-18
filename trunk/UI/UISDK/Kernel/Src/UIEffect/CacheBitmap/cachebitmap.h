@@ -1,6 +1,7 @@
 #ifndef CACHEBITMAP_H_3DABC025_800B_46ed_AC6F_0D3854DD6257
 #define CACHEBITMAP_H_3DABC025_800B_46ed_AC6F_0D3854DD6257
 
+#include "UISDK\Kernel\Src\Atl\image.h"
 namespace UI
 {
 // 2013.7.30
@@ -19,14 +20,19 @@ public:
     }
 
     HBITMAP  Create(int nWidth, int nHeight);
+    Image*  CreateEx(int nWidth, int nHeight);
+
     void  Destroy();
     void  Clear(DWORD dwColor, RECT* prc);
    // void  Transparent(DWORD dwTransparent, RECT* prc);
 
+protected:
+    void  AdjustWH(int nWidth, int nHeight, int& nLastWidth, int& nLastHeight);
+
+    int  CalcMin2(int n);
+
 public:
-    HBITMAP  m_hCacheBitmap;
-    int  m_nWidth;
-    int  m_nHeight;
+    Image  m_buffer;
 };
 }
 

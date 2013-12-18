@@ -30,7 +30,7 @@
 				</Panel>
 				<Panel id="panel_logining" visible="0" layout.left="0" layout.right="0" layout.top="140" layout.bottom="0">
 					<PictureCtrl id="loging_qier_icon" layout.left="100" layout.top="0" bkgnd.render.type="image" bkgnd.render.image="logining.qieicon"/>
-					<Label id="logining_text" layout.left="140" layout.top="8" width="200" height="20" textrender.type="normal" textrender.color="white" textrender.align="left|vcenter"/>
+					<Label id="logining_text" layout.left="140" layout.top="8" width="200" height="20" textrender.type="normal" textrender.color="black" textrender.align="left|vcenter"/>
 					<GifCtrl id="gif_logining_loading" gif="logining.loading" layout.left="6" layout.bottom="53"/>
 					<Button id="btn_login_cancel" text="取     消" layout.left="120" layout.bottom="10" styleclass="imagebtn" bkgnd.render.image="button_cancel_login.png"/>
 				</Panel>

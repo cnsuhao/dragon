@@ -609,6 +609,18 @@
 							>
 						</File>
 					</Filter>
+					<Filter
+						Name="06. 3d"
+						>
+						<File
+							RelativePath="..\..\Kernel\Src\RenderLayer\3dlayer.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Kernel\Src\RenderLayer\3dlayer.h"
+							>
+						</File>
+					</Filter>
 				</Filter>
 				<Filter
 					Name="08. renderbase"
@@ -926,26 +938,6 @@
 					Name="09. animate"
 					>
 					<Filter
-						Name="3dlib"
-						>
-						<File
-							RelativePath="..\..\Kernel\Src\Animate\3dlib\3dlib.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\Animate\3dlib\3dlib.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\Animate\3dlib\3dmatrix.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\Animate\3dlib\3dmatrix.h"
-							>
-						</File>
-					</Filter>
-					<Filter
 						Name="windowanimate"
 						>
 						<File
@@ -983,10 +975,6 @@
 						<Filter
 							Name="02. 3DÐý×ª"
 							>
-							<File
-								RelativePath="..\..\Kernel\Src\Animate\windowanimate\PerspectiveTransform.h"
-								>
-							</File>
 							<File
 								RelativePath="..\..\Kernel\Src\Animate\windowanimate\window3danimate.cpp"
 								>
@@ -1069,6 +1057,106 @@
 							</File>
 							<File
 								RelativePath="..\..\Kernel\Src\Animate\controlanimate\slideanimate.h"
+								>
+							</File>
+						</Filter>
+					</Filter>
+					<Filter
+						Name="01. base"
+						>
+						<Filter
+							Name="3dlib"
+							>
+							<Filter
+								Name="math"
+								>
+								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\2dline.cpp"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\2dline.h"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\3dlib.cpp"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\3dlib.h"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\3dmatrix.cpp"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\3dmatrix.h"
+									>
+								</File>
+							</Filter>
+							<Filter
+								Name="texturemapping"
+								>
+								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\affine_texture_mapping.cpp"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\affine_texture_mapping.h"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\perspective_texture_mapping.cpp"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\perspective_texture_mapping.h"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\quad_perspective_texture_mapping.cpp"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\quad_perspective_texture_mapping.h"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\quad_perspective_transform.h"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\texture_mapping_base.h"
+									>
+								</File>
+							</Filter>
+							<Filter
+								Name="pipeline"
+								>
+								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\3dpipeline.cpp"
+									>
+								</File>
+								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\3dpipeline.h"
+									>
+								</File>
+							</Filter>
+						</Filter>
+						<Filter
+							Name="3dwrap"
+							>
+							<File
+								RelativePath="..\..\Kernel\Src\Animate\3dwrap\iobject3dwrap.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Kernel\Src\Animate\3dwrap\ui3dwrap.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Kernel\Src\Animate\3dwrap\ui3dwrap.h"
 								>
 							</File>
 						</Filter>
@@ -1623,6 +1711,10 @@
 					</File>
 					<File
 						RelativePath="..\..\Kernel\Inc\interface\iobject.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Kernel\Inc\Interface\iobject3dwrap.h"
 						>
 					</File>
 					<File

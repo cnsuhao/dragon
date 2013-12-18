@@ -49,7 +49,3 @@ using namespace UI;  // 在本模块内部放开 using 使用限制
 
 extern HINSTANCE g_hInstance;
 
-/*
-
-#if 0 // -- 架构改造
-*/

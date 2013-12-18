@@ -9,6 +9,7 @@ interface IWindowBase;
 interface IPanel;
 interface IRenderLayer;
 interface IRenderChain;
+interface IObject3DWrap;
 class Object;
 
 interface UISDKAPI IObject : public IMessage
@@ -231,6 +232,10 @@ interface UISDKAPI IObject : public IMessage
     bool  ReleaseMouseCapture();
     bool  SetKeyboardCapture(int nNotifyMsgId);
     bool  ReleaseKeyboardCapture();
+
+    IObject3DWrap*  Begin3D();
+    void  End3D();
+    IObject3DWrap*  Get3DWrap();
 };
 
 }

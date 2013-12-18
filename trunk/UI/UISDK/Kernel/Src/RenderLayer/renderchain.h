@@ -14,6 +14,7 @@ class WindowRenderLayer;
 class Object;
 class WindowBase;
 class RenderContext;
+class Layer3d;
 
 // 前提：当只有一个layer时，那么这个layer一定是一个control layer!
 class RenderChain
@@ -33,6 +34,8 @@ public:
 public:
 	int   GetLayerCount();
 	bool  InsertLayer(RenderLayer*  pRenderLayer);
+    void  RemoveLayer(RenderLayer*  pRenderLayer);
+
     WindowRenderLayer* GetWindowLayer() { return m_pWindowLayer; }
     RenderLayer*   GetFirstLayer() { return m_pFirstLayer; }
     RenderLayer*   GetLastLayer();
@@ -49,11 +52,15 @@ public:
     void  EndRedrawObjectPart(IRenderTarget* pRenderTarget, RECT* prcArray, int nCount);
 
     void  SetCanCommit(bool);
-    bool  CanCommit() 
-    { 
-        return 0 == m_lRefCanCommit; 
-    }
+    bool  CanCommit();
     void  CombineAllLayer(HRGN hRgn);
+	void  Commit(RECT* prc);
+
+    // 3d相关
+    Layer3d*  Get3DLayer();
+    void  On3dObjectBegin();
+    void  On3dObjectEnd();
+
 
 protected:
 	void  CreateDoubleBuffer(int nWidth, int nHeight);
@@ -64,8 +71,9 @@ protected:
     IRenderChain*  m_pIRenderChain;
 	RenderLayer*   m_pFirstLayer;
 	WindowRenderLayer*  m_pWindowLayer;
-    WindowBase*  m_pWindow;
+    Layer3d*       m_p3DLayer;
 
+    WindowBase*  m_pWindow;
 	int  m_nLayerCount;
 
     // 存在多个层时，才需要创建，用于组合多个层

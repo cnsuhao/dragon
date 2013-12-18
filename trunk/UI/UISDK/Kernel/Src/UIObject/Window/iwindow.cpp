@@ -63,7 +63,7 @@ IObject*  IWindowBase::GetObjectByPos(IObject* pObjParent, POINT* pt, bool bSkin
 
     return NULL;
 }
-bool  IWindowBase::Create(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent) {return m_pWindowBaseImpl->Create(pUIApp, szID, hWndParent);}
+bool  IWindowBase::Create(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent, RECT* prc) {return m_pWindowBaseImpl->Create(pUIApp, szID, hWndParent, prc);}
 void  IWindowBase::Attach(IUIApplication* pUIApp, HWND hWnd, const TCHAR* szID) { m_pWindowBaseImpl->Attach(pUIApp, hWnd, szID); }
 void  IWindowBase::Detach() { m_pWindowBaseImpl->Detach(); }
 long  IWindowBase::DoModal(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent ) { return m_pWindowBaseImpl->DoModal(pUIApp, szID, hWndParent); }

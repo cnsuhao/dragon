@@ -5,17 +5,11 @@
  19.style 编辑器不应该可以编辑继续得到的属性，也无法保存继续得到的属性问题
  
 
-71. Windowless richedit：字体定义，滚动条显示，拖拽文字，只读模式，插入图片，GIF
-
 73. 点击打开一个系统COMBOOX的下拉列表，然后将鼠标放在一个UI控件上面，点击一下，下拉列表消失，再继续点击UI控件，无反应。
     因为没有人去触发一个WM_MOUSEMOVE来set hover对象
     
-78. 将layout.xml增加一个<#include>标签，允许将一些资源抽取出来 
-11. xml文件可否考虑分开，而不是全放在一个文件中？
-
 89. 普通窗口拉伸优化！不平滑
 
-95. 逐步将句柄调用方式修改为接口调用方法
 107.ccaret的分层窗口光标在第一行/最后一行显示不下的时候，位置不正确
 109.richedit的横向滚动条range、page与ui控件不同步
 
@@ -76,6 +70,7 @@
 
 178. 20121225 12:41 listbox ::ShowWindow(m_pPopupWrapWnd->m_hWnd, SW_SHOWNA);必须放在setwindowpos前面吗
      20121227 9:27 放在后面依然会导致黑一次
+     是OnEraseBkgnd没有处理的问题，showwindow时会触发该函数。但如果避免不用一直响应OnEraseBkgnd消息呢
      
 179. 20121227 9:27 在win7 32位下面，右击弹出菜单后，直接关闭窗口会崩溃，64位下面不会，查查什么原因。同时尽量优化下popupcontrol的消息流程
      
@@ -201,6 +196,7 @@ void DrawDragRect(LPCRECT lpRect, SIZE size, LPCRECT lpRectLast, SIZE sizeLast, 
 201. 2013.5.8 20:52 如何实现TabCtrl的系统类型绘制？
 	  1. 保持当前选项置顶。2. 其它项刷新时不影响当前项置顶
 	 2013.6.8 这种类型的还是采用完全自绘，而不是控件模拟的方式
+	 TODO: 目前增加了zindexoverlap属性，再试试
 
 204. 2013.6.10 16：43 listctrl中的item如何支持动态换肤？
      如果对item也调用reset/set attr的话将导致效率太低。目前的考虑是对ITEM不支持换肤，ITEM尽量去引用
@@ -221,10 +217,9 @@ void DrawDragRect(LPCRECT lpRect, SIZE size, LPCRECT lpRectLast, SIZE sizeLast, 
 211. 2013.7.10 22:52 将一个只会触发一次的消息的msgmapid改为-10，这样应该就能加快消息响应的速度了,
      如UI_WM_INITIALIZE, UI_WM_PRECREATEWINDOW, UI_WM_FINALCREATE等等
 
-214. 2013.7.20 布局与位置之间的相互转换 --- splitterbar     
-     2013.7.30 canvas布局转换完成     
-
 216. 2013.8.19 22:44 Player 在打开OptionDlg和视觉效果combobox下拉列表后换肤出现崩溃。资源又出问题了，对于不换肤的窗口     
 217. 2013.8.20 11:51 Player let's seven 的皮肤播放列表拖拽窗口大小时圆角有问题
 218. 2013.11.02 18:45 zip皮肤格式下面ico无法显示
 219. 2013.11.07 23:25 IM Chat Dlg右侧隐藏后无法拖拽 + 最大化后没占满全屏。  想个办法绕过去
+220. 2013.11.13 10:39 目前没有办法在创建窗口时就指定好RECT
+221. 2013.11.13 17:59 xml加载引擎优化，不能在启动时就加载所有的xml，会导致启动速度大大降低

@@ -43,6 +43,10 @@ enum SPLITTERBAR_ALIGN
 #define XML_SPLITTERBAR_OBJ_MINSIZE  _T("minsize")  // 分隔条操纵的控件最小宽、高
 #define XML_SPLITTERBAR_OBJ_MAXSIZE  _T("maxsize")  // 分隔条操纵的控件最大宽、高
 
+
+// ie wrap
+#define XML_IE_URL   _T("url")   // 需要打开的url地址
+
 #pragma endregion
 
 #endif //XMLDEFINE_H_68869DC6_EFDF_4e30_92B7_9C6E197378C6

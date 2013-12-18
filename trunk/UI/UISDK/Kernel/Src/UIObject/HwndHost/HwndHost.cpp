@@ -10,7 +10,7 @@ HwndHost::HwndHost()
 }
 HwndHost::~HwndHost()
 {
-	m_hWnd = NULL;
+	Detach();
 	UIASSERT ( NULL == m_oldWndProc );
 }
 
@@ -78,14 +78,14 @@ void HwndHost::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
     int nControlID = 0;
     if (MAPATTR_RET_NOT_EXIST != pMapAttrib->GetAttr_int(XML_HWNDHOST_CONTROL_ID, true, &nControlID))
 	{
-		m_hWnd = ::GetDlgItem(hParentWnd, nControlID);
-		if (NULL == m_hWnd)
+		HWND hWnd = ::GetDlgItem(hParentWnd, nControlID);
+		if (NULL == hWnd)
 		{
 			UI_LOG_WARN(_T("HwndHost::SetAttribute Failed. id=%s, GetDlgItem(%d)"), m_strID.c_str(), nControlID);
 			return ;
 		}
-		
-		this->SubclassWindow();
+
+		Attach(hWnd);
 	}
 }
 
@@ -98,6 +98,26 @@ void HwndHost::GetDesiredSize(SIZE* pSize)
 		::GetWindowRect(m_hWnd, &rc);
 		pSize->cx = rc.Width();
 		pSize->cy = rc.Height();
+	}
+}
+
+HWND  HwndHost::Detach()
+{
+	if (!m_hWnd)
+		return NULL;
+
+	HWND hWnd = m_hWnd;
+	UnSubclassWindow();
+	m_hWnd = NULL;
+	return hWnd;
+}
+void  HwndHost::Attach(HWND hWnd)
+{
+	Detach();
+	m_hWnd = hWnd;
+	if (m_hWnd)
+	{
+		this->SubclassWindow();
 	}
 }
 
@@ -167,13 +187,38 @@ LRESULT	HwndHost::WndProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
 
 	case WM_NCDESTROY:
 		{
-			this->UnSubclassWindow();
+			LRESULT lRet = DefWindowProc(uMsg,wParam,lParam);
+			this->UnSubclassWindow();  // 会清空 oldwndproc，因此先调用默认过程
+			m_hWnd = NULL;
+			return lRet;
 		}
 		break;
 
     case WM_STYLECHANGED:
         {
             UpdateTabStopStyle();
+        }
+        break;
+
+    case WM_WINDOWPOSCHANGED:
+        {
+            UIASSERT(m_pParent);
+
+            if (m_pParent->GetObjectType() == OBJ_WINDOW)  // 直接放在了父窗口下面
+            {
+                ::GetWindowRect(m_hWnd, &m_rcParent);
+                HWND hWndParent = ::GetParent(m_hWnd);
+                ::MapWindowPoints(NULL, hWndParent, (LPPOINT)&m_rcParent, 2);
+            }
+            else   // 有可能是放在了一个panel下面
+            {
+                RECT  rcWindow;
+                ::GetWindowRect(m_hWnd, &rcWindow);
+                HWND hWndParent = m_pIHwndHost->GetHWND();
+                ::MapWindowPoints(NULL, hWndParent, (LPPOINT)&rcWindow, 2);
+
+                __super::WindowRect2ObjectClientRect(&rcWindow, &m_rcParent);
+            }
         }
         break;
 	}

@@ -66,7 +66,8 @@ public:
 	bool    GetInsertMode() { return m_bInsertMode; }
 
 	void    GetText(String& str) { str = m_strText; }
-	const String&   GetText()       { return m_strText; }
+	const String&  GetTextRef() { return m_strText; }
+	const TCHAR*  GetText() { return m_strText.c_str(); }
 	int     GetTextLength() { return (int)m_strText.length(); }
 	int     GetCaretIndex() { return m_nCaret; }
 	int     GetSelectionLength() { return abs(m_nCaret - m_nSelStart); }

@@ -108,11 +108,6 @@ namespace UI
 #define ANIMATE_TIME_LINE_FLAG_FINISH       0x0004   // 指示一个timeline是否已经到期结束了
 #define ANIMATE_TIME_LINE_FLAG_NEED_RESET   0x0008   // 表示一个timeline一次循环结束，下次开始前需要重置
 
-// #define ANIMATE_TIME_LINE_FLAG_S_CONFIGED   0x0010   // 指示哪些S(路程) T(时间) V(初速度) A(加速度)中哪些配置了
-// #define ANIMATE_TIME_LINE_FLAG_V_CONFIGED   0x0020   // 没有被配置的变量则需要通过其实变量来计算
-// #define ANIMATE_TIME_LINE_FLAG_T_CONFIGED   0x0040
-// #define ANIMATE_TIME_LINE_FLAG_A_CONFIGED   0x0080
-
 	template <class T>
 	class ITimelineImpl : public T //public ITimeline
 	{
@@ -120,7 +115,6 @@ namespace UI
 		ITimelineImpl()
 		{
 			m_nBeginTime = 0;
-//			m_nDuration = 0;
             m_eTimeType = TLT_BY_MS;  // 默认以毫秒为单位
 
 			m_nRepeatTimes = 1;  // 默认只播放一次
@@ -167,12 +161,6 @@ namespace UI
             m_eTimeType = eType; 
         }
 
-//         virtual void  SetDuration(int n) 
-//         { 
-//             m_nDuration = n; 
-//             m_nFlags|=ANIMATE_TIME_LINE_FLAG_T_CONFIGED; 
-//         }
-
 		// virtual void GetCurrentValue(void** ppOut) = 0;  // 由各个子类去实现
 		// virtual void x_OnTick(bool* pbFinish) = 0;       // 由各个子类去实现
 
@@ -198,7 +186,6 @@ namespace UI
 		AnimateManager*  m_pAnimateMgr;
 
 		int      m_nBeginTime;   // 记录动画开始时的time tick，当时间到达m_nBeginTime+m_nDuretion时，动画结束
-		int      m_nDuration;    // 动画持续时间，由外部设置
 
 		int      m_nRepeatTimes; // 1表示播放一次，-1表示一直播放，当--m_nRepeatTimes==0时停止
 //		int      m_nRepeatBehavior;

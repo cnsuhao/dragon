@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "3dlib.h"
 
-#include <math.h>
-
 namespace UI
 {
+    bool  g_bInitSinCosTable = false;
+
 	// storage for our lookup tables
 	float cos_look[361] = {0.0}; // 1 extra element so we can store 0-360 inclusive
 	float sin_look[361] = {0.0};

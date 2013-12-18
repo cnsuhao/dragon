@@ -1,12 +1,22 @@
 #ifndef PERSPECTIVETRANSFORM_H_6D536C9D_C5B0_4f25_8CE9_B6EC29ECC0EF
 #define PERSPECTIVETRANSFORM_H_6D536C9D_C5B0_4f25_8CE9_B6EC29ECC0EF
 
-#include "UISDK\Kernel\Src\Animate\3dlib\3dlib.h"
-#include <math.h>
+#include "UISDK\Kernel\Src\Animate\3dwrap\3dlib\3dlib.h"
 
+//////////////////////////////////////////////////////////////////////////
+//
 // 通过移植agg开源代码，计算任意四边形的拉伸算法 
+// 调用方法：
+//      PerspectiveTransform perspective;
+//      perspective.SetQuad(&quad, &rc);
+//      perspective.ChangeToFixedPoint();
+//
+//      perspective_transform_fp(perspective, X, Y, pfxSrc, pfySrc);
+//
+//////////////////////////////////////////////////////////////////////////
 
-
+// 参考资料：
+//
 // http://www.docin.com/p-114884109.html
 // http://www.codeproject.com/Articles/13201/Anti-Aliased-Image-Transformation-Aaform
 // http://blog.csdn.net/wshjldaxiong/article/details/7446393
@@ -19,7 +29,7 @@
 // 第六章 - 图像变换 - 图像拉伸、收缩、扭曲、旋转[1] - 仿射变换(cvWarpAffine) .
 // http://msdn.microsoft.com/zh-cn/library/dd470131(VS.95).aspx
 
-//透视变换 透视转换
+// 透视变换 透视转换
 
 // ftp://ftp.gimp.org/pub/gimp/v2.8/
 // http://www.gimp.org/downloads/
@@ -65,53 +75,14 @@ typedef float _pttype;
 	// 采用定点数的方法优化
 	// PS: 优化的结果不是很明显，关键是这个除法没有优化,
 	//     以及如何仍然返回一个浮点数
+    // 注：这种定点数的方式有误差，会导致边界处理不准...
+    //
 #define perspective_transform_fp(p, x, y, px, py) \
 	{ \
 		_pttype m = ((_pttype)1.0) / (x*p.G_16 + y*p.H_16 + p.I_16); \
 		*px = m * (x*p.A_16 + y*p.B_16 + p.C_16); \
 		*py = m * (x*p.D_16 + y*p.E_16 + p.F_16); \
 	}
-	
-	//
-	//   A ┌---------------┐ B
-	//     |               |
-	//     |               |
-	//     |               |
-	//   D └---------------┘ C
-	//
-	struct Quad
-	{
-		union
-		{
-			int pos[8];
-
-			struct
-			{
-				int Ax;
-				int Ay;
-				int Bx;
-				int By;
-				int Cx;
-				int Cy;
-				int Dx;
-				int Dy;
-			};
-		};
-		
-
-		bool SetByRect(LPRECT prc)
-		{
-			if (NULL == prc)
-				return false;
-
-			Ax = Dx = prc->left;
-			Bx = Cx = prc->right;
-			Ay = By = prc->top;
-			Cy = Dy = prc->bottom;
-			
-			return true;
-		}
-	};
 	
 
 	/*class*/ struct PerspectiveTransform

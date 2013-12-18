@@ -1,207 +1,10 @@
 #include "stdafx.h"
 #include "iewrap.h"
+#include "UISDK\Kernel\Inc\Util\rendercontext.h"
+#include "UISDK\Kernel\Inc\Util\iimage.h"
+
 namespace UI
 {
-
-IEEmbeddingSite::IEEmbeddingSite(IEWrap* p)
-{
-	m_lRef = 0;
-	m_pIEWrap = p;
-    m_pIIEWrap = p->GetIIEWrap();
-}
-IEEmbeddingSite::~IEEmbeddingSite()
-{
-}
-HRESULT STDMETHODCALLTYPE IEEmbeddingSite::QueryInterface(REFIID riid, void **ppvObject)
-{
-	if (NULL == ppvObject)
-		return E_INVALIDARG;
-
-	if (::IsEqualIID(IID_IUnknown, riid))
-		*ppvObject = static_cast<IUnknown*>((IOleClientSite*)this);
-	else if (::IsEqualIID(IID_IOleClientSite, riid))
-		*ppvObject = static_cast<IOleClientSite*>(this);
-	else if (::IsEqualIID(IID_IOleControlSite, riid))
-		*ppvObject = static_cast<IOleControlSite*>(this);
-	else if (::IsEqualIID(IID_IAdviseSink, riid))
-		*ppvObject = static_cast<IAdviseSink*>(this);
-	else if (::IsEqualIID(IID_IOleInPlaceSite, riid))
-		*ppvObject = static_cast<IOleInPlaceSite*>(this);
-	else if (::IsEqualIID(IID_IOleWindow, riid))
-		*ppvObject = static_cast<IOleWindow*>(this);
-	else if (::IsEqualIID(IID_IDocHostUIHandler, riid))
-		*ppvObject = static_cast<IDocHostUIHandler*>(this);
-	else
-		return E_NOINTERFACE;
-
-	AddRef();
-	return S_OK;
-}
-ULONG STDMETHODCALLTYPE IEEmbeddingSite::AddRef(void)
-{
-	return ++m_lRef;
-}
-ULONG STDMETHODCALLTYPE IEEmbeddingSite::Release(void)
-{
-	--m_lRef; 
-	if (0==m_lRef)
-	{
-		delete this; 
-		return 0;
-	} 
-	return m_lRef;
-}
-
-HRESULT STDMETHODCALLTYPE IEEmbeddingSite::GetWindow(HWND *phwnd)
-{
-	if (NULL == phwnd || NULL == m_pIEWrap)
-		return E_FAIL;
-
-	if (NULL == m_pIEWrap->GetPopupIEWindow())
-		*phwnd = m_pIIEWrap->GetHWND();
-	else
-		*phwnd = m_pIEWrap->GetPopupIEWindow()->GetHWND();
-
-	return S_OK;
-}
-
-HRESULT STDMETHODCALLTYPE IEEmbeddingSite::GetWindowContext(IOleInPlaceFrame **ppFrame, IOleInPlaceUIWindow **ppDoc,  LPRECT lprcPosRect, LPRECT lprcClipRect,  LPOLEINPLACEFRAMEINFO lpFrameInfo)
-{
-	if (ppFrame)
-		*ppFrame = NULL;
-	if (ppDoc)
-		*ppDoc = NULL;
-
-	CRect rc;
-	m_pIIEWrap->GetParentRect(&rc);
-
-	if (lprcPosRect)
-	{
-		CopyRect(lprcPosRect, &rc);
-	}
-	if (lprcClipRect)
-	{
-		CopyRect(lprcClipRect, &rc);
-	}
-	if (lpFrameInfo)
-	{
-		lpFrameInfo->cb = sizeof(OLEINPLACEFRAMEINFO);
-		lpFrameInfo->fMDIApp = FALSE;
-		GetWindow(&lpFrameInfo->hwndFrame);
-		lpFrameInfo->haccel = NULL;
-		lpFrameInfo->cAccelEntries = 0;
-	}
-	return S_OK;
-}
-
-#pragma region
-void CppCall()
-{
-	MessageBox(NULL, L"您调用了CppCall", L"提示(C++)", 0);
-}
-class ClientCall:public IDispatch
-{
-	long _refNum;
-public:
-	ClientCall()
-	{
-		_refNum = 1;
-	}
-	~ClientCall(void)
-	{
-	}
-public:
-
-	// IUnknown Methods
-
-	STDMETHODIMP QueryInterface(REFIID iid,void**ppvObject)
-	{
-		*ppvObject = NULL;
-		if (iid == IID_IUnknown)    *ppvObject = this;
-		else if (iid == IID_IDispatch)    *ppvObject = (IDispatch*)this;
-		if(*ppvObject)
-		{
-			AddRef();
-			return S_OK;
-		}
-		return E_NOINTERFACE;
-	}
-
-	STDMETHODIMP_(ULONG) AddRef()
-	{
-		return ::InterlockedIncrement(&_refNum);
-	}
-
-	STDMETHODIMP_(ULONG) Release()
-	{
-		::InterlockedDecrement(&_refNum);
-// 		if(_refNum == 0)
-// 		{
-// 			delete this;
-// 		}
-		return _refNum;
-	}
-
-	// IDispatch Methods
-
-	HRESULT _stdcall GetTypeInfoCount(
-		unsigned int * pctinfo) 
-	{
-		return E_NOTIMPL;
-	}
-
-	HRESULT _stdcall GetTypeInfo(
-		unsigned int iTInfo,
-		LCID lcid,
-		ITypeInfo FAR* FAR* ppTInfo) 
-	{
-		return E_NOTIMPL;
-	}
-
-	HRESULT _stdcall GetIDsOfNames(
-		REFIID riid, 
-		OLECHAR FAR* FAR* rgszNames, 
-		unsigned int cNames, 
-		LCID lcid, 
-		DISPID FAR* rgDispId 
-		)
-	{
-		if(lstrcmp(rgszNames[0], L"CppCall")==0)
-		{
-			//网页调用window.external.CppCall时，会调用这个方法获取CppCall的ID
-			*rgDispId = 100;
-		}
-		return S_OK;
-	}
-
-	HRESULT _stdcall Invoke(
-		DISPID dispIdMember,
-		REFIID riid,
-		LCID lcid,
-		WORD wFlags,
-		DISPPARAMS* pDispParams,
-		VARIANT* pVarResult,
-		EXCEPINFO* pExcepInfo,
-		unsigned int* puArgErr
-		)
-	{
-		if(dispIdMember == 100)
-		{
-			//网页调用CppCall时，或根据获取到的ID调用Invoke方法
-			CppCall();
-		}
-		return S_OK;
-	}
-};
-#pragma endregion
-
-HRESULT STDMETHODCALLTYPE IEEmbeddingSite::GetExternal(/* [out] */ IDispatch **ppDispatch)
-{
-	static ClientCall c;
-	*ppDispatch = static_cast<IDispatch*>(&c);
-	return S_OK;
-}
-//////////////////////////////////////////////////////////////////////////
 IEWrap::IEWrap()
 {
     m_pIIEWrap = NULL;
@@ -210,25 +13,56 @@ IEWrap::IEWrap()
 	m_pOleObject = NULL;
 	m_pViewObject = NULL;
 	m_pSite = NULL;
-//	m_hWndShellEmbedding = NULL;
-	m_pPopupIEWnd = NULL;
+	m_hWndShellEmbedding = NULL;
+    m_hWndShellDocObjectView = NULL;
+    m_hWndIE = NULL;
+    m_dwEventCookie = 0;
 }
 
 IEWrap::~IEWrap()
 {
-	SAFE_RELEASE(m_pSite);
+    if (m_dwEventCookie && m_pWebBrowser)
+    {
+        AtlUnadvise(m_pWebBrowser, DIID_DWebBrowserEvents2, m_dwEventCookie);
+        m_dwEventCookie = 0;
+    }
+    if (m_oldWndProc)
+    {
+        UnSubclassIEWindow();
+    }
+
+	if (m_pOleObject)
+	{
+		m_pOleObject->SetClientSite(NULL);
+		m_pOleObject->Release();
+	}
+	if (m_pViewObject)
+	{
+		m_pViewObject->SetAdvise(DVASPECT_CONTENT, 0, NULL);
+		m_pViewObject->Release();
+	}
 	SAFE_RELEASE(m_pWebBrowser);
-	SAFE_RELEASE(m_pOleObject);
-	SAFE_RELEASE(m_pViewObject);
-	SAFE_DELETE(m_pPopupIEWnd);
+	SAFE_RELEASE(m_pSite);
 }
 
 
 void IEWrap::SetAttribute(IMapAttribute* pMatAttrib, bool bReload)
 {
-	DO_PARENT_PROCESS(IIEWrap, IControl);
+	DO_PARENT_PROCESS(IIEWrap, IHwndHost);
 
 	CreateControl();
+
+	if (!bReload)
+	{
+		const TCHAR* szText = pMatAttrib->GetAttr(XML_IE_URL, true);
+		if (szText)
+		{
+			if (FAILED(Navigate(szText)))
+			{
+				UI_LOG_WARN(_T("%s Navigate failed. url=%s"), FUNC_NAME, szText);
+			}
+		}
+	}
 }
 void IEWrap::CreateControl()
 {
@@ -236,13 +70,6 @@ void IEWrap::CreateControl()
 	
 	do
 	{
-		// 创建站点对象
-		m_pSite = new IEEmbeddingSite(this);
-		m_pSite->AddRef();
-
-		IOleClientSite* pControlSite = static_cast<IOleClientSite*>(m_pSite);
-		IAdviseSink*    pAdviseSink = static_cast<IAdviseSink*>(m_pSite);
-
 		hr = ::CoCreateInstance(CLSID_WebBrowser, NULL, CLSCTX_INPROC, IID_IWebBrowser2, (void**)&m_pWebBrowser);
 
 		if (FAILED(hr) || NULL == m_pWebBrowser)
@@ -251,6 +78,7 @@ void IEWrap::CreateControl()
 			break;
 		}
 
+#if 0
         IUIApplication* pUIApp = m_pIIEWrap->GetUIApplication();
 		HWND hParentWnd = m_pIIEWrap->GetHWND();
 		if (1 || Util::IsLayeredWindow(hParentWnd))
@@ -309,19 +137,32 @@ void IEWrap::CreateControl()
 // 			if (m_pIIEWrap->GetConfigHeight() > 0)
 // 				data.m_rcAnchorData.Height = m_pIIEWrap->GetConfigHeight();
             
-            UIASSERT(0 && _T("TODO: 未完成"));
+//            UIASSERT(0 && _T("TODO: 未完成"));
 
-			::SendMessage(hParentWnd, UI_WM_SYNC_WINDOW, (WPARAM)ADD_SYNC_WINDOW, (LPARAM)&data);
+//			::SendMessage(hParentWnd, UI_WM_SYNC_WINDOW, (WPARAM)ADD_SYNC_WINDOW, (LPARAM)&data);
 			::ShowWindow(m_pPopupIEWnd->GetHWND(), SW_SHOWNOACTIVATE);
 
 			m_pPopupIEWnd->UpdateLayout(true);
 		}
+#endif
 
-		m_pWebBrowser->QueryInterface(IID_IOleObject, (void**)&m_pOleObject);
+		hr = m_pWebBrowser->QueryInterface(IID_IOleObject, (void**)&m_pOleObject);
+		if (FAILED(hr) || NULL == m_pOleObject)	
+			break;
 
 		hr = m_pOleObject->QueryInterface(__uuidof(IViewObject2), (void**)&m_pViewObject);
 		if (FAILED(hr) || NULL == m_pViewObject)	
 			break;
+
+		// 屏蔽脚本错误信息提示
+		m_pWebBrowser->put_Silent(VARIANT_TRUE);
+
+        // 创建站点对象
+        m_pSite = new IEEmbeddingSite(this);
+        m_pSite->AddRef();
+
+        IOleClientSite* pControlSite = static_cast<IOleClientSite*>(m_pSite);
+        IAdviseSink*    pAdviseSink = static_cast<IAdviseSink*>(m_pSite);
 
 		// 将站点对象与控件关联起来
 		hr = m_pOleObject->SetClientSite(pControlSite);
@@ -332,35 +173,49 @@ void IEWrap::CreateControl()
 		if (FAILED(hr))
 			break;
 
-		// 初始化控件属性
-		// 注：只有在调用了InitNew之后，再修改WMode才有用
-// 		CComQIPtr<IPersistStreamInit> spPSI = m_pOleObject;
-// 		hr = spPSI->InitNew();
-// 		UIASSERT(SUCCEEDED(hr));
-
-//		this->SetWMode(m_eWMode);
-
-		
-
-		// 注：DoVerb OLEIVERB_INPLACEACTIVATE 不要放在put_Movie后面，否则flash会播放的很快。（为什么会这样?）
-		// 此时会去请求IOleInPlaceSiteWindowless接口
-		// 也会走到GetWindowContext接口中，貌似只在要该接口中指定Flash的位置即可，因此将DoVerb中的一些参数直接设置为NULL
 		HRESULT hr = m_pOleObject->DoVerb(OLEIVERB_INPLACEACTIVATE, NULL, pControlSite, 0, NULL, NULL);
 
-		CComVariant v(L"http://www.baidu.com");
-		m_pWebBrowser->Navigate2(&v, NULL,NULL,NULL,NULL);
-
-// 		CComQIPtr<IOleInPlaceObject> p = m_pWebBrowser;
-// 		CRect rc(0,0,130,130);
-// 		p->SetObjectRects(&rc, &rc);
+        // 事件监听
+        hr = AtlAdvise(m_pWebBrowser,  static_cast<IDispatch*>(m_pSite), DIID_DWebBrowserEvents2, &m_dwEventCookie);
 
 		// 获取用于承载IE的窗口
-// 		CComQIPtr<IOleWindow> pOleWindow = m_pWebBrowser;
-// 		if (pOleWindow)
-// 			pOleWindow->GetWindow(&m_hWndShellEmbedding);
-
+ 		CComQIPtr<IOleWindow> pOleWindow = m_pWebBrowser;
+ 		if (pOleWindow)
+        {
+ 			pOleWindow->GetWindow(&m_hWndShellEmbedding);
+        }
+        
+        if (m_hWndShellEmbedding)
+        {
+            m_pIIEWrap->Attach(m_hWndShellEmbedding);
+        }
 	}
 	while (0);
+}
+
+bool IEWrap::SubclassIEWindow()
+{
+    UIASSERT(m_hWndIE);
+
+    if (!m_hWndIE)
+        return false;
+
+    this->m_thunk.Init( &IEWrap::_WndProc, this );
+    WNDPROC pProc = this->m_thunk.GetWNDPROC();
+    this->m_oldWndProc = (WNDPROC)(LONG_PTR) ::SetWindowLong( m_hWndIE, GWLP_WNDPROC, (LONG)(LONG_PTR)pProc);
+
+    return true;
+}
+
+bool IEWrap::UnSubclassIEWindow()
+{
+    UIASSERT(m_hWndIE);
+    if (!m_hWndIE)
+        return false;
+
+    ::SetWindowLong( m_hWndIE, GWLP_WNDPROC, (LONG)(LONG_PTR)m_oldWndProc);
+    m_oldWndProc = NULL;
+    return true;
 }
 
 void IEWrap::OnSize( UINT nType, int cx, int cy )
@@ -432,25 +287,121 @@ HRESULT IEWrap::InvokeJsFunction(BSTR bstrFuncName)
 	return pDispatch->Invoke(dispid, IID_NULL, LOCALE_SYSTEM_DEFAULT, DISPATCH_METHOD, &ps, &varResult, NULL, NULL);
 }
 
-//////////////////////////////////////////////////////////////////////////
-
-PopupIEWindow::PopupIEWindow()
+HRESULT  IEWrap::Navigate(const TCHAR* szUrl)
 {
-	m_pIEWrap = NULL;
+	if (!szUrl)
+		return E_INVALIDARG;
+
+	CComVariant v(szUrl);
+	return m_pWebBrowser->Navigate2(&v, NULL,NULL,NULL,NULL);
 }
-// BOOL PopupIEWindow::PreCreateWindow(CREATESTRUCT& cs)
-// {
-// 	__super::PreCreateWindow(cs);
-// 	if (m_pIEWrap->GetConfigWidth() > 0)
-// 	{
-// 		cs.cx = m_pIEWrap->GetConfigWidth();
-// 	}
-// 	if (m_pIEWrap->GetConfigHeight() > 0)
-// 	{
-// 		cs.cy = m_pIEWrap->GetConfigHeight();
-// 	}
-// 
-// 	return TRUE;
-// }
+
+LRESULT  IEWrap::_WndProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
+{
+    IEWrap* pThis = (IEWrap*)hwnd;
+    return pThis->WndProc( uMsg, wParam, lParam );
+}
+
+LRESULT IEWrap::DefWindowProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
+{
+    if( NULL != m_oldWndProc )
+    {
+        return ::CallWindowProc( m_oldWndProc, m_hWndIE, uMsg, wParam, lParam );
+    }
+    return 0;
+}
+
+LRESULT	IEWrap::WndProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
+{
+    static bool isPrintingWindow = false;
+
+    if (WM_PAINT == uMsg && m_pViewObject && !isPrintingWindow)
+    {
+        DefWindowProc(uMsg, wParam, lParam);
+#if 0
+         CRect  rcWnd;
+         m_pIIEWrap->GetWindowRect(&rcWnd);
+ 
+         m_pIIEWrap->GetUIApplication()->GetCacheDC()
+ 		CRect rcDraw(rcWnd);
+ 		rcDraw.right = rcWnd.Width();
+ 		rcDraw.bottom = rcWnd.Height();
+ 		rcDraw.left = rcDraw.top = 0;
+         
+ 		HDC hDC = m_pIIEWrap->GetRenderLayer()->GetRenderTarget()->GetBindHDC();
+  		SetViewportOrgEx(hDC, rcWnd.left, rcWnd.top,NULL);
+//  		HRGN hRgn = CreateRectRgnIndirect(&rcWnd);
+//  		SelectClipRgn(hDC, hRgn);
+//  		DeleteObject(hRgn);
+ 
+//  		HRESULT hr = m_pViewObject->Draw(DVASPECT_CONTENT, -1, 0, 0, NULL, hDC,
+//  			(LPCRECTL)&rcWnd, NULL, NULL, 0);
+
+        isPrintingWindow = true;
+        PrintWindow(m_hWndIE, hDC, PW_CLIENTONLY);
+        isPrintingWindow = false;
+ 		SetViewportOrgEx(hDC, 0,0,NULL);
+ 		SelectClipRgn(hDC, NULL);
+        Util::FixGdiAlpha(hDC, &rcWnd);
+ 
+ 		m_pIIEWrap->GetRenderChain()->Commit(&rcWnd);
+#elif 1
+    CRect  rcWnd;
+    m_pIIEWrap->GetWindowRect(&rcWnd);
+
+	CRect rcDraw;
+	rcDraw.right = rcWnd.Width();
+	rcDraw.bottom = rcWnd.Height();
+	rcDraw.left = rcDraw.top = 0;
+
+	HBITMAP hBitmap = m_pIIEWrap->GetUIApplication()->GetCacheBitmap(rcWnd.Width(), rcWnd.Height());
+
+    // 为什么不能使用带偏移的DC？绘制出来的全乱了
+	HDC hDC = CreateCompatibleDC(NULL);
+	HBITMAP hOldBmp = (HBITMAP)SelectObject(hDC, hBitmap);
+
+// 	HRESULT hr = m_pViewObject->Draw(DVASPECT_CONTENT, -1, 0, 0, NULL, hDC,
+// 		(LPCRECTL)&rcDraw, NULL, NULL, 0);
+
+    isPrintingWindow = true;
+    PrintWindow(m_hWndIE, hDC, 0);
+    isPrintingWindow = false;
+	Util::FixGdiAlpha(hDC, &rcDraw);
+
+    HDC hDCDst = m_pIIEWrap->GetRenderLayer()->GetRenderTarget()->GetBindHDC();
+    ::BitBlt(hDCDst, rcWnd.left, rcWnd.top, rcWnd.Width(), rcWnd.Height(), hDC, 0, 0, SRCCOPY);
+    m_pIIEWrap->GetRenderChain()->Commit(&rcWnd);
+
+    SelectObject(hDC, hOldBmp);
+	DeleteDC(hDC);
+#endif
+
+        return 0;
+    }
+    return DefWindowProc(uMsg, wParam, lParam);
+}
+
+
+void IEWrap::DocumentComplete(IDispatch *pDisp, VARIANT *URL)
+{
+    if (!m_hWndIE)
+    {
+		if (!m_hWndShellDocObjectView)
+		{
+			m_hWndShellDocObjectView = GetWindow(m_hWndShellEmbedding, GW_CHILD);
+		}
+
+        if (m_hWndShellDocObjectView)
+        {
+            m_hWndIE = GetWindow(m_hWndShellDocObjectView, GW_CHILD);
+        }
+        
+        // 子类化IE窗口
+        if (m_hWndIE)
+        {
+            SubclassIEWindow();
+        }
+    }
+}
 
 }

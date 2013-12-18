@@ -102,7 +102,7 @@ interface UISDKAPI IWindowBase : public IWindowRenderLayer
     IObject*  GetPressObject();
     IObject*  GetObjectByPos(IObject* pObjParent, POINT* pt, bool bSkinBuilderInvoke=false);
 
-    bool  Create(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent=NULL);
+    bool  Create(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent=NULL, RECT* prc=NULL);
     void  Attach(IUIApplication* pUIApp, HWND hWnd, const TCHAR* szID);
     void  Detach();
     long  DoModal(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent );

@@ -294,6 +294,8 @@ void ObjectStoryboard::CheckFinishFlag()
 		if (!m_pStoryboardList[i]->IsFinish())
 			nAliveCount++;
 	}
+    if (nAliveCount == m_nCount)
+        return;
 
 	if (0 == nAliveCount)
 	{

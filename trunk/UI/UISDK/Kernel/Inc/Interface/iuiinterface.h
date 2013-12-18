@@ -442,7 +442,7 @@ namespace UI
 		virtual bool  Destroy() = 0;
 		virtual bool  SetText(const TCHAR* szText) = 0;
 		virtual bool  SetTitle(const TCHAR* szText) = 0;
-		virtual bool  Show() = 0;
+		virtual bool  Show(HWND hWndParent) = 0;
 		virtual bool  Hide() = 0;
 		virtual void  SetAttribute(const ATTRMAP& mapAttrib) = 0;
 		virtual bool  SetUIApplication(IUIApplication* p) = 0;

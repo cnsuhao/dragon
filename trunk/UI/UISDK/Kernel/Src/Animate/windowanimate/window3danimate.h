@@ -1,7 +1,7 @@
 #ifndef WINDOWANIMATE_H_CBBEE65C_14A5_4811_9AED_65F25D658C01
 #define WINDOWANIMATE_H_CBBEE65C_14A5_4811_9AED_65F25D658C01
 
-#include "UISDK\Kernel\Src\Animate\windowanimate\PerspectiveTransform.h"
+#include "UISDK\Kernel\Src\Animate\3dwrap\3dlib\quad_perspective_transform.h"
 #include "UISDK\Kernel\Inc\Interface\ianimate.h"
 #include "UISDK\Kernel\Src\Animate\windowanimate\windowanimatebase.h"
 

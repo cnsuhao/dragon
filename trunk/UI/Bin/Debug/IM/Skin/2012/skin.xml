@@ -3,6 +3,7 @@
   <include>res.xml</include>
   <include>login_dlg.xml</include>
   <include>chat_dlg.xml</include>
+  <include>chat_dlg2.xml</include>
   <include>main_dlg.xml</include>
   <include>changeskin_dlg.xml</include>
   <include>contactmgr_dlg.xml</include>

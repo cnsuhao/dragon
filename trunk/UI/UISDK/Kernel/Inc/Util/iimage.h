@@ -7,6 +7,7 @@ class Image;
 interface UISDKAPI IImage
 {
     IImage();
+	IImage(Image* p);
     ~IImage();
     Image*  GetImpl();
 
@@ -26,6 +27,7 @@ interface UISDKAPI IImage
     int   GetPitch();
     byte* GetBits();
     int   GetBPP();
+	HBITMAP  GetHBITMAP();
 
     HDC   BeginDrawToMyself();
     void  EndDrawToMyself();
@@ -44,6 +46,7 @@ interface UISDKAPI IImage
 
 private:
     Image*  m_pImageImpl;
+	BOOL    m_bCreateImage;
 };
 }
 

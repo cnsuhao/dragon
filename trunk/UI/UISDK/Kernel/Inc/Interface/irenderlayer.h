@@ -44,6 +44,11 @@ interface UISDKAPI IDirectRenderLayer : public IRenderLayer
     UI_DECLARE_Ixxx_INTERFACE(IDirectRenderLayer, DirectRenderLayer)
 };
 
+class Layer3d;
+interface UISDKAPI ILayer3d : public IControlRenderLayer
+{
+    UI_DECLARE_Ixxx_INTERFACE(ILayer3d, Layer3d);
+};
 
 class RenderChain;
 class RenderContext;
@@ -60,6 +65,7 @@ interface UISDKAPI IRenderChain
 
     void  SetCanCommit(bool b);
     bool  CanCommit();
+	void  Commit(RECT* prc);
 
 private:
     RenderChain*  m_pImpl;

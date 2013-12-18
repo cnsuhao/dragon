@@ -3,6 +3,7 @@
 #include "oledataobject.h"
 #include "windowlessrichedit.h"
 
+
 const GUID IID_IGifOleObject =
 { 0x2eae75f5, 0xd78f, 0x43ca, { 0x81, 0x1d, 0x8f, 0x8b, 0x1, 0xcc, 0xe0, 0x5b } };
 
@@ -10,8 +11,7 @@ GifOleObject::GifOleObject(IUIApplication* pUIApp, IMessage* pNotifyObj)
 {
     m_pUIApp = pUIApp;
     m_pGifRender = NULL;
-    m_pGifImage =
- NULL;
+    m_pGifImage = NULL;
 	m_pNotifyMsg = pNotifyObj;
 }
 GifOleObject::~GifOleObject()
@@ -115,12 +115,26 @@ HRESULT GifOleObject::OnGetSize(SIZE* pSize)
 
 HRESULT GifOleObject::GetClipboardData(CHARRANGE FAR * lpchrg, DWORD reco, LPDATAOBJECT* lplpdataobj)
 {
-#if 0 // -- 架构改造
 	if (NULL == lplpdataobj)
 		return E_INVALIDARG;
 
-	OleDataObject* pDataobject = new OleDataObject;
-	pDataobject->AddRef();
+	if (!m_pGifRender)
+		return E_FAIL;
+
+	IGifImage*  pGifImage = m_pGifImage;
+	if (!pGifImage)
+		pGifImage = m_pGifRender->GetIGifImage();
+	
+	if (!pGifImage)
+		return E_FAIL;
+
+	IImage* pImage = pGifImage->GetFrameIImage(0);
+	UIASSERT(pImage);
+	if (!pImage)
+		return E_FAIL;
+
+	OleDataObject* pDataobject = NULL;
+	m_pOleObjectMgr->CreateDataObject(&pDataobject);
 
 #pragma region  // ui_unicode_richedit_ole_format
 	{
@@ -129,7 +143,7 @@ HRESULT GifOleObject::GetClipboardData(CHARRANGE FAR * lpchrg, DWORD reco, LPDAT
 		format.cfFormat = WindowlessRichEdit::s_cfUnicodeRichEditOleFormat;
 		format.tymed = TYMED_HGLOBAL;
 
-		HGLOBAL hGlobal = m_pOleObjectMgr->CreateGifFileClipboardData(m_strPath.c_str());
+		HGLOBAL hGlobal = m_pOleObjectMgr->CreateGifFileClipboardData(m_strPath.c_str(), m_pGifImage?false:true);
 
 		STGMEDIUM medium = {0};
 		medium.tymed = TYMED_HGLOBAL;
@@ -146,18 +160,15 @@ HRESULT GifOleObject::GetClipboardData(CHARRANGE FAR * lpchrg, DWORD reco, LPDAT
 		format.tymed = TYMED_HGLOBAL;
 
 		// CF_DIB的结构为: BITMAPINFOHEADER + BITS
-
-		GIF_Frame* pFirstFrame = m_pGifRenderItem->GetGifImage()->GetFrame(0);
-		UIASSERT(NULL != pFirstFrame);
-
+		
 		DIBSECTION  dibsec;
-		::GetObject(pFirstFrame->image, sizeof(DIBSECTION), &dibsec);
+		::GetObject(pImage->GetHBITMAP(), sizeof(dibsec), &dibsec);
 
-		LPBYTE  lpImageBits = (LPBYTE)pFirstFrame->image.GetBits();
-		int     nPitch = pFirstFrame->image.GetPitch();
+		LPBYTE  lpImageBits = (LPBYTE)pImage->GetBits();
+		int     nPitch = pImage->GetPitch();
 		int     nAbsPitch = abs(nPitch);
-		int     nImgHeight = pFirstFrame->image.GetHeight();
-		int     nImgWidth = pFirstFrame->image.GetWidth();
+		int     nImgHeight = pImage->GetHeight();
+		int     nImgWidth = pImage->GetWidth();
 
 		HGLOBAL hGlobal = GlobalAlloc(0, sizeof(BITMAPINFOHEADER) + nImgHeight*nAbsPitch);
 		LPBYTE  lpbits = (LPBYTE)::GlobalLock(hGlobal);
@@ -210,16 +221,12 @@ HRESULT GifOleObject::GetClipboardData(CHARRANGE FAR * lpchrg, DWORD reco, LPDAT
 		format.cfFormat = CF_BITMAP;
 		format.tymed = TYMED_GDI;
 
-		GIF_Frame* pFirstFrame = m_pGifRenderItem->GetGifImage()->GetFrame(0);
-		UIASSERT(NULL != pFirstFrame);
-
 		STGMEDIUM medium = {0};
 		medium.tymed = TYMED_GDI;
-		medium.hBitmap = (HBITMAP)OleDuplicateData((HANDLE)(HBITMAP)pFirstFrame->image, CF_BITMAP, 0);;
+		medium.hBitmap = (HBITMAP)OleDuplicateData((HANDLE)pImage->GetHBITMAP(), CF_BITMAP, 0);;
 		pDataobject->SetData(&format, &medium, TRUE);
 	} 
 #pragma endregion
-	
 
 #pragma region // CF_TEXT For Test
 // 	{
@@ -242,7 +249,6 @@ HRESULT GifOleObject::GetClipboardData(CHARRANGE FAR * lpchrg, DWORD reco, LPDAT
 #pragma  endregion
 
 	*lplpdataobj = static_cast<IDataObject*>(pDataobject);
-#endif
 	return S_OK;
 }
 

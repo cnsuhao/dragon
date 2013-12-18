@@ -223,9 +223,16 @@ void  FixGdiAlpha(HDC hDC, RECT* lprc)
     GetObject(hBitmap, sizeof(BITMAP), &bm);
 
     RECT rcDest;
-    RECT rcBitmap = {0, 0, bm.bmWidth, bm.bmHeight};
-    if (FALSE == ::IntersectRect(&rcDest, &rcBitmap, lprc))
-        return;
+    if (lprc)
+    {
+        RECT rcBitmap = {0, 0, bm.bmWidth, bm.bmHeight};
+        if (FALSE == ::IntersectRect(&rcDest, &rcBitmap, lprc))
+            return;
+    }
+    else
+    {
+        SetRect(&rcDest, 0, 0, bm.bmWidth, bm.bmHeight);
+    }
 
     BYTE* pBits = (BYTE*)bm.bmBits;
     int nPitch = -bm.bmWidthBytes;

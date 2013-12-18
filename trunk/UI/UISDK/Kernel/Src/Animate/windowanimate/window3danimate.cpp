@@ -1,13 +1,12 @@
 #include "stdafx.h"
 #include "window3danimate.h"
 
-#include "UISDK\Kernel\Src\Animate\3dlib\3dlib.h"
+#include "UISDK\Kernel\Src\Animate\3dwrap\3dlib\3dlib.h"
 #include "UISDK\Kernel\Src\UIObject\Window\windowbase.h"
 #include "UISDK\Kernel\Src\Animate\animatemgr.h"
 #include "UISDK\Kernel\Src\Animate\windowanimate\layeredanimatewindow.h"
 
 #include <float.h>
-bool  g_bInitSinCosTable = false;
 
 Window3DAnimate::Window3DAnimate()
 {
@@ -29,9 +28,9 @@ void  Window3DAnimate::Initialize()
 {
     __super::Initialize();
 
-    if (false == g_bInitSinCosTable)
+    if (!g_bInitSinCosTable)
     {
-        _control87(_MCW_RC, _RC_DOWN); //设置FPU的舍入模式，在Bilinear函数中需要使用汇编加快float->int
+        _control87(_RC_DOWN, _MCW_RC); //设置FPU的舍入模式，在Bilinear函数中需要使用汇编加快float->int
 
         Build_Sin_Cos_Tables();
         g_bInitSinCosTable = true;
@@ -278,12 +277,8 @@ void Window3DAnimate::OnTick(int nCount, IStoryboard** ppTimerArray)
 			int nx = 0; //fx;   // 注: 直接赋值 int i = floatvalue; 会产生一个 _ftol()调用
 			int ny = 0; //fy;   //     导致效率降低。这里使用内嵌汇编指令。(3D游戏编程大师技巧 P918)
 
-			// 浮点数转整数。 注意：默认的fistp是四舍五入模式。需要通过调用_control87(_MCW_RC, _RC_DOWN);进行调整
-			__asm	fld    fxSrc;
-			__asm	fistp  nx;
-
-			__asm	fld    fySrc;
-			__asm	fistp  ny;
+            FLOAT_TO_INT(fxSrc, nx);
+            FLOAT_TO_INT(fySrc, ny);
 
 			// 1. ceil的效率非常非常低!千万别在这用
 			// 但是有一个问题如果height为300，ySrc=299.99999999时，转成(int)得到的结果是300，
@@ -314,7 +309,7 @@ void Window3DAnimate::OnTick(int nCount, IStoryboard** ppTimerArray)
 			{
 				// 已将原始图片的right/bottom扩大1px，这样在获取 x+1, y+1时达到数组边缘也不会崩溃
 				// 取附近的四个像素的颜色值(x,y) (x+1, y) (x, y+1) (x+1, y+1)
-				// PS: 这四个调用也非常耗CPU，但是不知道怎么优化。越优化点的CPU越高了
+				// PS: 这四个调用也非常耗CPU，但是不知道怎么优化。越优化CPU越高了
 
 //  			pbSrcBits = m_pSrcBits + (ny*m_nSrcPitch + (nx<<2));
 //  			Color0.m_col = *((DWORD*)(pbSrcBits));
@@ -340,17 +335,10 @@ void Window3DAnimate::OnTick(int nCount, IStoryboard** ppTimerArray)
 				int pm2_16 = 0;
 				int pm1_16 = 0;
 				int pm0_16 = 0;
-				__asm
-				{
-					fld    fpm3;
-					fistp  pm3_16;
-					fld    fpm2;
-					fistp  pm2_16;
-					fld    fpm1;
-					fistp  pm1_16;
-					fld    fpm0;
-					fistp  pm0_16;
-				}
+                FLOAT_TO_INT(fpm3, pm3_16);
+                FLOAT_TO_INT(fpm2, pm2_16);
+                FLOAT_TO_INT(fpm1, pm1_16);
+                FLOAT_TO_INT(fpm0, pm0_16);
 
 				ColorResult.a = (byte)((pm0_16*Color0.a + pm1_16*Color1.a + pm2_16*Color2.a + pm3_16*Color3.a) >> FIXP16_SHIFT);
 				ColorResult.r = (byte)((pm0_16*Color0.r + pm1_16*Color1.r + pm2_16*Color2.r + pm3_16*Color3.r) >> FIXP16_SHIFT);

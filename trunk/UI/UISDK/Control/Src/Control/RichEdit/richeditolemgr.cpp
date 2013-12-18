@@ -2,6 +2,8 @@
 #include "richeditolemgr.h"
 #include "gifoleobject.h"
 #include <algorithm>
+#include "3rd\markup\markup.h"
+#include "UISDK\Control\Src\Control\RichEdit\windowlessrichedit.h"
 
 IRichEditOleObjectItem::~IRichEditOleObjectItem()
 {
@@ -235,14 +237,28 @@ RichEditOleObjectManager::RichEditOleObjectManager(WindowlessRichEdit* pRichEdit
 }
 RichEditOleObjectManager::~RichEditOleObjectManager()
 {
-	// 判断一下
-	// OleFlushClipboard();
-
-	OLELIST::iterator iter = m_listOleObj.begin();
-	for (; iter != m_listOleObj.end(); iter = m_listOleObj.begin())
 	{
-        IRichEditOleObjectItem* pItem = *iter;
-	    SAFE_DELETE(pItem);  // 会触发OnOleObjDelete，删除iter
+		OLELIST::iterator iter = m_listOleObj.begin();
+		for (; iter != m_listOleObj.end(); iter = m_listOleObj.begin())
+		{
+			IRichEditOleObjectItem* pItem = *iter;
+			SAFE_DELETE(pItem);  // 会触发OnOleObjDelete，删除iter
+		}
+	}
+
+	// 释放/提交 剪贴板对象
+	{
+		DATAOBJECTSET::iterator iter = m_setDataObject.begin();
+		for (; iter != m_setDataObject.end(); iter = m_setDataObject.begin()) 
+		{
+			OleDataObject* pData = *iter;
+			if (S_OK == OleIsCurrentClipboard(static_cast<IDataObject*>(pData)))
+			{
+				OleFlushClipboard();
+			}
+			SAFE_RELEASE(pData);    // 会触发OnDataObjectRelease，删除iter
+		}
+		m_setDataObject.clear();
 	}
 }
 
@@ -268,12 +284,29 @@ void  RichEditOleObjectManager::OnOleObjDelete(IRichEditOleObjectItem* pItem)
     }
 }
 
+void  RichEditOleObjectManager::CreateDataObject(OleDataObject** pp)
+{
+	if (!pp)
+		return;
+
+	OleDataObject* p = new OleDataObject(this);
+	p->AddRef();
+
+	m_setDataObject.insert(p);
+	*pp = p;
+}
+void  RichEditOleObjectManager::OnDataObjectRelease(OleDataObject* p)
+{
+	DATAOBJECTSET::iterator iter = m_setDataObject.find(p);
+	if (iter != m_setDataObject.end())
+	{
+		m_setDataObject.erase(iter);
+	}
+}
+
 void RichEditOleObjectManager::SetUIApplication(IUIApplication* p)
 {
 	m_pUIApp = p;
-#if 0 // -- 架构改造
-	m_gifMgr.SetUIApplication(p);
-#endif
 }
 // QQ gif 剪贴格式
 // 		<QQRichEditFormat>
@@ -297,16 +330,16 @@ void RichEditOleObjectManager::SetUIApplication(IUIApplication* p)
 // 				shortcut="">
 // 			</EditElement>
 // 		</QQRichEditFormat>
-HGLOBAL RichEditOleObjectManager::CreateGifFileClipboardData(const TCHAR* szFilePath, bool bUnicode)
+HGLOBAL RichEditOleObjectManager::CreateGifFileClipboardData(const TCHAR* szFilePath, bool bEmotion, bool bUnicode)
 {
 	UIASSERT(bUnicode); // 暂不支持非UNICODE，懒得去实现
-#if 0 // -- 架构改造
+
 	CMarkup  xml;
 	xml.SetDoc(_T("<UIRichEditFormat/>"));
 	if (false == xml.FindElem())
 		return NULL;
 	xml.AddAttrib(_T("version"), _T("1.0"));
-	xml.AddAttrib(_T("type"), RICHEDIT_OLE_GIF_FILE);
+	xml.AddAttrib(_T("type"), bEmotion?RICHEDIT_OLE_EMOTION:RICHEDIT_OLE_GIF_FILE);
 	xml.AddAttrib(_T("filepath"), szFilePath);
 	
 	String str = xml.GetDoc();
@@ -316,9 +349,6 @@ HGLOBAL RichEditOleObjectManager::CreateGifFileClipboardData(const TCHAR* szFile
 	wcscpy(lpstr, str.c_str());
 	::GlobalUnlock(hGlobal);
 	return hGlobal;
-#endif
-
-    return NULL;
 }
 HGLOBAL RichEditOleObjectManager::CreateEmotionClipboardData(const TCHAR* szEmotionName, bool bUnicode)
 {
@@ -327,7 +357,6 @@ HGLOBAL RichEditOleObjectManager::CreateEmotionClipboardData(const TCHAR* szEmot
 
 bool RichEditOleObjectManager::ParseOleFormatXml(const LPWSTR wszXmlData)
 {
-#if 0 // -- 架构改造
 	CMarkup xml;
 	if (false == xml.SetDoc(wszXmlData))
 		return false;
@@ -350,10 +379,20 @@ bool RichEditOleObjectManager::ParseOleFormatXml(const LPWSTR wszXmlData)
 			return true;
 		}
 		break;
+	case RICHEDIT_OLE_EMOTION:
+		{
+			String strFilePath = xml.GetAttrib(_T("filepath"));
+			if (strFilePath.empty())
+				return false;
+
+			m_pRichEdit->InsertSkinGif(strFilePath.c_str());
+			return true;
+		}
+		break;
 	default:
 		return false;
 	}
-#endif
+
 	return true;
 }
 #pragma endregion

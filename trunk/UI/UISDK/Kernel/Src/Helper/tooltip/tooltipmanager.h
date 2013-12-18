@@ -32,10 +32,10 @@ public:
 class ToolTipManager
 {
 public:
-	ToolTipManager(UIApplication* p);
+	ToolTipManager();
 	~ToolTipManager();
 
-	void   Init(IToolTipUI* pTooltipUI=NULL);
+	void   Init(UIApplication* p, IToolTipUI* pTooltipUI=NULL);
 	void   Release();
 	bool   Hide();
 	bool   Show(TOOLTIPITEM* pItemInfo);

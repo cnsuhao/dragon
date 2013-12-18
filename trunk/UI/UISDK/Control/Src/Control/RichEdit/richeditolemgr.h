@@ -67,7 +67,10 @@ namespace UI
 	};
 
 	// 存储内部自己实现的ole对象的相关的信息
-	class RichEditOleObjectItem_Inner : public IOleObject, public IViewObject2, public IRichEditOleObjectItem
+	class RichEditOleObjectItem_Inner : 
+		public IOleObject,
+		public IViewObject2, 
+		public IRichEditOleObjectItem
 	{
 	public:
 		RichEditOleObjectItem_Inner();
@@ -149,6 +152,7 @@ namespace UI
 		virtual HRESULT OnGetSize(SIZE* pSize) = 0;
 #pragma endregion
 
+
 	protected:
 		LONG               m_dwRef;
 //		IDataAdviseHolder* m_pDataAdviseHolder;
@@ -157,7 +161,8 @@ namespace UI
 		IOleClientSite*    m_pClientSite;
 	};
 
-    typedef list<IRichEditOleObjectItem*> OLELIST;
+    typedef list<IRichEditOleObjectItem*>  OLELIST;
+	typedef set<OleDataObject*>  DATAOBJECTSET;
 	enum RICHEDIT_OLE_TYPE
 	{
 		RICHEDIT_OLE_GIF_FILE = 1,
@@ -175,15 +180,21 @@ namespace UI
 		bool   AddOleItem(IRichEditOleObjectItem* pItem);
         void   OnOleObjDelete(IRichEditOleObjectItem* pItem);
 
-        HGLOBAL  CreateGifFileClipboardData(const TCHAR* szFilePath, bool bUnicode=true);
+        HGLOBAL  CreateGifFileClipboardData(const TCHAR* szFilePath, bool bEmotion, bool bUnicode=true);
 		HGLOBAL  CreateEmotionClipboardData(const TCHAR* szEmotionName, bool bUnicode);
 		bool     ParseOleFormatXml(const LPWSTR wszXmlData);
+
+		void  CreateDataObject(OleDataObject** p);
+		void  OnDataObjectRelease(OleDataObject* p);
 
 	protected:
 		WindowlessRichEdit*   m_pRichEdit;
 
 		OLELIST               m_listOleObj;
+		DATAOBJECTSET         m_setDataObject;   // 用于记录复制的ole data指针。在RE销毁时释放，并提交到剪切板.
+
 		IUIApplication*       m_pUIApp;
 	};
+
 
 }

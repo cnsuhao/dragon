@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "ControlDemo.h"
 #include "ControlDemoWindow.h"
+#include "Clock/clockwindow.h"
 
 #define MAX_LOADSTRING 100
 
@@ -61,13 +62,22 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
     UI_Ctrl_RegisterUIObject(g_pUIApp);
 //    IM_Ctrl_RegisterUIObject(g_pUIApp);
   	{
+
+#ifdef DEMO_CLOCK
+        ClockWindow* pWnd = NULL;
+        ClockWindow::CreateInstance(g_pUIApp, &pWnd);
+
+        pWnd->Attach(g_pUIApp, g_hWnd, _T("clockwin"));
+        SetWindowPos(g_hWnd, 0, 50, 50, 630, 660, SWP_NOZORDER);
+#else
         CControlDemoWindow* pWnd = NULL;
         CControlDemoWindow::CreateInstance(g_pUIApp, &pWnd);
         
   		pWnd->Attach(g_pUIApp, g_hWnd, _T("mainwindow"));
-		g_pUIApp->MsgHandleLoop();
+#endif
+        g_pUIApp->MsgHandleLoop();
 
-  		pWnd->Detach();
+        pWnd->Detach();
         pWnd->delete_this();
   	}
 	g_pUIApp->Release();
@@ -123,7 +133,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    g_hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, 500, 500, NULL, NULL, hInstance, NULL);
+      CW_USEDEFAULT, 0, 1200, 500, NULL, NULL, hInstance, NULL);
 
    if (!g_hWnd)
    {

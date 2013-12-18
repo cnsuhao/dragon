@@ -31,26 +31,30 @@ long      UIApplication::s_lUiLogCookie = 0;
 long      UIApplication::s_lAppCount = 0;
 
 UIApplication::UIApplication(IUIApplication* p) : 
+    m_pUIApplication(p),
     m_WndForwardPostMsg(this), 
-    m_TopWindowMgr(this),
-    m_ToolTipMgr(this)
+    m_TopWindowMgr(this)
 {
     s_lAppCount++;
+}
 
-//	::CoInitialize(0);
-	OleInitialize(0);  // 需要注册richedit的drag drop，因此用ole初始化
-    m_pUIApplication = p;
+void  UIApplication::x_Init()
+{
+    //	::CoInitialize(0);
+    OleInitialize(0);  // 需要注册richedit的drag drop，因此用ole初始化
 
-	m_bDesignMode = false;
-	m_pUIEditor = NULL;
+    m_bDesignMode = false;
+    m_pUIEditor = NULL;
 
     m_pSkinMgr = NULL;
     m_pSkinMgr = new SkinManager;
-	m_pSkinMgr->SetUIApplication(m_pUIApplication);
+    m_pSkinMgr->SetUIApplication(m_pUIApplication);
 
     m_pAnimateMgr = NULL;
     m_pAnimateMgr = new AnimateManager;
     m_pAnimateMgr->SetUIApplication(this);
+
+    m_ToolTipMgr.Init(this);
 
     // 获取操作系统版本信息
     ZeroMemory(&m_osvi, sizeof(OSVERSIONINFOEX));
@@ -73,8 +77,8 @@ UIApplication::UIApplication(IUIApplication* p) :
     // 创建一个用于转发消息的窗口，实现post ui message
     m_WndForwardPostMsg.Create(HWND_MESSAGE);
 
-	// 针对layer window防止无响应时窗口变黑
-	//DisableProcessWindowsGhosting();
+    // 针对layer window防止无响应时窗口变黑
+    //DisableProcessWindowsGhosting();
 
     RegisterDefaultUIObject(); 
     RegisterWndClass();
@@ -179,8 +183,9 @@ HRESULT UIApplication::GetLog(ILog** ppLog)
 
 HRESULT UIApplication::SetTooltipsUI(IToolTipUI* pUI)
 {
-	m_ToolTipMgr.Init(pUI);
-	return S_OK;
+// 	m_ToolTipMgr.Init(pUI);
+// 	return S_OK;
+    return E_NOTIMPL;
 }
 
 HRESULT UIApplication::UseInnerTooltipsUI(const TCHAR* szWndID)
@@ -335,10 +340,10 @@ ILayoutRes*  UIApplication::GetActiveSkinLayoutRes()
 //	一个空的窗口过程，因为UI这个窗口类的窗口过程最终要被修改成为一个类的成员函数，
 //  因此这里的窗口过程只是用来填充WNDCLASS参数。
 //
-// LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-// {
-// 	return ::DefWindowProc( hWnd, message, wParam, lParam );
-// }
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	return ::DefWindowProc( hWnd, message, wParam, lParam );
+}
 
 /*
 **	[private] void  RegisterWndClass()

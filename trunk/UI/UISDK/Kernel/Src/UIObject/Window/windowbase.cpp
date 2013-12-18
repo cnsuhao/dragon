@@ -265,7 +265,7 @@ void  WindowBase::PaintWindow(HDC hDC)
     m_pRenderChain->OnWindowPaint(hDC);    
 }
 
-bool WindowBase::Create(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent)
+bool WindowBase::Create(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent, RECT* prc/*=NULL*/)
 {
 	// removed by libo 20120728 允许创建一个空的窗口，例如菜单窗口
 // 	UIASSERT( ID != _T("") );
@@ -285,11 +285,22 @@ bool WindowBase::Create(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndPare
 	DWORD  dwStyleEx = WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR | WS_EX_WINDOWEDGE;
 
     cs.hwndParent = hWndParent;
-	cs.style     = WS_OVERLAPPEDWINDOW|WS_SYSMENU|WS_MINIMIZEBOX|WS_MAXIMIZEBOX;
+	cs.style     = WS_OVERLAPPEDWINDOW|WS_SYSMENU|WS_MINIMIZEBOX|WS_MAXIMIZEBOX|WS_CLIPCHILDREN;
 	cs.lpszClass = WND_CLASS_NAME;
 	cs.lpszName  = _T("");
-	cs.x = cs.y  = 0;
-	cs.cx = cs.cy = 1; //CW_USEDEFAULT;
+    if (prc)
+    {
+        cs.x = prc->left;
+        cs.y = prc->top;
+        cs.cx = prc->right - prc->left;
+        cs.cy = prc->bottom - prc->top;
+        m_nStyle |= WINDOW_STYLE_SETCREATERECT;
+    }
+    else
+    {
+	    cs.x = cs.y  = 0;
+	    cs.cx = cs.cy = 500; //CW_USEDEFAULT;
+    }
 
     UISendMessage(this, UI_WM_PRECREATEWINDOW, (WPARAM)&cs);
 //	this->PreCreateWindow(cs);
@@ -923,11 +934,28 @@ LRESULT WindowBase::_OnCreate( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 		::GetWindowRect(m_hWnd, &rcWindow);
 		SetConfigWidth(rcWindow.Width());
 		SetConfigHeight(rcWindow.Height());
+
+        // 因为Attach到的窗口初始化时已经收不到WM_SIZE了，因此自己再发一次，
+        // 通知创建RenderTarget，否则后面的一些刷新将失败
+        m_pRenderChain->OnWindowResize(0, m_rcParent.Width(), m_rcParent.Height());  // 在窗口刷新之前更新窗口缓冲区大小
 	}
     else
     {
-        DesktopLayout dl;  // 不能放在 OnInitialize 后面。因为有可能OnInitialize中已经调用过 SetWindowPos
-        dl.Arrange(this);
+        if (m_nStyle&WINDOW_STYLE_SETCREATERECT)
+        {
+            CRect rcWindow;               // 避免此时调用GetDesiredSize又去测量窗口大小了，导致窗口被修改为自适应大小 
+            ::GetWindowRect(m_hWnd, &rcWindow);
+            SetConfigWidth(rcWindow.Width());
+            SetConfigHeight(rcWindow.Height());
+
+            ::GetClientRect(m_hWnd, &m_rcParent);
+            this->UpdateLayout(false);
+        }
+        else
+        {
+            DesktopLayout dl;  // 不能放在 OnInitialize 后面。因为有可能OnInitialize中已经调用过 SetWindowPos
+            dl.Arrange(this);
+        }
     }
 
     //  给子类一个初始化的机会 (virtual)，例如设置最大化/还原按钮的状态
@@ -941,15 +969,10 @@ LRESULT WindowBase::_OnCreate( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 	// 设置默认对象
 	m_MgrMouse.SetDefaultObject(m_MgrMouse.GetOriginDefaultObject(), false);
 
-	// 布局
-	if (m_nStyle&WINDOW_STYLE_ATTACH)  // attach的窗口直接使用外部的大小
-	{
-		// 因为Attach到的窗口初始化时已经收不到WM_SIZE了，因此自己再发一次，
-		// 通知创建RenderTarget，否则后面的一些刷新将失败
-		m_pRenderChain->OnWindowResize(0, m_rcParent.Width(), m_rcParent.Height());  // 在窗口刷新之前更新窗口缓冲区大小
-		m_pRenderChain->OnWindowPaint(NULL);
-	}
-	
+    if (m_nStyle&WINDOW_STYLE_ATTACH) // 主动触发刷新
+    {
+        m_pRenderChain->OnWindowPaint(NULL);
+    }
 	return 0;
 }
 LRESULT WindowBase::_OnNcDestroy( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)

@@ -68,6 +68,7 @@ HRESULT CreateUIApplicationInstance(IUIApplication** pp)
 
     IUIApplication* p = new IUnknownImpl<IUIApplication>;
     p->AddRef();
+    p->GetImpl()->x_Init();
 
     *pp = p;
     return S_OK;

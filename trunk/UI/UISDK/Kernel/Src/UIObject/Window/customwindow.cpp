@@ -22,8 +22,9 @@ CustomWindow::CustomWindow()
 	m_hRgn_bottomleft = NULL;
 	m_hRgn_bottomright = NULL;
 
-	this->m_nResizeBit = WRSB_CAPTION;
-	this->m_pLayeredWindowWrap = NULL;		
+	m_pLayeredWindowWrap = NULL;	
+	m_nResizeBorder = 6;
+	m_nResizeCapability = WRSB_CAPTION;
 }
 CustomWindow::~CustomWindow()
 {
@@ -41,7 +42,7 @@ BOOL  CustomWindow::PreCreateWindow(CREATESTRUCT* pcs)
     if (FALSE == GetCurMsg()->lRet)
         return FALSE;
 
-	pcs->style = DS_SETFONT | WS_POPUP | WS_SYSMENU /*| WS_THICKFRAME*/;
+	pcs->style = DS_SETFONT | WS_POPUP | WS_SYSMENU | WS_CLIPCHILDREN /*| WS_THICKFRAME*/;
 	if (m_pLayeredWindowWrap)
 	{
 		m_pLayeredWindowWrap->PreCreateWindow(pcs);
@@ -182,6 +183,7 @@ void CustomWindow::ResetAttribute()
 
 	SAFE_RELEASE(m_pColMask);
 	m_nAlphaMask = 255;
+	m_nResizeBorder = 6;
 
 	SAFE_DELETE_GDIOBJECT(m_hRgn_topleft);
 	SAFE_DELETE_GDIOBJECT(m_hRgn_topright);
@@ -272,6 +274,25 @@ void CustomWindow::SetAttribute(IMapAttribute* pMapAttrib, bool bReload )
             m_TransparentRgn9Region.Set(0);
         }
     }
+
+	pMapAttrib->GetAttr_int(XML_WINDOW_RESIZE_BORDER, true, &m_nResizeBorder);
+	
+	szText = pMapAttrib->GetAttr(XML_WINDOW_RESIZE_CAPABILITY, true);
+	if (szText)
+	{
+		if (0 == _tcscmp(szText, XML_WINDOW_RESIZE_CAPABILITY_ALL))
+		{
+			SetResizeCapability(WRSB_ALL);
+		}
+		else if (0 == _tcscmp(szText, XML_WINDOW_RESIZE_CAPABILITY_CAPTION))
+		{
+			SetResizeCapability(WRSB_CAPTION);
+		}
+		else
+		{
+			SetResizeCapability(WRSB_NONE);
+		}
+	}
 
 	// 注：这里需要将设置分层窗口的属性放在前面。因为object中很多背景图依赖于窗口类型
 	Window::SetAttribute(pMapAttrib, bReload);
@@ -776,11 +797,11 @@ void CustomWindow::CommitDoubleBuffet2Window(HDC hDCWnd, RECT* prcCommit, int nR
 //
 UINT CustomWindow::OnHitTest( POINT* pt )
 {
-	if (m_nResizeBit == WRSB_NONE)
+	if (m_nResizeCapability == WRSB_NONE)
 	{
 		return HTCLIENT;
 	}
- 	else if (m_nResizeBit == WRSB_CAPTION)
+ 	else if (m_nResizeCapability == WRSB_CAPTION)
 	{
 		if (NULL == GetHoverObject() && NULL == GetPressObject()  && !IsZoomed(m_hWnd))
 			return HTCAPTION;
@@ -793,42 +814,40 @@ UINT CustomWindow::OnHitTest( POINT* pt )
 	if (IsZoomed(m_hWnd))
 		return HTCLIENT;
 
-	CONST int BORDER = GetSystemMetrics(SM_CYDLGFRAME)*2;
-
 	RECT rc;
 	::GetClientRect( m_hWnd, &rc );
 	int nWidth  = rc.right - rc.left;
 	int nHeight = rc.bottom - rc.top;
 
-	if (pt->x < BORDER)
+	if (pt->x < m_nResizeBorder)
 	{
-		if (pt->y < BORDER && this->TestResizeBit(WRSB_TOPLEFT))
+		if (pt->y < m_nResizeBorder && this->TestResizeBit(WRSB_TOPLEFT))
 			nHitTest = HTTOPLEFT;
-		else if (pt->y > nHeight - BORDER  && this->TestResizeBit(WRSB_BOTTOMLEFT))
+		else if (pt->y > nHeight - m_nResizeBorder  && this->TestResizeBit(WRSB_BOTTOMLEFT))
 			nHitTest = HTBOTTOMLEFT;
 		else if (this->TestResizeBit(WRSB_LEFT))
 			nHitTest = HTLEFT;
 	}
-	else if (pt->x > nWidth-BORDER)
+	else if (pt->x >= nWidth-m_nResizeBorder)
 	{
-		if (pt->y < BORDER && this->TestResizeBit(WRSB_TOPRIGHT))
+		if (pt->y < m_nResizeBorder && this->TestResizeBit(WRSB_TOPRIGHT))
 			nHitTest = HTTOPRIGHT;
-		else if (pt->y > nHeight - BORDER && this->TestResizeBit(WRSB_BOTTOMRIGHT))
+		else if (pt->y > nHeight - m_nResizeBorder && this->TestResizeBit(WRSB_BOTTOMRIGHT))
 			nHitTest = HTBOTTOMRIGHT;
 		else if (this->TestResizeBit(WRSB_RIGHT))
 			nHitTest = HTRIGHT;
 	}
-	else if (pt->y < BORDER && this->TestResizeBit(WRSB_TOP))
+	else if (pt->y < m_nResizeBorder && this->TestResizeBit(WRSB_TOP))
 	{
 		nHitTest = HTTOP;
 	}
-	else if (pt->y > nHeight - BORDER && this->TestResizeBit(WRSB_BOTTOM))
+	else if (pt->y >= nHeight - m_nResizeBorder && this->TestResizeBit(WRSB_BOTTOM))
 	{
 		nHitTest = HTBOTTOM;
 	}
  	else
  	{
- 		if (m_nResizeBit & WRSB_CAPTION && NULL == GetHoverObject() && NULL == GetPressObject() && !IsZoomed(m_hWnd))
+ 		if (m_nResizeCapability & WRSB_CAPTION && NULL == GetHoverObject() && NULL == GetPressObject() && !IsZoomed(m_hWnd))
  		{
  			nHitTest = HTCAPTION;
  		}
@@ -996,9 +1015,9 @@ LRESULT  CustomWindow::_OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 //
 //	设置窗口是否可以拖拽
 //
-void CustomWindow::SetWindowResizeType( UINT nType )
+void CustomWindow::SetResizeCapability( UINT nType )
 {
-	m_nResizeBit = nType;
+	m_nResizeCapability = nType;
 }
 
 //
@@ -1006,7 +1025,7 @@ void CustomWindow::SetWindowResizeType( UINT nType )
 //
 bool  CustomWindow::TestResizeBit( int nBit )
 {
-	if (m_nResizeBit & nBit)
+	if (m_nResizeCapability & nBit)
 		return true;
 	else 
 		return false;

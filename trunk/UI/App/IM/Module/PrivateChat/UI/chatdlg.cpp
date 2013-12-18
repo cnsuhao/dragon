@@ -17,7 +17,6 @@
 
 CChatDlg::CChatDlg(void)
 {
-    m_pPrivateChatUI = NULL;
 	m_pRightPanel = NULL;
 	m_pLeftPanel = NULL;
 	m_pBtnAnimate = NULL;
@@ -151,10 +150,7 @@ void CChatDlg::OnInitWindow()
 //	SetWindowText(GetHWND(), _T("IM2012_Demo"));
 }
 
-void  CChatDlg::SetPrivateChatUI(CPrivateChatUI* p)
-{
-    m_pPrivateChatUI = p;
-}
+
 void  CChatDlg::SetSkin(UI::IRenderBase* p)
 {
     if (NULL == m_pLeftPanel->GetMaterialRender())
@@ -313,12 +309,6 @@ void CChatDlg::OnSysCommand(UINT nID, CPoint point)
 			m_pLeftPanel->SetConfigRight(0);
 		}
 	}
-//     else if (nID == SC_CLOSE)
-//     {
-//         SetMsgHandled(FALSE);
-//         m_pPrivateChatUI->CloseDlg(this);
-//         return;
-//     }
 }
 void  CChatDlg::OnClose()
 {

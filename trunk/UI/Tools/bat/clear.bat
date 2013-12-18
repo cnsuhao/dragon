@@ -114,4 +114,9 @@ del ..\gft_2_png\gft_2_png.vcproj.*.user
 rd ..\imagemergetools\Debug /S /Q
 rd ..\imagemergetools\Release /S /Q
 del ..\imagemergetools\imagemergetools.vcproj.*.user
+
+
+rd ..\AutoTestTool\Debug /S /Q
+rd ..\AutoTestTool\Release /S /Q
+del ..\AutoTestTool\AutoTestTool.vcproj.*.user
 pause
