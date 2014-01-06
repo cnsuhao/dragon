@@ -86,17 +86,17 @@ void WindowBase::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 		HFONT hFont = (HFONT)::SendMessage(m_hWnd, WM_GETFONT, 0,0);
 		if (hFont)
         {
-            UI_AttachFont(&m_pDefaultFont, hFont, GetRenderLibraryType(m_hWnd));
+            UI_AttachFont(&m_pDefaultFont, hFont, GetRenderLibraryType(m_pIObject));
         }
         else
 		{
             // UI Font Res Defualt Font
-			pFontRes->GetDefaultFont(GetRenderLibraryType(m_hWnd), &m_pDefaultFont);
+			pFontRes->GetDefaultFont(GetRenderLibraryType(m_pIObject), &m_pDefaultFont);
 			if (NULL == m_pDefaultFont)
 			{
                 // System Default Font
 				hFont = (HFONT)GetStockObject(SYSTEM_FONT);
-                UI_AttachFont(&m_pDefaultFont, hFont, GetRenderLibraryType(m_hWnd));
+                UI_AttachFont(&m_pDefaultFont, hFont, GetRenderLibraryType(m_pIObject));
 			}
 		}
 	}
@@ -1097,20 +1097,24 @@ LRESULT WindowBase::_OnGetMinMaxInfo( UINT uMsg, WPARAM wParam, LPARAM lParam, B
 	pInfo->ptMaxPosition.x = -m_rcBorder.left;
 	pInfo->ptMaxPosition.y = -m_rcBorder.top;
 
-	CRect  rcWorkArea;
-	::SystemParametersInfo(SPI_GETWORKAREA, NULL, &rcWorkArea, NULL);
+    HMONITOR hMonitorPrimary = MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
+    HMONITOR hMonitorTo = MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
+
+    CRect rcWorkArea;
+    ::SystemParametersInfo(SPI_GETWORKAREA, 0, &rcWorkArea, 0);
 
 	if (NDEF != m_nMaxWidth)
 		pInfo->ptMaxSize.x = pInfo->ptMaxTrackSize.x = m_nMaxWidth;
 	else
-		pInfo->ptMaxSize.x = pInfo->ptMaxTrackSize.x = rcWorkArea.Width() +m_rcBorder.left+m_rcBorder.right;
+		pInfo->ptMaxSize.x = /*pInfo->ptMaxTrackSize.x = */rcWorkArea.Width() + m_rcBorder.left+m_rcBorder.right;
 
 	if (NDEF != m_nMaxHeight)
 		pInfo->ptMaxSize.y = pInfo->ptMaxTrackSize.y = m_nMaxHeight;
 	else
-		pInfo->ptMaxSize.y = pInfo->ptMaxTrackSize.y = rcWorkArea.Height() +m_rcBorder.top+m_rcBorder.bottom;
+		pInfo->ptMaxSize.y = /*pInfo->ptMaxTrackSize.y = */rcWorkArea.Height() + m_rcBorder.top+m_rcBorder.bottom;
 
-	
+    pInfo->ptMaxPosition.x = rcWorkArea.left;
+    pInfo->ptMaxPosition.y = rcWorkArea.top;
 
 	if (NDEF != m_nMinWidth)
 	{
@@ -1120,6 +1124,21 @@ LRESULT WindowBase::_OnGetMinMaxInfo( UINT uMsg, WPARAM wParam, LPARAM lParam, B
 	{
 		pInfo->ptMinTrackSize.y = m_nMinHeight;
 	}
+
+    // minmax.c xxxInitSendValidateMinMaxInfo
+//     if (hMonitorTo != hMonitorPrimary)
+//     {
+//         MONITORINFO  miTo = {0};
+//         MONITORINFO  miPri = {0};
+//         GetMonitorInfo(hMonitorTo, &miPri);
+//         GetMonitorInfo(hMonitorTo, &miTo);
+// 
+//         if ((pInfo->ptMaxSize.x < (miPri.rcMonitor.right - miPri.rcMonitor.left)) ||
+//             (pInfo->ptMaxSize.y < (miPri.rcMonitor.bottom - miPri.rcMonitor.top))) 
+//         {
+// 
+//         }
+//     }
 	return 0;
 }
 

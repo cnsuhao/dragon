@@ -6,6 +6,7 @@
 #include "UISDK\Kernel\Src\RenderLayer\renderchain.h"
 #include "UISDK\Kernel\Src\Util\dwm\dwmhelper.h"
 #include "UISDK\Kernel\Src\UIObject\Window\customwindow.h"
+#include "UISDK\Kernel\Inc\Interface\iwndtransmode.h"
 
 namespace UI
 {
@@ -16,8 +17,8 @@ WindowUpDownAlphaShowAnimate::WindowUpDownAlphaShowAnimate()
     m_nStartLine = 0;
     m_nScanlineRange = 200;
     m_bShow = false;
-    m_pCustomWindow = NULL;
-    m_bAreo = false;
+    m_pAeroWindow = NULL;
+    m_rcBlurRegion.SetRectEmpty();
 }
 
 WindowUpDownAlphaShowAnimate::~WindowUpDownAlphaShowAnimate()
@@ -32,10 +33,11 @@ WindowUpDownAlphaShowAnimate::~WindowUpDownAlphaShowAnimate()
     }
 
 
-    if (m_bAreo && m_pCustomWindow)
+    if (m_pAeroWindow)
     {
         // 还原Aero参数 
-        m_pCustomWindow->UpdateWindowRgn();
+        m_pAeroWindow->UpdateRgn();
+        m_pAeroWindow = NULL;
     }
 }
 
@@ -46,17 +48,23 @@ void  WindowUpDownAlphaShowAnimate::Initialize()
     m_pWindow->PaintWindow(NULL);
     m_pWindow->GetRenderChain()->SetCanCommit(true);
 
-    if (m_nWndTranslateType & WINDOW_TRANSPARENT_TYPE_AREO)
+    if (m_nWndTranslateType & WINDOW_TRANSPARENT_MODE_AREO)
     {
         DwmHelper*  pDwm = DwmHelper::GetInstance();
         if (pDwm->IsEnable())
         {
-            // QueryInterface必须放在Initialize前面，否则窗口的消息将被动画窗口完全封锁
-            ICustomWindow* pICustomWindow = (ICustomWindow*)m_pWindow->GetIWindowBase()->QueryInterface(uiiidof(ICustomWindow));
-            if (pICustomWindow)
+            IID iid = uiiidof(IAreoWindowWrap);
+            m_pAeroWindow = (IAreoWindowWrap*)UISendMessage(m_pWindow, UI_WM_QUERYINTERFACE, (WPARAM)&iid);
+            if (m_pAeroWindow)
             {
-                m_pCustomWindow = pICustomWindow->GetImpl();
-                m_bAreo = true;
+                if (AREO_MODE_TRANSPARENT == m_pAeroWindow->GetAeroMode())
+                {
+                    m_pAeroWindow = NULL;
+                }
+                else
+                {
+                    m_pAeroWindow->GetBlurRegion(&m_rcBlurRegion);
+                }
             }
         }
         
@@ -123,13 +131,11 @@ void  WindowUpDownAlphaShowAnimate::OnTick(int nCount, IStoryboard** ppTimerArra
         p += m_pLayeredWindow->m_nPitch;
     }
     
-    if (m_bAreo && m_pCustomWindow)  // 说明是areo透明窗口
+    if (m_pAeroWindow)  // 说明是areo透明窗口
     {
         CRect  rcClient;
         m_pWindow->GetClientRect(&rcClient);
-
-        Image9Region*   pTransparentWindowRgn = m_pCustomWindow->GetWindowTransparentRgn9Region();
-        rcClient.DeflateRect(pTransparentWindowRgn->left, pTransparentWindowRgn->top, pTransparentWindowRgn->right, pTransparentWindowRgn->bottom);
+        rcClient.DeflateRect(m_rcBlurRegion.left, m_rcBlurRegion.top, m_rcBlurRegion.right, m_rcBlurRegion.bottom);
 
         int y = nCurY + 255;
         if (y < 0)

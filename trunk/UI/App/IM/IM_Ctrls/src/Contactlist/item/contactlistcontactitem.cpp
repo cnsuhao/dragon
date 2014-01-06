@@ -436,16 +436,15 @@ HBITMAP  ContactListContactItem::CreateDragBitmap(int* pWidth, int* pHeight)
     HDC hDC = image.BeginDrawToMyself();
     
     // ´´½¨rendertarget
-    HWND hWnd = m_pIContactListContactItem->GetIListCtrlBase()->GetHWND();
-    UI::IRenderTarget*  pRenderTarget = UI::UICreateRenderTarget(hWnd);
+	UI::IRenderTarget*  pRenderTarget = UI::UICreateRenderTarget(GetRenderLibraryType(m_pIContactListContactItem->GetIListCtrlBase()));
     pRenderTarget->BindHDC(hDC);
 
     // »æÖÆ
     pRenderTarget->BeginDraw(NULL, 0);
-	UI::RenderContext renderContent(NULL, true);
+	UI::RenderContext renderContent(NULL, true, true);
 	renderContent.m_ptOffset.x = -rcParent.left+g_rcDragImgPadding.left;
 	renderContent.m_ptOffset.y = -rcParent.top+g_rcDragImgPadding.top;
-	renderContent.m_rcDrawRegion.SetRect(0, 0, nWidth, nHeight);
+    ::SetRect(&renderContent.m_rcDrawRegion, 0, 0, nWidth, nHeight);
 	renderContent.Update(pRenderTarget);
 //     pRenderTarget->SetViewportOrgEx(
 //         -rcParent.left+g_rcDragImgPadding.left, 

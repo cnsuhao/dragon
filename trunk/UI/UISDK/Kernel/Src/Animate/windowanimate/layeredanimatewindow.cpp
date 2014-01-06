@@ -48,7 +48,7 @@ void LayeredAnimateWindow::Soul_Attach(WindowBase* pWnd)
     pWnd->AddHook(this->GetIMessage(), 0, 0);
 
     LONG lStyleEx = ::GetWindowLong(m_hHostWnd, GWL_EXSTYLE);
-    if (m_pWindowAnimate->GetWndTransparentType() & WINDOW_TRANSPARENT_TYPE_LAYERED)
+    if (m_pWindowAnimate->GetWndTransparentType() & WINDOW_TRANSPARENT_MODE_LAYERED)
     {
 
     }

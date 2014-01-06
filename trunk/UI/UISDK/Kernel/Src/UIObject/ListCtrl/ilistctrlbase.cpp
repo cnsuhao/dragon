@@ -326,8 +326,8 @@ void  IListCtrlBase::RedrawItem(IListItemBase** ppItemArray, int nCount)
     m_pListCtrlBaseImpl->RedrawItem(pp, nCount);
     SAFE_ARRAY_DELETE(pp);
 }
-void  IListCtrlBase::RedrawItemByInnerCtrl(IRenderTarget* pRenderTarget, IListItemBase* pItem) 
-{ m_pListCtrlBaseImpl->RedrawItemByInnerCtrl(pRenderTarget, pItem?pItem->GetImpl():NULL); }
+void  IListCtrlBase::RedrawItemByInnerCtrl(IRenderTarget* pRenderTarget, RenderContext* pContext, IListItemBase* pItem) 
+{ m_pListCtrlBaseImpl->RedrawItemByInnerCtrl(pRenderTarget, pContext, pItem?pItem->GetImpl():NULL); }
 void  IListCtrlBase::MakeItemVisible(IListItemBase* pItem, bool* pbNeedUpdate) 
 { m_pListCtrlBaseImpl->MakeItemVisible(pItem?pItem->GetImpl():NULL, pbNeedUpdate); }
 

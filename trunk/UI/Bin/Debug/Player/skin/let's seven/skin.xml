@@ -3,7 +3,7 @@
   <layout>
     <CustomWindow id="mainwindow" layout.left="300" layout.top="200"  width="322" height="165" 
                    bkgnd.render.type="image" bkgnd.render.image="player_skin.png" 
-                   transparent.type="maskalpha">
+                   transparent.type="maskalpha" transparent.maskalpha.9region="14,-14,14,0,0,14,-14,14">
       <PictureCtrl id="icon" foregnd.render.image="ttplayer.ico" layout.left="10" layout.top="6"/>
       <MultiLabel id="label_title" layout.left="25" layout.right="25" layout.top="34" height="20" rejestmousemsg="false"
              textrender.type="normal" textrender.color="scroll_title_text" textrender.align="left|vcenter" textrender.font="normal"/>
@@ -41,7 +41,7 @@
                   width="322" height="165" minwidth="322" minheight="165"
                   bkgnd.render.type="image" bkgnd.render.image="playlist_skin.png" bkgnd.render.image.9region="100,60,50,15,15,15,20,15"
                   bkgnd.render.image.drawtype="stretch"
-                  transparent.type="maskalpha" transparent.part="4corner" transparent.part.9region="14,14,14,14,14,14,14,14"
+                  transparent.type="maskalpha" transparent.part.9region="14,-14,14,0,0,14,-14,14"
                   layout.left="300" layout.top="365" >
       <Button id="sys_close" styleclass="imagebtn" bkgnd.render.image="close.bmp" layout.right="5" layout.top="0"/>
       <Panel layout="stack" layout.left="15" layout.top="31">
@@ -63,7 +63,7 @@
     </CustomWindow>
     <CustomWindow id="equalizerdlg" layout.left="622" layout.top="365" width="322" height="165" 
                   bkgnd.render.type="image" bkgnd.render.image="eq_skin.png"
-                  transparent.type="maskalpha" transparent.maskalpha="1">
+                  transparent.type="maskalpha" transparent.maskalpha="1" transparent.maskalpha.9region="14,-14,14,0,0,14,-14,14">
       <Button id="sys_close" styleclass="imagebtn" bkgnd.render.image="close.bmp" layout.right="5" layout.top="0"/>
       <Panel layout="stack" layout.left="20" layout.bottom="13">
         <CheckButton id="btn_enable"   styleclass="imagecheckbutton"  foregnd.render.image="eq_enabled.bmp"/>
@@ -89,7 +89,7 @@
                   width="322" height="165" minwidth="322" minheight="165"
                   bkgnd.render.type="image" bkgnd.render.image="lyric_bk.png" bkgnd.render.image.9region="100,60,50,15,15,15,20,15"
                   bkgnd.render.image.drawtype="stretch"
-                  transparent.type="maskalpha" transparent.maskalpha="1" >
+                  transparent.type="maskalpha" transparent.maskalpha="1" transparent.maskalpha.9region="14,-14,14,0,0,14,-14,14">
       <Button      id="sys_close"      layout.right="5"  layout.top="0" styleclass="imagebtn" bkgnd.render.image="close.bmp" />
       <!--CheckButton id="switch_layered" layout.right="50" layout.top="5" text="切换透明窗口" tooltip="切换透明窗口" foregnd.render.type="imagelist" foregnd.render.image="checkbox_icon.png"/-->
       <LyricCtrl id="lyricctrl" layout.left="5" layout.right="5" layout.top="35" layout.bottom="15" istransparent="1"/>

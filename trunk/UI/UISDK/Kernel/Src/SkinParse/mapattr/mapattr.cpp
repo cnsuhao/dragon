@@ -160,7 +160,7 @@ long CMapAttribute::GetAttr_CRegion4(const TCHAR* szKey, bool bErase, CRegion4* 
     return lRet;
 }
 
-long  CMapAttribute::GetAttr_Image9Region(const TCHAR* szKey, bool bErase, Image9Region* pRegion)
+long  CMapAttribute::GetAttr_Image9Region(const TCHAR* szKey, bool bErase, C9Region* pRegion)
 {
     if (NULL == szKey || NULL == pRegion)
         return MAPATTR_RET_ERROR;

@@ -3,37 +3,21 @@
 #include "UISDK\Kernel\Src\Renderbase\renderbase\renderbase.h"
 #include "UISDK\Kernel\Inc\Interface\imapattr.h"
 #include "UISDK\Kernel\Src\RenderLayer\renderchain.h"
-#include "UISDK\Kernel\Src\Util\dwm\dwmhelper.h"
-
-#define WINDOWS_MINIMIZED_POINT  -32000  // 窗口最小化后，window传递给我们的位置
+#include "UISDK\Kernel\Src\UIObject\Window\wndtransmode\layered\layeredwrap.h"
+#include "UISDK\Kernel\Src\UIObject\Window\wndtransmode\areo\areowrap.h"
 
 CustomWindow::CustomWindow()
 {
+    m_pTransparentMode = NULL;
     m_pICustomWindow = NULL;
 	m_bNeedToSetWindowRgn = true;   // 首次显示时，需要设置一下窗口形状
-	m_eTransparentRgnType = WINDOW_TRANSPARENT_PART_FULL;     
-	m_nWindowTransparentMaskType = WINDOW_TRANSPARENT_TYPE_NULL;
-	m_pColMask = NULL;
-	m_nAlphaMask = 1;                    // 当alpha值为0时，将抠除
-	m_TransparentRgn9Region.Set(0);
 
-	m_hRgn_topleft = NULL;
-	m_hRgn_topright = NULL;
-	m_hRgn_bottomleft = NULL;
-	m_hRgn_bottomright = NULL;
-
-	m_pLayeredWindowWrap = NULL;	
 	m_nResizeBorder = 6;
 	m_nResizeCapability = WRSB_CAPTION;
 }
 CustomWindow::~CustomWindow()
 {
-	SAFE_DELETE_GDIOBJECT(m_hRgn_topleft);
-	SAFE_DELETE_GDIOBJECT(m_hRgn_topright);
-	SAFE_DELETE_GDIOBJECT(m_hRgn_bottomleft);
-	SAFE_DELETE_GDIOBJECT(m_hRgn_bottomright);
-	SAFE_RELEASE(m_pColMask);
-	SAFE_DELETE(m_pLayeredWindowWrap);
+	SAFE_RELEASE(m_pTransparentMode);
 }
 
 BOOL  CustomWindow::PreCreateWindow(CREATESTRUCT* pcs)
@@ -43,27 +27,9 @@ BOOL  CustomWindow::PreCreateWindow(CREATESTRUCT* pcs)
         return FALSE;
 
 	pcs->style = DS_SETFONT | WS_POPUP | WS_SYSMENU | WS_CLIPCHILDREN /*| WS_THICKFRAME*/;
-	if (m_pLayeredWindowWrap)
-	{
-		m_pLayeredWindowWrap->PreCreateWindow(pcs);
-	}
-
 	return TRUE;
 }
 
-void  CustomWindow::OnObjectLoaded()
-{
-    // 由于在SetAttribute中将自己设置为分层窗口时，子对象还都没有创建。因此在自己加载完成后
-    // 通知下所有的子窗口
-    if (m_pLayeredWindowWrap)
-    {
-        UIMSG  msg;
-        msg.message = UI_WM_WINDOWLAYEREDCHANGED;
-        msg.wParam = 1;
-        ForwardMessageToChildObject(this, &msg);
-    }
-    SetMsgHandled(FALSE);
-}
 void CustomWindow::OnInnerInitWindow( )
 {
 	Window::OnInnerInitWindow();
@@ -71,27 +37,35 @@ void CustomWindow::OnInnerInitWindow( )
 	LONG dwStyleEx = GetWindowLong(m_hWnd, GWL_EXSTYLE );
 	dwStyleEx &= ~ WS_EX_WINDOWEDGE;
 	LONG n = SetWindowLong( m_hWnd, GWL_EXSTYLE, dwStyleEx );
-
-	if (m_pLayeredWindowWrap)
-		m_pLayeredWindowWrap->InitLayeredWindow();
 }
 
-GRAPHICS_RENDER_LIBRARY_TYPE  CustomWindow::OnGetGraphicsRenderType()
+GRAPHICS_RENDER_LIBRARY_TYPE  CustomWindow::GetGraphicsRenderType()
 {
-    if (m_nWindowTransparentMaskType & WINDOW_TRANSPARENT_TYPE_AREO ||
-        m_nWindowTransparentMaskType & WINDOW_TRANSPARENT_TYPE_LAYERED ||
-        this->IsTransparent())  //  例如多层渲染的控件层，需要被alphablend到缓冲上
+    if (this->IsTransparent())  //  例如多层渲染的控件层，需要被alphablend到缓冲上
         return GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS;
 
+    if (m_pTransparentMode)
+    {
+        WINDOW_TRANSPARENT_MODE eMode = m_pTransparentMode->GetModeValue();
+        if (eMode== WINDOW_TRANSPARENT_MODE_AREO || eMode == WINDOW_TRANSPARENT_MODE_LAYERED)
+             return GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS;;
+    }
+
     return GRAPHICS_RENDER_LIBRARY_TYPE_GDI; 
+}
+
+//
+WINDOW_TRANSPARENT_MODE  CustomWindow::GetWndTransMode()
+{
+    if (m_pTransparentMode)
+        return m_pTransparentMode->GetModeValue();
+    else
+        return WINDOW_TRANSPARENT_MODE_NORMAL;
 }
 
 LRESULT CustomWindow::_OnNcDestroy( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
 {
 	bHandled = FALSE;
-	if (m_pLayeredWindowWrap)
-		m_pLayeredWindowWrap->ReleaseLayeredWindow();
-	
 	return 0;
 }
 
@@ -118,184 +92,52 @@ LRESULT CustomWindow::_OnNcActivate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 // 	return 1;
 }
 
-
-//
-// 对于分层窗口，在显示的时候需要重新更新一次。因为当分层窗口隐藏的时候内存位图没有得到更新，invisible false后，直接return了
-//
-// 注：在这里没有使用响应WM_SHOWWINDOW来通过分层窗口刷新，因为在响应WM_SHOWWINDOW的时候，IsWindowVisible还是FALSE
-//     因此改用OnWindowPosChanged来得到窗口显示的时机，通过分层窗口刷新
-//   
-LRESULT CustomWindow::_OnWindowPosChanging( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
-{
-	bHandled = FALSE;
-	LPWINDOWPOS lpWndPos = (LPWINDOWPOS)lParam;
-
-	if (m_pLayeredWindowWrap)
-	{
-		m_pLayeredWindowWrap->OnWindowPosChanging(lpWndPos);
-	}
-	return 0;
-}
-//
-//	通知分层窗口新的位置和大小
-//
-LRESULT CustomWindow::_OnWindowPosChanged( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
-{
-	bHandled = FALSE;
-	LPWINDOWPOS lpWndPos = (LPWINDOWPOS)lParam;
-
-	if (m_pLayeredWindowWrap)
-	{
-		m_pLayeredWindowWrap->OnWindowPosChanged(lpWndPos);
-	}
-	return 0;
-}
-LRESULT CustomWindow::_OnCancelMode( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
-{
-	bHandled = FALSE;
-
-	if (m_pLayeredWindowWrap)
-	{
-		m_pLayeredWindowWrap->OnCancelMode();
-	}
-	return 0;
-}
-
-LRESULT  CustomWindow::_OnDwmCompositionChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
-{
-    if (m_nWindowTransparentMaskType & WINDOW_TRANSPARENT_TYPE_AREO)
-    {
-        this->SetWindowAreo(true);  // 由该函数内部去判断areo是否可用
-        m_bNeedToSetWindowRgn = true;
-        this->UpdateObject();
-    }
-    return 0;
-}
-
 void CustomWindow::ResetAttribute()
 {
 	__super::ResetAttribute();
 
 	m_bNeedToSetWindowRgn = true;  // 换肤时，重新更新窗口形状
-	m_nWindowTransparentMaskType = WINDOW_TRANSPARENT_TYPE_NULL;
-	m_eTransparentRgnType = WINDOW_TRANSPARENT_PART_FULL;
-	m_TransparentRgn9Region.Set(0);
-
-	SAFE_RELEASE(m_pColMask);
-	m_nAlphaMask = 255;
+	if (m_pTransparentMode)
+	{
+		m_pTransparentMode->Enable(false);
+		SAFE_RELEASE(m_pTransparentMode);
+	}
 	m_nResizeBorder = 6;
-
-	SAFE_DELETE_GDIOBJECT(m_hRgn_topleft);
-	SAFE_DELETE_GDIOBJECT(m_hRgn_topright);
-	SAFE_DELETE_GDIOBJECT(m_hRgn_bottomleft);
-	SAFE_DELETE_GDIOBJECT(m_hRgn_bottomright);
 }
 void CustomWindow::SetAttribute(IMapAttribute* pMapAttrib, bool bReload )
 {
-    const TCHAR* szText = pMapAttrib->GetAttr(XML_WINDOW_TRANSPARENT_TYPE, true);
-	if (szText)
-	{
-        if (0 == _tcscmp(XML_WINDOW_TRANSPARENT_TYPE_AREO, szText))
-        {
-            this->SetWindowAreo(true);
-        }
-		else if (0 == _tcscmp(XML_WINDOW_TRANSPARENT_TYPE_LAYERED, szText))
-		{
-			m_nWindowTransparentMaskType = WINDOW_TRANSPARENT_TYPE_LAYERED;
-			this->SetWindowLayered(true);
-		}
-		else if (0 == _tcscmp(XML_WINDOW_TRANSPARENT_TYPE_MASKCOLOR, szText))
-		{	
-			m_nWindowTransparentMaskType = WINDOW_TRANSPARENT_TYPE_MASKCOLOR;
-		}	
-		else if (0 == _tcscmp(XML_WINDOW_TRANSPARENT_TYPE_MASKALPHA, szText))
-		{
-			m_nWindowTransparentMaskType = WINDOW_TRANSPARENT_TYPE_MASKALPHA;
-		}
-
-		// 透明色
-        szText = pMapAttrib->GetAttr(XML_WINDOW_TRANSPARENT_TYPE_MASKCOLOR_VALUE, true);
-		if (szText)
-		{
-			IColorRes* pColorRes = m_pUIApplication->GetActiveSkinColorRes();
-			if (pColorRes)
-				pColorRes->GetColor((BSTR)szText, &m_pColMask);
-
-			m_nWindowTransparentMaskType |= WINDOW_TRANSPARENT_TYPE_MASKCOLOR;
-		}
-
-		// 透明度
-        szText = pMapAttrib->GetAttr(XML_WINDOW_TRANSPARENT_TYPE_MASKALPHA_VALUE, true);
-		if (szText)
-		{
-			m_nAlphaMask = _ttoi(szText);
-			m_nWindowTransparentMaskType |= WINDOW_TRANSPARENT_TYPE_MASKALPHA;
-		}
-	}
-
-    szText = pMapAttrib->GetAttr(XML_WINDOW_TRANSPARENT_PART, true);
-    if (szText)
+	IMapAttribute* pOldMapAttr = m_pIMapAttributeRemain;
+    m_pIMapAttributeRemain = pMapAttrib;  // -- 临时为TransparentMode提供
     {
-        if (0 == _tcscmp(XML_WINDOW_TRANSPARENT_PART_4_CORNER, szText))
+        WINDOW_TRANSPARENT_MODE eMode = GetTransparentModeTypeFromAttr(pMapAttrib);
+        IWndTransMode*  pMode = CreateTransparentModeByType(eMode);
+        if (pMode)
         {
-            m_eTransparentRgnType = WINDOW_TRANSPARENT_PART_4_CORNER;
-        }
-        else if (0 == _tcscmp(XML_WINDOW_TRANSPARENT_PART_8_BORDER, szText))
-        {
-            m_eTransparentRgnType = WINDOW_TRANSPARENT_PART_8_BORDER;
-        }
-        else if (0 == _tcscmp(XML_WINDOW_TRANSPARENT_PART_FULL, szText))
-        {
-            m_eTransparentRgnType = WINDOW_TRANSPARENT_PART_FULL;
-        }
-        else if (0 == _tcscmp(XML_WINDOW_TRANSPARENT_PART_CUSTOM_CORNER, szText))
-        {
-            m_eTransparentRgnType = WINDOW_TRANSPARENT_PART_CUSTOM_CORNER;
-        }
-        else
-        {
-            m_eTransparentRgnType = WINDOW_TRANSPARENT_PART_NULL;
+            SetWndTransMode(pMode);
         }
     }
-
-    // 获取设置参数
-    if (m_eTransparentRgnType == WINDOW_TRANSPARENT_PART_4_CORNER ||
-        m_eTransparentRgnType == WINDOW_TRANSPARENT_PART_8_BORDER ||
-        m_eTransparentRgnType == WINDOW_TRANSPARENT_PART_CUSTOM_CORNER ||
-        m_nWindowTransparentMaskType == WINDOW_TRANSPARENT_TYPE_AREO)
-    {
-        szText = pMapAttrib->GetAttr(XML_WINDOW_TRANSPARENT_PART_9REGION, true);
-        if (szText)
-        {
-            Util::TranslateImage9Region(szText, &m_TransparentRgn9Region);
-        }
-        else
-        {
-            m_TransparentRgn9Region.Set(0);
-        }
-    }
-
-	pMapAttrib->GetAttr_int(XML_WINDOW_RESIZE_BORDER, true, &m_nResizeBorder);
-	
-	szText = pMapAttrib->GetAttr(XML_WINDOW_RESIZE_CAPABILITY, true);
-	if (szText)
-	{
-		if (0 == _tcscmp(szText, XML_WINDOW_RESIZE_CAPABILITY_ALL))
-		{
-			SetResizeCapability(WRSB_ALL);
-		}
-		else if (0 == _tcscmp(szText, XML_WINDOW_RESIZE_CAPABILITY_CAPTION))
-		{
-			SetResizeCapability(WRSB_CAPTION);
-		}
-		else
-		{
-			SetResizeCapability(WRSB_NONE);
-		}
-	}
+    m_pIMapAttributeRemain = pOldMapAttr;
 
 	// 注：这里需要将设置分层窗口的属性放在前面。因为object中很多背景图依赖于窗口类型
 	Window::SetAttribute(pMapAttrib, bReload);
+
+    pMapAttrib->GetAttr_int(XML_WINDOW_RESIZE_BORDER, true, &m_nResizeBorder);	
+    const TCHAR* szText = pMapAttrib->GetAttr(XML_WINDOW_RESIZE_CAPABILITY, true);
+    if (szText)
+    {
+        if (0 == _tcscmp(szText, XML_WINDOW_RESIZE_CAPABILITY_ALL))
+        {
+            SetResizeCapability(WRSB_ALL);
+        }
+        else if (0 == _tcscmp(szText, XML_WINDOW_RESIZE_CAPABILITY_CAPTION))
+        {
+            SetResizeCapability(WRSB_CAPTION);
+        }
+        else
+        {
+            SetResizeCapability(WRSB_NONE);
+        }
+    }
 }
 
 
@@ -313,12 +155,60 @@ void  CustomWindow::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
         ->AddOption(XML_WINDOW_TRANSPARENT_TYPE_AREO)
         ->AddOption(XML_WINDOW_TRANSPARENT_TYPE_MASKALPHA)
         ->AddOption(XML_WINDOW_TRANSPARENT_TYPE_MASKCOLOR);
-    pEditor->CreateTextAttribute(pWindowGroup, XML_WINDOW_TRANSPARENT_TYPE_MASKCOLOR_VALUE, szPrefix);
-    pEditor->CreateTextAttribute(pWindowGroup, XML_WINDOW_TRANSPARENT_TYPE_MASKALPHA_VALUE, szPrefix);
-    pEditor->CreateTextAttribute(pWindowGroup, XML_WINDOW_TRANSPARENT_PART, szPrefix);
-    pEditor->CreateTextAttribute(pWindowGroup, XML_WINDOW_TRANSPARENT_PART_9REGION, szPrefix);
+
+//    pEditor->CreateTextAttribute(pWindowGroup, XML_WINDOW_TRANSPARENT_TYPE_MASKCOLOR_VALUE, szPrefix);
+//    pEditor->CreateTextAttribute(pWindowGroup, XML_WINDOW_TRANSPARENT_TYPE_MASKALPHA_VALUE, szPrefix);
+//    pEditor->CreateTextAttribute(pWindowGroup, XML_WINDOW_TRANSPARENT_PART, szPrefix);
+//    pEditor->CreateTextAttribute(pWindowGroup, XML_WINDOW_TRANSPARENT_9REGION, szPrefix);
 }
 
+void  CustomWindow::SetWndTransMode(WINDOW_TRANSPARENT_MODE eMode, bool bRedraw)
+{
+	IWndTransMode*  pMode = CreateTransparentModeByType(eMode);
+	if (!pMode)
+		return;
+
+	SetWndTransMode(pMode);
+    if (bRedraw && m_pRenderChain)
+    {
+        m_pRenderChain->OnWindowPaint(NULL);
+    }
+}
+void  CustomWindow::SetWndTransMode(IWndTransMode* pMode)
+{
+    if (pMode == m_pTransparentMode)
+        return;
+
+    IWndTransMode* pOldMode = m_pTransparentMode;
+    m_pTransparentMode = pMode;
+
+	if (pMode)
+	{
+		pMode->Init(m_pICustomWindow);
+		pMode->Enable(true);
+	}
+    m_bNeedToSetWindowRgn = true;
+    if (pOldMode)
+    {
+        pOldMode->Enable(false);  // 注：对于分层窗口的disable，需要先让当前的trans mode设置好它的rgn后，才能取消WS_EX_LAYERED样式，否则会导致窗口变黑
+        SAFE_RELEASE(pOldMode);
+    }
+
+    m_pRenderChain->GetWindowLayer()->ReCreateRenderTarget();
+
+    // 每次是否需要清空缓存，避免alpha叠加
+    WINDOW_TRANSPARENT_MODE eMode = GetWndTransMode();
+    if (eMode == WINDOW_TRANSPARENT_MODE_LAYERED || 
+        eMode == WINDOW_TRANSPARENT_MODE_AREO)
+        this->SetTransparent(true); 
+    else
+        this->SetTransparent(false);
+
+    if (m_pRenderChain)
+    {
+        m_pRenderChain->OnWindowTransparentModeChanged(m_pTransparentMode);
+    }
+}
 
 // [Virtual]
 // 1. 实现EraseBkgnd之后，UpdateWindowRgn
@@ -401,401 +291,23 @@ void CustomWindow::UpdateWindowRgn()
 {
 	this->m_bNeedToSetWindowRgn = false;
 
-#if 0
-	BYTE* pBits = LockBits(pRenderTarget);
-	if (NULL == pBits)
-		return;
-
-	this->UpdateWindowRgn(pBits);
-
-	UnlockBits(pRenderTarget);
-#else
-
-	HDC hMemDC = m_pRenderChain->GetMemoryDC();
-	if (NULL == hMemDC)
-		return;
-
-	DIBSECTION  dibsection;
-	HBITMAP hBitmap = (HBITMAP)::GetCurrentObject(hMemDC, OBJ_BITMAP);
-	if (NULL == hBitmap)
-		return;
-
-	::GetObject(hBitmap, sizeof(DIBSECTION), &dibsection);
-	this->UpdateWindowRgn((BYTE*)dibsection.dsBm.bmBits);
-
-#endif
-}
-
-void CustomWindow::UpdateWindowRgn(BYTE* pBits)
-{
-	this->m_bNeedToSetWindowRgn = false;
-	if (NULL == pBits)
-	{
-		return;
-	}
-	if (WINDOW_TRANSPARENT_TYPE_NULL == m_nWindowTransparentMaskType)
-	{
-		return;
-	}
-	if (WINDOW_TRANSPARENT_TYPE_LAYERED & m_nWindowTransparentMaskType ||
-		WINDOW_TRANSPARENT_TYPE_NULL == m_nWindowTransparentMaskType)
-	{
-		return;   // 分层窗口不需要手动设置窗口形状
-	}
-    if (WINDOW_TRANSPARENT_TYPE_AREO & m_nWindowTransparentMaskType)
-    {
-        DwmHelper*  pDwm = DwmHelper::GetInstance();
-        if (pDwm->IsEnable())
-        {
-            if (pDwm->pDwmEnableBlurBehindWindow)
-            {
-                CRect  rcClient;
-                ::GetClientRect(m_hWnd, &rcClient);
-                rcClient.DeflateRect(m_TransparentRgn9Region.left, m_TransparentRgn9Region.top, m_TransparentRgn9Region.right, m_TransparentRgn9Region.bottom);
-
-                HRGN hRgn = CreateRectRgnIndirect(&rcClient);
-                DWM_BLURBEHIND blurbehind = {0};
-                blurbehind.dwFlags = DWM_BB_ENABLE|DWM_BB_BLURREGION|DWM_BB_TRANSITIONONMAXIMIZED;
-                blurbehind.fEnable = TRUE;
-                blurbehind.hRgnBlur = hRgn;
-                blurbehind.fTransitionOnMaximized = TRUE;
-                pDwm->pDwmEnableBlurBehindWindow(m_hWnd, &blurbehind);
-                DeleteObject(hRgn);
-            }
-        }
-        return;
-    }
-
-	switch (m_eTransparentRgnType)
-	{
-	case WINDOW_TRANSPARENT_PART_NULL:
-		return;
-
-	case WINDOW_TRANSPARENT_PART_FULL:
-		{
-			RECT rc = { 0, 0, this->GetWidth(), this->GetHeight() };
-			HRGN hRgn = this->GetExcludeRgn(pBits, rc, false);
-			if (hRgn)
-			{
-				HRGN hRgnFull = CreateRectRgnIndirect(&rc);
-				::CombineRgn(hRgnFull,hRgnFull,hRgn, RGN_DIFF);
-				::SetWindowRgn(m_hWnd,hRgnFull,::IsWindowVisible(m_hWnd));
-				::DeleteObject(hRgn);
-				::DeleteObject(hRgnFull);
-			}
-		}
-		return;
-
-	case WINDOW_TRANSPARENT_PART_4_CORNER:
-		{
-			int nWindowW = this->GetWidth();
-			int nWindowH = this->GetHeight();
-
-			if (NULL == m_hRgn_topleft)  // 第一次初始化四个角落和形状参数
-			{
-				SAFE_DELETE_GDIOBJECT(m_hRgn_topleft);
-				SAFE_DELETE_GDIOBJECT(m_hRgn_topright);
-				SAFE_DELETE_GDIOBJECT(m_hRgn_bottomleft);
-				SAFE_DELETE_GDIOBJECT(m_hRgn_bottomright);
-
-				RECT topleft = {0,0,m_TransparentRgn9Region.topleft, m_TransparentRgn9Region.top};
-				m_hRgn_topleft = GetExcludeRgn(pBits, topleft, true);
-
-				RECT topright = { nWindowW-m_TransparentRgn9Region.topright, 0, nWindowW, m_TransparentRgn9Region.top };
-				m_hRgn_topright = GetExcludeRgn(pBits, topright, true);
-
-				RECT bottomleft = { 0, nWindowH-m_TransparentRgn9Region.bottom, m_TransparentRgn9Region.bottomleft, nWindowH };
-				m_hRgn_bottomleft = GetExcludeRgn(pBits, bottomleft, true);
-
-				RECT bottomright = { nWindowW-m_TransparentRgn9Region.bottomright, nWindowH-m_TransparentRgn9Region.bottom, nWindowW, nWindowH };
-				m_hRgn_bottomright = GetExcludeRgn(pBits, bottomright, true);
-			}
- 
-			HRGN hRgnTopRight = ::CreateRectRgn(0,0,0,0);
-			HRGN hRgnBottomLeft = ::CreateRectRgn(0,0,0,0);
-			HRGN hRgnBottomRight = ::CreateRectRgn(0,0,0,0);
-
-			// m_hRgn_xxx都是基于(0,0)坐标的，需要根据当前窗口大小进行offset操作, m_hRgn_topleft不需要offset
-			::CombineRgn(hRgnTopRight,m_hRgn_topright, hRgnTopRight, RGN_COPY);
-			::OffsetRgn(hRgnTopRight,nWindowW-m_TransparentRgn9Region.topright, 0);
-
-			::CombineRgn(hRgnBottomLeft,m_hRgn_bottomleft, hRgnBottomLeft, RGN_COPY);
-			::OffsetRgn(hRgnBottomLeft, 0, nWindowH-m_TransparentRgn9Region.bottom);
-
-			::CombineRgn(hRgnBottomRight,m_hRgn_bottomright, hRgnBottomRight, RGN_COPY);
-			::OffsetRgn(hRgnBottomRight, nWindowW-m_TransparentRgn9Region.bottomright, nWindowH-m_TransparentRgn9Region.bottom);
-
-			HRGN hRgn = ::CreateRectRgn(0,0,nWindowW,nWindowH);
-			::CombineRgn(hRgn, hRgn, m_hRgn_topleft,  RGN_DIFF );
-			::CombineRgn(hRgn, hRgn, hRgnTopRight,    RGN_DIFF );
-			::CombineRgn(hRgn, hRgn, hRgnBottomLeft,  RGN_DIFF );
-			::CombineRgn(hRgn, hRgn, hRgnBottomRight, RGN_DIFF );
-
-		//	this->SetCanRedraw(false);
-			// 如果这里的参数不去刷新的话，就会在屏幕上残留下这些被裁掉的region区域。
-			// MSDN: Typically, you set bRedraw to TRUE if the window is visible. 
-			::SetWindowRgn(m_hWnd,hRgn, ::IsWindowVisible(m_hWnd));  
-			::DeleteObject(hRgn);
-		//	this->SetCanRedraw(true);
-
-			::DeleteObject(hRgnTopRight);
-			::DeleteObject(hRgnBottomLeft);
-			::DeleteObject(hRgnBottomRight);
-		}
-		return;
-
-	case WINDOW_TRANSPARENT_PART_8_BORDER:
-		{
-			// TODO: 仍有必要进行进一步的优化
-			int nWindowW = this->GetWidth();
-			int nWindowH = this->GetHeight();
-
-			if (NULL == m_hRgn_topleft)  // 第一次初始化四个角落和形状参数
-			{
-				SAFE_DELETE_GDIOBJECT(m_hRgn_topleft);
-				SAFE_DELETE_GDIOBJECT(m_hRgn_topright);
-				SAFE_DELETE_GDIOBJECT(m_hRgn_bottomleft);
-				SAFE_DELETE_GDIOBJECT(m_hRgn_bottomright);
-
-				RECT topleft = {0,0,m_TransparentRgn9Region.topleft, m_TransparentRgn9Region.top};
-				m_hRgn_topleft = GetExcludeRgn(pBits, topleft, true);
-
-				RECT topright = { nWindowW-m_TransparentRgn9Region.topright, 0, nWindowW, m_TransparentRgn9Region.top };
-				m_hRgn_topright = GetExcludeRgn(pBits, topright, true);
-
-				RECT bottomleft = { 0, nWindowH-m_TransparentRgn9Region.bottom, m_TransparentRgn9Region.bottomleft, nWindowH };
-				m_hRgn_bottomleft = GetExcludeRgn(pBits, bottomleft, true);
-
-				RECT bottomright = { nWindowW-m_TransparentRgn9Region.bottomright, nWindowH-m_TransparentRgn9Region.bottom, nWindowW, nWindowH };
-				m_hRgn_bottomright = GetExcludeRgn(pBits, bottomright, true);
-			}
-
-			RECT top = { m_TransparentRgn9Region.topleft, 0, nWindowW-m_TransparentRgn9Region.topright, m_TransparentRgn9Region.top };
-			HRGN hRgn_top = GetExcludeRgn(pBits, top, false);
-			RECT left = {0, m_TransparentRgn9Region.top, m_TransparentRgn9Region.left, nWindowH-m_TransparentRgn9Region.bottom};
-			HRGN hRgn_left = GetExcludeRgn(pBits, left, false);
-			RECT right = { nWindowW-m_TransparentRgn9Region.right, m_TransparentRgn9Region.top, nWindowW, nWindowH-m_TransparentRgn9Region.bottom };
-			HRGN hRgn_right = GetExcludeRgn(pBits, right, false);
-			RECT bottom = { m_TransparentRgn9Region.bottomleft, nWindowH-m_TransparentRgn9Region.bottomleft, nWindowW-m_TransparentRgn9Region.bottomright, nWindowH };
-			HRGN hRgn_bottom = GetExcludeRgn(pBits, bottom, false);
-
-			HRGN hRgnTopRight = ::CreateRectRgn(0,0,0,0);
-			HRGN hRgnBottomLeft = ::CreateRectRgn(0,0,0,0);
-			HRGN hRgnBottomRight = ::CreateRectRgn(0,0,0,0);
-
-			// m_hRgn_xxx都是基于(0,0)坐标的，需要根据当前窗口大小进行offset操作, m_hRgn_topleft不需要offset
-			::CombineRgn(hRgnTopRight,m_hRgn_topright, hRgnTopRight, RGN_COPY);
-			::OffsetRgn(hRgnTopRight,nWindowW-m_TransparentRgn9Region.topright, 0);
-			::CombineRgn(hRgnBottomLeft,m_hRgn_bottomleft, hRgnBottomLeft, RGN_COPY);
-			::OffsetRgn(hRgnBottomLeft, 0, nWindowH-m_TransparentRgn9Region.bottom);
-			::CombineRgn(hRgnBottomRight,m_hRgn_bottomright, hRgnBottomRight, RGN_COPY);
-			::OffsetRgn(hRgnBottomRight, nWindowW-m_TransparentRgn9Region.bottomright, 0);
-
-			HRGN hRgn = ::CreateRectRgn(0,0,nWindowW,nWindowH);
-			::CombineRgn(hRgn, hRgn, m_hRgn_topleft,  RGN_DIFF );
-			::CombineRgn(hRgn, hRgn, hRgnTopRight,    RGN_DIFF );
-			::CombineRgn(hRgn, hRgn, hRgnBottomLeft,  RGN_DIFF );
-			::CombineRgn(hRgn, hRgn, hRgnBottomRight, RGN_DIFF );
-			::CombineRgn(hRgn, hRgn, hRgn_top,        RGN_DIFF );
-			::CombineRgn(hRgn, hRgn, hRgn_left,       RGN_DIFF );
-			::CombineRgn(hRgn, hRgn, hRgn_right,      RGN_DIFF );
-			::CombineRgn(hRgn, hRgn, hRgn_bottom,     RGN_DIFF );
-
-			::SetWindowRgn(m_hWnd,hRgn, ::IsWindowVisible(m_hWnd));
-			::DeleteObject(hRgn);
-
-			::DeleteObject(hRgnTopRight);
-			::DeleteObject(hRgnBottomLeft);
-			::DeleteObject(hRgnBottomRight);
-			::DeleteObject(hRgn_top);
-			::DeleteObject(hRgn_left);
-			::DeleteObject(hRgn_right);
-			::DeleteObject(hRgn_bottom);
-			
-		}
-		return;
-
-	case WINDOW_TRANSPARENT_PART_CUSTOM_CORNER:
-		{
-			int nWindowW = this->GetWidth();
-			int nWindowH = this->GetHeight();
-
-			if (NULL == m_hRgn_topleft && m_TransparentRgn9Region.topleft != 0 && m_TransparentRgn9Region.top != 0)
-			{
-				m_hRgn_topleft = ::CreateEllipticRgn( 0,0, m_TransparentRgn9Region.topleft, m_TransparentRgn9Region.top );
-				HRGN hRgnRect = ::CreateRectRgn( 0,0, m_TransparentRgn9Region.topleft/2, m_TransparentRgn9Region.top/2 );
-				::CombineRgn( m_hRgn_topleft, hRgnRect, m_hRgn_topleft, RGN_DIFF );
-				::DeleteObject(hRgnRect);
-			}
-			if (NULL == m_hRgn_topright && m_TransparentRgn9Region.topright != 0 && m_TransparentRgn9Region.left != 0)
-			{
-				RECT rcE = {0,0, m_TransparentRgn9Region.topright, m_TransparentRgn9Region.left};
-				::OffsetRect(&rcE, nWindowW-m_TransparentRgn9Region.topright, 0);
-				m_hRgn_topright = ::CreateEllipticRgnIndirect( &rcE );
-
-				RECT rcR = {0,0, m_TransparentRgn9Region.topright/2, m_TransparentRgn9Region.left/2};
-				::OffsetRect(&rcR, nWindowW-m_TransparentRgn9Region.topright/2, 0 );
-				HRGN hRgnRect = ::CreateRectRgnIndirect( &rcR );
-
-				::CombineRgn( m_hRgn_topright, hRgnRect, m_hRgn_topright, RGN_DIFF );
-				::DeleteObject(hRgnRect);
-			}
-			if (NULL == m_hRgn_bottomleft && m_TransparentRgn9Region.right != 0 && m_TransparentRgn9Region.bottomleft != 0)
-			{
-				RECT rcE = {0,0, m_TransparentRgn9Region.right, m_TransparentRgn9Region.bottomleft};
-				::OffsetRect(&rcE, 0, nWindowH-m_TransparentRgn9Region.bottomleft);
-				m_hRgn_bottomleft = ::CreateEllipticRgnIndirect(&rcE);
-
-				RECT rcR = {0,0, m_TransparentRgn9Region.right/2, m_TransparentRgn9Region.bottomleft/2};
-				::OffsetRect(&rcR, 0, nWindowH-m_TransparentRgn9Region.bottomleft/2);
-				HRGN hRgnRect = ::CreateRectRgnIndirect( &rcR );
-				::CombineRgn( m_hRgn_bottomleft, hRgnRect, m_hRgn_bottomleft, RGN_DIFF );
-				::DeleteObject(hRgnRect);
-			}
-			if (NULL == m_hRgn_bottomright && m_TransparentRgn9Region.bottom != 0 && m_TransparentRgn9Region.bottomright != 0 )
-			{
-				RECT rcE = {0,0, m_TransparentRgn9Region.bottom, m_TransparentRgn9Region.bottomright};
-				::OffsetRect(&rcE, nWindowW-m_TransparentRgn9Region.bottom, nWindowH-m_TransparentRgn9Region.bottomright );
-				m_hRgn_bottomright = ::CreateEllipticRgnIndirect( &rcE );
-
-				RECT rcR = {0,0, m_TransparentRgn9Region.bottom/2, m_TransparentRgn9Region.bottomright/2};
-				::OffsetRect(&rcR,nWindowW-m_TransparentRgn9Region.bottom/2, nWindowH-m_TransparentRgn9Region.bottomright/2 );
-				HRGN hRgnRect = ::CreateRectRgnIndirect( &rcR );
-
-				::CombineRgn( m_hRgn_bottomright, hRgnRect, m_hRgn_bottomright, RGN_DIFF );
-				::DeleteObject(hRgnRect);
-			}
-
-			HRGN hRgn = ::CreateRectRgn(0,0,this->GetWidth(), this->GetHeight());
-			if (m_hRgn_topleft)
-			{
-				::CombineRgn(hRgn, hRgn, m_hRgn_topleft,  RGN_DIFF );
-			}
-			if (m_hRgn_topright)
-			{
-				::CombineRgn(hRgn, hRgn, m_hRgn_topright,  RGN_DIFF );
-			}
-			if (m_hRgn_bottomleft)
-			{
-				::CombineRgn(hRgn, hRgn, m_hRgn_bottomleft,  RGN_DIFF );
-			}
-			if (m_hRgn_bottomright)
-			{
-				::CombineRgn(hRgn, hRgn, m_hRgn_bottomright,  RGN_DIFF );
-			}
-			::SetWindowRgn(m_hWnd,hRgn, ::IsWindowVisible(m_hWnd));
-			SAFE_DELETE_GDIOBJECT(m_hRgn_topright);
-			SAFE_DELETE_GDIOBJECT(m_hRgn_bottomleft);
-			SAFE_DELETE_GDIOBJECT(m_hRgn_bottomright);
-		}
-		return;
-
-	}
+    if (m_pTransparentMode)
+        m_pTransparentMode->UpdateRgn();
 }
 
 
-//
-//	从一个pBits取该内容上面RC区域内需要被抠掉的范围
-//
-//	bOffsetToOrigin
-//		[in]	要否需要将返回的HRGN的原点设置为(0,0)开始 --- 获取四个角落的HRGN时有用
-//
-HRGN CustomWindow::GetExcludeRgn( BYTE* pBits, const RECT& rc, bool bOffsetToOrigin )
-{
-	if(NULL == pBits)
-		return NULL;
-
-	int nWindowW = this->GetWidth();
-	int nWindowH = this->GetHeight();
-
-	BYTE* p = pBits;
-	vector<RECT>  vRectRgnData;
-	for (LONG i = rc.top; i < rc.bottom; i++ )   
-	{
-		p = pBits + nWindowW*4*i + rc.left*4;
-		for (LONG j = rc.left; j < rc.right; j++)      
-		{
-			POINT pt = { j, nWindowH-i-1 };   // 创建的m_hMemBitmap是反向的
-
-			BYTE b = *p++;
-			BYTE g = *p++;
-			BYTE r = *p++;
-			BYTE a = *p++;
-
-			bool bExclude = false;
-			if (((int)m_nWindowTransparentMaskType)& WINDOW_TRANSPARENT_TYPE_MASKCOLOR) 
-			{
-				if (NULL != m_pColMask && m_pColMask->m_col == RGB(r,g,b))
-				{
-					bExclude = true;
-				}
-			}
-			if (((int)m_nWindowTransparentMaskType) & WINDOW_TRANSPARENT_TYPE_MASKALPHA)
-			{
-				if (a < m_nAlphaMask)
-				{
-					bExclude = true;
-				}
-			}
-			if (bExclude)
-			{
-				RECT rcPixel = { pt.x, pt.y, pt.x+1, pt.y+1 };  // 统一设置为从0,0位置开始，便于后面的OffsetRgn
-				if (bOffsetToOrigin)
-				{
-					::OffsetRect(&rcPixel, -rc.left, -rc.top);
-				}
-
-				vRectRgnData.push_back(rcPixel);
-			}
-		}
-	}
-
-	int nCount = (int)vRectRgnData.size();
-	RGNDATA*   pRgnData      = (RGNDATA*)new BYTE[ sizeof(RGNDATAHEADER) + nCount*sizeof(RECT) ];
-	pRgnData->rdh.dwSize     = sizeof(RGNDATAHEADER);
-	pRgnData->rdh.iType      = RDH_RECTANGLES;
-	pRgnData->rdh.nCount     = nCount;
-	pRgnData->rdh.nRgnSize   = nCount*sizeof(RECT);
-	for (int k = 0; k < nCount; k++)
-	{
-		RECT* prc = (RECT*)pRgnData->Buffer;
-		prc[k] = vRectRgnData[k];
-	}
-
-	HRGN hRgn = ::ExtCreateRegion(NULL, sizeof(RGNDATAHEADER) + nCount*sizeof(RECT), pRgnData);
-	SAFE_ARRAY_DELETE(pRgnData);
-
-	return hRgn;
-}
-
-// void CustomWindow::EndRedrawObjectPart(IRenderTarget* pRenderTarget, RECT* prcArray, int nCount)
-// {
-// 	if (m_pLayeredWindowWrap)
-// 	{
-//         pRenderTarget->EndDraw();
-//         m_pLayeredWindowWrap->Commit2LayeredWindow();
-// 	}
-// 	else
-// 	{
-//         __super::EndRedrawObjectPart(pRenderTarget, prcArray, nCount);		
-// 	}
-// }
 void CustomWindow::CommitDoubleBuffet2Window(HDC hDCWnd, RECT* prcCommit, int nRectCount)
 {
-	if (m_pLayeredWindowWrap)
-    {
-        m_pLayeredWindowWrap->Commit2LayeredWindow();
-    }
-	else
-    {
-        __super::CommitDoubleBuffet2Window(hDCWnd, prcCommit, nRectCount);		
-    }
+	if (m_pTransparentMode && m_pTransparentMode->Commit())
+        return;
+    
+    __super::CommitDoubleBuffet2Window(hDCWnd, prcCommit, nRectCount);		
 }
 
 //
 //	获取一个POINT在CustomWindow上面的位置
 //
-UINT CustomWindow::OnHitTest( POINT* pt )
+UINT CustomWindow::OnHitTest(POINT* pt)
 {
 	if (m_nResizeCapability == WRSB_NONE)
 	{
@@ -912,91 +424,46 @@ void CustomWindow::OnLButtonDown(UINT nFlags, POINT pt)
 	SetMsgHandled(FALSE);
 
 	UINT nHitTest = this->OnHitTest(&pt);
-
 	switch(nHitTest)
 	{
 	case HTTOPLEFT:
-		if (m_pLayeredWindowWrap)
-			m_pLayeredWindowWrap->OnLButtonDown(nHitTest);
-		else
-			::PostMessage( m_hWnd, WM_SYSCOMMAND, SC_SIZE|WMSZ_TOPLEFT, MAKELPARAM(pt.x,pt.y) );
+		::PostMessage( m_hWnd, WM_SYSCOMMAND, SC_SIZE|WMSZ_TOPLEFT, MAKELPARAM(pt.x,pt.y) );
 		break;
 
 	case HTTOP:
-		if (m_pLayeredWindowWrap)
-			m_pLayeredWindowWrap->OnLButtonDown(nHitTest);
-		else
-			::PostMessage( m_hWnd, WM_SYSCOMMAND, SC_SIZE|WMSZ_TOP, MAKELPARAM(pt.x,pt.y) );
+		::PostMessage( m_hWnd, WM_SYSCOMMAND, SC_SIZE|WMSZ_TOP, MAKELPARAM(pt.x,pt.y) );
 		break;
 
 	case HTTOPRIGHT:
-		if (m_pLayeredWindowWrap)
-			m_pLayeredWindowWrap->OnLButtonDown(nHitTest);
-		else
-			::PostMessage( m_hWnd, WM_SYSCOMMAND, SC_SIZE|WMSZ_TOPRIGHT, MAKELPARAM(pt.x,pt.y) );
+		::PostMessage( m_hWnd, WM_SYSCOMMAND, SC_SIZE|WMSZ_TOPRIGHT, MAKELPARAM(pt.x,pt.y) );
 		break;
 
 	case HTLEFT:
-		if (m_pLayeredWindowWrap)
-			m_pLayeredWindowWrap->OnLButtonDown(nHitTest);
-		else
-			::PostMessage( m_hWnd, WM_SYSCOMMAND, SC_SIZE|WMSZ_LEFT, MAKELPARAM(pt.x,pt.y) );
+		::PostMessage( m_hWnd, WM_SYSCOMMAND, SC_SIZE|WMSZ_LEFT, MAKELPARAM(pt.x,pt.y) );
 		break;
 
 	case HTRIGHT:
-		if (m_pLayeredWindowWrap)
-			m_pLayeredWindowWrap->OnLButtonDown(nHitTest);
-		else
-			::PostMessage( m_hWnd, WM_SYSCOMMAND, SC_SIZE|WMSZ_RIGHT, MAKELPARAM(pt.x,pt.y) );
+		::PostMessage( m_hWnd, WM_SYSCOMMAND, SC_SIZE|WMSZ_RIGHT, MAKELPARAM(pt.x,pt.y) );
 		break;
 
 	case HTBOTTOMLEFT:
-		if (m_pLayeredWindowWrap)
-			m_pLayeredWindowWrap->OnLButtonDown(nHitTest);
-		else
-			::PostMessage( m_hWnd, WM_SYSCOMMAND, SC_SIZE|WMSZ_BOTTOMLEFT, MAKELPARAM(pt.x,pt.y) );
+		::PostMessage( m_hWnd, WM_SYSCOMMAND, SC_SIZE|WMSZ_BOTTOMLEFT, MAKELPARAM(pt.x,pt.y) );
 		break;
 
 	case HTBOTTOM:
-		if (m_pLayeredWindowWrap)
-			m_pLayeredWindowWrap->OnLButtonDown(nHitTest);
-		else
-			::PostMessage( m_hWnd, WM_SYSCOMMAND, SC_SIZE|WMSZ_BOTTOM, MAKELPARAM(pt.x,pt.y) );
+		::PostMessage( m_hWnd, WM_SYSCOMMAND, SC_SIZE|WMSZ_BOTTOM, MAKELPARAM(pt.x,pt.y) );
 		break;
 
 	case HTBOTTOMRIGHT:
-		if (m_pLayeredWindowWrap)
-			m_pLayeredWindowWrap->OnLButtonDown(nHitTest);
-		else
-			::PostMessage( m_hWnd, WM_SYSCOMMAND, SC_SIZE|WMSZ_BOTTOMRIGHT, MAKELPARAM(pt.x,pt.y) );
+	    ::PostMessage( m_hWnd, WM_SYSCOMMAND, SC_SIZE|WMSZ_BOTTOMRIGHT, MAKELPARAM(pt.x,pt.y) );
 		break;
 
 	case HTCAPTION:
-		{
-			::PostMessage( m_hWnd, WM_NCLBUTTONDOWN, HTCAPTION, MAKELPARAM(pt.x,pt.y) );
-		}
+		::PostMessage( m_hWnd, WM_NCLBUTTONDOWN, HTCAPTION, MAKELPARAM(pt.x,pt.y) );
 		break;
 	}
 }
 
-void CustomWindow::OnLButtonUp(UINT nFlags, POINT point)
-{
-	SetMsgHandled(FALSE);
-	if (m_pLayeredWindowWrap)
-	{
-		m_pLayeredWindowWrap->OnLButtonUp();
-	}
-}
-
-void  CustomWindow::OnMouseMove(UINT nFlags, POINT point)
-{
-	SetMsgHandled(FALSE);
-
-	if (m_pLayeredWindowWrap)
-	{
-		m_pLayeredWindowWrap->OnMouseMove();
-	}
-}
 
 // 注：不要响应UIMSG的WM_SIZE。因为在WindowBase::_OnSize中就已经开始更新窗口了，因
 //     此需要在那之前将m_bNeedToSetWindowRgn标志置上。否则将光置上标志，却错过了OnEndEraseBknd
@@ -1034,8 +501,12 @@ bool  CustomWindow::TestResizeBit( int nBit )
 
 bool  CustomWindow::IsWindowLayered()
 {
-	return (NULL!=m_pLayeredWindowWrap);
+    if (m_pTransparentMode && WINDOW_TRANSPARENT_MODE_LAYERED == m_pTransparentMode->GetModeValue())
+        return true;
+
+    return false;
 }
+
 //
 //	设置/取消一个窗口为分层窗口
 //
@@ -1044,151 +515,40 @@ bool  CustomWindow::IsWindowLayered()
 //		并返回RENDER_TYPE_GDIPLUS类型。因为目前不支持切换为分层窗口时，将该窗口中所使用到的
 //		图片、字体资源都同时转换成GDIPLUS类型的。
 //
-void  CustomWindow::SetWindowLayered(bool b)
+void  CustomWindow::EnableWindowLayered(bool b)
 {
-	if (b && NULL != m_pLayeredWindowWrap)
-		return;
-	if (!b && NULL == m_pLayeredWindowWrap)
+    bool bLayered = IsWindowLayered();
+	if (b == bLayered)
 		return;
 
 	if (b)
 	{
-		m_pLayeredWindowWrap = new LayeredWindowWrap(this);
-		m_nWindowTransparentMaskType |= WINDOW_TRANSPARENT_TYPE_LAYERED;
-		if (0 == (m_nWindowTransparentMaskType & WINDOW_TRANSPARENT_TYPE_MASKALPHA) &&
-            0 == (m_nWindowTransparentMaskType & WINDOW_TRANSPARENT_TYPE_MASKCOLOR))
-		{
-			m_nWindowTransparentMaskType |= WINDOW_TRANSPARENT_TYPE_MASKALPHA;  // 避免忘记了设置该项，否则Commit的时候参数不正确
-			m_nAlphaMask = 255;
-		}
-
-		// 使用分层窗口的话，就不要再显示窗口阴影了。（场景：菜单窗口默认是带SHADOW的，使用分层窗口时就不需要这个阴影了，自己模拟即可）
-		SetClassLong(m_hWnd, GCL_STYLE, GetClassLong(m_hWnd, GCL_STYLE)&~CS_DROPSHADOW);
-
-		SetWindowLong(m_hWnd, 
-			GWL_EXSTYLE,
-			GetWindowLong(m_hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-
-		SetWindowRgn(m_hWnd, NULL, FALSE);   // 取消窗口的异形，由分层窗口自己来处理。分层窗口仅会收到一个WINDOWPOSCHANGED消息，但SWP_NOSIZE，因此还需要另外发送一个
-		                                     // 窗口大小的消息告诉分层窗口当前大小
-		m_pRenderChain->GetWindowLayer()->ReCreateRenderTarget();  //放在InitLayeredWindow的前面，避免在InitLayeredWindow->Invalidate->WM_PAINT中创建的RenderTarget又被销毁了
-		m_pLayeredWindowWrap->InitLayeredWindow();
+		IWndTransMode* pMode = static_cast<IWndTransMode*>(new LayeredWindowWrap());
+        SetWndTransMode(pMode);
 	}
 	else
 	{
-		m_nWindowTransparentMaskType &= ~WINDOW_TRANSPARENT_TYPE_LAYERED;
-		// 注：直接去除WS_EX_LAYERED属性，会导致窗口先变黑，然后再刷新一次。
-		//     因此在这里去除分层属性之后，直接将mem bitmap的内容先画到窗口上来规避这个问题。
-		//     同时为了解决画到窗口上的内容有rgn以外的部分，在去除分层属性之前，先计算
-		//     窗口的形状
-		
-		this->UpdateWindowRgn();
-
-		// Remove WS_EX_LAYERED from this window styles
-		SetWindowLong(m_hWnd, 
-			GWL_EXSTYLE,
-			GetWindowLong(m_hWnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
-
-		HDC hDC = ::GetDC(m_hWnd);
-		::BitBlt(hDC,0,0, GetWidth(), GetHeight(), m_pRenderChain->GetMemoryDC(), 0,0, SRCCOPY);
-		ReleaseDC(m_hWnd, hDC);
-
-		m_pLayeredWindowWrap->ReleaseLayeredWindow();
-		SAFE_DELETE(m_pLayeredWindowWrap);
-
-		// Ask the window and its children to repaint (Bitblt已完成了刷新功能)
-// 		RedrawWindow(m_hWnd, 
-// 			NULL, 
-// 			NULL, 
-// 			RDW_ERASE | RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
-		
-		m_pRenderChain->GetWindowLayer()->ReCreateRenderTarget();
+        m_pTransparentMode->Enable(false);
+        SetWndTransMode(NULL);
 	}
-    if (m_nWindowTransparentMaskType & WINDOW_TRANSPARENT_TYPE_LAYERED || 
-        m_nWindowTransparentMaskType & WINDOW_TRANSPARENT_TYPE_AREO)
-        this->SetTransparent(true); // 借用该标识位，外部通过判断IsTransparent来得到窗口是否是分层窗口。例如每次是否需要清空缓存，避免alpha叠加
-    else
-        this->SetTransparent(false);
-
-    UIMSG  msg;
-    msg.message = UI_WM_WINDOWLAYEREDCHANGED;
-    msg.wParam = (WPARAM)b;
-    msg.lParam = 0;
-    Message::ForwardMessageToChildObject(this, &msg);
 }
 
-void  CustomWindow::SetWindowAreo(bool b)
+
+void  CustomWindow::EnableWindowAreo(bool b)
 {
-    DwmHelper* pDwm = DwmHelper::GetInstance();
+    bool bAreo = (m_pTransparentMode && WINDOW_TRANSPARENT_MODE_AREO == m_pTransparentMode->GetModeValue());
+    if (b == bAreo)
+        return;
+
     if (b)
     {
-        m_nWindowTransparentMaskType |= WINDOW_TRANSPARENT_TYPE_AREO;
-        if (pDwm->IsEnable())
-        {
-            // 恢复成支持areo的主题了，可以不用使用layered
-            if (m_nWindowTransparentMaskType & WINDOW_TRANSPARENT_TYPE_LAYERED)
-            {
-                SetWindowLayered(false);
-            }
-
-            UpdateWindowRgn();
-        }
-        else
-        {
-			if (pDwm->pDwmEnableBlurBehindWindow)
-			{
-				DWM_BLURBEHIND blurbehind = {0};
-				blurbehind.dwFlags = DWM_BB_ENABLE;
-				blurbehind.fEnable = FALSE;
-				pDwm->pDwmEnableBlurBehindWindow(m_hWnd, &blurbehind);
-			}
-
-            // 不支持areo， 用分层窗口代替
-            SetWindowLayered(true);
-        }
+        IWndTransMode* pMode = static_cast<IWndTransMode*>(new AreoWindowWrap());
+        SetWndTransMode(pMode);
     }
     else
     {
-        if (m_nWindowTransparentMaskType & WINDOW_TRANSPARENT_TYPE_AREO)
-        {
-            m_nWindowTransparentMaskType &= ~WINDOW_TRANSPARENT_TYPE_AREO;
-
-            if (pDwm->pDwmEnableBlurBehindWindow)
-            {
-                DWM_BLURBEHIND blurbehind = {0};
-                blurbehind.dwFlags = DWM_BB_ENABLE;
-                blurbehind.fEnable = FALSE;
-                pDwm->pDwmEnableBlurBehindWindow(m_hWnd, &blurbehind);
-            }
-        }
+        SetWndTransMode(NULL);
     }
-}
-
-void  CustomWindow::SetWindowTransparentMaskType(int type)
-{
-	m_nWindowTransparentMaskType = type;
-}
-int   CustomWindow::GetWindowTransparentMaskType()
-{
-    return m_nWindowTransparentMaskType;
-}
-void  CustomWindow::SetWindowTransparentColMask( COLORREF col )
-{
-    SAFE_RELEASE(m_pColMask);
-    m_pColMask = Color::CreateInstance(col);
-}
-void  CustomWindow::SetWindowTransparentColMask( const String& strColdID )
-{
-	if (NULL == m_pUIApplication)
-		return ;
-
-	IColorRes* pColorRes = m_pUIApplication->GetActiveSkinColorRes();
-	if (pColorRes)
-		pColorRes->GetColor((BSTR)strColdID.c_str(), &m_pColMask);
-}
-void  CustomWindow::SetWindowTransparentAlphaMask( int nAlpha )
-{
-	m_nAlphaMask = nAlpha;
 }
 
 // -> 注：每次强制返回HTCAPTION之后，将导致生成WM_MOUSELEAVE消息（鼠标进入非客户区域 )
@@ -1210,6 +570,11 @@ void  CustomWindow::SetWindowTransparentAlphaMask( int nAlpha )
 		  这样就会产生一个问题：返回HTCAPTION之后，就不会产生 WM_MOUSEMOVE消息，而是会
 		  产生 WM_NCMOUSEMOVE 消息，这就给 MouseManager 在处理 WM_MOUSEMOVE 消息时带来
 		  了错误。因此有必要在 Custom(Ex)Window中将 WM_NCXXX消息再转换成 WM_XXX消息
+
+          另外，通过HITTEST返回HTxxx进行大小改变时，如果窗口有系统菜单样式（WS_SYSMENU），
+          则还要继承判断一下当前的系统菜单样式对应的菜单项是否可用（如”大小“被Disable时），
+          就算返回了HT_LEFT/HT_TOP，也不能进行拖拽。（Dwp.c (private\ntos\w32\ntuser\kernel)
+          Line 613）通常如果窗口没有ThickFrame，该菜单项不可用
 */
 
 // void CustomWindow::OnNcMouseMove( UINT nHitTest, POINT point )
@@ -1288,363 +653,6 @@ void  CustomWindow::SetWindowTransparentAlphaMask( int nAlpha )
 //////////////////////////////////////////////////////////////////////////
 
 
-LayeredWindowWrap::LayeredWindowWrap(CustomWindow* pWindow)
-{
-	m_pWindow = pWindow;
+//////////////////////////////////////////////////////////////////////////
 
-	m_nHitTestFlag = 0;
-	m_ptStartSizeMove.x = 0;
-	m_ptStartSizeMove.y = 0;
-	m_ptWindowOld.x = 0;
-	m_ptWindowOld.y = 0;
-	m_sizeWindowOld.cx = 0;
-	m_sizeWindowOld.cy = 0;
-	m_ptWindow.x = NDEF;
-	m_ptWindow.y = NDEF;
-	m_sizeWindow.cx = NDEF;
-	m_sizeWindow.cy = NDEF;
-}
-LayeredWindowWrap::~LayeredWindowWrap()
-{
-	m_pWindow = NULL;
-}
-BOOL  LayeredWindowWrap::PreCreateWindow(CREATESTRUCT* pcs)
-{
-	// 添加分层属性 
-	pcs->dwExStyle |= WS_EX_LAYERED;
-	return TRUE;
-}
-
-
-void  LayeredWindowWrap::InitLayeredWindow()
-{
-	CRect rc;
-	::GetWindowRect(m_pWindow->m_hWnd, &rc );
-
-	// 避免因为在SetLayerWindowd(true)之前错过了带在设置SIZE的WindowPosChanged消息，
-	// 在这里检测一次
-	if (NDEF == m_sizeWindow.cx && NDEF == m_sizeWindow.cy)
-	{
-		m_sizeWindow.cx = rc.Width();
-		m_sizeWindow.cy = rc.Height();
-	}
-	if (NDEF == m_ptWindow.x && NDEF == m_ptWindow.y)
-	{
-		m_ptWindow.x = rc.left;
-		m_ptWindow.y = rc.top;
-	}
-}
-void  LayeredWindowWrap::ReleaseLayeredWindow()
-{
-}
-
-void  LayeredWindowWrap::OnWindowPosChanging(LPWINDOWPOS lpWndPos)
-{
-// 	if (lpWndPos->flags & SWP_SHOWWINDOW)  // 窗口显示（窗口隐藏时，DrawObject会失败）
-// 	{
-// 		this->RedrawObject(m_pWindow, TRUE);
-// 	}
-}
-void  LayeredWindowWrap::OnWindowPosChanged(LPWINDOWPOS lpWndPos)
-{
-    // 最小化了，仅保存一下m_ptWindow，用于后面判断是否是最小化，不修改m_sizeWindow（不好处理）
-    if (lpWndPos->x == WINDOWS_MINIMIZED_POINT && lpWndPos->y == WINDOWS_MINIMIZED_POINT)
-    {
-        m_ptWindow.x = WINDOWS_MINIMIZED_POINT;
-        m_ptWindow.y = WINDOWS_MINIMIZED_POINT;
-    }
-    else
-    {
-	    if (!(lpWndPos->flags & SWP_NOMOVE))
-	    {
-		    m_ptWindow.x = lpWndPos->x;
-		    m_ptWindow.y = lpWndPos->y;
-	    }
-	    if (!(lpWndPos->flags & SWP_NOSIZE))
-	    {
-		    m_sizeWindow.cx = lpWndPos->cx;
-		    m_sizeWindow.cy = lpWndPos->cy;
-	    }
-	    if (lpWndPos->flags & SWP_SHOWWINDOW)  // 窗口显示（窗口隐藏时，DrawObject会失败）
-	    {
-            ::InvalidateRect(m_pWindow->m_hWnd, NULL, TRUE);
-	    }
-    }
-}
-
-// 模拟拖拽窗口拉伸过程
-void  LayeredWindowWrap::OnLButtonDown(UINT nHitTest)
-{
-	OnEnterSizeMove(nHitTest);
-}
-void  LayeredWindowWrap::OnLButtonUp()
-{
-	OnExitSizeMove();
-}
-void  LayeredWindowWrap::OnCancelMode()
-{
-	OnExitSizeMove();
-}
-void  LayeredWindowWrap::OnMouseMove()
-{
-	if (0 == m_nHitTestFlag)
-		return;
-
-	POINT ptCursor;
-	GetCursorPos(&ptCursor);
-
-	int nxMoveDiff = 0;
-	int nyMoveDiff = 0;
-
-	int oldCX = m_sizeWindow.cx;
-	int oldCY = m_sizeWindow.cy;
-
-	// 计算窗口的新坐标 (注：对于向左/上拉伸时，如果限制了最大宽/高，则在计算坐标时需要按照最大宽/高来计算，而不是鼠标位置)
-	switch(m_nHitTestFlag)
-	{
-	case HTLEFT:
-		nxMoveDiff = m_ptStartSizeMove.x - ptCursor.x;
-		m_sizeWindow.cx = m_sizeWindowOld.cx + nxMoveDiff;
-	
-		if (m_pWindow->m_nMaxWidth != NDEF && m_sizeWindow.cx > m_pWindow->m_nMaxWidth)
-			m_sizeWindow.cx = m_pWindow->m_nMaxWidth;
-		if (m_pWindow->m_nMinWidth != NDEF && m_sizeWindow.cx < m_pWindow->m_nMinWidth)
-			m_sizeWindow.cx = m_pWindow->m_nMinWidth;
-
-		m_ptWindow.x = m_ptWindowOld.x + m_sizeWindowOld.cx - m_sizeWindow.cx;
-		
-		break;
-
-	case HTRIGHT:
-		nxMoveDiff = ptCursor.x - m_ptStartSizeMove.x;
-		m_sizeWindow.cx = m_sizeWindowOld.cx + nxMoveDiff;
-		break;
-
-	case HTTOP:
-		nyMoveDiff = m_ptStartSizeMove.y - ptCursor.y;
-		m_sizeWindow.cy = m_sizeWindowOld.cy + nyMoveDiff;
-
-		if (m_pWindow->m_nMaxHeight != NDEF && m_sizeWindow.cy > m_pWindow->m_nMaxHeight)
-			m_sizeWindow.cy = m_pWindow->m_nMaxHeight;
-		if (m_pWindow->m_nMinHeight != NDEF && m_sizeWindow.cy < m_pWindow->m_nMinHeight)
-			m_sizeWindow.cy = m_pWindow->m_nMinHeight;
-
-		m_ptWindow.y = m_ptWindowOld.y+m_sizeWindowOld.cy - m_sizeWindow.cy;
-
-		break;
-
-	case HTBOTTOM:
-		nyMoveDiff = ptCursor.y - m_ptStartSizeMove.y;
-		m_sizeWindow.cy = m_sizeWindowOld.cy + nyMoveDiff;
-		break;
-
-	case HTTOPLEFT:
-		nxMoveDiff = m_ptStartSizeMove.x - ptCursor.x;
-		m_sizeWindow.cx = m_sizeWindowOld.cx + nxMoveDiff;
-
-		nyMoveDiff = m_ptStartSizeMove.y - ptCursor.y;
-		m_sizeWindow.cy = m_sizeWindowOld.cy + nyMoveDiff;
-
-		if (m_pWindow->m_nMaxWidth != NDEF && m_sizeWindow.cx > m_pWindow->m_nMaxWidth)
-			m_sizeWindow.cx = m_pWindow->m_nMaxWidth;
-		if (m_pWindow->m_nMaxHeight != NDEF && m_sizeWindow.cy > m_pWindow->m_nMaxHeight)
-			m_sizeWindow.cy = m_pWindow->m_nMaxHeight;
-		if (m_pWindow->m_nMinWidth != NDEF && m_sizeWindow.cx < m_pWindow->m_nMinWidth)
-			m_sizeWindow.cx = m_pWindow->m_nMinWidth;
-		if (m_pWindow->m_nMinHeight != NDEF && m_sizeWindow.cy < m_pWindow->m_nMinHeight)
-			m_sizeWindow.cy = m_pWindow->m_nMinHeight;
-
-		m_ptWindow.y = m_ptWindowOld.y+m_sizeWindowOld.cy - m_sizeWindow.cy;
-		m_ptWindow.x = m_ptWindowOld.x + m_sizeWindowOld.cx - m_sizeWindow.cx;
-		
-		break;
-
-	case HTTOPRIGHT:
-		nxMoveDiff = ptCursor.x - m_ptStartSizeMove.x;
-		m_sizeWindow.cx = m_sizeWindowOld.cx + nxMoveDiff;
-
-		nyMoveDiff = m_ptStartSizeMove.y - ptCursor.y;
-		m_sizeWindow.cy = m_sizeWindowOld.cy + nyMoveDiff;
-
-		if (m_pWindow->m_nMaxHeight != NDEF && m_sizeWindow.cy > m_pWindow->m_nMaxHeight)
-			m_sizeWindow.cy = m_pWindow->m_nMaxHeight;
-		if (m_pWindow->m_nMinHeight != NDEF && m_sizeWindow.cy < m_pWindow->m_nMinHeight)
-			m_sizeWindow.cy = m_pWindow->m_nMinHeight;
-
-		m_ptWindow.y = m_ptWindowOld.y+m_sizeWindowOld.cy - m_sizeWindow.cy;
-		break;
-
-	case HTBOTTOMLEFT:
-		nxMoveDiff = m_ptStartSizeMove.x - ptCursor.x;
-		m_sizeWindow.cx = m_sizeWindowOld.cx + nxMoveDiff;
-
-		if (m_pWindow->m_nMaxWidth != NDEF && m_sizeWindow.cx > m_pWindow->m_nMaxWidth)
-			m_sizeWindow.cx = m_pWindow->m_nMaxWidth;
-		if (m_pWindow->m_nMinWidth != NDEF && m_sizeWindow.cx < m_pWindow->m_nMinWidth)
-			m_sizeWindow.cx = m_pWindow->m_nMinWidth;
-
-		m_ptWindow.x = m_ptWindowOld.x + m_sizeWindowOld.cx - m_sizeWindow.cx;
-
-		nyMoveDiff = ptCursor.y - m_ptStartSizeMove.y;
-		m_sizeWindow.cy = m_sizeWindowOld.cy + nyMoveDiff;
-		break;
-
-	case HTBOTTOMRIGHT:
-		nxMoveDiff = ptCursor.x - m_ptStartSizeMove.x;
-		m_sizeWindow.cx = m_sizeWindowOld.cx + nxMoveDiff;
-
-		nyMoveDiff = ptCursor.y - m_ptStartSizeMove.y;
-		m_sizeWindow.cy = m_sizeWindowOld.cy + nyMoveDiff;
-		break;
-	}
-
-	// 限制窗口大小
-	if (m_pWindow->m_nMaxWidth != NDEF && m_sizeWindow.cx > m_pWindow->m_nMaxWidth)
-		m_sizeWindow.cx = m_pWindow->m_nMaxWidth;
-	if (m_pWindow->m_nMaxHeight != NDEF && m_sizeWindow.cy > m_pWindow->m_nMaxHeight)
-		m_sizeWindow.cy = m_pWindow->m_nMaxHeight;
-	if (m_pWindow->m_nMinWidth != NDEF && m_sizeWindow.cx < m_pWindow->m_nMinWidth)
-		m_sizeWindow.cx = m_pWindow->m_nMinWidth;
-	if (m_pWindow->m_nMinHeight != NDEF && m_sizeWindow.cy < m_pWindow->m_nMinHeight)
-		m_sizeWindow.cy = m_pWindow->m_nMinHeight;
-
-	if (oldCX == m_sizeWindow.cx && oldCY == m_sizeWindow.cy)
-	{
-		return;
-	}
-
-
-	m_pWindow->SetCanRedraw(false);  // 缓存被清空，防止此期间有object redraw,提交到窗口时，数据不完整。
-	//m_pWindow->CreateDoubleBuffer(m_sizeWindow.cx, m_sizeWindow.cy);
-	m_pWindow->m_pRenderChain->OnWindowResize(0, m_sizeWindow.cx, m_sizeWindow.cy);
-
-	// 注意：m_rcParent的更新千万不能使用GetWindowRect。因为窗口的大小现在就没有变
-	//       所以这里也就没有采用SendMessage(WM_SIZE)的方法
-	SetRect(&m_pWindow->m_rcParent, 0,0, m_sizeWindow.cx, m_sizeWindow.cy);
-
-	m_pWindow->SetConfigWidth(m_sizeWindow.cx);
-	m_pWindow->SetConfigHeight(m_sizeWindow.cy);
-
-	m_pWindow->UpdateLayout(false);
-
-	m_pWindow->SetCanRedraw(true);
-	m_pWindow->UpdateObject();
-
-	// 模拟窗口大小改变消息
-	// PS: 20130108 17:07 将消息发送的时机移到OnSize之后。
-	//     主要是因为在OnSize中，会触发richedit的setcaretpos通知，然后此时窗口的大小还没有真正改变，
-	//     因此在CCaretWindow::SetCaretPos中调用MapWindowPoints获取到的光标屏幕位置还是旧的，导致光标
-	//     跟随窗口移动失败。因此将CCaretWindow::OnSyncWindowPosChanging延后来修正这个问题。
-	{
-		MSG  msg;
-		msg.hwnd = m_pWindow->m_hWnd;
-		msg.message = WM_WINDOWPOSCHANGING;
-		msg.wParam = 0;
-
-		WINDOWPOS  wndpos;
-		memset(&wndpos, 0, sizeof(&wndpos));
-		wndpos.hwnd = msg.hwnd;
-		wndpos.flags = SWP_LAYEREDWINDOW_SIZEMOVE|SWP_NOZORDER|SWP_NOACTIVATE|SWP_NOSENDCHANGING;
-		wndpos.x = m_ptWindow.x;
-		wndpos.y = m_ptWindow.y;
-		wndpos.cx = m_sizeWindow.cx;
-		wndpos.cy = m_sizeWindow.cy;
-		msg.lParam = (LPARAM)&wndpos;
-		::SendMessage(msg.hwnd, msg.message, msg.wParam, msg.lParam);
-	}
-}
-void  LayeredWindowWrap::OnEnterSizeMove(UINT nHitTest)
-{
-	SendMessage(m_pWindow->m_hWnd, WM_ENTERSIZEMOVE, 0, 0);
-	SetCapture(m_pWindow->m_hWnd);
-	m_nHitTestFlag = nHitTest;
-
-	POINT ptWindow;
-	GetCursorPos(&ptWindow);
-
-	m_ptStartSizeMove.x = ptWindow.x;
-	m_ptStartSizeMove.y = ptWindow.y;
-
-	m_ptWindowOld.x = m_ptWindow.x;
-	m_ptWindowOld.y = m_ptWindow.y;
-	m_sizeWindowOld.cx = m_sizeWindow.cx;
-	m_sizeWindowOld.cy = m_sizeWindow.cy;
-}
-
-void  LayeredWindowWrap::OnExitSizeMove()
-{
-	if (0 == m_nHitTestFlag)
-		return;
-
-	if (m_pWindow->m_hWnd == GetCapture())
-		ReleaseCapture();
-
-	m_nHitTestFlag = 0;
-	m_ptStartSizeMove.x = 0;
-	m_ptStartSizeMove.y = 0;
-
-	m_ptWindowOld.x = 0;
-	m_ptWindowOld.y = 0;
-	m_sizeWindowOld.cx = 0;
-	m_sizeWindowOld.cy = 0;
-	SendMessage(m_pWindow->m_hWnd, WM_EXITSIZEMOVE, 0, 0);
-}
-
-// 当窗口最小化了的时候，如果再次用原point/size, Commit，会导致窗口又恢复到最小化之前的位置
-// 因此增加一个标志，如果窗口最小化了，则不修改窗口位置，仅在原窗口大小上面提交
-bool  LayeredWindowWrap::IsMinimized()
-{
-    if (m_ptWindow.x == WINDOWS_MINIMIZED_POINT && m_ptWindow.y == WINDOWS_MINIMIZED_POINT)
-        return true;
-
-    return false;
-};
-
-void  LayeredWindowWrap::Commit2LayeredWindow()
-{
-	// 主要是为了防止在分层窗口大小改变时，需要重新创建缓存，
-	// 在缓存完整绘制完一次之前禁止提交到窗口上
-	if (!m_pWindow->CanRedraw())  
-		return; 
-
-	POINT ptMemDC  = {0,0};
-	int   nFlag = ULW_OPAQUE;
-	DWORD dwColorMask = 0;
-
-	BLENDFUNCTION bf;
-	bf.BlendOp     = AC_SRC_OVER ;
-	bf.AlphaFormat = AC_SRC_ALPHA;        // AC_SRC_ALPHA 会导致窗口被搂空,AC_SRC_OVER不使用透明
-	bf.BlendFlags  = 0;                   // Must be zero. 
-	bf.SourceConstantAlpha = 255;         // 0~255 透明度
-
-	// TODO [注：在xp、win7不使用桌面主题的情况下，COLOR将有问题，因此建议全部使用PNG来实现透明
-	if (m_pWindow->m_nWindowTransparentMaskType & WINDOW_TRANSPARENT_TYPE_MASKALPHA)
-	{
-		nFlag &= ~ULW_OPAQUE;
-		nFlag |= ULW_ALPHA;
-		bf.SourceConstantAlpha = m_pWindow->m_nAlphaMask;
-	}
-	else if (m_pWindow->m_nWindowTransparentMaskType & WINDOW_TRANSPARENT_TYPE_MASKCOLOR) 
-	{
-		if (m_pWindow->m_pColMask)
-		{
-			dwColorMask = m_pWindow->m_pColMask->m_col;
-			nFlag = ULW_COLORKEY;
-		}
-	}
-
-    // 1. 最小化了也要刷新，否则最还原之后会发现画面不连贯了。因为在显示出来的那一瞬间，还是最小化前的画面
-    // 2. 当m_sizeWindow大于memDC大小时，会导致绘图失败，并且直接以当前画面的最后一像素并0 alpha进行平铺，平铺面积为memDC大小，但窗口为sizeWindow大小
-     BOOL  bRet = ::UpdateLayeredWindow(
-                        m_pWindow->m_hWnd, NULL, 
-                        IsMinimized() ? NULL : &m_ptWindow, 
-                        &m_sizeWindow, 
-                        m_pWindow->m_pRenderChain->GetMemoryDC(), 
-                        &ptMemDC, dwColorMask, &bf, nFlag); 
-
-//  m_pWindow->m_pRenderChain->GetMemoryBuffer()->Save(L"C:\\aaa.png", Gdiplus::ImageFormatPNG);
-	if (FALSE == bRet)
-	{
-		UI_LOG_ERROR(_T("%s UpdateLayeredWindow Failed."), FUNC_NAME);
-	}
-}
+//////////////////////////////////////////////////////////////////////////

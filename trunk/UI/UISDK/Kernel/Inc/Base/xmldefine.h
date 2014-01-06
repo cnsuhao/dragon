@@ -247,37 +247,52 @@ enum IMAGELIST_LAYOUT_TYPE
 
 // window rgn
 #define  XML_WINDOW_TRANSPARENT_TYPE                    _T("transparent.type")
-#define  XML_WINDOW_TRANSPARENT_PART                    _T("transparent.part") // 窗口透明区域类型
-#define  XML_WINDOW_TRANSPARENT_PART_9REGION            _T("transparent.part.9region") // 窗口透明区域参数（9Region类型，可为4，8，9三种）
+#define  XML_WINDOW_TRANSPARENT_9REGION                 _T("transparent.9region") // 窗口透明区域参数（9Region类型，可为4，8，9三种）
 
-#define  XML_WINDOW_TRANSPARENT_TYPE_AREO               _T("areo")          // 使用分层窗口进行透明
+#define  XML_WINDOW_TRANSPARENT_TYPE_AREO               _T("areo")             // 使用分层窗口进行透明
 #define  XML_WINDOW_TRANSPARENT_TYPE_LAYERED            _T("layered")          // 使用分层窗口进行透明
 #define  XML_WINDOW_TRANSPARENT_TYPE_MASKCOLOR          _T("maskcolor")        // 使用颜色值
 #define  XML_WINDOW_TRANSPARENT_TYPE_MASKALPHA          _T("maskalpha")        // 使用透明值
+#define  XML_WINDOW_TRANSPARENT_TYPE_ANTIALIASING       _T("anti")             // 抗锯齿圆角
 
-#define  XML_WINDOW_TRANSPARENT_PART_NULL               _T("")                 // RECT，不设置窗口异形 [默认]
-#define  XML_WINDOW_TRANSPARENT_PART_4_CORNER           _T("4corner")          // 从背景图中设置四个角落形状
-#define  XML_WINDOW_TRANSPARENT_PART_8_BORDER           _T("8border")          // 从背景图中设置边框需要异形
-#define  XML_WINDOW_TRANSPARENT_PART_FULL               _T("full")             // 需要对整个窗口范围进行形状设置
-#define  XML_WINDOW_TRANSPARENT_PART_CUSTOM_CORNER      _T("customcorner")     // 自定义四个角落
+#define  XML_WINDOW_TRANSPARENT_MASKCOLOR_VALUE         _T("transparent.maskcolor")  // 窗口透明色
+#define  XML_WINDOW_TRANSPARENT_MASKALPHA_VALUE         _T("transparent.maskalpha")  // 将窗口中小于alpha值通过的抠掉
 
-#define  XML_WINDOW_TRANSPARENT_TYPE_MASKCOLOR_VALUE    _T("transparent.maskcolor")  // 窗口透明色
-#define  XML_WINDOW_TRANSPARENT_TYPE_MASKALPHA_VALUE    _T("transparent.maskalpha")  // 将窗口中小于alpha值通过的抠掉
+#define  XML_WINDOW_TRANSPARENT_ANTI_9REGION            _T("transparent.anti.9region")       // 左上角圆角度数，上侧缩进，右上角圆角度数，左侧缩进，右侧缩进，左下角圆角度数，下侧缩进，右下角圆角度数
+#define  XML_WINDOW_TRANSPARENT_MASKALPHA_9REGION       _T("transparent.maskalpha.9region")  // 全0表示什么也不做。全-1表示整个窗口过滤。top,left,right.bottom四个值如果大于0表示要过滤这四个边，小于0表示不过滤，仅用于设置四个角的位置参数
+#define  XML_WINDOW_TRANSPARENT_MASKCOLOR_9REGION       _T("transparent.maskcolor.9region")  // 同XML_WINDOW_TRANSPARENT_MASKALPHA_9REGION
 
-enum WINDOW_TRANSPARENT_PART_TYPE
+#define  XML_WINDOW_TRANSPARENT_AREO_MODE               _T("transparent.areo.mode")   // areo透明模式
+#define  XML_WINDOW_TRANSPARENT_AREO_MODE_TRANS         _T("trans")
+#define  XML_WINDOW_TRANSPARENT_AREO_MODE_BLUR          _T("blur")
+enum AREO_MODE 
 {
-    WINDOW_TRANSPARENT_PART_NULL,
-    WINDOW_TRANSPARENT_PART_4_CORNER,
-    WINDOW_TRANSPARENT_PART_8_BORDER,
-    WINDOW_TRANSPARENT_PART_FULL,
-    WINDOW_TRANSPARENT_PART_CUSTOM_CORNER
+    AREO_MODE_TRANSPARENT,   // 只透明
+    AREO_MODE_BLUR,          // 带模糊
 };
+#define  XML_WINDOW_TRANSPARENT_AREO_TRANS_MARGINS      _T("transparent.areo.trans.margins")  // rect 透明区域设置（DwmExtendFrameIntoClientArea参数）
+#define  XML_WINDOW_TRANSPARENT_AREO_BLUR_REGION        _T("transparent.areo.blur.region")    // rect 磨沙效果区域（DwmEnableBlurBehindWindow参数）
+#define  XML_WINDOW_TRANSPARENT_TYPE_AREO_DISABLE       _T("transparent.areo.disable")         // areo模式不可用时的窗口透明类型
 
-#define WINDOW_TRANSPARENT_TYPE_NULL       0
-#define WINDOW_TRANSPARENT_TYPE_LAYERED    1    
-#define WINDOW_TRANSPARENT_TYPE_MASKCOLOR  2
-#define WINDOW_TRANSPARENT_TYPE_MASKALPHA  4
-#define WINDOW_TRANSPARENT_TYPE_AREO       8      // 注：如果在win7不支持areo情况下，该值可能为8|1，这样当恢复为支持areo主题时也能知道恢复成areo模式
+// #define  XML_WINDOW_TRANSPARENT_REGION_NULL             _T("")                 // RECT，不设置窗口异形 [默认]
+// #define  XML_WINDOW_TRANSPARENT_REGION_4_CORNER         _T("4corner")          // 从背景图中设置四个角落形状
+// #define  XML_WINDOW_TRANSPARENT_REGION_8_BORDER         _T("8border")          // 从背景图中设置边框需要异形
+// #define  XML_WINDOW_TRANSPARENT_REGION_FULL             _T("full")             // 需要对整个窗口范围进行形状设置
+// #define  XML_WINDOW_TRANSPARENT_REGION_ROUNDRECT        _T("roundrect")        // 直接通过一个度数创建一个roundrectrgn，（未实现）
+// #define  XML_WINDOW_TRANSPARENT_REGION_CUSTOM_CORNER    _T("customcorner")     // 自定义四个角落，每个角落可使用不同的度数
+// #define  XML_WINDOW_TRANSPARENT_REGION_ANTIALIASING     _T("antialiasing")     // 抗锯齿圆角，并支持四侧的缩进
+
+enum WINDOW_TRANSPARENT_MODE
+{
+    WINDOW_TRANSPARENT_MODE_UNKNOWN = 0,
+    WINDOW_TRANSPARENT_MODE_NORMAL = 1,      // 具体是maskcolor，还是maskalpha，看具体设置了哪一项。
+    WINDOW_TRANSPARENT_MODE_MASKCOLOR = 2,
+    WINDOW_TRANSPARENT_MODE_MASKALPHA = 4,
+    WINDOW_TRANSPARENT_MODE_ANTIALIASING = 8,
+    WINDOW_TRANSPARENT_MODE_LAYERED = 16,   
+    WINDOW_TRANSPARENT_MODE_AREO = 32,     // 注：如果在win7不支持areo情况下，该值可能为16|2，这样当恢复为支持areo主题时也能知道恢复成areo模式
+                                           // PS: 也有可能为16|1或其它，在不支持Areo的时候使用其它类型
+};
 
 #define XML_MATERIAL_RENDER_PREFIX           _T("material.")         // customwindow用于支持换肤的皮肤render前缀
 #define XML_MASK_RENDER_PREFIX               _T("mask.")             // panel用于支持遮罩的render前缀

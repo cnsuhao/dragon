@@ -747,6 +747,90 @@
 								RelativePath="..\..\Kernel\Src\UIObject\Window\icustomwindow.cpp"
 								>
 							</File>
+							<Filter
+								Name="transmode"
+								>
+								<Filter
+									Name="02. color"
+									>
+									<File
+										RelativePath="..\..\Kernel\Src\UIObject\Window\wndtransmode\color\colorwrap.cpp"
+										>
+									</File>
+									<File
+										RelativePath="..\..\Kernel\Src\UIObject\Window\wndtransmode\color\colorwrap.h"
+										>
+									</File>
+								</Filter>
+								<Filter
+									Name="03. alpha"
+									>
+									<File
+										RelativePath="..\..\Kernel\Src\UIObject\Window\wndtransmode\alpha\alphawrap.cpp"
+										>
+									</File>
+									<File
+										RelativePath="..\..\Kernel\Src\UIObject\Window\wndtransmode\alpha\alphawrap.h"
+										>
+									</File>
+								</Filter>
+								<Filter
+									Name="04. layered"
+									>
+									<File
+										RelativePath="..\..\Kernel\Src\UIObject\Window\wndtransmode\layered\layeredwrap.cpp"
+										>
+									</File>
+									<File
+										RelativePath="..\..\Kernel\Src\UIObject\Window\wndtransmode\layered\layeredwrap.h"
+										>
+									</File>
+								</Filter>
+								<Filter
+									Name="05. areo"
+									>
+									<File
+										RelativePath="..\..\Kernel\Src\UIObject\Window\wndtransmode\areo\areowrap.cpp"
+										>
+									</File>
+									<File
+										RelativePath="..\..\Kernel\Src\UIObject\Window\wndtransmode\areo\areowrap.h"
+										>
+									</File>
+								</Filter>
+								<Filter
+									Name="01. normal"
+									>
+								</Filter>
+								<Filter
+									Name="base"
+									>
+									<File
+										RelativePath="..\..\Kernel\Src\UIObject\Window\wndtransmode\iwndtransmode.cpp"
+										>
+									</File>
+									<File
+										RelativePath="..\..\Kernel\Src\UIObject\Window\wndtransmode\wndtransmodebase.cpp"
+										>
+									</File>
+									<File
+										RelativePath="..\..\Kernel\Src\UIObject\Window\wndtransmode\wndtransmodebase.h"
+										>
+									</File>
+								</Filter>
+								<Filter
+									Name="06. anti"
+									>
+									<File
+										RelativePath="..\..\Kernel\Src\UIObject\Window\wndtransmode\anti\antiwrap.cpp"
+										>
+									</File>
+									<File
+										RelativePath="..\..\Kernel\Src\UIObject\Window\wndtransmode\anti\antiwrap.h"
+										>
+									</File>
+								</Filter>
+							</Filter>
 						</Filter>
 					</Filter>
 					<Filter
@@ -1759,6 +1843,10 @@
 					</File>
 					<File
 						RelativePath="..\..\Kernel\Inc\Interface\iwindowmousemgr.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Kernel\Inc\Interface\iwndtransmode.h"
 						>
 					</File>
 					<File

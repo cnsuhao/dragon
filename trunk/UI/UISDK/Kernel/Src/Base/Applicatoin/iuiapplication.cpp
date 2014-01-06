@@ -4,6 +4,7 @@
 #include "UISDK\Kernel\Inc\Interface\iobject.h"
 #include "UISDK\Kernel\Src\Atl\image.h"
 #include "UISDK\Kernel\Src\Helper\timer\timermanager.h"
+#include "UISDK\Kernel\Src\Util\dwm\dwmhelper.h"
 #include "UISDK\Kernel\Src\UIEffect\CacheBitmap\cachebitmap.h"
 
 namespace UI
@@ -125,6 +126,7 @@ HBITMAP  IUIApplication::GetCacheBitmap(int nWidth, int nHeight)
 
 bool     IUIApplication::IsUnderXpOS() { return m_pImpl->IsUnderXpOS(); }
 bool     IUIApplication::IsVistaOrWin7etc() { return m_pImpl->IsVistaOrWin7etc(); }
+bool     IUIApplication::IsAeroEnable() { return DwmHelper::GetInstance()->IsEnable(); }
 
 bool     IUIApplication::IsUIObjectAvailable(IMessage* p) { return m_pImpl->IsUIObjectAvailable(p); }
 HRESULT  IUIApplication::AddUIObject(IMessage* p) { return m_pImpl->AddUIObject(p); }

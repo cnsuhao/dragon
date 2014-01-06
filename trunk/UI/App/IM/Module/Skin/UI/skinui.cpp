@@ -5,6 +5,7 @@
 #include "App\IM\Module\Skin\Business\skinbiz.h"
 #include "UISDK\Kernel\Inc\Interface\iimagerender.h"
 #include "UISDK/Kernel/Inc/Util/iimage.h"
+#include "App\IM\include\framework_inc.h"
 #include "App/IM/include/main_inc.h"
 
 inline bool  IsEqualEvent(const TCHAR* szName, WPARAM wParam)
@@ -155,12 +156,19 @@ long  SkinUI::ChangeSkin(ThemeData* pThemeData)
 long  SkinUI::InitSkinData(SkinData* pSkinData)
 {
     ChangeSkin(pSkinData->szPath, pSkinData->nDrawType, pSkinData->bkcol, pSkinData->avgcol);    
-    if (m_pShareSkinRender)
-    {
-        m_pShareSkinRender->SetAlpha(pSkinData->byteAlpha);
-    }
+
+    // 如果当前areo不可用，则禁用透明
     m_byteAlpha = pSkinData->byteAlpha;
     m_byteTextureAlpha = pSkinData->byteTextureAlpha;
+    if (!IM::GetUIApplication()->IsAeroEnable())
+    {
+        m_byteAlpha = 255;
+    }
+
+    if (m_pShareSkinRender)
+    {
+        m_pShareSkinRender->SetAlpha(m_byteAlpha);
+    }
     delete pSkinData;
     return 0;
 }

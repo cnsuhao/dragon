@@ -44,16 +44,4 @@ void  RenderLayer::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
     pMapAttrib->GetAttr_int(XML_RENDERCHAIN_Z_ORDER, true, &m_nZorder);
 }
 
-// TODO: 手动调用SetTransparent/ModifyStyle的情况如何处理
-void  RenderLayer::OnObjectLoaded()
-{
-    SetMsgHandled(FALSE);
-    if (this->IsTransparent())
-    {
-        UIMSG  msg;
-        msg.message = UI_WM_WINDOWLAYEREDCHANGED;
-        msg.wParam = 1;
-        ForwardMessageToChildObject(this, &msg);
-    }
-}
 }

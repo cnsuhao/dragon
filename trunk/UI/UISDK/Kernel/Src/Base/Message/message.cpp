@@ -448,3 +448,12 @@ void Message::ClearHook( )
  		Message::ForwardMessageToChildObject(pNcChild, pMsg);
  	}
  }
+
+ BOOL Message::ProcessMessage(UIMSG* pMsg, int nMsgMapID, bool bDoHook)
+ {
+     return this->innerVirtualProcessMessage(pMsg, nMsgMapID, bDoHook);
+ }
+ BOOL Message::innerVirtualProcessMessage(UIMSG* pMsg, int nMsgMapID, bool bDoHook)
+ {
+     return FALSE; 
+ }

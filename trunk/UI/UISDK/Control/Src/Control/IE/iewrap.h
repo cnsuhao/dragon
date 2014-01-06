@@ -18,7 +18,7 @@ public:
 	UI_DECLARE_OBJECT3(IEWrap, OBJ_HWNDHOST|CONTROL_IE, _T("UICtrl/Control"))
 
 	UI_BEGIN_MSG_MAP
-		UIMSG_WM_SIZE(OnSize)
+        UIMSG_WM_PAINT2(OnPaint)
         UIMSG_WM_QUERYINTERFACE(QueryInterface)
         UIMSG_WM_GETOBJECTINFO(OnGetObjectInfo)
         UIMSG_WM_SETATTRIBUTE(SetAttribute)
@@ -29,8 +29,8 @@ public:
     IIEWrap*  GetIIEWrap() { return m_pIIEWrap; }
 
 public:
+    void OnPaint(IRenderTarget* pRenderTarget, RenderContext* pContext);
 	void  SetAttribute(IMapAttribute* pMatAttrib, bool bReload);
-	void  OnSize( UINT nType, int cx, int cy );
     IWebBrowser2*  GetWebBrowser2() 
     { return m_pWebBrowser; }
 
@@ -51,8 +51,12 @@ protected:
     LRESULT  WndProc( UINT uMsg, WPARAM wParam, LPARAM lParam );
     LRESULT  DefWindowProc( UINT uMsg, WPARAM wParam, LPARAM lParam );
 
+    void  Render2DC(HDC hDC, int nxOffset, int nyOffset, CRect* prcUpdate);
+
 protected:
     IIEWrap*   m_pIIEWrap;
+    bool  m_bNeedFixAlpha;
+    bool  m_bPrintingWindow;
 
 	IEEmbeddingSite*  m_pSite;
 	IWebBrowser2*     m_pWebBrowser;

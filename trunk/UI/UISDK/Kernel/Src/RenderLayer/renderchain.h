@@ -5,10 +5,11 @@
 namespace UI
 {
 
-interface IRenderBase;
 
 void AlphaBitBlt(HDC hDest, HDC hSrc, int xDest, int yDest, int xSrc, int ySrc, int width, int height);
 
+interface IWndTransMode;
+interface IRenderBase;
 class RenderLayer;
 class WindowRenderLayer;
 class Object;
@@ -56,6 +57,9 @@ public:
     void  CombineAllLayer(HRGN hRgn);
 	void  Commit(RECT* prc);
 
+    bool  GetRequireAlphaChannel();
+    void  OnWindowTransparentModeChanged(IWndTransMode* pMode);
+
     // 3d相关
     Layer3d*  Get3DLayer();
     void  On3dObjectBegin();
@@ -66,7 +70,6 @@ protected:
 	void  CreateDoubleBuffer(int nWidth, int nHeight);
 	void  DestroyDoubleBuffer();
     
-
 protected:
     IRenderChain*  m_pIRenderChain;
 	RenderLayer*   m_pFirstLayer;
@@ -82,6 +85,8 @@ protected:
 	HBITMAP  m_hOldBitmap;
 
     long     m_lRefCanCommit;
+
+    bool     m_bRequireAlphaChannel;
     bool     m_bFirstTimePaintWindow;  // <-- 为了解决在WM_PAINT消息来之前，一些层或者控件单独刷新，导致界面
                                        // 上只显示了该一部分数据的问题。因此在第一个WM_PAINT之前将renderchain
                                        // 设置为不可提交（构造函数中设置）的。

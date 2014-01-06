@@ -5,6 +5,7 @@
 #include "UISDK\Control\Inc\Interface\ibutton.h"
 #include "UISDK\Control\Inc\Interface\iedit.h"
 #include "UISDK\Control\Inc\Interface\icheckbutton.h"
+#include "UISDK\Kernel\Inc\Interface\iwndtransmode.h"
 
 #pragma comment(lib, "Winmm.lib")
 #include <Mmsystem.h>
@@ -35,7 +36,11 @@ void  CMainWnd::OnInitialize()
 #endif
 
 	GetUIApplication()->GetActiveSkinRes()->ChangeSkinHLS(GetConfig()->GetHls_h(), 0, GetConfig()->GetHls_s(), CHANGE_SKIN_HLS_FLAG_H|CHANGE_SKIN_HLS_FLAG_S);
-	GetMainWnd()->SetWindowTransparentAlphaMask(GetConfig()->GetTransparent());
+    UI::ILayeredWindowWrap*  pLayeredWnd = (UI::ILayeredWindowWrap*)UISendMessage(this, UI_WM_QUERYINTERFACE, (WPARAM)&UI::uiiidof(ILayeredWindowWrap));
+    if (pLayeredWnd)
+    {
+        pLayeredWnd->SetAlpha(GetConfig()->GetTransparent(), false);
+    }
 
     CRect rc;
     SystemParametersInfo(SPI_GETWORKAREA, 0, (RECT*)&rc, 0);

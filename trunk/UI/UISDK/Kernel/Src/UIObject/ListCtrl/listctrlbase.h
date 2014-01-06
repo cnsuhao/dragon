@@ -190,7 +190,7 @@ public:
 	int   GetInvalidateItemCount();
 	void  Refresh();
 	void  RedrawItem(ListItemBase** ppItemArray, int nCount);
-	void  RedrawItemByInnerCtrl(IRenderTarget* pRenderTarget, ListItemBase* pItem);
+	void  RedrawItemByInnerCtrl(IRenderTarget* pRenderTarget, RenderContext* pContext, ListItemBase* pItem);
     void  MakeItemVisible(ListItemBase* pItem, bool* pbNeedUpdate);
 
     IRenderBase*  GetFocusRender() { return m_pFocusRender; }

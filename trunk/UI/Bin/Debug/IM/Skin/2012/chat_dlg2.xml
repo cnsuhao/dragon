@@ -2,7 +2,8 @@
 <skin>
 	<layout>
 		<CustomWindow id="chatdlg2" width="550" height="510" minwidth="550" minheight="510" text="二人会话" 
-                  transparent.type="layered" istransparent="1" material.render.region="6,6,6,6"
+                  transparent.type="areo" transparent.areo.trans.margins="6" istransparent="1" material.render.region="6,6,6,6"
+                  transparent.areo.disable="anti" transparent.anti.9region="2,5,2,5,5,2,5,2"
                   resizeborder="11"
                   xtransparent.maskalpha="200" bkgnd.render.type="null" font="normal">
       <RenderChain>
@@ -20,7 +21,7 @@
       <Panel id="panel_content" istransparent="0" layout.left="6" layout.right="6" layout.top="101" layout.bottom="38" bkgnd.render.type="color" bkgnd.render.color="white" xforegnd.render.type="image" foregnd.render.image="chatframe.png" foregnd.render.image.drawtype="stretch" foregnd.render.image.9region="8" foregnd.render.image.srcregion="0,102,50,125" layout.dragbar.bkgnd.render.type="image" layout.dragbar.bkgnd.render.image="chatframe_surface" layout.dragbar.height="20" layout.dragbar.width="2" layout.dragbarpos="100" layout.align="bottom">
         <Panel id="panel_output" layout="stack" layout.direction="toptobottom" layout.left="0" layout.right="0" layout.top="0" layout.bottom="90">
           <xRichEdit id="outputedit" istransparent="1" layout.align="fill" bkgnd.render.type="color" bkgnd.render.color="white" margin="2,0,2,0"/>
-          <IEWrap id="outputie" url="http://mail.163.com" layout.align="fill" bkgnd.render.type="color" bkgnd.render.color="white" margin="2,0,2,0"/>
+          <IEWrap id="outputie" url="http://www.baidu.com" layout.align="fill" margin="2,0,2,0"/>
           <Panel id="panel_font" layout="stack" height="30" bkgnd.render.type="color" bkgnd.render.color="avg_surface_color" layout.gap="2" visible="0">
             <CheckButton id="toolbar_btn_font_bold" styleclass="chat.toolbarbtn.check" margin="0,4,0,4" foregnd.render.image="chat.fonttoolbar.bold.icon"/>
             <CheckButton id="toolbar_btn_font_italic" styleclass="chat.toolbarbtn.check" margin="0,4,0,4" foregnd.render.image="chat.toolbar.italic.icon"/>

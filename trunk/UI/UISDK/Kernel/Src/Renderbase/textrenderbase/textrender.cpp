@@ -480,9 +480,9 @@ void ContrastColorListTextRender::SetAttribute(SetAttrPrefixData* pData)
     strAttrib.append(XML_TEXTRENDER_FONT);
 
     szText = pMapAttrib->GetAttr(strAttrib.c_str(), pData->bErase);
-    if (szText)
+    if (szText && m_pObject)
     {
-        pFontRes->GetFont((BSTR)szText, ::GetRenderLibraryType(m_pObject->GetHWND()), &m_hFont);
+        pFontRes->GetFont((BSTR)szText, ::GetRenderLibraryType(m_pObject->GetIObject()), &m_hFont);
     }
 
     if (NULL == m_hFont)
@@ -624,9 +624,9 @@ void ColorListTextRender::SetAttribute(SetAttrPrefixData* pData)
     strAttrib.append(XML_TEXTRENDER_FONT);
 
     szText = pMapAttrib->GetAttr(strAttrib.c_str(), pData->bErase);
-	if (szText)
+	if (szText && m_pObject)
 	{
-		pFontRes->GetFont((BSTR)szText, ::GetRenderLibraryType(m_pObject->GetHWND()), &m_hFont);
+		pFontRes->GetFont((BSTR)szText, ::GetRenderLibraryType(m_pObject->GetIObject()), &m_hFont);
 	}
 
 	if (NULL == m_hFont)
@@ -767,7 +767,7 @@ void FontColorListTextRender::SetAttribute(SetAttrPrefixData* pData)
 	strAttrib.append(XML_TEXTRENDER_FONT);
 
     szText = pMapAttrib->GetAttr(strAttrib.c_str(), pData->bErase);
-	if (szText)
+	if (szText && m_pObject)
 	{
 		vector<String> vFont;
 		UI_Split(szText, XML_MULTI_SEPARATOR, vFont);
@@ -780,7 +780,7 @@ void FontColorListTextRender::SetAttribute(SetAttrPrefixData* pData)
 		{
 			if(! vFont[i].empty() )
 			{
-				pFontRes->GetFont((BSTR)vFont[i].c_str(), ::GetRenderLibraryType(m_pObject->GetHWND()), &m_vTextFont[i]);
+				pFontRes->GetFont((BSTR)vFont[i].c_str(), ::GetRenderLibraryType(m_pObject->GetIObject()), &m_vTextFont[i]);
 			}
 		}
 	}

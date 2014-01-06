@@ -121,20 +121,6 @@ enum
     UI_WM_HITTEST,
 
     //
-    //	获取一个窗口的绘制类型
-    //
-    //		message:  UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE
-    //		code:
-    //		wparam:
-    //		lparam:
-    //
-    //	Return
-    //		
-    //		RENDER_TYPE_GDI,RENDER_TYPE_GDIPLUS或者RENDER_TYPE_AUTO;
-    //
-    UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE,
-
-    //
     //
     //
     UI_WM_GETRENDERFONT,
@@ -178,7 +164,7 @@ enum
     //		code:
     //		wparam:  bool bLayered
     //		lparam:   
-    UI_WM_WINDOWLAYEREDCHANGED,
+//    UI_WM_WINDOWLAYEREDCHANGED, -- 暂时废弃，需要通知所有子对象，效率太低
 
     //
     //  如果这个对象支持布局，返回布局对象指针。如OBJ_WINDOW,OBJ_PANEL,OBJ_COMPOUND_CONTROL
@@ -443,6 +429,40 @@ enum
 #define  UI_WM_RESETATTRIBUTE  139281920
 
 
+//
+//	获取一个窗口的绘制类型
+//
+//		message:  UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE
+//		code:
+//		wparam:
+//		lparam:
+//
+//	Return
+//		
+//		RENDER_TYPE_GDI,RENDER_TYPE_GDIPLUS或者RENDER_TYPE_AUTO;
+//
+#define  UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE  132831132
+
+//  获取窗口的透明类型，用于判断当前窗口是分层的，还是areo
+//  wparam: 
+//  lparam:
+//  Return: 
+//      WINDOW_TRANSPARENT_MODE
+//
+#define  UI_WM_GET_WINDOW_TRANSPARENT_MODE  132831133
+
+// UI::WINDOW_TRANSPARENT_MODE  GetTransparentMode()
+#define UIMSG_WM_GET_WINDOW_TRANSPARENT_MODE(func)        \
+    if (uMsg == UI_WM_GET_WINDOW_TRANSPARENT_MODE)        \
+    {                                                     \
+        SetMsgHandled(TRUE);                              \
+        pMsg->lRet = (long)func();                        \
+        if (IsMsgHandled())                               \
+            return TRUE;                                  \
+    } 
+
+
+
 namespace UI
 {
 interface IMapAttribute;
@@ -536,8 +556,8 @@ struct EDITORGETOBJECTATTRLISTDATA
 //    导致Hook方收到两次消息。因此增加一个ProcessMessageNoHook函数，内部将不再DoHook
 //    同时派生类在CHAIN时
 // ps: 20130320
-//    在Ixxx层次，提供IMessage::virtualProcessMessage虚函数和xProcessMessage非虚函数，
-//    在xxx层次，也提供innerVirtualProcessMessage(主要用于非IMessage派生类,IMessageInnerProxy调用)和xProcessMessage非虚函数
+//    在Ixxx层次，提供IMessage::virtualProcessMessage虚函数和nvProcessMessage非虚函数，
+//    在xxx层次，也提供innerVirtualProcessMessage(主要用于非IMessage派生类,IMessageInnerProxy调用)和nvProcessMessage非虚函数
 //    同时外部控件可直接继承于MessageProxy提供消息映射
 //
 #define UI_BEGIN_MSG_MAP                              \
@@ -619,21 +639,17 @@ struct EDITORGETOBJECTATTRLISTDATA
 //	该宏有个缺点，就是能接收到当前的分支消息，不能传递其它分支消息。可使用UI_BEGIN_CHAIN_ALL_MSG_MAP改进宏
 
 #define UICHAIN_MSG_MAP(theChainClass)                \
-    if (theChainClass::xProcessMessage(pMsg, nMsgMapID, false)) \
+    if (theChainClass::nvProcessMessage(pMsg, nMsgMapID, false)) \
         return TRUE;                     
 
 #define UICHAIN_MSG_MAP_MEMBER(theChainMember)        \
-    if (theChainMember.xProcessMessage(pMsg, nMsgMapID, false)) \
+    if (theChainMember.ProcessMessage(pMsg, nMsgMapID, false)) \
         return TRUE;
 
 #define UICHAIN_MSG_MAP_POINT_MEMBER(pTheChainMember)  \
     if (pTheChainMember)                               \
-    {                                                  \
-        if (pTheChainMember->nvProcessMessage(pMsg, nMsgMapID, false)) \
-        { \
-            return TRUE;                               \
-        } \
-    }
+        if (pTheChainMember->ProcessMessage(pMsg, nMsgMapID, false)) \
+            return TRUE;                               
 
 // 
 //  强行结束当前消息分支，而将消息全部传递给需要的对象
@@ -715,6 +731,16 @@ struct EDITORGETOBJECTATTRLISTDATA
             return TRUE;                              \
     }
 
+#define UIMSG_WM_ERASEBKGND2(func)                    \
+    if (uMsg == WM_ERASEBKGND)                        \
+    {                                                 \
+        SetMsgHandled(TRUE);                          \
+		func((UI::IRenderTarget*)wParam, (UI::RenderContext*)lParam); \
+        if (IsMsgHandled())                           \
+            return TRUE;                              \
+    }
+
+// void OnPaint(IRenderTarget* pRenderTarget, RenderContext* pContext);
 #define UIMSG_WM_PAINT2(func)                         \
     if (uMsg == WM_PAINT)                             \
     {                                                 \
@@ -1522,6 +1548,12 @@ struct GETDESIREDSIZEINFO
 // LRESULT  OnMessageRangeHandlerEx(UINT uMsg, WPARAM wParam, LPARAM lParam)
 #define UIMESSAGE_RANGE_HANDLER_EX MESSAGE_RANGE_HANDLER_EX
 
+#define CHAIN_MSG_MAP_MEMBER_P(theChainMember) \
+    { \
+    if (theChainMember) \
+        if(theChainMember->ProcessWindowMessage(hWnd, uMsg, wParam, lParam, lResult)) \
+            return TRUE; \
+    }
 
 #define VIRTUAL_BEGIN_MSG_MAP(theClass) \
         public: \

@@ -5,6 +5,7 @@
 #include "UISDK\Control\Inc\Interface\icheckbutton.h"
 #include "UISDK\Control\Inc\Interface\isliderctrl.h"
 #include "mainwnd.h"
+#include "UISDK\Kernel\Inc\Interface\iwndtransmode.h"
 
 CSettingWnd::CSettingWnd()
 {
@@ -114,8 +115,11 @@ void  CSettingWnd::OnTransparentPosChanged( int nPos, int nScrollType )
 	}
 	else
 	{
-		GetMainWnd()->SetWindowTransparentAlphaMask(nPos);
-		GetMainWnd()->UpdateObject();
+        UI::ILayeredWindowWrap*  pLayeredWnd = (UI::ILayeredWindowWrap*)UISendMessage(GetMainWnd(), UI_WM_QUERYINTERFACE, (WPARAM)&UI::uiiidof(ILayeredWindowWrap));
+        if (pLayeredWnd)
+        {
+            pLayeredWnd->SetAlpha(nPos, true);
+        }
 	}
 }
 void  CSettingWnd::OnHPosChanged(int nPos, int nScrollType)

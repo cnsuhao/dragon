@@ -1,14 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <skin>
 	<layout>
-		<CustomWindow id="chatdlg" width="653" height="420" minwidth="550" minheight="400" text="二人会话" transparent.type="layered" istransparent="1" xtransparent.maskalpha="200" bkgnd.render.type="null" font="normal">
-			<Panel id="right_panel" layout.right="0" width="215" layout.top="0" layout.bottom="0" bkgnd.render.type="image" bkgnd.render.image="rightbkg.png" bkgnd.render.image.drawtype="stretch" bkgnd.render.image.9region="1,20,20,20" padding="10,20,10,20">
+		<CustomWindow id="chatdlg" width="653" height="420" minwidth="550" minheight="400" text="二人会话"
+                  transparent.type="layered" istransparent="1" xtransparent.maskalpha="200" bkgnd.render.type="null" font="normal">
+			<Panel id="right_panel" layout.right="0" width="215" layout.top="0" layout.bottom="0"
+             bkgnd.render.type="image" bkgnd.render.image="rightbkg.png" bkgnd.render.image.drawtype="stretch"
+             bkgnd.render.image.9region="1,20,20,20" padding="10,20,10,20">
 				<!--
 				<QQContactMgrListView id="listview" layout.left="0" layout.top="0" layout.right="0" layout.bottom="0" istransparent="1" headerctrl.splitline.render.type="image" headerctrl.splitline.render.image="headsplitline" headerctrl.splitline.render.image.drawtype="center" headerctrl.bkgnd.render.type="imagelist" headerctrl.bkgnd.render.image="listhead.png" headerctrl.bkgnd.render.image.drawtype="stretch" bkgnd.render.type="image" bkgnd.render.image="list_bkg_border_.png" bkgnd.render.image.drawtype="stretch" bkgnd.render.image.9region="2"/>
         -->
 			</Panel>
-			<Panel id="panel_left" layout.left="0" layout.right="209" layout.top="0" layout.bottom="0" material.render.region="6,7,6,6" foregnd.render.type="image" foregnd.render.image="chatframe.png" foregnd.render.image.drawtype="stretch" foregnd.render.image.9region="12,101,12,10" xmask.render.region="10" xmask.render.type="image" xmask.render.image="fringe_bkg.png" xmask.render.image.9region="10" xmask.render.image.drawtype="stretchborder">
-				<Panel id="panel_header" border="6,4,5,0" layout.left="0" layout.top="0" layout.right="0" height="101" xforegnd.render.type="image" foregnd.render.image="chatframe.png" foregnd.render.image.drawtype="stretch" foregnd.render.image.9region="12,101,12,0" foregnd.render.image.srcregion="0,0,50,101">
+			<Panel id="panel_left" layout.left="0" layout.right="209" layout.top="0" layout.bottom="0" material.render.region="6,7,6,6" 
+             foregnd.render.type="image" foregnd.render.image="chatframe.png" foregnd.render.image.drawtype="stretch" 
+             foregnd.render.image.9region="12,101,12,10" >
+				<Panel id="panel_header" border="6,4,5,0" layout.left="0" layout.top="0" layout.right="0" height="101"
+               xforegnd.render.type="image" foregnd.render.image="chatframe.png" foregnd.render.image.drawtype="stretch"
+               foregnd.render.image.9region="12,101,12,0" foregnd.render.image.srcregion="0,0,50,101">
 					<Label text="线程 'Win32 线程' (0xe7c) 已退出，返回值为 0 (0x0)。" layout.left="10" layout.top="78" textrender.color="white"/>
 					<Panel layout="stack" layout.right="0" layout.top="0" layout.direction="righttoleft">
 						<Button id="sys_close" tooltip="关闭" bkgnd.render.image="icon_close" styleclass="imagebtn"/>

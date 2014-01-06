@@ -85,6 +85,7 @@ interface UISDKAPI IUIApplication : IUnknown
 
     bool     IsUnderXpOS();
     bool     IsVistaOrWin7etc();
+    bool     IsAeroEnable();
 
     bool     IsUIObjectAvailable(IMessage* p);
     HRESULT  AddUIObject(IMessage* p);

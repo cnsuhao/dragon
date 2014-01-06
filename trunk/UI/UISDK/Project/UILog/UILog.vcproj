@@ -109,7 +109,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) $(OutDir)Demo\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)IM\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)Player\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)HourGlass\$(TargetFileName)&#x0D;&#x0A;copy  UILog_i.h ..\..\Kernel\Inc\Base\UILog_i.h"
+				CommandLine="copy $(TargetPath) $(OutDir)Demo\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)IM\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)Player\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)HourGlass\$(TargetFileName)&#x0D;&#x0A;copy  UILog_i.h ..\..\Kernel\Inc\Base\UILog_i.h&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -205,7 +205,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) $(OutDir)Demo\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)IM\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)Player\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)HourGlass\$(TargetFileName)&#x0D;&#x0A;copy ..\..\Kernel\Inc\Base  UILog_i.h"
+				CommandLine="copy $(TargetPath) $(OutDir)Demo\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)IM\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)Player\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)HourGlass\$(TargetFileName)&#x0D;&#x0A;copy  UILog_i.h ..\..\Kernel\Inc\Base\UILog_i.h&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>

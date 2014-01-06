@@ -3,6 +3,7 @@ del  ..\..\uileeihcy.ncb
 
 rd  ..\..\App\ControlDemo\Debug /S /Q
 rd  ..\..\App\ControlDemo\Release /S /Q
+rd  ..\..\App\ControlDemo\Debug_Clock /S /Q
 del ..\..\App\ControlDemo\ControlDemo.vcproj.*.user
 
 rd  ..\..\App\HourGlass\Debug /S /Q

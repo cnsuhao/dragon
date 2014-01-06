@@ -6,9 +6,16 @@
 namespace UI
 {
 
-// pInitRect一般是取 window对象的 &m_rcParent.如果是只刷新一个控件，则直接指为NULL就行了，在begindraw中
-// 会指定该对象的剪裁区域。
-RenderContext::RenderContext(RECT* prcRenderRegion, bool bClip)
+//  pInitRect
+//     一般是取 window对象的 &m_rcParent，如果是只刷新一个控件，则直接指为NULL就行了，在begindraw中会指定该对象的剪裁区域。
+//
+//  bClip
+//     是否需要维护HDC的剪裁区域
+//
+//  bRequireAlphaChannel
+//      主要用于通知EDIT,RICHEDIT之类的控件，在绘制时，是否需要携带alpha通道参数    
+//
+RenderContext::RenderContext(RECT* prcRenderRegion, bool bClip, bool bRequireAlphaChannel)
 {
 	m_ptOffset.x = 0;
 	m_ptOffset.y = 0;
@@ -19,9 +26,10 @@ RenderContext::RenderContext(RECT* prcRenderRegion, bool bClip)
     }
 	else
 	{
-		m_rcDrawRegion.SetRectEmpty();
+        ::SetRectEmpty(&m_rcDrawRegion);
 	}
     m_bUpdateClip = bClip;
+    m_bRequireAlphaChannel = bRequireAlphaChannel;
 }
 void RenderContext::Reset(IRenderTarget* pRenderTarget)
 {
@@ -62,7 +70,10 @@ void RenderContext::DrawClient(IObject* pObject)
 
     if (m_bUpdateClip)
     {
-        m_rcDrawRegion.DeflateRect(r.left, r.top, r.right, r.bottom);
+        m_rcDrawRegion.left -= r.left;
+        m_rcDrawRegion.top -= r.top;
+        m_rcDrawRegion.right -= r.right;
+        m_rcDrawRegion.bottom -= r.bottom;
     }
 }
 
@@ -98,7 +109,7 @@ bool RenderContext::DrawChild(IObject* pChild)
 
         if (!rcIntersect.IntersectRect(&m_rcDrawRegion, &rcInWindow))
         {
-            m_rcDrawRegion.SetRectEmpty();
+            ::SetRectEmpty(&m_rcDrawRegion);
             return false;
         }
 
@@ -127,7 +138,7 @@ bool  RenderContext::DrawListItem(IListItemBase* pItem)
 
 		if (!rcIntersect.IntersectRect(&m_rcDrawRegion, &rcInWindow))
 		{
-			m_rcDrawRegion.SetRectEmpty();
+            ::SetRectEmpty(&m_rcDrawRegion);
 			return false;
 		}
 

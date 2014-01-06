@@ -24,7 +24,7 @@ void  IImageListRender::SetIImageListRenderBitmap(IImageListRenderBitmap* pBitma
 IRenderBitmap*  IImageListRender::GetRenderBitmap()  { return m_pImageListRenderImpl->GetRenderBitmap(); }
 void  IImageListRender::SetImageDrawType(int n) { m_pImageListRenderImpl->SetImageDrawType(n); }
 int   IImageListRender::GetImageDrawType() { return m_pImageListRenderImpl->GetImageDrawType(); }
-void  IImageListRender::SetImageStretch9Region(Image9Region* p) { return m_pImageListRenderImpl->SetImageStretch9Region(p); }
+void  IImageListRender::SetImageStretch9Region(C9Region* p) { return m_pImageListRenderImpl->SetImageStretch9Region(p); }
 int   IImageListRender::GetItemWidth() { return m_pImageListRenderImpl->GetItemWidth(); }
 int   IImageListRender::GetItemHeight() { return m_pImageListRenderImpl->GetItemHeight(); }
 int   IImageListRender::GetItemCount() { return m_pImageListRenderImpl->GetItemCount(); }

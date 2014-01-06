@@ -39,17 +39,13 @@ void CLyricDlg::OnClose()
 
 void CLyricDlg::OnSwitchLayered()
 {
-	if (IsWindowLayered())
+    if (UI::WINDOW_TRANSPARENT_MODE_LAYERED == GetWndTransMode())
 	{
-		this->SetWindowTransparentMaskType(WINDOW_TRANSPARENT_TYPE_MASKALPHA);
-		this->SetWindowTransparentAlphaMask(1);
-		this->SetWindowLayered(false);
+        this->SetWndTransMode(UI::WINDOW_TRANSPARENT_MODE_MASKALPHA, true);
 	}
 	else
 	{
-		this->SetWindowTransparentMaskType(WINDOW_TRANSPARENT_TYPE_LAYERED|WINDOW_TRANSPARENT_TYPE_MASKALPHA);
-		this->SetWindowTransparentAlphaMask(230);
-		this->SetWindowLayered(true);
+        this->SetWndTransMode(UI::WINDOW_TRANSPARENT_MODE_LAYERED, true);
 	}
 }
 

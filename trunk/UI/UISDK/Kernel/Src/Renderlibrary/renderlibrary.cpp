@@ -137,41 +137,48 @@ void IRenderTarget::Release()
 //////////////////////////////////////////////////////////////////////////
 namespace UI
 {
-GRAPHICS_RENDER_LIBRARY_TYPE GetRenderLibraryType(HWND hWnd)
-{
-	if (NULL == hWnd)
-		return GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
 
-	GRAPHICS_RENDER_LIBRARY_TYPE e = (GRAPHICS_RENDER_LIBRARY_TYPE)::SendMessage(hWnd, UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE, 0, 0);
-	if (GRAPHICS_RENDER_LIBRARY_TYPE_AUTO == e)
-	{
-		if (WS_EX_LAYERED & ::GetWindowLong(hWnd, GWL_EXSTYLE))
-		{
-		//	if (UI_IsUnderXpOS())
-				e = GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS;
-// 			else
-// 				e = GRAPHICS_RENDER_LIBRARY_TYPE_DIRECT2D;
-		}
-		else
-		{
-			e = GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
-		}
-	}
+// 废弃，因为SendMessage不接受UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE这么大的消息ID
+// GRAPHICS_RENDER_LIBRARY_TYPE GetRenderLibraryType(HWND hWnd)
+// {
+// 	if (NULL == hWnd)
+// 		return GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
+// 
+// 	GRAPHICS_RENDER_LIBRARY_TYPE e = (GRAPHICS_RENDER_LIBRARY_TYPE)::SendMessage(hWnd, UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE, 0, 0);
+// 	if (GRAPHICS_RENDER_LIBRARY_TYPE_AUTO == e)
+// 	{
+// 		if (WS_EX_LAYERED & ::GetWindowLong(hWnd, GWL_EXSTYLE))
+// 		{
+// 		//	if (UI_IsUnderXpOS())
+// 				e = GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS;
+// // 			else
+// // 				e = GRAPHICS_RENDER_LIBRARY_TYPE_DIRECT2D;
+// 		}
+// 		else
+// 		{
+// 			e = GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
+// 		}
+// 	}
+// 
+// 	return e;
+// }
 
-	return e;
-}
 
 GRAPHICS_RENDER_LIBRARY_TYPE GetRenderLibraryType(IObject* pObj)
 {
-	if (NULL == pObj) 
+	if (NULL  == pObj) 
 		return GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
 
-    // 针对menu,listbox popup类型一开始没有窗口的控件，向控件本身发消息进行获取
-    GRAPHICS_RENDER_LIBRARY_TYPE e = (GRAPHICS_RENDER_LIBRARY_TYPE)UISendMessage(pObj, UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE);
-    if (GRAPHICS_RENDER_LIBRARY_TYPE_AUTO != e)
-    {
-        return e;
-    }
+	GRAPHICS_RENDER_LIBRARY_TYPE e = GRAPHICS_RENDER_LIBRARY_TYPE_AUTO;
+	if (pObj->GetObjectType() != OBJ_WINDOW)
+	{
+		// 针对menu,listbox popup类型一开始没有窗口的控件，向控件本身发消息进行获取
+		e = (GRAPHICS_RENDER_LIBRARY_TYPE)UISendMessage(pObj, UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE);
+		if (GRAPHICS_RENDER_LIBRARY_TYPE_AUTO != e)
+		{
+			return e;
+		}
+	}
 
     IWindowBase* pWindow = pObj->GetWindowObject();
     if (pWindow)
@@ -222,10 +229,10 @@ IRenderTarget*  UICreateRenderTarget(GRAPHICS_RENDER_LIBRARY_TYPE eType, HWND hW
     }
     return pRenderTarget;
 }
-IRenderTarget* UICreateRenderTarget(HWND hWnd)
-{
-    return UICreateRenderTarget(GetRenderLibraryType(hWnd), hWnd);
-}
+// IRenderTarget* UICreateRenderTarget(HWND hWnd)
+// {
+//     return UICreateRenderTarget(GetRenderLibraryType(hWnd), hWnd);
+// }
 
 void  UICreateRenderBitmap(GRAPHICS_RENDER_LIBRARY_TYPE eGraphicsRenderType, IMAGE_ITEM_TYPE eType, IRenderBitmap** ppOut)
 {

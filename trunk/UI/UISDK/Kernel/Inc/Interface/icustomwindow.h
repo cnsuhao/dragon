@@ -23,12 +23,8 @@ interface UISDKAPI ICustomWindow : public IWindow
     UI_DECLARE_Ixxx_INTERFACE(ICustomWindow, CustomWindow)
 
     void  SetWindowResizeType(UINT nType);
-    bool  IsWindowLayered();
-    void  SetWindowLayered(bool b);
-    int   GetWindowTransparentMaskType();
-    void  SetWindowTransparentMaskType(int type);
-    void  SetWindowTransparentColMask(COLORREF col);
-    void  SetWindowTransparentAlphaMask(int nAlpha);
+    void  SetWndTransMode(WINDOW_TRANSPARENT_MODE eMode, bool bRedraw);
+    WINDOW_TRANSPARENT_MODE  GetWndTransMode();
 };
 
 }

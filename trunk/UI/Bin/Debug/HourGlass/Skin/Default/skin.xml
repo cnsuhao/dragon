@@ -4,7 +4,8 @@
 		<item name="ui" enable="1" path="log\ui.log" level="debug" flag="dbgview" fileflag="disable"/>
 	</log>
 	<layout>
-		<CustomWindow id="MainWnd" widthx="85" heightx="23" width="273" height="91" transparent.type="layered" istransparent="1" bkgnd.render.type="image" bkgnd.render.image="bk">
+		<CustomWindow id="MainWnd" widthx="85" heightx="23" width="273" height="91" 
+                  transparent.type="layered" bkgnd.render.type="image" bkgnd.render.image="bk">
 			<!--
 			<LEDCtrl id="led" layout.left="0" layout.top="5" layout.right="0" layout.bottom="5" rejectmousemsg="1" foregnd.render.type="imagelist" foregnd.render.image="number" indexmap="0123456789:-" istransparent="1"/>
       -->

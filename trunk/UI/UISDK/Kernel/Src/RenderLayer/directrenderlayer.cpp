@@ -22,9 +22,9 @@ void DirectRenderLayer::Commit(HDC hDstDC)
 {
     if (hDstDC)
     {
-        if (NULL == m_pRenderTarget)
+        if (NULL == m_pRenderTarget && m_pWindow)
         {
-            m_pRenderTarget = UICreateRenderTarget(m_pWindow->GetHWND());
+            m_pRenderTarget = UICreateRenderTarget(GetRenderLibraryType(m_pWindow->GetIObject()));
             m_pRenderTarget->BindHDC(hDstDC);
             m_pRenderTarget->BeginDraw(NULL, 0, false);
 

@@ -50,8 +50,6 @@ UISDKAPI void    _cdecl UI_LOG_FATAL( TCHAR*, ... );
 #define UI_LOG_TEST  UI_LOG_DEBUG
 
 UISDKAPI GRAPHICS_RENDER_LIBRARY_TYPE GetRenderLibraryType(IObject* pObj);
-UISDKAPI GRAPHICS_RENDER_LIBRARY_TYPE GetRenderLibraryType(HWND hWnd);
-UISDKAPI IRenderTarget*  UICreateRenderTarget(HWND hWnd);
 UISDKAPI IRenderTarget*  UICreateRenderTarget(GRAPHICS_RENDER_LIBRARY_TYPE eType, HWND hWnd=NULL);
 UISDKAPI void  UICreateRenderBitmap(GRAPHICS_RENDER_LIBRARY_TYPE eGraphicsRenderType, IMAGE_ITEM_TYPE eType, IRenderBitmap** ppOut);
 

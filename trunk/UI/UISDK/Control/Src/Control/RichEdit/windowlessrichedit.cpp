@@ -777,8 +777,7 @@ BOOL WindowlessRichEdit::TxCreateCaret(HBITMAP hbmp, INT xWidth, INT yHeight)
 
 //     if (NULL == hbmp)  // 如果不为空，当前在richedit中有选中区域，不显示光标
 //     {
-        bool  bNeedFixGdiAlpha = m_pRichEdit->IsNeedFixGdiAlpha();
-        return m_pRichEdit->GetCaret()->CreateCaret(m_pRichEdit->GetIRichEdit(), hbmp, xWidth, yHeight, /*bNeedFixGdiAlpha?CARET_TYPE_WINDOW:*/CARET_TYPE_UNKNOWN);
+        return m_pRichEdit->GetCaret()->CreateCaret(m_pRichEdit->GetIRichEdit(), hbmp, xWidth, yHeight, CARET_TYPE_UNKNOWN);
 //     }
 //     else
 //     {

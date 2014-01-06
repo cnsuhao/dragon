@@ -17,6 +17,8 @@ IEWrap::IEWrap()
     m_hWndShellDocObjectView = NULL;
     m_hWndIE = NULL;
     m_dwEventCookie = 0;
+    m_bNeedFixAlpha = false;
+    m_bPrintingWindow = false;
 }
 
 IEWrap::~IEWrap()
@@ -154,9 +156,6 @@ void IEWrap::CreateControl()
 		if (FAILED(hr) || NULL == m_pViewObject)	
 			break;
 
-		// 屏蔽脚本错误信息提示
-		m_pWebBrowser->put_Silent(VARIANT_TRUE);
-
         // 创建站点对象
         m_pSite = new IEEmbeddingSite(this);
         m_pSite->AddRef();
@@ -173,10 +172,14 @@ void IEWrap::CreateControl()
 		if (FAILED(hr))
 			break;
 
-		HRESULT hr = m_pOleObject->DoVerb(OLEIVERB_INPLACEACTIVATE, NULL, pControlSite, 0, NULL, NULL);
+		hr = m_pOleObject->DoVerb(OLEIVERB_INPLACEACTIVATE, NULL, pControlSite, 0, NULL, NULL);
 
         // 事件监听
         hr = AtlAdvise(m_pWebBrowser,  static_cast<IDispatch*>(m_pSite), DIID_DWebBrowserEvents2, &m_dwEventCookie);
+		// 屏蔽脚本错误信息提示
+		hr = m_pWebBrowser->put_Silent(VARIANT_TRUE);
+		// 禁止拖拽文件
+		hr = m_pWebBrowser->put_RegisterAsDropTarget(VARIANT_FALSE);  // [注]: 该调用不要太靠前
 
 		// 获取用于承载IE的窗口
  		CComQIPtr<IOleWindow> pOleWindow = m_pWebBrowser;
@@ -218,15 +221,16 @@ bool IEWrap::UnSubclassIEWindow()
     return true;
 }
 
-void IEWrap::OnSize( UINT nType, int cx, int cy )
-{
-	if (NULL == m_pWebBrowser)
-		return;
-
-    CRect  rc;
-    m_pIIEWrap->GetParentRect(&rc);
-	SetIEPos(&rc);
-}
+// 修改为使用HwndHost进行同步，不再使用popup弹出窗口
+// void IEWrap::OnSize( UINT nType, int cx, int cy )
+// {
+// 	if (NULL == m_pWebBrowser)
+// 		return;
+// 
+//     CRect  rc;
+//     m_pIIEWrap->GetParentRect(&rc);
+// 	SetIEPos(&rc);
+// }
 
 HRESULT IEWrap::SetIEPos(LPRECT lprc)
 {
@@ -311,70 +315,115 @@ LRESULT IEWrap::DefWindowProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
     return 0;
 }
 
-LRESULT	IEWrap::WndProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
-{
-    static bool isPrintingWindow = false;
-
-    if (WM_PAINT == uMsg && m_pViewObject && !isPrintingWindow)
+void  IEWrap::OnPaint(IRenderTarget* pRenderTarget, RenderContext* pContext)
+{   
+    m_bNeedFixAlpha = false;
+    if (pContext->m_bRequireAlphaChannel && m_hWndIE)   // 在分层拖拽窗口过程中由于忽略了WS_CLIPCHILDREN样式，导致IE在拖拽中不能显示，造成闪烁，在这里画上去
     {
-        DefWindowProc(uMsg, wParam, lParam);
-#if 0
-         CRect  rcWnd;
-         m_pIIEWrap->GetWindowRect(&rcWnd);
- 
-         m_pIIEWrap->GetUIApplication()->GetCacheDC()
- 		CRect rcDraw(rcWnd);
- 		rcDraw.right = rcWnd.Width();
- 		rcDraw.bottom = rcWnd.Height();
- 		rcDraw.left = rcDraw.top = 0;
-         
- 		HDC hDC = m_pIIEWrap->GetRenderLayer()->GetRenderTarget()->GetBindHDC();
-  		SetViewportOrgEx(hDC, rcWnd.left, rcWnd.top,NULL);
-//  		HRGN hRgn = CreateRectRgnIndirect(&rcWnd);
-//  		SelectClipRgn(hDC, hRgn);
-//  		DeleteObject(hRgn);
- 
-//  		HRESULT hr = m_pViewObject->Draw(DVASPECT_CONTENT, -1, 0, 0, NULL, hDC,
-//  			(LPCRECTL)&rcWnd, NULL, NULL, 0);
+        if (WINDOW_TRANSPARENT_MODE_LAYERED == UISendMessage(m_pIIEWrap->GetWindowObject(), UI_WM_GET_WINDOW_TRANSPARENT_MODE, 1))
+        {
+            m_bNeedFixAlpha = true;
+            CRect rc;
+            ::GetClientRect(m_hWndIE, &rc);
 
-        isPrintingWindow = true;
-        PrintWindow(m_hWndIE, hDC, PW_CLIENTONLY);
-        isPrintingWindow = false;
- 		SetViewportOrgEx(hDC, 0,0,NULL);
- 		SelectClipRgn(hDC, NULL);
-        Util::FixGdiAlpha(hDC, &rcWnd);
- 
- 		m_pIIEWrap->GetRenderChain()->Commit(&rcWnd);
-#elif 1
-    CRect  rcWnd;
-    m_pIIEWrap->GetWindowRect(&rcWnd);
+            Render2DC(pRenderTarget->GetBindHDC(), 0, 0, &rc); // hDC已自带偏移
+        }
+    }
+}
+// [注]
+//   2013.12.24 PrintWindow效率还是太低，因为有可能只刷新一个很小的区域，却还得Print整个窗口
+//   在窗口最大化的时候尤为明显，跑马灯非常耗CPU
+//   在网上搜索窗口重定向也没有找到实现原理。
+//
+//  推荐暂时还不要使用分层窗口上的IE，可以使用DWM + ie，只要不将透明区域扩展到IE范围内就行
 
-	CRect rcDraw;
-	rcDraw.right = rcWnd.Width();
-	rcDraw.bottom = rcWnd.Height();
-	rcDraw.left = rcDraw.top = 0;
+// PrintWindow和WM_PRINT不同，WM_PRINT是合作式的，需要目标窗口的窗口过程实现对WM_PRINTCLIENT的响应
+// PrintWindow却不需要，只需要对方能响应WM_PAINT，它的大致过程如下
+// PrintWindow(NtUserPrintWindow)->xxxPrintWindow->(SetRedirectedWindow->CreateRedirectionBitmap)->xxxUpdateWindow->_GetDCEx->NtGdiBitBlt
+// xxxPrintWindow首先调用SetRedirectedWindow创建一个重定向位图(CreateRedirectionBitmap)，将该窗口的绘制重定向到这个位图并做初始化、格式转换工作，而不是通常情况下的主帧缓冲(如果是开了桌面组合则是dwm里面的离屏表面)
+// 接下来调用xxxUpdateWindow，向目标发送WM_PAINT，此时窗口过程像窗口dc绘制将被重定位到重定向位图，因此dc不会由于被遮挡而被剪裁，不再依赖窗口的位置，内容可以全部保留在重定向位图
+// 最后调用_GetDCEx->NtGdiBitBlt将目标窗口的dc的内容bitblt到你提供的dc
 
-	HBITMAP hBitmap = m_pIIEWrap->GetUIApplication()->GetCacheBitmap(rcWnd.Width(), rcWnd.Height());
+// * Sets the window to layered using SetRedirectedWindow()
+// * Redraws completely the window using UpdateWindow() in the newly created empty off screen bitmap
+// * Gets the DC of the new of the window with GetDCEx()
+// * Copies the bitmap to the provided DC using NtGdiBitBlt()
+// * Releases the new DC
+// * Unsets the layered attribute
+// 
+// So we now know why PrintWindow() permits to take screenshots of partially or completely hidden windows! 
+// This is because of the existence of layered windows!
 
-    // 为什么不能使用带偏移的DC？绘制出来的全乱了
-	HDC hDC = CreateCompatibleDC(NULL);
-	HBITMAP hOldBmp = (HBITMAP)SelectObject(hDC, hBitmap);
+// prcUpdate相对于IE窗口的客户区域
+void  IEWrap::Render2DC(HDC hDCDst, int nxOffset, int nyOffset, CRect* prcUpdate)
+{
+    HBITMAP hBitmap = m_pIIEWrap->GetUIApplication()->GetCacheBitmap(m_pIIEWrap->GetWidth(), m_pIIEWrap->GetHeight());
 
-// 	HRESULT hr = m_pViewObject->Draw(DVASPECT_CONTENT, -1, 0, 0, NULL, hDC,
-// 		(LPCRECTL)&rcDraw, NULL, NULL, 0);
+    // 为什么不能使用带偏移的DC？绘制出来的全乱了（是内部绘制也使用了偏移吗）
+    // 创建一个全新的缓存专门来规避这个问题，然后再Bitblt上去。（这个有点效率低呀）
 
-    isPrintingWindow = true;
-    PrintWindow(m_hWndIE, hDC, 0);
-    isPrintingWindow = false;
-	Util::FixGdiAlpha(hDC, &rcDraw);
+    HDC hDC = CreateCompatibleDC(NULL);
+    HBITMAP hOldBmp = (HBITMAP)SelectObject(hDC, hBitmap);
 
-    HDC hDCDst = m_pIIEWrap->GetRenderLayer()->GetRenderTarget()->GetBindHDC();
-    ::BitBlt(hDCDst, rcWnd.left, rcWnd.top, rcWnd.Width(), rcWnd.Height(), hDC, 0, 0, SRCCOPY);
-    m_pIIEWrap->GetRenderChain()->Commit(&rcWnd);
+    // 会导致CPU一直运行，内部什么原理？换用PrintWindow
+    // 	RECT rcDraw = {0, 0, rcWnd.Width(), rcWnd.Height()};
+    // 	HRESULT hr = m_pViewObject->Draw(DVASPECT_CONTENT, -1, 0, 0, NULL, hDC,
+    // 		(LPCRECTL)&rcDraw, NULL, NULL, 0);
+
+     // PrintWindow也会导致有些元素在高亮时显示不正常...
+     m_bPrintingWindow = true;
+     PrintWindow(m_hWndIE, hDC, 0);  // 会再次触发WM_PAINT(wm_ncpaint, wm_erasebkgnd)，加上一个标志
+     m_bPrintingWindow = false;
+
+    if (m_bNeedFixAlpha)
+    {
+        Util::FixAlphaData data = {0};
+        data.hBitmap = hBitmap;
+        data.bTopDownDib = TRUE;
+        data.lprc = prcUpdate;
+        data.eMode = Util::SET_ALPHA_255;  // 在这里为什么考虑其它alpha值反而渲染有问题
+        Util::FixBitmapAlpha(&data);
+    }
+
+    ::BitBlt(
+        hDCDst, 
+        nxOffset + prcUpdate->left, 
+        nyOffset + prcUpdate->top, 
+        prcUpdate->Width(), 
+        prcUpdate->Height(), 
+        hDC, 
+        prcUpdate->left, 
+        prcUpdate->top, 
+        SRCCOPY);
 
     SelectObject(hDC, hOldBmp);
-	DeleteDC(hDC);
-#endif
+    DeleteDC(hDC);
+}
+
+//
+//[注]: IHTMLElementRender::DrawToDC 在IE9中过期了
+//
+LRESULT	IEWrap::WndProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
+{
+    if (WM_PAINT == uMsg && m_bNeedFixAlpha && !m_bPrintingWindow)
+    {
+		CRect rcUpdate;
+		GetUpdateRect(m_hWndIE, &rcUpdate, FALSE);
+		if (::IsRectEmpty(&rcUpdate))
+		{
+			GetClientRect(m_hWndIE, &rcUpdate);
+		}
+
+        DefWindowProc(uMsg, wParam, lParam);
+        
+
+        CRect  rcWnd;
+        m_pIIEWrap->GetWindowRect(&rcWnd);
+
+        HDC hDCDst = m_pIIEWrap->GetRenderLayer()->GetRenderTarget()->GetBindHDC();
+        Render2DC(hDCDst, rcWnd.left, rcWnd.top, &rcUpdate);
+        OffsetRect(&rcUpdate, rcWnd.left, rcUpdate.top);
+        m_pIIEWrap->GetRenderChain()->Commit(&rcUpdate);
 
         return 0;
     }

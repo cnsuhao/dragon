@@ -118,7 +118,7 @@ public:
     UI_DECLARE_OBJECT3(Edit, OBJ_CONTROL|CONTROL_EDIT, _T("UICtrl/Control"))
 
 	UI_BEGIN_MSG_MAP
- 		UIMSG_WM_PAINT(OnPaint)
+ 		UIMSG_WM_PAINT2(OnPaint)
 		UIMSG_WM_ERASEBKGND(OnEraseBkgnd)
  		UIMSG_WM_SETCURSOR(OnSetCursor)
 		UIMSG_WM_MOUSEMOVE(OnMouseMove)
@@ -137,7 +137,7 @@ public:
 		UIMSG_WM_VISIBLE_CHANGED(OnVisibleChanged)
 		UIMSG_WM_SHOWWINDOW(OnShowWindow)
         UIMSG_WM_GETDLGCODE(OnGetDlgCode)
-        UIMESSAGE_HANDLER_EX(UI_WM_WINDOWLAYEREDCHANGED, OnWindowLayeredChanged)
+//        UIMESSAGE_HANDLER_EX(UI_WM_WINDOWLAYEREDCHANGED, OnWindowLayeredChanged)
         UIMESSAGE_HANDLER_EX(WM_IME_NOTIFY, OnImeNotify)
         UIMESSAGE_HANDLER_EX(WM_IME_REQUEST, OnImeRequest)
         UIMESSAGE_HANDLER_EX(WM_IME_COMPOSITION, OnImeComposition)
@@ -156,7 +156,7 @@ public:
 
 	// 消息处理
 protected:
-	void  OnPaint(IRenderTarget* hDC);
+	void  OnPaint(IRenderTarget* hDC, RenderContext* pContext);
 	void  OnEraseBkgnd(IRenderTarget* pRenderTarget);
 	BOOL  OnSetCursor(HWND hWnd, UINT nHitTest, UINT message);
 	void  OnSetFocus(IObject*);
@@ -166,7 +166,7 @@ protected:
 	void  OnShowWindow(BOOL bShow, UINT nStatus);
     UINT  OnGetDlgCode(LPMSG lpMsg);
 	void  OnVisibleChanged(BOOL bVisible, IObject* pParent);
-    LRESULT  OnWindowLayeredChanged(UINT uMsg, WPARAM wParam, LPARAM lParam);
+//    LRESULT  OnWindowLayeredChanged(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT  OnImeRequest(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT  OnImeNotify(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT  OnImeComposition(UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -246,7 +246,6 @@ protected:
 private:
 	bool		m_bMouseDrag;				// 是否正在用鼠标进行拖动选择
 	bool        m_bNeedUpdateCaretPos;      // 是否需要在下次刷新的时候更新光标位置
-    bool        m_bNeedFixGdiAlpha;         // 如果是在分层窗口下，则需要带上alpha通道
 
 	int			m_nXScroll;	                // 字符滚动的长度
 	int			m_nCaretHeight;				// 光标的高度

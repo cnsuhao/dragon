@@ -49,7 +49,7 @@ protected:
 
 	IRenderBitmap*    m_pBitmap;
 	Color*            m_pColorBk;
-	Image9Region*     m_pRegion;   // 拉伸绘制时才用
+	C9Region*     m_pRegion;   // 拉伸绘制时才用
     CRect*            m_prcSrc;     // 绘制区域(为NULL表示未设置)，有可能只是绘制图片的一部分.子类可以通过修改该值实现某些需求
 	int               m_nImageDrawType;
     BKCOLOR_FILL_TYPE  m_eBkColorFillType;
@@ -114,7 +114,7 @@ public:
 
     void  SetImageDrawType(int n) { m_nImageDrawType = n; }
     int   GetImageDrawType() { return m_nImageDrawType; }
-    void  SetImageStretch9Region(Image9Region* p);
+    void  SetImageStretch9Region(C9Region* p);
 
 	void  SetAttribute(SetAttrPrefixData* pData);
     void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
@@ -135,7 +135,7 @@ protected:
 
 	IImageListRenderBitmap*   m_pImageList;
 	int  m_nImageDrawType; 
-	Image9Region*  m_p9Region;
+	C9Region*  m_p9Region;
 
 	int  m_nPrevState;        // 用于判断当前状态变化是否需要进行渐变
 	int  m_nCurrentAlpha;     // 动画过程中的alpha值

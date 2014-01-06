@@ -4,7 +4,6 @@
 #include "UISDK\Kernel\Src\Animate\windowanimate\layeredanimatewindow.h"
 #include "UISDK\Kernel\Src\Animate\animatemgr.h"
 #include "UISDK\Kernel\Src\UIObject\Window\windowbase.h"
-#include "UISDK\Kernel\Inc\Interface\icustomwindow.h"
 
 namespace UI
 {
@@ -21,7 +20,7 @@ WindowAnimateBase::WindowAnimateBase()
     m_pLayeredWindow = NULL;
     m_pIWindowAnimateBase = NULL;
 
-    m_nWndTranslateType = WINDOW_TRANSPARENT_TYPE_NULL;
+    m_nWndTranslateType = WINDOW_TRANSPARENT_MODE_NORMAL;
     m_pStroyboard = NULL;
 }
 WindowAnimateBase::~WindowAnimateBase() 
@@ -41,8 +40,8 @@ void  WindowAnimateBase::UpdateWindowSourceImage()
     if (NULL == m_pWindow)
         return;
  
-    if (m_nWndTranslateType & WINDOW_TRANSPARENT_TYPE_AREO || 
-        m_nWndTranslateType & WINDOW_TRANSPARENT_TYPE_LAYERED)
+    if (m_nWndTranslateType & WINDOW_TRANSPARENT_MODE_AREO || 
+        m_nWndTranslateType & WINDOW_TRANSPARENT_MODE_LAYERED)
         GetSrcBitmap_Layered();
     else
         GetSrcBitmap_Normal();
@@ -54,13 +53,7 @@ void WindowAnimateBase::SetAnimateWindow(IWindowBase* pWindow)
 		return;
 
     m_pWindow = pWindow->GetImpl();
-
-    ICustomWindow* pICustomWindow = (ICustomWindow*)pWindow->QueryInterface(uiiidof(ICustomWindow));
-    if (pICustomWindow)
-        m_nWndTranslateType = pICustomWindow->GetWindowTransparentMaskType();
-    else
-        m_nWndTranslateType = WINDOW_TRANSPARENT_TYPE_NULL;
-
+    m_nWndTranslateType = UISendMessage(m_pWindow, UI_WM_GET_WINDOW_TRANSPARENT_MODE);
 }
 void  WindowAnimateBase::Initialize()
 {

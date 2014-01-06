@@ -14,7 +14,6 @@ RichEdit::RichEdit()
     m_pIRichEdit = NULL;
 	m_rcInvalidate.SetRectEmpty();
     m_pMgrScrollBar = NULL;
-    m_bNeedFixGdiAlpha = false;
 }
 
 RichEdit::~RichEdit()
@@ -167,7 +166,7 @@ void RichEdit::OnEraseBkgnd(IRenderTarget*  pRendrTarget)
 
 }
 
-void RichEdit::OnPaint(IRenderTarget*  pRendrTarget)
+void RichEdit::OnPaint(IRenderTarget*  pRendrTarget, RenderContext* pContext)
 {
 #if 1
 	HDC hDC = pRendrTarget->GetBindHDC();
@@ -178,8 +177,14 @@ void RichEdit::OnPaint(IRenderTarget*  pRendrTarget)
 
 	if (m_rcInvalidate.IsRectEmpty())
 	{
-        if (m_bNeedFixGdiAlpha)
-		    Util::FixGdiAlpha(hDC, &rcWnd);
+        if (pContext->m_bRequireAlphaChannel)
+		{
+			Util::FixAlphaData data = {0};
+			data.hDC = hDC;
+			data.lprc = &rcWnd;
+			data.eMode = Util::SET_ALPHA_255_IF_ALPHA_IS_0;
+			Util::FixBitmapAlpha(&data);
+		}
 	}
 	else
 	{
@@ -188,8 +193,14 @@ void RichEdit::OnPaint(IRenderTarget*  pRendrTarget)
         CRect rcFix;
         rcFix.IntersectRect(&m_rcInvalidate, &rcWnd);
 
-        if (m_bNeedFixGdiAlpha)
-            Util::FixGdiAlpha(hDC, &rcFix);
+        if (pContext->m_bRequireAlphaChannel)
+		{
+			Util::FixAlphaData data = {0};
+			data.hDC = hDC;
+			data.lprc = &rcFix;
+			data.eMode = Util::SET_ALPHA_255_IF_ALPHA_IS_0;
+			Util::FixBitmapAlpha(&data);
+		}
 
 		m_rcInvalidate.SetRectEmpty();
 	}
@@ -378,19 +389,6 @@ void RichEdit::OnVisibleChanged(BOOL bVisible, IObject* pParent)
 {
     SetMsgHandled(FALSE);
 	OnShowWindow(bVisible, 0);
-}
-
-LRESULT  RichEdit::OnWindowLayeredChanged(UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    bool bLayered = wParam?true:false;
-
-    IRenderLayer*  pRenderLayer = m_pIRichEdit->GetRenderLayer();
-    if ((pRenderLayer && pRenderLayer->IsTransparent()) || bLayered)
-        m_bNeedFixGdiAlpha = true;
-    else
-        m_bNeedFixGdiAlpha = false;
-
-    return 0;
 }
 
 HRESULT  RichEdit::OnTxNotify(DWORD iNotify, void* pv, BOOL& bHandled)

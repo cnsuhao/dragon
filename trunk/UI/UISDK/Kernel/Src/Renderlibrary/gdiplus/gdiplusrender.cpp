@@ -909,7 +909,7 @@ void GdiplusRenderTarget::DrawBitmap(Gdiplus::Graphics* pGraphics, IRenderBitmap
 
 void GdiplusRenderTarget::DrawBitmap(Gdiplus::Graphics* pGraphics, IRenderBitmap* hBitmap, int xDest, int yDest, int nDestWidth, 
 					int nDestHeight, int xSrc, int ySrc, int nSrcWidth, int nSrcHeight,
-					Image9Region* pImage9Region, bool bDrawCenter, Gdiplus::ImageAttributes* pAttr)
+					C9Region* pImage9Region, bool bDrawCenter, Gdiplus::ImageAttributes* pAttr)
 {
 	if (NULL == hBitmap)
 		return;

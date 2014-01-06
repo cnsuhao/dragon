@@ -94,6 +94,7 @@ interface IListItemBase;
 interface IScrollBarManager;
 interface IListCtrlLayout;
 interface IListItemTypeShareData;
+class RenderContext;
 
 typedef bool (*ListItemCompareProc)(IListItemBase* p1, IListItemBase* p2);
 typedef bool (*ListItemEnumProc)(IListItemBase* pItem, WPARAM, LPARAM);   // ∑µªÿfalse ±Õ£÷πenum
@@ -195,7 +196,7 @@ interface UISDKAPI IListCtrlBase : public IControl
     int   GetInvalidateItemCount();
     void  Refresh();
     void  RedrawItem(IListItemBase** ppItemArray, int nCount);
-    void  RedrawItemByInnerCtrl(IRenderTarget* pRenderTarget, IListItemBase* pItem);
+    void  RedrawItemByInnerCtrl(IRenderTarget* pRenderTarget, RenderContext* pContext, IListItemBase* pItem);
     void  MakeItemVisible(IListItemBase* pItem, bool* pbNeedUpdate);
 
     void  UpdateItemRect();

@@ -10,6 +10,10 @@
 #include "UISDK\Kernel\Src\RenderLayer\directrenderlayer.h"
 #include "UISDK\Kernel\Src\Helper\layout\canvaslayout.h"
 #include "UISDK\Kernel\Src\RenderLayer\3dlayer.h"
+#include "UISDK\Kernel\Inc\Interface\iwndtransmode.h"
+
+namespace UI
+{
 
 // layout.xml RenderChain标签解析
 HRESULT  RenderChain::LoadRenderChain(IUIElement* pUIElement, IUIApplication*, IObject* pObjParent, IObject**)
@@ -101,6 +105,7 @@ RenderChain::RenderChain(IRenderChain* pIRenderChain)
     m_lRefCanCommit = 0;
 
     m_bFirstTimePaintWindow = true;
+    m_bRequireAlphaChannel = false;
     SetCanCommit(false);
 
 }
@@ -383,26 +388,26 @@ void RenderChain::UpdateObject(Object* pObj, bool bOnlyRedrawBkgnd, bool bUpdate
     }
 //    m_MultiLayerBuffer.Save(L"C:\\bbb.png", Gdiplus::ImageFormatPNG);
 
-    // 这里之所以去掉对window类型的判断是因为存在一种场景：
-    // 我调用pWindow->UpdateObject(false)想刷新立即All Layer，但不提交到window上去，使用Invalidate就做不到了
-//     int nObjType = pObj->GetObjectType();
+    int nObjType = pObj->GetObjectType();
 //     if (OBJ_HWNDHOST == nObjType)
 //     {
 //         // 系统控件的刷新由它自己本身负责
 //         return;
 //     }
-//     else if (OBJ_WINDOW == nObjType)
-//     {
-//         HWND hWnd = pObj->GetHWND();
-//         if (NULL == hWnd)
-//             return;
-// 
-//         ::InvalidateRect(hWnd, NULL, TRUE);
-//         if (bUpdateNow)
-//             UpdateWindow(hWnd);
-// 
-//         return;
-//     }
+//     else 
+
+    // 这里之所以去掉对window类型的判断是因为存在一种场景：
+    // 我调用pWindow->UpdateObject(false)想立即刷新All Layer，但不提交到window上去，使用Invalidate就做不到了
+    if (OBJ_WINDOW == nObjType && bUpdateNow)
+    {
+        HWND hWnd = pObj->GetHWND();
+        if (NULL == hWnd)
+            return;
+
+        ::InvalidateRect(hWnd, NULL, TRUE);
+        ::UpdateWindow(hWnd);
+        return;
+    }
 
     RenderLayer*    pLayer = NULL;
     IRenderTarget*  pRenderTarget = NULL;
@@ -438,7 +443,7 @@ void RenderChain::UpdateObject(Object* pObj, bool bOnlyRedrawBkgnd, bool bUpdate
          return;  // 该对象在窗口上不可见，不绘制
 
     // 不需要维持剪裁区域，由rendertarget begindraw一次性搞定即可
-    RenderContext roc(&rcObjVisible, false);  
+    RenderContext roc(&rcObjVisible, false, m_bRequireAlphaChannel);  
 
     // 防止分层窗口的alpha重叠变黑
     bool bNeedClear = m_pWindow->IsTransparent() && pObj->IsTransparent();    
@@ -517,7 +522,7 @@ IRenderTarget* RenderChain::BeginRedrawObjectPart(Object* pRedrawObj, RECT* prcA
         for (int i = 0; i < nCount; i++)
             rcClip.UnionRect(&rcClip, &prcArray[i]);
     }
-    RenderContext roc(&rcClip, false); // BeginDraw已经更新了剪裁区域， 这里的rcClip只是用于绘制过程中判断一个对象是否在这个区域内
+    RenderContext roc(&rcClip, false, m_bRequireAlphaChannel); // BeginDraw已经更新了剪裁区域， 这里的rcClip只是用于绘制过程中判断一个对象是否在这个区域内
     
     bool bNeedClear = m_pWindow->IsTransparent() && pRedrawObj->IsTransparent();
     bool bRet = pRenderTarget->BeginDraw(prcArray, nCount, bNeedClear);  // PS:20130110 去掉了返回值的判断.因为列表控件内部控件在刷新时，会在ROOTPANEL中重新redraw listitem，导致这里返回FALSE，背景绘制失败。因此先放开这个限制
@@ -657,4 +662,33 @@ void  RenderChain::On3dObjectEnd()
             this->RemoveLayer(m_p3DLayer);  // m_p3DLayer将被置空
         }
     }
+}
+
+// 是否需要alpha通道。如普通窗口就不需要，分层窗口和areo窗口需要
+bool RenderChain::GetRequireAlphaChannel()
+{
+    return m_bRequireAlphaChannel;
+
+//     UIASSERT(m_pWindow);
+// 
+//     long lRet = UISendMessage(m_pWindow, UI_WM_GET_WINDOW_TRANSPARENT_MODE, 1);
+//     if (lRet == WINDOW_TRANSPARENT_MODE_AREO ||
+//         lRet == WINDOW_TRANSPARENT_MODE_LAYERED)
+//         return true;
+// 
+//     return false;
+}
+
+void  RenderChain::OnWindowTransparentModeChanged(IWndTransMode* pMode)
+{
+    if (pMode && pMode->RequireAlphaChannel())
+    {
+        m_bRequireAlphaChannel = true;
+    }
+    else
+    {
+        m_bRequireAlphaChannel = false;
+    }
+}
+
 }

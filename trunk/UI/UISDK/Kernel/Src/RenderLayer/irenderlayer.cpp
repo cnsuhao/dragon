@@ -44,6 +44,7 @@ IRenderTarget*  IRenderChain::BeginRedrawObjectPart(IObject* pRedrawObj, RECT* p
 void  IRenderChain::EndRedrawObjectPart(IRenderTarget* pRenderTarget, RECT* prcArray, int nCount) { m_pImpl->EndRedrawObjectPart(pRenderTarget, prcArray, nCount); }
 }
 
+bool  IRenderChain::GetRequireAlphaChannel() { return m_pImpl->GetRequireAlphaChannel(); }
 void  IRenderChain::SetCanCommit(bool b) { m_pImpl->SetCanCommit(b); }
 bool  IRenderChain::CanCommit() { return m_pImpl->CanCommit(); }
 void  IRenderChain::Commit(RECT* prc) { return m_pImpl->Commit(prc); }

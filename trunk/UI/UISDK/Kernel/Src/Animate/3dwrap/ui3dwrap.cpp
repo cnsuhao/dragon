@@ -271,7 +271,7 @@ void  Object3DWrap::OnDrawObject(IRenderTarget* pRenderTarget, RenderContext roc
             // 设置剪裁和偏移量（减掉边界值）
             CRect rc(0, 0, nBufferWidth, nBufferHeight);
             rc.DeflateRect(1,1,1,1);
-            RenderContext rocTemp(&rc, true);
+            RenderContext rocTemp(&rc, true, roc.m_bRequireAlphaChannel);
             rocTemp.m_ptOffset.x = rocTemp.m_ptOffset.y = 1;
             rocTemp.Update(pTempRenderTarget);
 

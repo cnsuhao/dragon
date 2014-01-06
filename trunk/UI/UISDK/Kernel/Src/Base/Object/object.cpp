@@ -931,17 +931,21 @@ bool  Object::GetObjectVisibleClientRect(RECT* prc, bool bInWindowOrLayer)
 
 HBITMAP  Object::TakeSnapshot()
 {
+    RenderChain*  pRenderChain = GetRenderChain();
+    if (!pRenderChain)
+        return NULL;
+
     Image image;
     image.Create(m_rcParent.Width(), m_rcParent.Height(), 32, Image::createAlphaChannel);
     HDC hDC = image.BeginDrawToMyself();
     
-    IRenderTarget*  pRenderTarget = ::UICreateRenderTarget(GetHWND());
+    IRenderTarget*  pRenderTarget = ::UICreateRenderTarget(GetRenderLibraryType(m_pIObject));
     pRenderTarget->BindHDC(hDC);
 
     pRenderTarget->BeginDraw(NULL, 0);
 
     CRect rcRenderRegion(0, 0, image.GetWidth(), image.GetHeight());
-    RenderContext roc(&rcRenderRegion, true);
+    RenderContext roc(&rcRenderRegion, true, pRenderChain->GetRequireAlphaChannel());
     this->RealDrawObject(pRenderTarget, roc);
     pRenderTarget->EndDraw();
 
@@ -952,17 +956,21 @@ HBITMAP  Object::TakeSnapshot()
 
 HBITMAP  Object::TakeBkgndSnapshot()
 {
+    RenderChain*  pRenderChain = GetRenderChain();
+    if (!pRenderChain)
+        return NULL;
+
     Image image;
     image.Create(m_rcParent.Width(), m_rcParent.Height(), 32, Image::createAlphaChannel);
     HDC hDC = image.BeginDrawToMyself();
 
-    IRenderTarget*  pRenderTarget = ::UICreateRenderTarget(GetHWND());
+	IRenderTarget*  pRenderTarget = ::UICreateRenderTarget(GetRenderLibraryType(m_pIObject));
     pRenderTarget->BindHDC(hDC);
 
     pRenderTarget->BeginDraw(NULL, 0);
 
     CRect rcRenderRegion(0, 0, image.GetWidth(), image.GetHeight());
-    RenderContext roc(NULL, false);
+    RenderContext roc(NULL, false, pRenderChain->GetRequireAlphaChannel());
     CRect rcWindow;
     GetWindowRect(&rcWindow);
     roc.m_ptOffset.x = -rcWindow.left;

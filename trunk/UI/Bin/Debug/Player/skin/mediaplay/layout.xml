@@ -3,7 +3,7 @@
 <layout>
     <CustomWindow id="mainwindow" layout.left="300" layout.top="300" width="270" height="168"
                   bkgnd.render.type="image" bkgnd.render.image="player_skin.png"
-                  transparent.type="maskalpha" transparent.maskalpha="1" transparent.typex="layered" transparent.maskalphax="240">
+                  transparent.type="maskalpha" transparent.maskalpha="1" transparent.maskalpha.9region="14,-14,14,0,0,14,-14,14">
       <PictureCtrl id="icon"  foregnd.render.image="ttplayer.ico" layout.left="5" layout.top="6"/>
       <MultiLabel id="label_title" layout.left="10" layout.right="10" layout.top="30" height="18" rejestmousemsg="false"
             textrender.type="normal" textrender.color="scroll_title_text" textrender.align="left|vcenter" textrender.font="normal"/>
@@ -36,7 +36,7 @@
                      layout.left="300" layout.top="468"
                      bkgnd.render.type="image" bkgnd.render.image="playlist_skin.bmp" bkgnd.render.image.9region="100,60,50,15,15,15,20,15"
                      bkgnd.render.image.drawtype="stretch"
-                     transparent.type="maskcolor" transparent.maskcolor="maskcolor" transparent.part="customcorner" transparent.part.9region="14,14,14,14,0,0,0,0">
+                     transparent.type="maskcolor" transparent.maskcolor="maskcolor" transparent.maskcolor.9region="14,-14,14,0,0,0,0,0">
       <Button id="sys_close" styleclass="imagebtn"  bkgnd.render.image="close.png" layout.right="5" layout.top="4"/>
       <Panel layout="stack" layout.left="10" layout.top="31">
           <Button id="playlist_add"  styleclass="imagebtn" tooltip="添加" bkgnd.render.image="playlist_add.png"  margin="0,0,4,0"/>
@@ -77,11 +77,13 @@
                    layout.left="570" layout.top="300"
                    bkgnd.render.type="image" bkgnd.render.image="lyric_skin.png" bkgnd.render.image.9region="100,60,50,15,15,15,20,15"
                    bkgnd.render.image.drawtype="stretch"
-                   transparent.type="maskalpha" transparent.maskalpha="1" >
+                   transparent.type="areo" transparent.maskalpha="1" transparent.maskalpha.9region="14,-14,14,0,0,0,0,0"
+                   transparent.areo.trans.margins="4" transparent.areo.disable="layered"
+                  >
       <PictureCtrl id="icon"  foregnd.render.image="ttplayer.ico" layout.left="5" layout.top="6"/>
       <Button id="sys_close" styleclass="imagebtn" bkgnd.render.image="close.png" layout.right="6" layout.top="4"/>
-      <!--CheckButton id="switch_layered" layout.right="50" layout.top="5" text="切换透明窗口" tooltip="切换透明窗口" 
-                   foregnd.render.type="imagelist" foregnd.render.image="checkbox_icon.png" /-->
+      <CheckButton id="switch_layered" layout.right="50" layout.top="5" text="使用分层窗口" tooltip="使用分层窗口" 
+                   foregnd.render.type="imagelist" foregnd.render.image="checkbox_icon.png" />
       <LyricCtrl id="lyricctrl" layout.left="5" layout.right="5" layout.top="55" layout.bottom="5" istransparent="1"/>
       <!--Label id="label_hls_h" text="H:" layout.left="17" layout.top="91" textrender.color="default"/>
       <SliderCtrl id="progress_hls_h" foregnd.render.image="progress_fill.png" height="10" width="210" layout.left="30" layout.top="93" />

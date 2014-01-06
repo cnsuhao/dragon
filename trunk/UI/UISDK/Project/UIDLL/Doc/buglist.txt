@@ -223,3 +223,4 @@ void DrawDragRect(LPCRECT lpRect, SIZE size, LPCRECT lpRectLast, SIZE sizeLast, 
 219. 2013.11.07 23:25 IM Chat Dlg右侧隐藏后无法拖拽 + 最大化后没占满全屏。  想个办法绕过去
 220. 2013.11.13 10:39 目前没有办法在创建窗口时就指定好RECT
 221. 2013.11.13 17:59 xml加载引擎优化，不能在启动时就加载所有的xml，会导致启动速度大大降低
+222. 2013.12.27 9:30 hourglass mainwnd，快速多次右击，有机率出现两个菜单

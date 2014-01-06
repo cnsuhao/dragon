@@ -26,7 +26,7 @@ BOOL TooltipWindow::PreCreateWindow(CREATESTRUCT* pcs)
 
 void TooltipWindow::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 {
-	this->SetWindowLayered(true);  // 先于__super::SetAttribute，指定创建Gdiplus类型资源
+	this->EnableWindowLayered(true);  // 先于__super::SetAttribute，指定创建Gdiplus类型资源
 
 	__super::SetAttribute(pMapAttrib, bReload);
 

@@ -25,7 +25,7 @@ void  WindowRenderLayer::Draw()
 
         CRect  rc;
         m_pWindow->GetParentRect(&rc);
-        RenderContext roc(&rc, true);
+        RenderContext roc(&rc, true, m_pRenderChain->GetRequireAlphaChannel());
 
         m_pWindow->DrawObject(m_pRenderTarget, roc);
         m_pRenderTarget->EndDraw();

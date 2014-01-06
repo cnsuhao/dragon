@@ -58,41 +58,63 @@ typedef Color* ColorPtr;
 //
 // 9宫拉伸区域定义
 //
-class  Image9Region
+class  C9Region
 {
 public:
-    Image9Region(){ Set(0); }
-	void Set( WORD w );
-	void Set( WORD wLeftRight, WORD wTopBottom );
-	void Set( WORD wLeft, WORD wTop, WORD wRight, WORD wBottom );
-
-	WORD topleft;
-	WORD top;
-	WORD topright;
-	WORD left;
-	WORD right;
-	WORD bottomleft;
-	WORD bottom;
-	WORD bottomright;
+    C9Region(){ Set(0); }
+	void Set( short w );
+	void Set( short wLeftRight, short wTopBottom );
+	void Set( short wLeft, short wTop, short wRight, short wBottom );
+    bool IsAll0();
+    bool IsAll_1();
+    
+	short topleft;
+	short top;
+	short topright;
+	short left;
+	short right;
+	short bottomleft;
+	short bottom;
+	short bottomright;
 };
 
-inline void Image9Region::Set( WORD w )
+inline void C9Region::Set( short w )
 {
 	topleft = top = topright = left = right = bottomleft = bottom = bottomright = w;
 }
 
-inline void Image9Region::Set( WORD wLeftRight, WORD wTopBottom )
+inline void C9Region::Set( short wLeftRight, short wTopBottom )
 {
 	topleft = topright = left = right = bottomleft = bottomright = wLeftRight;
 	top = bottom = wTopBottom;
 }
 
-inline void Image9Region::Set( WORD wLeft, WORD wTop, WORD wRight, WORD wBottom )
+inline void C9Region::Set( short wLeft, short wTop, short wRight, short wBottom )
 {
 	topleft = left = bottomleft = wLeft;
 	top = wTop;
 	topright = right = bottomright = wRight;
 	bottom = wBottom;
+}
+inline bool C9Region::IsAll0()
+{
+    WORD* p = (WORD*)this;
+    for (int i = 0; i < 8; i++)
+    {
+        if (p[i] != 0)
+            return false;
+    }
+    return true;
+}
+inline bool C9Region::IsAll_1()
+{
+    short* p = (short*)this;
+    for (int i = 0; i < 8; i++)
+    {
+        if (p[i] != -1)
+            return false;
+    }
+    return true;
 }
 
 class IRenderTarget;

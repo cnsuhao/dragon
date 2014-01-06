@@ -728,7 +728,6 @@ Edit::Edit()
 	
 	m_bMouseDrag   = false;
 	m_bNeedUpdateCaretPos = false;
-    m_bNeedFixGdiAlpha = false;
 
 	m_nXScroll     = 0;
 	m_nCaretHeight = 16;
@@ -1398,7 +1397,7 @@ void Edit::OnEraseBkgnd(IRenderTarget* pRenderTarget)
     // 因为m_caret的位置是基于edit的，而不是client
     m_caret.OnControlPaint(m_pIEdit, pRenderTarget);
 }
-void Edit::OnPaint(IRenderTarget* pRenderTarget)
+void Edit::OnPaint(IRenderTarget* pRenderTarget, RenderContext* pContext)
 {
     if (m_bNeedUpdateCaretPos)
     {
@@ -1411,11 +1410,16 @@ void Edit::OnPaint(IRenderTarget* pRenderTarget)
 	if (m_pIEdit->IsFocus())
 		this->DrawFocus(pRenderTarget);
 
-    if (m_bNeedFixGdiAlpha)
+    if (pContext->m_bRequireAlphaChannel)
     {
         CRect  rc;
         m_pIEdit->GetObjectVisibleClientRect(&rc, false);
-        Util::FixGdiAlpha(pRenderTarget->GetBindHDC(), &rc);
+
+		Util::FixAlphaData data = {0};
+		data.hDC = pRenderTarget->GetBindHDC();
+		data.lprc = &rc;
+		data.eMode = Util::SET_ALPHA_255_IF_ALPHA_IS_0;
+        Util::FixBitmapAlpha(&data);
     }
 }
 
@@ -1431,7 +1435,7 @@ BOOL Edit::OnSetCursor( HWND hWnd, UINT nHitTest, UINT message)
 
 void Edit::OnSetFocus(IObject*)
 {
-    m_caret.CreateCaret(m_pIEdit, NULL, 1, m_nCaretHeight, /*m_bNeedFixGdiAlpha?CARET_TYPE_WINDOW:*/CARET_TYPE_UNKNOWN);
+    m_caret.CreateCaret(m_pIEdit, NULL, 1, m_nCaretHeight, CARET_TYPE_UNKNOWN);
 	this->UpdateCaretByPos();
     m_caret.ShowCaret(m_pIEdit);
 }
@@ -2167,18 +2171,6 @@ UINT  Edit::OnGetDlgCode(LPMSG lpMsg)
     return nRet;
 }
 
-LRESULT  Edit::OnWindowLayeredChanged(UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    bool bLayered = wParam?true:false;
-
-    IRenderLayer*  pRenderLayer = m_pIEdit->GetRenderLayer();
-    if ((pRenderLayer && pRenderLayer->IsTransparent()) || bLayered)
-        m_bNeedFixGdiAlpha = true;
-    else
-        m_bNeedFixGdiAlpha = false;
-
-    return 0;
-}
 
 LRESULT  Edit::OnImeRequest(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {

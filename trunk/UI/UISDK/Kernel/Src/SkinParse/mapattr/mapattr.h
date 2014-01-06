@@ -17,7 +17,7 @@ public:
     virtual long  GetAttr_int(const TCHAR* szKey, bool bErase, int* pnGet);
     virtual long  GetAttr_intarray(const TCHAR* szKey, bool bErase, int* pIntArray, unsigned int nSize);
     virtual long  GetAttr_CRegion4(const TCHAR* szKey, bool bErase, CRegion4* prcGet);
-    virtual long  GetAttr_Image9Region(const TCHAR* szKey, bool bErase, Image9Region* pRegion);
+    virtual long  GetAttr_Image9Region(const TCHAR* szKey, bool bErase, C9Region* pRegion);
     virtual long  GetAttr_RenderBase(const TCHAR* szPrefix, const TCHAR* szKey, bool bErase, IUIApplication* pUIApp, IObject* pBindObj, IRenderBase** ppGet);
     virtual long  GetAttr_TextRenderBase(const TCHAR* szKey, bool bErase, IUIApplication* pUIApp, IObject* pBindObj, ITextRenderBase** ppGet);
 

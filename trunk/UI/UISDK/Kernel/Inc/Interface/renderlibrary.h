@@ -43,7 +43,7 @@ typedef struct tagDRAWBITMAPPARAM
 	int    ySrc;
 	int    wSrc;
 	int    hSrc;
-	Image9Region* pRegion;   // 不需要拉伸时，不使用
+	C9Region* pRegion;   // 不需要拉伸时，不使用
 	byte   nAlpha;
 
     // out param

@@ -192,7 +192,27 @@ namespace UI { namespace Util {
 	LONG UIUTILAPI DYtoHimetricY(LONG dy, LONG yPerInch=-1);
 
 	BOOL UIUTILAPI IsLayeredWindow(HWND hWnd);
-    void UIUTILAPI FixGdiAlpha(HDC hDC, RECT* lprc);
+
+
+	enum FixAlphaMode
+	{
+		SET_ALPHA_255,                 // 直接将alpha设置为255
+		SET_ALPHA_255_IF_ALPHA_IS_0,   // 如果当前alpha==0，将alpha设置为255
+		// ...
+	//	SET_ALPHA_IF_ALPHA_EQUAL,      // 如果当前alpha==wParam，将alpha设置为lParam
+	//	SET_ALPHA_IF_ALPHA_LESS,       // 如果当前alpha<wParam，将alpha设置为lParam
+	};
+	struct FixAlphaData
+	{
+		HDC      hDC;      // 当仅指定了hDC，没有指定hBitmap时，从hDC中获取CurrentBitap
+		HBITMAP  hBitmap;
+		BOOL     bTopDownDib;
+		RECT*    lprc;
+		FixAlphaMode  eMode;
+		WPARAM   wParam;
+		LPARAM   lParam;
+	};
+	BOOL UIUTILAPI FixBitmapAlpha(FixAlphaData* pData);
 #endif
 
 }}

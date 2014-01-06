@@ -7,10 +7,6 @@ namespace UI
 UI_IMPLEMENT_Ixxx_INTERFACE(ICustomWindow, CustomWindow, Window)
 
 void  ICustomWindow::SetWindowResizeType(UINT nType)           { m_pCustomWindowImpl->SetResizeCapability(nType); }
-bool  ICustomWindow::IsWindowLayered()                         { return m_pCustomWindowImpl->IsWindowLayered(); }
-void  ICustomWindow::SetWindowLayered(bool b)                  { m_pCustomWindowImpl->SetWindowLayered(b); }
-int   ICustomWindow::GetWindowTransparentMaskType()            { return m_pCustomWindowImpl->GetWindowTransparentMaskType(); }
-void  ICustomWindow::SetWindowTransparentMaskType(int type)    { m_pCustomWindowImpl->SetWindowTransparentMaskType(type); }
-void  ICustomWindow::SetWindowTransparentColMask(COLORREF col) { m_pCustomWindowImpl->SetWindowTransparentColMask(col); }
-void  ICustomWindow::SetWindowTransparentAlphaMask(int nAlpha) { m_pCustomWindowImpl->SetWindowTransparentAlphaMask(nAlpha); }
+void  ICustomWindow::SetWndTransMode(WINDOW_TRANSPARENT_MODE eMode, bool bRedraw) { m_pCustomWindowImpl->SetWndTransMode(eMode, bRedraw); }
+WINDOW_TRANSPARENT_MODE  ICustomWindow::GetWndTransMode()      { return m_pCustomWindowImpl->GetWndTransMode(); }
 }

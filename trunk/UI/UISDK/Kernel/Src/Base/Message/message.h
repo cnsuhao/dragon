@@ -73,7 +73,8 @@ public:
 	void  ClearHook();
 	 
 	// 返回TRUE，表示该消息已被处理，FALSE表示该消息没被处理
-    virtual BOOL innerVirtualProcessMessage(UIMSG* pMsg, int nMsgMapID=0, bool bDoHook=false){ return FALSE; }
+    BOOL  ProcessMessage(UIMSG* pMsg, int nMsgMapID=0, bool bDoHook=false);
+    virtual BOOL innerVirtualProcessMessage(UIMSG* pMsg, int nMsgMapID=0, bool bDoHook=false);
 
     BOOL  DoHook(UIMSG* pMsg, int nMsgMapID);
     long  DoNotify(UIMSG* pMsg, bool bPost=false, IUIApplication* pUIApp=NULL);

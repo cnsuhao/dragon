@@ -31,6 +31,9 @@ public:
         UIMSG_WM_SYSCOMMAND(OnSysCommand)
         UIMSG_TRBN_POSCHANGED(m_pTransparentSlider, OnChangeTransparent)
         UIMSG_TRBN_POSCHANGED(m_pTextureSlider,     OnChangeTextureAlpha)
+#if(_WIN32_WINNT >= 0x0600)
+        UIMESSAGE_HANDLER_EX(WM_DWMCOMPOSITIONCHANGED, _OnDwmCompositionChanged)
+#endif
     UI_END_MSG_MAP_CHAIN_PARENT(ICustomWindow)
 
 public:
@@ -46,6 +49,7 @@ protected:
     void  OnBtnCustomSkin();
     void  OnBtnUp();
     void  OnBtnDown();
+    LRESULT  _OnDwmCompositionChanged(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     LRESULT  OnPluginListCheckbtnClicked(WPARAM w, LPARAM l);
     void  OnLcnSelChanged(UI::IMessage* pMsgFrom, UI::IListItemBase* pOldSelItem, UI::IListItemBase* pSelItem);

@@ -46,7 +46,7 @@ interface UISDKAPI IImageListRender : public IRenderBase
     IRenderBitmap*  GetRenderBitmap();
     void  SetImageDrawType(int n);
     int   GetImageDrawType();
-    void  SetImageStretch9Region(Image9Region* p);
+    void  SetImageStretch9Region(C9Region* p);
     int   GetItemWidth();
     int   GetItemHeight();
     int   GetItemCount();

@@ -31,7 +31,7 @@ public:
     UI_BEGIN_MSG_MAP
         UIMSG_WM_QUERYINTERFACE(QueryInterface)
         UIMSG_WM_GETOBJECTINFO(OnGetObjectInfo)
-        UIMSG_WM_ERASEBKGND(OnEraseBkgnd)
+        UIMSG_WM_ERASEBKGND2(OnEraseBkgnd)
         UIMSG_WM_RESETATTRIBUTE(ResetAttribute)
     UI_END_MSG_MAP_CHAIN_PARENT(Panel)
 
@@ -39,7 +39,7 @@ public:
     IListItemRootPanel*  GetIListItemRootPanel() { return m_pIListItemRootPanel; }
 
 protected:
-    void  OnEraseBkgnd(IRenderTarget* pRenderTarget);
+    void  OnEraseBkgnd(IRenderTarget* pRenderTarget, RenderContext* pContext);
     void  ResetAttribute();
 
 public:

@@ -2146,7 +2146,7 @@ void  ListCtrlBase::Refresh()
 // 1. 此时已有获取到pRenderTarget了，不需要调用begindrawpart. <<-- 但由于还得做一些绘制背景的操作，在这里仍然借用了BeginRedrawObjectPart的实现
 // 2. 不需要commit到窗口上面
 // 3. 不需要再绘制innerctrl，只需要listitem内容
-void ListCtrlBase::RedrawItemByInnerCtrl(IRenderTarget* pRenderTarget, ListItemBase* pItem)
+void ListCtrlBase::RedrawItemByInnerCtrl(IRenderTarget* pRenderTarget, RenderContext* pContext, ListItemBase* pItem)
 {
 	if (NULL == pRenderTarget || NULL == pItem)
 		return;
@@ -2162,7 +2162,7 @@ void ListCtrlBase::RedrawItemByInnerCtrl(IRenderTarget* pRenderTarget, ListItemB
 		return;
 
 	bool bIsDrawing = false;  // 如果为true，表示当前有其它对象已经调用了begindraw，一般是列表控件内部的控件刷新导致
-	RenderContext renderContext(NULL, false);
+	RenderContext renderContext(NULL, false, false);
 	IRenderTarget* pRenderTargetRet = pRenderChain->BeginRedrawObjectPart(m_pIListCtrlBase, NULL, 0, &bIsDrawing, &renderContext);
 	UIASSERT(bIsDrawing);   // 因为知道这里必定为true，所以不需要再调用EndRedrawObjectPart
 
@@ -2226,7 +2226,7 @@ void  ListCtrlBase::RedrawItem(ListItemBase** ppItemArray, int nCount)
     }
 
 	bool bIsDrawing = false;  // 如果为true，表示当前有其它对象已经调用了begindraw，一般是列表控件内部的控件刷新导致
-	RenderContext roc(NULL,false);
+	RenderContext  roc(NULL, false, false);
 	IRenderTarget* pRenderTarget = pRenderChain->BeginRedrawObjectPart(m_pIListCtrlBase, pRectArray, nRealCount, &bIsDrawing, &roc);
 	if (NULL == pRenderTarget)
 	{

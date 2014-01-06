@@ -216,7 +216,7 @@ namespace UI
 		HBITMAP Detach() throw();
 		BOOL  Draw( HDC hDestDC, int xDest, int yDest, int nDestWidth, int nDestHeight, int xSrc, int ySrc, int nSrcWidth, int nSrcHeight, byte bAlpha=0xFF ) const throw();
 		/* bo.li ADD 20101202 增加9宫绘制 */
-		BOOL  Draw( HDC hDestDC, int xDest, int yDest, int nDestWidth, int nDestHeight, int xSrc, int ySrc, int nSrcWidth, int nSrcHeight, Image9Region* pImage9Region, bool bDrawCenter=true, byte bAlpha=0xFF ) const throw();
+		BOOL  Draw( HDC hDestDC, int xDest, int yDest, int nDestWidth, int nDestHeight, int xSrc, int ySrc, int nSrcWidth, int nSrcHeight, C9Region* pImage9Region, bool bDrawCenter=true, byte bAlpha=0xFF ) const throw();
 		BOOL  Draw( HDC hDestDC, const RECT& rectDest, const RECT& rectSrc, byte bAlpha=0xFF ) const throw();
 		BOOL  Draw( HDC hDestDC, int xDest, int yDest, byte bAlpha=0xFF ) const throw();
 		BOOL  Draw( HDC hDestDC, const POINT& pointDest, byte bAlpha=0xFF ) const throw();
@@ -811,7 +811,7 @@ namespace UI
 	/* <BEGIN bo.li ADD 20101202 增加9宫绘制 */
 	inline BOOL Image::Draw( HDC hDestDC, int xDest, int yDest, int nDestWidth, 
 		int nDestHeight, int xSrc, int ySrc, int nSrcWidth, int nSrcHeight,
-		Image9Region* pImage9Region, bool bDrawCenter, byte bAlpha ) const throw()
+		C9Region* pImage9Region, bool bDrawCenter, byte bAlpha ) const throw()
 	{
 		if (NULL == pImage9Region)
 			return this->Draw(hDestDC, xDest, yDest, nDestWidth, nDestHeight,

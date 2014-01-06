@@ -195,6 +195,18 @@ static const GUID IID_UI_IImageListItemRender = { 0xbc0d89a0, 0x61ba, 0x40c0, { 
 // {92444DB1-43A5-46d3-803B-16BE39582C3A}
 static const GUID CLSID_UI_ImageListItemRender = { 0x92444db1, 0x43a5, 0x46d3, { 0x80, 0x3b, 0x16, 0xbe, 0x39, 0x58, 0x2c, 0x3a } };
 
+
+//////////////////////////////////////////////////////////////////////////
+//  Window transparent mode
+//////////////////////////////////////////////////////////////////////////
+
+// {90F08CEE-4EE2-4d85-ACBE-A2113BADB654}
+static const GUID IID_UI_IAreoWindowWrap = { 0x90f08cee, 0x4ee2, 0x4d85, { 0xac, 0xbe, 0xa2, 0x11, 0x3b, 0xad, 0xb6, 0x54 } };
+
+// {986D9004-A75E-4e42-870C-BAD642FA9852}
+static const GUID IID_UI_ILayeredWindowWrap = { 0x986d9004, 0xa75e, 0x4e42, { 0x87, 0xc, 0xba, 0xd6, 0x42, 0xfa, 0x98, 0x52 } };
+
+
 }
 
 #include "UISDK\Project\UILog\UILog_i.h"
@@ -215,5 +227,6 @@ static const GUID CLSID_UI_ImageListItemRender = { 0x92444db1, 0x43a5, 0x46d3, {
 #include "UISDK\Kernel\Inc\Interface\itextrenderbase.h"
 #include "UISDK\Kernel\Inc\Interface\renderlibrary.h"
 #include "UISDK\Kernel\Inc\Interface\iuieditor.h"
+#include "UISDK\Kernel\Inc\Util\rendercontext.h"
 
 #endif

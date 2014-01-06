@@ -93,7 +93,7 @@ void ImageRender::SetAttribute(SetAttrPrefixData* pData)
 	if (szText)
 	{
 		SAFE_DELETE(m_pRegion);
-		m_pRegion = new Image9Region;
+		m_pRegion = new C9Region;
 		Util::TranslateImage9Region(szText, (void*)m_pRegion );
 	}
 
@@ -431,7 +431,9 @@ void ImageListRender::SetAttribute(SetAttrPrefixData* pData)
 	{
 		SAFE_RELEASE(m_pImageList);
 		IRenderBitmap* pBitmap = NULL;
-		pImageRes->GetBitmap((BSTR)szText, ::GetRenderLibraryType(m_pObject->GetHWND()), &pBitmap);
+		pImageRes->GetBitmap((BSTR)szText, 
+			m_pObject?::GetRenderLibraryType(m_pObject->GetIObject()):GRAPHICS_RENDER_LIBRARY_TYPE_GDI,
+			&pBitmap);
 		if (NULL == pBitmap)
 			return;
 
@@ -490,7 +492,7 @@ void ImageListRender::SetAttribute(SetAttrPrefixData* pData)
 	if (szText)
 	{
 		SAFE_DELETE(m_p9Region);
-		m_p9Region = new Image9Region;
+		m_p9Region = new C9Region;
 		Util::TranslateImage9Region(szText, (void*)m_p9Region );
 	}
 
@@ -724,7 +726,7 @@ int   ImageListRender::GetItemCount()
     return m_pImageList->GetItemCount();
 }
 
-void  ImageListRender::SetImageStretch9Region(Image9Region* p)
+void  ImageListRender::SetImageStretch9Region(C9Region* p)
 {
     if (NULL == p)
     {
@@ -734,7 +736,7 @@ void  ImageListRender::SetImageStretch9Region(Image9Region* p)
 
     if (NULL == m_p9Region)
     {
-        m_p9Region = new Image9Region;
+        m_p9Region = new C9Region;
     }
     *m_p9Region = *p;
 }

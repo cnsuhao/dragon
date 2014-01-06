@@ -22,7 +22,7 @@ public:
     UI_DECLARE_OBJECT3(RichEdit, OBJ_CONTROL|CONTROL_RICHEDIT, _T("UICtrl/Control"));
 
 	UI_BEGIN_MSG_MAP
-		UIMSG_WM_PAINT( OnPaint )
+		UIMSG_WM_PAINT2( OnPaint )
 		UIMSG_WM_ERASEBKGND( OnEraseBkgnd )
 		UIMESSAGE_HANDLER_EX( UI_WM_REDRAWOBJECT, OnRedrawObject )
 
@@ -65,7 +65,6 @@ public:
 		UIMSG_WM_RBUTTONDOWN( OnRButtonDown )
 		UIMESSAGE_RANGE_HANDLER_EX( WM_MOUSEFIRST,WM_MOUSELAST, OnForwardMessage )
 
-        UIMESSAGE_HANDLER_EX( UI_WM_WINDOWLAYEREDCHANGED, OnWindowLayeredChanged )
 		UIMSG_WM_OBJECTLOADED( OnObjectLoaded )
         UIMSG_WM_QUERYINTERFACE( QueryInterface )
         UIMSG_WM_GETOBJECTINFO( OnGetObjectInfo ) 
@@ -79,9 +78,6 @@ public:
     IRichEdit*  GetIRichEdit() { return m_pIRichEdit; }
 
 public:
-    // 接口转发
-    bool  IsNeedFixGdiAlpha() { return m_bNeedFixGdiAlpha; } // WindowlessRE中CreateCaret需要使用
-
 	WindowlessRichEdit& GetRichEdit() { return m_wrapRichEidt; }
 	IScrollBarManager*  GetScrollMgr() { return m_pMgrScrollBar; }
     CCaret*  GetCaret() { return &m_caret; }
@@ -96,7 +92,7 @@ protected:
 
 	void  OnObjectLoaded();
 	void  OnEraseBkgnd(IRenderTarget* pRenderTarget);
-	void  OnPaint(IRenderTarget* pRenderTarget);
+	void  OnPaint(IRenderTarget* pRenderTarget, RenderContext* pContext);
 	LRESULT  OnRedrawObject(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	LRESULT  OnForwardMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -112,7 +108,6 @@ protected:
 	
 	void     OnShowWindow(BOOL bShow, UINT nStatus);
 	void     OnVisibleChanged(BOOL bVisible, IObject* pParent);
-    LRESULT  OnWindowLayeredChanged(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 protected:
     IRichEdit*  m_pIRichEdit;
@@ -123,7 +118,6 @@ protected:
 
 	CRect  m_rcInvalidate;
 
-    bool   m_bNeedFixGdiAlpha;   // 在分层窗口上面需要带alpha通道。窗口风格改变时，会收到UI_WM_WINDOWLAYEREDCHANGED通知
 // 	friend class ITextHostImpl;
 // 	friend class WindowlessRichEdit;
 };

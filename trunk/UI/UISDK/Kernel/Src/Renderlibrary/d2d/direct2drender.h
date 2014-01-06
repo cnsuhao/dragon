@@ -308,7 +308,7 @@ protected:
 			           int nDestHeight, int xSrc, int ySrc, int nSrcWidth, int nSrcHeight ){}
 	void    DrawBitmap(IRenderBitmap* pBitmap, int xDest, int yDest, int nDestWidth, 
 					   int nDestHeight, int xSrc, int ySrc, int nSrcWidth, int nSrcHeight,
-					   Image9Region* p9Region ){}
+					   C9Region* p9Region ){}
 
 protected:
 	HWND     m_hWnd;

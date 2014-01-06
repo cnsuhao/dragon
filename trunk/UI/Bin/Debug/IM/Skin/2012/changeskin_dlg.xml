@@ -15,9 +15,8 @@
                   foregnd.render.image.9region="10,0,10,0"
                   
                   padding="4"
-                  transparent.type="areo"
-                  transparent.part.9region="5"
-                  transparent.part="" istransparent="1" font="normal" >
+                  transparent.type="areo" transparent.areo.mode="blur" transparent.areo.blur.region="5"
+                  istransparent="1" font="normal" >
       <RenderChain>
 
         <!-- 最外层边框 -->

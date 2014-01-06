@@ -50,6 +50,7 @@ CSkinDlg::CSkinDlg()
 
     m_pTransparentSlider = NULL;
     m_pTextureSlider = NULL;
+    m_pSkinUI = NULL;
 }
 CSkinDlg::~CSkinDlg()
 {
@@ -114,6 +115,18 @@ void  CSkinDlg::OnInitialize()
         m_pBtnUp->SetEnable(false, false);
     if (m_pBtnDown)
         m_pBtnDown->SetEnable(false, false);
+
+    if (m_pTransparentSlider)
+    {
+        if (GetWndTransMode() != UI::WINDOW_TRANSPARENT_MODE_AREO)
+        {
+            m_pTransparentSlider->SetEnable(false);
+        }
+        else
+        {
+            m_pTransparentSlider->SetEnable(true);
+        }
+    }
 }
 
 void  CSkinDlg::SetSkinUI(SkinUI*  p)
@@ -252,10 +265,31 @@ void  CSkinDlg::OnChangeTextureAlpha(int nPos, int nScrollType)
 {   
     m_pSkinUI->ChangeSkinTextureAlpha(nPos);
 }
-// void  CSkinDlg::SetMainDlg(CMainDlg* pDlg)
-// {
-//     m_pMainDlg = pDlg;
-// }
+LRESULT  CSkinDlg::_OnDwmCompositionChanged(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    if (GetWndTransMode() != UI::WINDOW_TRANSPARENT_MODE_AREO)
+    {
+        if (m_pSkinUI)
+        {
+            m_pSkinUI->ChangeSkinTransparent(255);
+        }
+        
+        if (m_pTransparentSlider)
+        {
+            m_pTransparentSlider->SetEnable(false);
+        }
+    }
+    else
+    {
+        if (m_pTransparentSlider)
+        {
+            m_pTransparentSlider->SetEnable(true);
+        }
+    }
+
+    SetMsgHandled(FALSE);
+    return 0;
+}
 
 void  CSkinDlg::OnBtnCustomSkin()
 {

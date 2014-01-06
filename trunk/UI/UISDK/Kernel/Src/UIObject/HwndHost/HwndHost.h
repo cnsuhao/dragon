@@ -38,7 +38,7 @@ protected:
     void  SetAttribute(IMapAttribute* pMapAttrib, bool bReload=false);
     void  GetDesiredSize(SIZE* pSize);
 
-    virtual bool  DrawObject(IRenderTarget* p, RenderContext roc) {return false;} // 不绘制
+//    virtual bool  DrawObject(IRenderTarget* p, RenderContext roc) {return false;} // 不绘制
 public:
 	bool  SubclassWindow();
 	bool  UnSubclassWindow();

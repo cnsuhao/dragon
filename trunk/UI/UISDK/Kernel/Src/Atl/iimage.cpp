@@ -104,6 +104,14 @@ void  IImage::SaveAsPng(const TCHAR* szPath)
 
     m_pImageImpl->Save(szPath, Gdiplus::ImageFormatPNG); 
 }
+void  IImage::SaveAsBmp(const TCHAR* szPath)
+{
+	if (NULL == szPath)
+		return;
+
+	m_pImageImpl->Save(szPath, Gdiplus::ImageFormatBMP); 
+}
+
 COLORREF  IImage::GetPixel(int x, int y) { return m_pImageImpl->GetPixel(x, y); }
 DWORD  IImage::GetAverageColor() { return m_pImageImpl->GetAverageColor(); }
 }

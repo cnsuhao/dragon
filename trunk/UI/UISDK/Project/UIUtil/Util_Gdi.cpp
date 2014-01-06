@@ -215,57 +215,94 @@ BOOL IsLayeredWindow(HWND hWnd)
 }
 
 
-void  FixGdiAlpha(HDC hDC, RECT* lprc)
+
+BOOL FixBitmapAlpha(FixAlphaData* pData)
 {
-    HBITMAP hBitmap = (HBITMAP)GetCurrentObject(hDC, OBJ_BITMAP);
+	if (!pData)
+		return FALSE;
 
-    BITMAP  bm;
-    GetObject(hBitmap, sizeof(BITMAP), &bm);
+	HBITMAP hBitmap = pData->hBitmap;
+	if (!hBitmap)
+	{
+		if (!pData->hDC)
+			return FALSE;
 
-    RECT rcDest;
-    if (lprc)
-    {
-        RECT rcBitmap = {0, 0, bm.bmWidth, bm.bmHeight};
-        if (FALSE == ::IntersectRect(&rcDest, &rcBitmap, lprc))
-            return;
-    }
-    else
-    {
-        SetRect(&rcDest, 0, 0, bm.bmWidth, bm.bmHeight);
-    }
+		hBitmap = (HBITMAP)GetCurrentObject(pData->hDC, OBJ_BITMAP);
+	}
 
-    BYTE* pBits = (BYTE*)bm.bmBits;
-    int nPitch = -bm.bmWidthBytes;
-    int n = 0;
+	BITMAP  bm;
+	GetObject(hBitmap, sizeof(BITMAP), &bm);  // bm.bmBits指针数据开始的地址，但这个地址不一定是第一行，也有可能是最后一行
 
-    BYTE* p = NULL;
-    BYTE* pEnd = NULL;
+	if (bm.bmBitsPixel != 32)
+		return FALSE;
 
-    pBits += (bm.bmHeight - rcDest.top - 1)*bm.bmWidthBytes;
-    for (int y = rcDest.top ; y < rcDest.bottom; y++)
-    {
-        p    = pBits + (rcDest.left << 2) + 3;
-        pEnd = pBits + (rcDest.right << 2) + 3;
+	RECT rcDest;
+	if (pData->lprc)
+	{
+		RECT rcBitmap = {0, 0, bm.bmWidth, bm.bmHeight};
+		if (FALSE == ::IntersectRect(&rcDest, &rcBitmap, pData->lprc))
+			return FALSE;
+	}
+	else
+	{
+		SetRect(&rcDest, 0, 0, bm.bmWidth, bm.bmHeight);
+	}
 
-        while (p < pEnd)  // TODO: 这种优化效果也不怎么样
-        {
-           if (0 == (*p))
-           {
-               *p = 0xFF;
-           }
-           p += 4;
-        }
+	BYTE* pBits = (BYTE*)bm.bmBits;
+	int nPitch = bm.bmWidthBytes;
+	if (!pData->bTopDownDib)
+	{
+		pBits = LPBYTE( pBits )+((bm.bmHeight-1)*nPitch);
+		nPitch = -nPitch;
+	}
 
-//         for (int x = rcDest.left; x < rcDest.right; x++)
-//         {
-//             n = (x<<2) + 3;
-//             if (pBits[n])
-//                 continue;
-// 
-//             pBits[n] = 255;
-//         }
-        pBits += nPitch;
-    }
+	BYTE* p = NULL;
+	BYTE* pEnd = NULL;
+	pBits += rcDest.top*nPitch;
+
+
+	switch (pData->eMode)
+	{
+	case SET_ALPHA_255:
+		{
+			for (int y = rcDest.top ; y < rcDest.bottom; y++)
+			{
+				p    = pBits + (rcDest.left << 2) + 3;
+				pEnd = pBits + (rcDest.right << 2) + 3;
+
+				while (p < pEnd)
+				{
+					*p = 0xFF;
+					p += 4;
+				}
+
+				pBits += nPitch;
+			}
+		}
+		break;
+
+	case SET_ALPHA_255_IF_ALPHA_IS_0:
+		{
+			for (int y = rcDest.top ; y < rcDest.bottom; y++)
+			{
+				p    = pBits + (rcDest.left << 2) + 3;
+				pEnd = pBits + (rcDest.right << 2) + 3;
+
+				while (p < pEnd)
+				{
+					if (0 == (*p))
+					{
+						*p = 0xFF;
+					}
+					p += 4;
+				}
+
+				pBits += nPitch;
+			}
+		}
+		break;
+	}
+	return TRUE;
 }
 
 }

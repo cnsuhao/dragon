@@ -43,6 +43,7 @@ interface UISDKAPI IImage
     DWORD  GetAverageColor();
     COLORREF  GetPixel(int x, int y);
     void  SaveAsPng(const TCHAR* szPath);
+	void  SaveAsBmp(const TCHAR* szPath);
 
 private:
     Image*  m_pImageImpl;

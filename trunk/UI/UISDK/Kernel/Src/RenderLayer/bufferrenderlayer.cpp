@@ -49,9 +49,10 @@ void  BufferRenderLayer::CreateBuffer(int nWidth, int nHeight)
             m_pRenderTarget->BindHDC(m_hMemDC);
     }
 
-    if (NULL == m_pRenderTarget)
+    if (NULL == m_pRenderTarget && m_pWindow)
     {
-        m_pRenderTarget = UICreateRenderTarget(m_pWindow->GetHWND());
+		GRAPHICS_RENDER_LIBRARY_TYPE eType = GetRenderLibraryType(m_pWindow->GetIObject());
+        m_pRenderTarget = UICreateRenderTarget(eType);
         m_pRenderTarget->BindHDC(m_hMemDC);
     }
 
@@ -224,7 +225,7 @@ void BufferRenderLayer::ReCreateRenderTarget()
 
     SAFE_DELETE(m_pRenderTarget); // 需要重新创建一个基于新窗口类型的RenderTarget
 
-    m_pRenderTarget = UICreateRenderTarget(m_pWindow->GetHWND());
+    m_pRenderTarget = UICreateRenderTarget(GetRenderLibraryType(m_pWindow->GetIObject()));
     m_pRenderTarget->BindHDC(m_hMemDC);
 }
 
@@ -239,7 +240,7 @@ void  ControlRenderLayer::Draw()
     if (m_pRenderTarget->BeginDraw(0, 0))
     {
         CRect  rc(0, 0, GetWidth(), GetHeight());
-        RenderContext roc(&rc, true);
+        RenderContext roc(&rc, true, m_pRenderChain->GetRequireAlphaChannel());
 
         this->DrawChildObject(m_pRenderTarget, roc);
 

@@ -290,7 +290,7 @@ LRESULT PopupControlWindow::OnGetGraphicsRenderType()
 		// 注：这里没有去调用GetGraphicsRenderType，因为GetGraphicsRenderType中m_pObject又会反调用m_pWindow->GetGraphicsRenderLibraryType
 		//     有可能导致死嵌套
 
-		GRAPHICS_RENDER_LIBRARY_TYPE e = (GRAPHICS_RENDER_LIBRARY_TYPE)UISendMessage( m_pObject, UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE );
+		GRAPHICS_RENDER_LIBRARY_TYPE e = (GRAPHICS_RENDER_LIBRARY_TYPE)UISendMessage(m_pObject, UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE );
 		if (GRAPHICS_RENDER_LIBRARY_TYPE_AUTO == e)
 		{
 			e = GRAPHICS_RENDER_LIBRARY_TYPE_GDI;

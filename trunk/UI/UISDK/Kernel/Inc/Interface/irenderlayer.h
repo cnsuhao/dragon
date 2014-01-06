@@ -63,6 +63,7 @@ interface UISDKAPI IRenderChain
     IRenderTarget*  BeginRedrawObjectPart(IObject* pRedrawObj, RECT* prcArray, int nCount, bool* pbIsDrawing, RenderContext* pOutRenderContext);
     void  EndRedrawObjectPart(IRenderTarget* pRenderTarget, RECT* prcArray, int nCount);
 
+    bool  GetRequireAlphaChannel();
     void  SetCanCommit(bool b);
     bool  CanCommit();
 	void  Commit(RECT* prc);

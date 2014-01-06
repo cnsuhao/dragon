@@ -12,7 +12,8 @@ DwmHelper::DwmHelper()
     pDwmExtendFrameIntoClientArea = (funcDwmExtendFrameIntoClientArea)GetProcAddress(m_hModule, "DwmExtendFrameIntoClientArea");
     pDwmEnableBlurBehindWindow = (funcDwmEnableBlurBehindWindow)GetProcAddress(m_hModule, "DwmEnableBlurBehindWindow");
     pDwmIsCompositionEnabled = (funcDwmIsCompositionEnabled)GetProcAddress(m_hModule, "DwmIsCompositionEnabled");
-
+    pDwmGetWindowAttribute = (funcDwmGetWindowAttribute)GetProcAddress(m_hModule, "DwmGetWindowAttribute");
+    pDwmSetWindowAttribute = (funcDwmSetWindowAttribute)GetProcAddress(m_hModule, "DwmSetWindowAttribute");
 }
 DwmHelper::~DwmHelper()
 {

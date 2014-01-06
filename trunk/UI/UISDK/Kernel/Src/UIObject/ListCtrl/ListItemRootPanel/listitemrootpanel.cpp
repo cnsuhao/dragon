@@ -29,7 +29,7 @@ void  ListItemRootPanel::ResetAttribute()
     DO_PARENT_PROCESS(IListItemRootPanel, IPanel);
     m_pIListItemRootPanel->ModifyStyle(0, OBJECT_STYLE_TRANSPARENT, false);  // 保证可见，这样子对象在单独刷新时，就不用继续往上遍历了
 }
-void  ListItemRootPanel::OnEraseBkgnd(IRenderTarget* pRenderTarget)
+void  ListItemRootPanel::OnEraseBkgnd(IRenderTarget* pRenderTarget, RenderContext* pContext)
 {
     if (NULL == pRenderTarget)
         return;
@@ -45,13 +45,13 @@ void  ListItemRootPanel::OnEraseBkgnd(IRenderTarget* pRenderTarget)
 
     CRect  rcWindow;
     this->GetWindowRect(&rcWindow);
-    RenderContext roc(&rcWindow, false);
+    RenderContext roc(&rcWindow, false, pContext->m_bRequireAlphaChannel);
     
     roc.m_ptOffset.x -= m_pIListItemRootPanel->GetParentRectL();
     roc.m_ptOffset.y -= m_pIListItemRootPanel->GetParentRectT();
     roc.Update(pRenderTarget);
 
-    m_pIListCtrl->RedrawItemByInnerCtrl(pRenderTarget, m_pIListItem);
+    m_pIListCtrl->RedrawItemByInnerCtrl(pRenderTarget, &roc, m_pIListItem);
     pRenderTarget->SetViewportOrgEx(ptSave.x, ptSave.y, NULL);
 }
 

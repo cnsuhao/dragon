@@ -16,7 +16,6 @@ public:
         UIMSG_WM_GETOBJECTINFO(OnGetObjectInfo)
         UIMSG_WM_QUERYINTERFACE(QueryInterface)
         UIMSG_WM_SETATTRIBUTE(SetAttribute)
-        UIMSG_WM_OBJECTLOADED(OnObjectLoaded)
     UI_END_MSG_MAP_CHAIN_PARENT(Panel)
 
     void  SetIRenderLayer(IRenderLayer* p) { m_pIRenderLayer = p; }
@@ -41,11 +40,10 @@ public:
     IRenderTarget*  GetRenderTarget() { return m_pRenderTarget; }
 
     virtual void  Draw(){};
-    virtual void  Commit(HDC hDstDC){};
+    virtual void  Commit(HDC hDstDC){};  
 
 protected:
     void  SetAttribute(IMapAttribute* pMapAttrib, bool bReload);
-    void  OnObjectLoaded();
 
 protected:
     IRenderLayer*  m_pIRenderLayer;

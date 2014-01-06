@@ -65,7 +65,7 @@ public:
 							int nDestHeight, int xSrc, int ySrc, int nSrcWidth, int nSrcHeight, Gdiplus::ImageAttributes* pAttr=NULL);
 	static void  DrawBitmap(Gdiplus::Graphics* pGraphics, IRenderBitmap* hBitmap, int xDest, int yDest, int nDestWidth, 
 							int nDestHeight, int xSrc, int ySrc, int nSrcWidth, int nSrcHeight,
-                            Image9Region* p9Region, bool bDrawCenter=true, Gdiplus::ImageAttributes* pAttr=NULL);		
+                            C9Region* p9Region, bool bDrawCenter=true, Gdiplus::ImageAttributes* pAttr=NULL);		
 	static void  DrawBitmapEx(Gdiplus::Graphics* pGraphics, HDC hBindDC, IRenderBitmap* pBitmap, DRAWBITMAPPARAM* pParam);
     static void  DrawStringEx(Gdiplus::Graphics* pGraphics, HDC hBindDC, IRenderFont*  pFont, DRAWTEXTPARAM* pParam);
 
