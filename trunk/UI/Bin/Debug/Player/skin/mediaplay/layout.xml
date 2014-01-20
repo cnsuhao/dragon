@@ -77,8 +77,8 @@
                    layout.left="570" layout.top="300"
                    bkgnd.render.type="image" bkgnd.render.image="lyric_skin.png" bkgnd.render.image.9region="100,60,50,15,15,15,20,15"
                    bkgnd.render.image.drawtype="stretch"
-                   transparent.type="areo" transparent.maskalpha="1" transparent.maskalpha.9region="14,-14,14,0,0,0,0,0"
-                   transparent.areo.trans.margins="4" transparent.areo.disable="layered"
+                   transparent.type="aero" transparent.maskalpha="1" transparent.maskalpha.9region="14,-14,14,0,0,0,0,0"
+                   transparent.aero.trans.margins="4" transparent.aero.disable="layered"
                   >
       <PictureCtrl id="icon"  foregnd.render.image="ttplayer.ico" layout.left="5" layout.top="6"/>
       <Button id="sys_close" styleclass="imagebtn" bkgnd.render.image="close.png" layout.right="6" layout.top="4"/>

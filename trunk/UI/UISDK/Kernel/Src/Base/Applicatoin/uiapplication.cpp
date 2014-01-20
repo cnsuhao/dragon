@@ -429,8 +429,6 @@ HRESULT UIApplication::InitLog(const TCHAR* szLogConfigFilePath)
 	return S_OK;
 }
 
-// -----------     from uibuilder manager ----
-
 HRESULT UIApplication::SetDesignMode(VARIANT_BOOL b, IUIEditor* pUIBuilder) 
 {
 	m_bDesignMode = b==VARIANT_TRUE?true:false;

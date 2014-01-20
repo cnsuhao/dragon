@@ -787,14 +787,14 @@
 									</File>
 								</Filter>
 								<Filter
-									Name="05. areo"
+									Name="05. aero"
 									>
 									<File
-										RelativePath="..\..\Kernel\Src\UIObject\Window\wndtransmode\areo\areowrap.cpp"
+										RelativePath="..\..\Kernel\Src\UIObject\Window\wndtransmode\aero\aerowrap.cpp"
 										>
 									</File>
 									<File
-										RelativePath="..\..\Kernel\Src\UIObject\Window\wndtransmode\areo\areowrap.h"
+										RelativePath="..\..\Kernel\Src\UIObject\Window\wndtransmode\aero\aerowrap.h"
 										>
 									</File>
 								</Filter>

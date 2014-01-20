@@ -14,6 +14,7 @@ DwmHelper::DwmHelper()
     pDwmIsCompositionEnabled = (funcDwmIsCompositionEnabled)GetProcAddress(m_hModule, "DwmIsCompositionEnabled");
     pDwmGetWindowAttribute = (funcDwmGetWindowAttribute)GetProcAddress(m_hModule, "DwmGetWindowAttribute");
     pDwmSetWindowAttribute = (funcDwmSetWindowAttribute)GetProcAddress(m_hModule, "DwmSetWindowAttribute");
+	pDwmDefWindowProc = (funcDwmDefWindowProc)GetProcAddress(m_hModule, "DwmDefWindowProc");
 }
 DwmHelper::~DwmHelper()
 {

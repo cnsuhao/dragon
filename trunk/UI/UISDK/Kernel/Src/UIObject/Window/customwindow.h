@@ -10,7 +10,7 @@ namespace UI
 {
 
 class LayeredWindowWrap;
-class AreoWindowWrap;
+class AeroWindowWrap;
 
 //
 // 自定义窗口类，无非客户区域
@@ -29,6 +29,7 @@ public:
 		MESSAGE_HANDLER(WM_NCACTIVATE, _OnNcActivate)
 		MESSAGE_HANDLER(WM_NCDESTROY,  _OnNcDestroy)
         MESSAGE_HANDLER(WM_SIZE, _OnSize )
+        MESSAGE_HANDLER(WM_WINDOWPOSCHANGING, _OnWindowPosChanging)
 		CHAIN_MSG_MAP(Window)
 	END_MSG_MAP()
 
@@ -71,7 +72,7 @@ public:
 	void  SetResizeCapability(UINT nType);
 	bool  IsWindowLayered();
 	void  EnableWindowLayered(bool b);
-    void  EnableWindowAreo(bool b);
+    void  EnableWindowAero(bool b);
 	void  SetWindowMaskAlpha();
 	void  SetWindowMaskColor();
 
@@ -98,11 +99,12 @@ protected:
 	LRESULT  _OnNcActivate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT  _OnNcDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
     LRESULT  _OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+    LRESULT  _OnWindowPosChanging( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
 
-	void     OnEraseBkgnd(IRenderTarget* hDC);
-	BOOL     OnSetCursor(HWND hWnd, UINT nHitTest, UINT message);
-	void     OnLButtonDown(UINT nFlags, POINT point);
-    UINT     OnHitTest(POINT* pt);
+	void  OnEraseBkgnd(IRenderTarget* hDC);
+	BOOL  OnSetCursor(HWND hWnd, UINT nHitTest, UINT message);
+	void  OnLButtonDown(UINT nFlags, POINT point);
+    UINT  OnHitTest(POINT* pt);
 
 //	int  OnCreate(LPCREATESTRUCT lpCreateStruct);
 //	LRESULT  OnNcHitTest( POINT pt );
@@ -135,9 +137,10 @@ protected:
     // 边框拖拽
     //
 	int   m_nResizeCapability;  // 窗口边缘伸缩能力标志位
-	int   m_nResizeBorder;  // 用于拖拽的边缘区域大小
+	int   m_nResizeBorder;      // 用于拖拽的边缘区域大小
+    int   m_nMaximizeBorder;    // 最大化时需要位于屏幕外的边框大小，可以与resizeborder不一样
 
-    friend class AreoWindowWrap;
+    friend class AeroWindowWrap;
     friend class LayeredWindowWrap;
 };
 

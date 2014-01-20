@@ -6,9 +6,7 @@
  
 
 73. 点击打开一个系统COMBOOX的下拉列表，然后将鼠标放在一个UI控件上面，点击一下，下拉列表消失，再继续点击UI控件，无反应。
-    因为没有人去触发一个WM_MOUSEMOVE来set hover对象
-    
-89. 普通窗口拉伸优化！不平滑
+    因为没有人去触发一个WM_MOUSEMOVE来set hover对象    
 
 107.ccaret的分层窗口光标在第一行/最后一行显示不下的时候，位置不正确
 109.richedit的横向滚动条range、page与ui控件不同步
@@ -100,6 +98,7 @@
 http://www.codeproject.com/Articles/42529/Outline-Text
 
 
+// 经测试，的确是系统桌面上的图标文字阴影效果
 #if (_WIN32_WINNT >= 0x0501)
 	int DrawShadowText(LPCWSTR lpstrText, int cchText, LPRECT lpRect, DWORD dwFlags, COLORREF clrText, COLORREF clrShadow, int xOffset, int yOffset)
 	{

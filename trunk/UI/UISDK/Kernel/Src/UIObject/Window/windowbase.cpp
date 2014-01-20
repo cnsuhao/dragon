@@ -718,9 +718,6 @@ LRESULT	WindowBase::WndProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
 	if (m_nStyle & WINDOW_STYLE_DESTROYED && pOldMsg == NULL)
 	{
 		this->ModifyStyle(0, WINDOW_STYLE_DESTROYED, 0);
-#if 0 // -- 架构改造
-		this->OnFinalMessage();
-#endif
 	}
 
 	return lRes;
@@ -842,9 +839,13 @@ LRESULT WindowBase::_OnEraseBkgnd( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 		{
 			m_bFirsetEraseBkgnd = false;
 
-			// TODO: 如果什么也不做，会导致窗口第一次显示时，窗口先显示一次黑色，例如combobox.listbox/menu
-			// 但这样可能还是会导致别的闪烁问题，因为最终显示的界面不一定就是白色的
-			DefWindowProc(uMsg, wParam, lParam); 
+            m_pRenderChain->OnWindowPaint((HDC)wParam);
+            ValidateRect(m_hWnd, NULL);  // 清空无效区域
+            
+			// 如果什么也不做，会导致窗口第一次显示时，窗口先显示一次黑色，例如combobox.listbox/menu
+			// 如果直接调用DefWindowProc会导致窗口显示白色，但最终显示的界面不一定就是白色的，也会导致闪烁
+            // 因此在这里先做一次全量绘制
+			// DefWindowProc(uMsg, wParam, lParam); 
 		}
 		
 		return 1;   // 对于Dialog类型，需要返回1来阻止系统默认绘制
@@ -1089,19 +1090,54 @@ LRESULT WindowBase::_OnThemeChange( UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 	return 0;
 }
 
+HMONITOR  WindowBase::GetPrimaryMonitor()
+{
+    POINT pt = {0,0};
+    return MonitorFromPoint(pt, MONITOR_DEFAULTTOPRIMARY); 
+}
+
+
+// minmax.c xxxInitSendValidateMinMaxInfo
+// 如果最大化到副屏上时，pInfo指的是主屏的大小。系统内部会判断如果pinfo的maxsize大于主屏宽高时，将调整为副屏的大小。
+// 因此在无边框窗口最大化到副屏时，且副屏分辨率大于主屏时，将变的非常麻烦。为了解决该问题，在customwindow中响应了
+// wm_windowposchanging，在该消息中修改大小
 LRESULT WindowBase::_OnGetMinMaxInfo( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
 {
-	bHandled = FALSE;
+    long lStyle = GetWindowLong(m_hWnd, GWL_STYLE);
+    if ((lStyle & WS_CAPTION) == WS_CAPTION)
+    {
+        bHandled = FALSE;
+        return 0;
+    }
+
+	bHandled = TRUE;
 	MINMAXINFO* pInfo = (MINMAXINFO*)lParam;
 
 	pInfo->ptMaxPosition.x = -m_rcBorder.left;
 	pInfo->ptMaxPosition.y = -m_rcBorder.top;
 
-    HMONITOR hMonitorPrimary = MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
-    HMONITOR hMonitorTo = MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
+    HMONITOR hMonitorPrimary = GetPrimaryMonitor();
+    HMONITOR hMonitorTo = MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTOPRIMARY);
 
     CRect rcWorkArea;
-    ::SystemParametersInfo(SPI_GETWORKAREA, 0, &rcWorkArea, 0);
+    MONITORINFO  miTo = {sizeof(miTo), 0};
+    MONITORINFO  miPri = {sizeof(miPri), 0};
+
+    if (hMonitorTo != hMonitorPrimary)
+    {
+        GetMonitorInfo(hMonitorPrimary, &miPri);
+        GetMonitorInfo(hMonitorTo, &miTo);
+
+        rcWorkArea = miTo.rcWork;
+        pInfo->ptMaxPosition.x = miTo.rcWork.left - miTo.rcMonitor.left;
+        pInfo->ptMaxPosition.y = miTo.rcWork.top - miTo.rcMonitor.top;
+    }
+    else
+    {
+        ::SystemParametersInfo(SPI_GETWORKAREA, 0, &rcWorkArea, 0);
+        pInfo->ptMaxPosition.x = rcWorkArea.left;
+        pInfo->ptMaxPosition.y = rcWorkArea.top;
+    }
 
 	if (NDEF != m_nMaxWidth)
 		pInfo->ptMaxSize.x = pInfo->ptMaxTrackSize.x = m_nMaxWidth;
@@ -1113,9 +1149,6 @@ LRESULT WindowBase::_OnGetMinMaxInfo( UINT uMsg, WPARAM wParam, LPARAM lParam, B
 	else
 		pInfo->ptMaxSize.y = /*pInfo->ptMaxTrackSize.y = */rcWorkArea.Height() + m_rcBorder.top+m_rcBorder.bottom;
 
-    pInfo->ptMaxPosition.x = rcWorkArea.left;
-    pInfo->ptMaxPosition.y = rcWorkArea.top;
-
 	if (NDEF != m_nMinWidth)
 	{
 		pInfo->ptMinTrackSize.x = m_nMinWidth;
@@ -1125,20 +1158,6 @@ LRESULT WindowBase::_OnGetMinMaxInfo( UINT uMsg, WPARAM wParam, LPARAM lParam, B
 		pInfo->ptMinTrackSize.y = m_nMinHeight;
 	}
 
-    // minmax.c xxxInitSendValidateMinMaxInfo
-//     if (hMonitorTo != hMonitorPrimary)
-//     {
-//         MONITORINFO  miTo = {0};
-//         MONITORINFO  miPri = {0};
-//         GetMonitorInfo(hMonitorTo, &miPri);
-//         GetMonitorInfo(hMonitorTo, &miTo);
-// 
-//         if ((pInfo->ptMaxSize.x < (miPri.rcMonitor.right - miPri.rcMonitor.left)) ||
-//             (pInfo->ptMaxSize.y < (miPri.rcMonitor.bottom - miPri.rcMonitor.top))) 
-//         {
-// 
-//         }
-//     }
 	return 0;
 }
 

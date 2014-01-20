@@ -20,17 +20,17 @@ interface IWndTransMode
     virtual bool  Commit() = 0;
 };
 
-class  AreoWindowWrap;
-interface UISDKAPI IAreoWindowWrap
+class  AeroWindowWrap;
+interface UISDKAPI IAeroWindowWrap
 {
 public:
-    IAreoWindowWrap(AreoWindowWrap*  p);
+    IAeroWindowWrap(AeroWindowWrap*  p);
 
-    AREO_MODE  GetAeroMode();
+    AERO_MODE  GetAeroMode();
     void  GetBlurRegion(CRegion4* pregion);
     void  UpdateRgn();
 
-    AreoWindowWrap*  m_pImpl;
+    AeroWindowWrap*  m_pImpl;
 };
 
 

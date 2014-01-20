@@ -23,11 +23,17 @@ long  CPrivateChatBiz::ExecuteCommand( long nCommand, WPARAM wParam, LPARAM lPar
     }
 	else if (nCommand == IM::BASE_CMD_ID_INIT)
 	{
-// 		IM::OpenPrivateChatDlgReqTask*  pTask = new IM::OpenPrivateChatDlgReqTask(NULL, L"000");
-// 		pTask->m_lOpenMode = 0;
-// 		pTask->m_wParam = 0;
-// 		pTask->m_lParam = 0;
-// 		OpenPrivateChatDlg(pTask);
+#ifdef _DEBUG // Test, 直接加载CHAT模块
+		HMODULE hModule = GetModuleHandle(_T("Main.dll"));
+		if (!hModule)
+		{
+			IM::OpenPrivateChatDlgReqTask*  pTask = new IM::OpenPrivateChatDlgReqTask(NULL, L"000");
+			pTask->m_lOpenMode = 0;
+			pTask->m_wParam = 0;
+			pTask->m_lParam = 0;
+			OpenPrivateChatDlg(pTask);
+		}
+#endif
 	}
 
     return 0;

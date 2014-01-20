@@ -15,7 +15,7 @@
                   foregnd.render.image.9region="10,0,10,0"
                   
                   padding="4"
-                  transparent.type="areo" transparent.areo.mode="blur" transparent.areo.blur.region="5"
+                  transparent.type="aero" transparent.aero.mode="blur" transparent.aero.blur.region="5"
                   istransparent="1" font="normal" >
       <RenderChain>
 
@@ -76,7 +76,7 @@
               <Button id="btn_changetexture_alpha" layout.right="140" layout.bottom="27" width="22" height="20"  styleclass="imagebtn"
                       bkgnd.render.image="button2" bkgnd.render.image.drawtype="stretch" bkgnd.render.image.9region="5"
                       foregnd.render.type="image"  foregnd.render.image="MaterialAlphaSet"/>
-              <Button id="btn_changeareo_alpha"    layout.right="140" layout.bottom="5" width="22" height="20"  styleclass="imagebtn"
+              <Button id="btn_changeaero_alpha"    layout.right="140" layout.bottom="5" width="22" height="20"  styleclass="imagebtn"
                       bkgnd.render.image="button2" bkgnd.render.image.drawtype="stretch" bkgnd.render.image.9region="5"
                       foregnd.render.type="image"  foregnd.render.image="TransSet"
                       />

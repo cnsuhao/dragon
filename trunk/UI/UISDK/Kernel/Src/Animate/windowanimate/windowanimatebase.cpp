@@ -40,7 +40,7 @@ void  WindowAnimateBase::UpdateWindowSourceImage()
     if (NULL == m_pWindow)
         return;
  
-    if (m_nWndTranslateType & WINDOW_TRANSPARENT_MODE_AREO || 
+    if (m_nWndTranslateType & WINDOW_TRANSPARENT_MODE_AERO || 
         m_nWndTranslateType & WINDOW_TRANSPARENT_MODE_LAYERED)
         GetSrcBitmap_Layered();
     else

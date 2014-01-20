@@ -4,7 +4,7 @@
 #include "UISDK\Kernel\Inc\Interface\imapattr.h"
 #include "UISDK\Kernel\Src\RenderLayer\renderchain.h"
 #include "UISDK\Kernel\Src\UIObject\Window\wndtransmode\layered\layeredwrap.h"
-#include "UISDK\Kernel\Src\UIObject\Window\wndtransmode\areo\areowrap.h"
+#include "UISDK\Kernel\Src\UIObject\Window\wndtransmode\aero\aerowrap.h"
 
 CustomWindow::CustomWindow()
 {
@@ -13,6 +13,7 @@ CustomWindow::CustomWindow()
 	m_bNeedToSetWindowRgn = true;   // 首次显示时，需要设置一下窗口形状
 
 	m_nResizeBorder = 6;
+    m_nMaximizeBorder = 3;
 	m_nResizeCapability = WRSB_CAPTION;
 }
 CustomWindow::~CustomWindow()
@@ -26,7 +27,7 @@ BOOL  CustomWindow::PreCreateWindow(CREATESTRUCT* pcs)
     if (FALSE == GetCurMsg()->lRet)
         return FALSE;
 
-	pcs->style = DS_SETFONT | WS_POPUP | WS_SYSMENU | WS_CLIPCHILDREN /*| WS_THICKFRAME*/;
+	pcs->style = DS_SETFONT | WS_POPUP | WS_SYSMENU | WS_CLIPCHILDREN;
 	return TRUE;
 }
 
@@ -36,7 +37,8 @@ void CustomWindow::OnInnerInitWindow( )
 
 	LONG dwStyleEx = GetWindowLong(m_hWnd, GWL_EXSTYLE );
 	dwStyleEx &= ~ WS_EX_WINDOWEDGE;
-	LONG n = SetWindowLong( m_hWnd, GWL_EXSTYLE, dwStyleEx );
+	SetWindowLong( m_hWnd, GWL_EXSTYLE, dwStyleEx );
+
 }
 
 GRAPHICS_RENDER_LIBRARY_TYPE  CustomWindow::GetGraphicsRenderType()
@@ -47,7 +49,7 @@ GRAPHICS_RENDER_LIBRARY_TYPE  CustomWindow::GetGraphicsRenderType()
     if (m_pTransparentMode)
     {
         WINDOW_TRANSPARENT_MODE eMode = m_pTransparentMode->GetModeValue();
-        if (eMode== WINDOW_TRANSPARENT_MODE_AREO || eMode == WINDOW_TRANSPARENT_MODE_LAYERED)
+        if (eMode== WINDOW_TRANSPARENT_MODE_AERO || eMode == WINDOW_TRANSPARENT_MODE_LAYERED)
              return GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS;;
     }
 
@@ -79,14 +81,12 @@ LRESULT CustomWindow::_OnNcDestroy( UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 // Remark
 //	Return Nonzero if Windows should proceed with default processing; 0 to prevent the caption bar or icon from being deactivated.
 //
-//	这里不能返回0，否则会导致其它窗口出现很多问题（--废弃）
-//	
 LRESULT CustomWindow::_OnNcActivate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
 	this->SetActive(wParam?true:false);
 
-	bHandled = FALSE;
-	return 0;
+	bHandled = TRUE;
+	return 1;
 
 // 	this->UpdateObject();
 // 	return 1;
@@ -103,6 +103,7 @@ void CustomWindow::ResetAttribute()
 		SAFE_RELEASE(m_pTransparentMode);
 	}
 	m_nResizeBorder = 6;
+    m_nMaximizeBorder = 3;
 }
 void CustomWindow::SetAttribute(IMapAttribute* pMapAttrib, bool bReload )
 {
@@ -122,6 +123,8 @@ void CustomWindow::SetAttribute(IMapAttribute* pMapAttrib, bool bReload )
 	Window::SetAttribute(pMapAttrib, bReload);
 
     pMapAttrib->GetAttr_int(XML_WINDOW_RESIZE_BORDER, true, &m_nResizeBorder);	
+    pMapAttrib->GetAttr_int(XML_WINDOW_MAXIMIZE_BORDER, true, &m_nMaximizeBorder);	
+    
     const TCHAR* szText = pMapAttrib->GetAttr(XML_WINDOW_RESIZE_CAPABILITY, true);
     if (szText)
     {
@@ -152,7 +155,7 @@ void  CustomWindow::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
     pEditor->CreateComboBoxAttribute(pWindowGroup, XML_WINDOW_TRANSPARENT_TYPE, szPrefix)
         ->AddOption(L"", L"")
         ->AddOption(XML_WINDOW_TRANSPARENT_TYPE_LAYERED)
-        ->AddOption(XML_WINDOW_TRANSPARENT_TYPE_AREO)
+        ->AddOption(XML_WINDOW_TRANSPARENT_TYPE_AERO)
         ->AddOption(XML_WINDOW_TRANSPARENT_TYPE_MASKALPHA)
         ->AddOption(XML_WINDOW_TRANSPARENT_TYPE_MASKCOLOR);
 
@@ -199,7 +202,7 @@ void  CustomWindow::SetWndTransMode(IWndTransMode* pMode)
     // 每次是否需要清空缓存，避免alpha叠加
     WINDOW_TRANSPARENT_MODE eMode = GetWndTransMode();
     if (eMode == WINDOW_TRANSPARENT_MODE_LAYERED || 
-        eMode == WINDOW_TRANSPARENT_MODE_AREO)
+        eMode == WINDOW_TRANSPARENT_MODE_AERO)
         this->SetTransparent(true); 
     else
         this->SetTransparent(false);
@@ -479,6 +482,37 @@ LRESULT  CustomWindow::_OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
     return 0;
 }
 
+LRESULT CustomWindow::_OnWindowPosChanging( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
+{
+    bHandled = FALSE;
+    if (IsZoomed(m_hWnd))
+    {
+        LPWINDOWPOS lpPos = (LPWINDOWPOS)lParam;
+		if (lpPos->flags & SWP_FRAMECHANGED) // 第一次最大化，而不是最大化之后所触发的WINDOWPOSCHANGE
+		{
+			HMONITOR hMonitorTo = MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTOPRIMARY);
+			if (hMonitorTo != GetPrimaryMonitor())
+			{
+				// 解决无边框窗口在双屏下面（副屏分辨率大于主屏）时，最大化不正确的问题
+				MONITORINFO  miTo = {sizeof(miTo), 0};
+				GetMonitorInfo(hMonitorTo, &miTo);
+
+				lpPos->x = miTo.rcWork.left;
+				lpPos->y = miTo.rcWork.top;
+				lpPos->cx = RECTW(miTo.rcWork);
+				lpPos->cy = RECTH(miTo.rcWork);
+			}
+
+
+			lpPos->x -= m_nMaximizeBorder;
+			lpPos->y -= m_nMaximizeBorder;
+			lpPos->cx += m_nMaximizeBorder*2;
+			lpPos->cy += m_nMaximizeBorder*2;
+		}
+    }
+    return 0;
+}
+
 //
 //	设置窗口是否可以拖拽
 //
@@ -534,15 +568,15 @@ void  CustomWindow::EnableWindowLayered(bool b)
 }
 
 
-void  CustomWindow::EnableWindowAreo(bool b)
+void  CustomWindow::EnableWindowAero(bool b)
 {
-    bool bAreo = (m_pTransparentMode && WINDOW_TRANSPARENT_MODE_AREO == m_pTransparentMode->GetModeValue());
-    if (b == bAreo)
+    bool bAero = (m_pTransparentMode && WINDOW_TRANSPARENT_MODE_AERO == m_pTransparentMode->GetModeValue());
+    if (b == bAero)
         return;
 
     if (b)
     {
-        IWndTransMode* pMode = static_cast<IWndTransMode*>(new AreoWindowWrap());
+        IWndTransMode* pMode = static_cast<IWndTransMode*>(new AeroWindowWrap());
         SetWndTransMode(pMode);
     }
     else

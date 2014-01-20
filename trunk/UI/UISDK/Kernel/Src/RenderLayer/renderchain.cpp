@@ -664,7 +664,7 @@ void  RenderChain::On3dObjectEnd()
     }
 }
 
-// 是否需要alpha通道。如普通窗口就不需要，分层窗口和areo窗口需要
+// 是否需要alpha通道。如普通窗口就不需要，分层窗口和aero窗口需要
 bool RenderChain::GetRequireAlphaChannel()
 {
     return m_bRequireAlphaChannel;
@@ -672,7 +672,7 @@ bool RenderChain::GetRequireAlphaChannel()
 //     UIASSERT(m_pWindow);
 // 
 //     long lRet = UISendMessage(m_pWindow, UI_WM_GET_WINDOW_TRANSPARENT_MODE, 1);
-//     if (lRet == WINDOW_TRANSPARENT_MODE_AREO ||
+//     if (lRet == WINDOW_TRANSPARENT_MODE_AERO ||
 //         lRet == WINDOW_TRANSPARENT_MODE_LAYERED)
 //         return true;
 // 

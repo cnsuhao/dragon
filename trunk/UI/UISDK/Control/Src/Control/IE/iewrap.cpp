@@ -19,6 +19,7 @@ IEWrap::IEWrap()
     m_dwEventCookie = 0;
     m_bNeedFixAlpha = false;
     m_bPrintingWindow = false;
+    m_oldWndProc = NULL;
 }
 
 IEWrap::~IEWrap()
@@ -320,7 +321,7 @@ void  IEWrap::OnPaint(IRenderTarget* pRenderTarget, RenderContext* pContext)
     m_bNeedFixAlpha = false;
     if (pContext->m_bRequireAlphaChannel && m_hWndIE)   // 在分层拖拽窗口过程中由于忽略了WS_CLIPCHILDREN样式，导致IE在拖拽中不能显示，造成闪烁，在这里画上去
     {
-        if (WINDOW_TRANSPARENT_MODE_LAYERED == UISendMessage(m_pIIEWrap->GetWindowObject(), UI_WM_GET_WINDOW_TRANSPARENT_MODE, 1))
+        if (WINDOW_TRANSPARENT_MODE_LAYERED == UISendMessage(m_pIIEWrap->GetWindowObject(), UI_WM_GET_WINDOW_TRANSPARENT_MODE, 0))
         {
             m_bNeedFixAlpha = true;
             CRect rc;

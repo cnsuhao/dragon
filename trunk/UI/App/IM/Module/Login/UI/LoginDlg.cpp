@@ -278,6 +278,8 @@ void CLoginDlg::OnBtnNetSetCancel()
 	pTimelineZ->SetOutRef(p->GetOffsetZPtr());
     p->Begin();
 
+    m_pBtnSet->SetEnable(true, false);
+    m_pBtnNetSetCancel->SetEnable(false, false);
 	return;
 }
 
@@ -304,6 +306,9 @@ void CLoginDlg::OnBtnSet()
     pMoveAlgo2->SetParam1(0, WINDOW_3D_ROTATE_Z_DEEP, WINDOW_3D_ROTATE_DURATION);
 	pTimelineZ->SetOutRef(p->GetOffsetZPtr());
     p->Begin();
+
+    m_pBtnSet->SetEnable(false, false);
+    m_pBtnNetSetCancel->SetEnable(true, false);
 }
 void CLoginDlg::OnBtnLogin()
 {

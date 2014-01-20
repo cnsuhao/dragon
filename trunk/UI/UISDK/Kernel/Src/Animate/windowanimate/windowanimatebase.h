@@ -45,7 +45,7 @@ protected:
     int     m_nSrcWndWidth;
     int     m_nSrcWndHeight;
 
-    int     m_nWndTranslateType; // 窗口透明类型（正常，layered，areo）
+    int     m_nWndTranslateType; // 窗口透明类型（正常，layered，aero）
 
     Storyboard*  m_pStroyboard;
 };

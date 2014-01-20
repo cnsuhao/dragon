@@ -118,7 +118,7 @@ void  CSkinDlg::OnInitialize()
 
     if (m_pTransparentSlider)
     {
-        if (GetWndTransMode() != UI::WINDOW_TRANSPARENT_MODE_AREO)
+        if (GetWndTransMode() != UI::WINDOW_TRANSPARENT_MODE_AERO)
         {
             m_pTransparentSlider->SetEnable(false);
         }
@@ -267,7 +267,7 @@ void  CSkinDlg::OnChangeTextureAlpha(int nPos, int nScrollType)
 }
 LRESULT  CSkinDlg::_OnDwmCompositionChanged(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    if (GetWndTransMode() != UI::WINDOW_TRANSPARENT_MODE_AREO)
+    if (GetWndTransMode() != UI::WINDOW_TRANSPARENT_MODE_AERO)
     {
         if (m_pSkinUI)
         {

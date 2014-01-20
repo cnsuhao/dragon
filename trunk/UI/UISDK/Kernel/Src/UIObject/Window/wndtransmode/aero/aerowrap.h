@@ -5,17 +5,18 @@
 namespace UI
 {
 
-class AreoWindowWrap: public WndTransModeBase
+class AeroWindowWrap: public WndTransModeBase
 {
 public:
-    AreoWindowWrap();
-    ~AreoWindowWrap();
+    AeroWindowWrap();
+    ~AeroWindowWrap();
 
     VIRTUAL_BEGIN_MSG_MAP(LayeredWindowWrap)
 #if(_WIN32_WINNT >= 0x0600)
         MESSAGE_HANDLER(WM_DWMCOMPOSITIONCHANGED, _OnDwmCompositionChanged)
 #endif
-        CHAIN_MSG_MAP_MEMBER_P(m_pAreoDisableMode);
+		MESSAGE_HANDLER(WM_NCCALCSIZE, _OnNcCalcSize)
+        CHAIN_MSG_MAP_MEMBER_P(m_pAeroDisableMode);
     END_MSG_MAP()
 
     virtual BOOL  ProcessMessage(UIMSG* pMsg, int nMsgMapID, bool bDoHook)
@@ -23,12 +24,13 @@ public:
         return innerVirtualProcessMessage(pMsg, nMsgMapID, bDoHook);
     }
     UI_BEGIN_MSG_MAP
-        UICHAIN_MSG_MAP_POINT_MEMBER(m_pAreoDisableMode)
+        UICHAIN_MSG_MAP_POINT_MEMBER(m_pAeroDisableMode)
         UIMSG_WM_QUERYINTERFACE(QueryInterface)
     UI_END_MSG_MAP
 
 
     LRESULT  _OnDwmCompositionChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT  _OnNcCalcSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
     void*  QueryInterface(const IID* pIID);
 
     virtual WINDOW_TRANSPARENT_MODE  GetModeValue();
@@ -38,13 +40,13 @@ public:
     virtual bool  Commit();
     virtual void  Init(ICustomWindow* pWnd);
 
-    IAreoWindowWrap*  GetIAreoWndTransMode();
-    AREO_MODE  GetAeroMode();
+    IAeroWindowWrap*  GetIAeroWndTransMode();
+    AERO_MODE  GetAeroMode();
     void  GetBlurRegion(CRegion4* pregion);
 
 public:
 
-    AREO_MODE  m_eMode;
+    AERO_MODE  m_eMode;
     union
     {
         struct TransparentMode
@@ -60,10 +62,10 @@ public:
     };    
 
     DwmHelper*  m_pDWM;
-    WINDOW_TRANSPARENT_MODE  m_eAreoDisableMode;
-    IWndTransMode*  m_pAreoDisableMode;
+    WINDOW_TRANSPARENT_MODE  m_eAeroDisableMode;
+    IWndTransMode*  m_pAeroDisableMode;
 
-    IAreoWindowWrap*  m_pIAreoWndTransMode;
+    IAeroWindowWrap*  m_pIAeroWndTransMode;
 };
 
 

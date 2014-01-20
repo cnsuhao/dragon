@@ -443,7 +443,7 @@ enum
 //
 #define  UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE  132831132
 
-//  获取窗口的透明类型，用于判断当前窗口是分层的，还是areo
+//  获取窗口的透明类型，用于判断当前窗口是分层的，还是aero
 //  wparam: 
 //  lparam:
 //  Return: 

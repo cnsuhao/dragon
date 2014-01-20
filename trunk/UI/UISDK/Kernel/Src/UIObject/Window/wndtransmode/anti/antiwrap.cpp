@@ -227,6 +227,12 @@ void  AntiWindowWrap::UpdateRgn()
     DeleteObject(hRgn);
     DeleteObject(hRgn2Delete);
 }
-
+void  AntiWindowWrap::Enable(bool b)
+{
+	if (false == b)  // 取消当前异形
+	{
+		SetWindowRgn(m_hWnd, NULL, FALSE);
+	}
+}
 
 }

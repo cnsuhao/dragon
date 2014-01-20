@@ -82,7 +82,7 @@ long  CLoginBiz::OnLogin(LoginReqParam* pParam)
 
     // 服务器校验
     // ...
-    m_nTimerTest = SetTimer(NULL, 0, 3000, LoginServerTimerProc);
+    m_nTimerTest = SetTimer(NULL, 0, 1500, LoginServerTimerProc);
    // ::Sleep(3000);   // -- 模拟
     
     SAFE_DELETE(pParam);

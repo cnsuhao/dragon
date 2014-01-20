@@ -5,6 +5,7 @@
 #include "ControlDemo.h"
 #include "ControlDemoWindow.h"
 #include "Clock/clockwindow.h"
+#include "REShadow/reshadow.h"
 
 #define MAX_LOADSTRING 100
 
@@ -69,7 +70,15 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
         pWnd->Attach(g_pUIApp, g_hWnd, _T("clockwin"));
         SetWindowPos(g_hWnd, 0, 50, 50, 630, 660, SWP_NOZORDER);
+
+#elif defined _RESHADOW
+        REShadowWindow* pWnd = NULL;
+        REShadowWindow::CreateInstance(g_pUIApp, &pWnd);
+
+        pWnd->Attach(g_pUIApp, g_hWnd, _T("reshadow"));
+        SetWindowPos(g_hWnd, 0, 50, 50, 300, 300, SWP_NOZORDER);
 #else
+
         CControlDemoWindow* pWnd = NULL;
         CControlDemoWindow::CreateInstance(g_pUIApp, &pWnd);
         

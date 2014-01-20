@@ -141,6 +141,7 @@ void Window::OnSysRestore()
 	::PostMessage(m_hWnd, WM_SYSCOMMAND,SC_RESTORE, 0 );
 }
 
+// TODO: win7下面带WS_THICKFRAME样式窗口贴边最大化/还原的消息是什么？目前会导致按钮不更新
 void Window::OnSysCommand(UINT nID, CPoint point)
 {
 	SetMsgHandled(FALSE);

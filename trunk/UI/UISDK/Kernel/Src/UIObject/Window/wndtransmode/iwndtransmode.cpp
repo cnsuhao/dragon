@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "UISDK\Kernel\Inc\Interface\iwndtransmode.h"
 #include "UISDK\Kernel\Src\UIObject\Window\wndtransmode\layered\layeredwrap.h"
-#include "UISDK\Kernel\Src\UIObject\Window\wndtransmode\areo\areowrap.h"
+#include "UISDK\Kernel\Src\UIObject\Window\wndtransmode\aero\aerowrap.h"
 #include "UISDK\Kernel\Src\UIObject\Window\wndtransmode\alpha\alphawrap.h"
 #include "UISDK\Kernel\Src\UIObject\Window\wndtransmode\color\colorwrap.h"
 #include "UISDK\Kernel\Src\UIObject\Window\wndtransmode\anti\antiwrap.h"
@@ -26,9 +26,9 @@ WINDOW_TRANSPARENT_MODE  GetTransparentModeTypeFromAttr(const TCHAR* szText)
     if (_T('\0') == szText[0])
         return WINDOW_TRANSPARENT_MODE_NORMAL;
 
-    if (0 == _tcscmp(XML_WINDOW_TRANSPARENT_TYPE_AREO, szText))
+    if (0 == _tcscmp(XML_WINDOW_TRANSPARENT_TYPE_AERO, szText))
     {
-        return WINDOW_TRANSPARENT_MODE_AREO;
+        return WINDOW_TRANSPARENT_MODE_AERO;
     }
     else if (0 == _tcscmp(XML_WINDOW_TRANSPARENT_TYPE_LAYERED, szText))
     {
@@ -54,9 +54,9 @@ IWndTransMode*  CreateTransparentModeByType(WINDOW_TRANSPARENT_MODE eType)
 {
     switch (eType)
     {
-    case WINDOW_TRANSPARENT_MODE_AREO:
+    case WINDOW_TRANSPARENT_MODE_AERO:
         {
-            return static_cast<IWndTransMode*>(new AreoWindowWrap());
+            return static_cast<IWndTransMode*>(new AeroWindowWrap());
         }
         break;
 
@@ -92,20 +92,20 @@ IWndTransMode*  CreateTransparentModeByType(WINDOW_TRANSPARENT_MODE eType)
 }
 
 
-IAreoWindowWrap::IAreoWindowWrap(AreoWindowWrap*  p)
+IAeroWindowWrap::IAeroWindowWrap(AeroWindowWrap*  p)
 {
     m_pImpl = p;
 }
 
-AREO_MODE  IAreoWindowWrap::GetAeroMode()
+AERO_MODE  IAeroWindowWrap::GetAeroMode()
 {
     return m_pImpl->GetAeroMode();
 }
-void  IAreoWindowWrap::GetBlurRegion(CRegion4* pregion)
+void  IAeroWindowWrap::GetBlurRegion(CRegion4* pregion)
 {
     m_pImpl->GetBlurRegion(pregion);
 }
-void  IAreoWindowWrap::UpdateRgn()
+void  IAeroWindowWrap::UpdateRgn()
 {
     m_pImpl->UpdateRgn();
 }

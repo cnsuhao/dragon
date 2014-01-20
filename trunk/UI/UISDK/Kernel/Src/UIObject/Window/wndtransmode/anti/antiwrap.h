@@ -16,6 +16,7 @@ public:
     }
     virtual void  UpdateRgn();
     virtual void  Init(ICustomWindow* pWnd);
+	virtual void  Enable(bool b);
 
 private:
     C9Region  m_9region;

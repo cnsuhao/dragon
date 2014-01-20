@@ -1,55 +1,55 @@
 #include "stdafx.h"
-#include "areowrap.h"
+#include "aerowrap.h"
 #include "UISDK\Kernel\Src\UIObject\Window\customwindow.h"
 #include "UISDK/Kernel/Inc/Base/inc.h"
 
 namespace UI
 {
-AreoWindowWrap::AreoWindowWrap()
+AeroWindowWrap::AeroWindowWrap()
 {
     m_pDWM = DwmHelper::GetInstance();
-    m_pAreoDisableMode = NULL;
-    m_pIAreoWndTransMode = NULL;
-    m_eAreoDisableMode = WINDOW_TRANSPARENT_MODE_LAYERED;
-    m_eMode = AREO_MODE_TRANSPARENT;
+    m_pAeroDisableMode = NULL;
+    m_pIAeroWndTransMode = NULL;
+    m_eAeroDisableMode = WINDOW_TRANSPARENT_MODE_LAYERED;
+    m_eMode = AERO_MODE_TRANSPARENT;
     ::SetRect(&blur.m_regionBlur, -1, -1, -1, -1);
     blur.m_hrgnBlurRgn = NULL;
 }
-AreoWindowWrap::~AreoWindowWrap()
+AeroWindowWrap::~AeroWindowWrap()
 {
     m_pDWM = NULL;
-    SAFE_DELETE(m_pIAreoWndTransMode);
-    SAFE_RELEASE(m_pAreoDisableMode);
+    SAFE_DELETE(m_pIAeroWndTransMode);
+    SAFE_RELEASE(m_pAeroDisableMode);
     SAFE_DELETE_GDIOBJECT(blur.m_hrgnBlurRgn);
 }
 
-void  AreoWindowWrap::Init(ICustomWindow* pWnd)
+void  AeroWindowWrap::Init(ICustomWindow* pWnd)
 {
     __super::Init(pWnd);
 
     IMapAttribute* pMapAttrib = m_pWindow->m_pIMapAttributeRemain;
     if (pMapAttrib)
     {
-        const TCHAR* szText = m_pWindow->m_pIMapAttributeRemain->GetAttr(XML_WINDOW_TRANSPARENT_TYPE_AREO_DISABLE, true);
+        const TCHAR* szText = m_pWindow->m_pIMapAttributeRemain->GetAttr(XML_WINDOW_TRANSPARENT_TYPE_AERO_DISABLE, true);
         if (szText)
-            m_eAreoDisableMode = GetTransparentModeTypeFromAttr(szText);
+            m_eAeroDisableMode = GetTransparentModeTypeFromAttr(szText);
 
-        szText = pMapAttrib->GetAttr(XML_WINDOW_TRANSPARENT_AREO_MODE, false);
+        szText = pMapAttrib->GetAttr(XML_WINDOW_TRANSPARENT_AERO_MODE, false);
         if (szText)
         {
-            if (0 == _tcscmp(szText, XML_WINDOW_TRANSPARENT_AREO_MODE_BLUR))
+            if (0 == _tcscmp(szText, XML_WINDOW_TRANSPARENT_AERO_MODE_BLUR))
             {
-                m_eMode = AREO_MODE_BLUR;
+                m_eMode = AERO_MODE_BLUR;
             }
             else
             {
-                m_eMode = AREO_MODE_TRANSPARENT;
+                m_eMode = AERO_MODE_TRANSPARENT;
             }
         }
 
-        if (AREO_MODE_TRANSPARENT == m_eMode)
+        if (AERO_MODE_TRANSPARENT == m_eMode)
         {
-            szText = pMapAttrib->GetAttr(XML_WINDOW_TRANSPARENT_AREO_TRANS_MARGINS, false);
+            szText = pMapAttrib->GetAttr(XML_WINDOW_TRANSPARENT_AERO_TRANS_MARGINS, false);
             if (szText)
             {
                 RECT rc;
@@ -64,7 +64,7 @@ void  AreoWindowWrap::Init(ICustomWindow* pWnd)
         }
         else
         {
-            szText = pMapAttrib->GetAttr(XML_WINDOW_TRANSPARENT_AREO_BLUR_REGION, false);
+            szText = pMapAttrib->GetAttr(XML_WINDOW_TRANSPARENT_AERO_BLUR_REGION, false);
             if (szText)
             {
                 Util::TranslateRECT(szText, &blur.m_regionBlur, XML_SEPARATOR);
@@ -73,7 +73,7 @@ void  AreoWindowWrap::Init(ICustomWindow* pWnd)
     }
 }
 
-LRESULT  AreoWindowWrap::_OnDwmCompositionChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+LRESULT  AeroWindowWrap::_OnDwmCompositionChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
     Enable(true);
     m_pWindow->m_bNeedToSetWindowRgn = true;
@@ -83,54 +83,77 @@ LRESULT  AreoWindowWrap::_OnDwmCompositionChanged(UINT uMsg, WPARAM wParam, LPAR
     return 0;
 }
 
-IAreoWindowWrap*  AreoWindowWrap::GetIAreoWndTransMode()
+LRESULT  AeroWindowWrap::_OnNcCalcSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-    if (!m_pIAreoWndTransMode)
-        m_pIAreoWndTransMode = new IAreoWindowWrap(this);
-
-    return m_pIAreoWndTransMode;
+	if (m_eMode == AERO_MODE_TRANSPARENT)
+	{
+		if (wParam)
+		{
+			bHandled = TRUE;
+			return 0;
+		}
+	}
+	bHandled = FALSE;
+	return 0;
 }
-void*  AreoWindowWrap::QueryInterface(const IID* pIID)
+
+IAeroWindowWrap*  AeroWindowWrap::GetIAeroWndTransMode()
 {
-    if (IsEqualIID(*pIID, uiiidof(IAreoWindowWrap)))  
+    if (!m_pIAeroWndTransMode)
+        m_pIAeroWndTransMode = new IAeroWindowWrap(this);
+
+    return m_pIAeroWndTransMode;
+}
+void*  AeroWindowWrap::QueryInterface(const IID* pIID)
+{
+    if (IsEqualIID(*pIID, uiiidof(IAeroWindowWrap)))  
     {   
         SetMsgHandled(TRUE);
-        return (void*)GetIAreoWndTransMode();                 
+        return (void*)GetIAeroWndTransMode();                 
     }                                              
     SetMsgHandled(FALSE);         
     return 0;
 }
 
-AREO_MODE  AreoWindowWrap::GetAeroMode()
+AERO_MODE  AeroWindowWrap::GetAeroMode()
 {
     return m_eMode;
 }   
-void  AreoWindowWrap::GetBlurRegion(CRegion4* pregion)
+void  AeroWindowWrap::GetBlurRegion(CRegion4* pregion)
 {
-    if (pregion && m_eMode == AREO_MODE_BLUR)
+    if (pregion && m_eMode == AERO_MODE_BLUR)
     {
         pregion->CopyRect(&blur.m_regionBlur);
     }
 }
 
-void  AreoWindowWrap::Enable(bool b)
+void  AeroWindowWrap::Enable(bool b)
 {
     if (m_pDWM->IsEnable())
     {
         if (b)
         {
-            if (m_pAreoDisableMode)
+            if (m_pAeroDisableMode)
             {
-                m_pAreoDisableMode->Enable(false);
-                SAFE_RELEASE(m_pAreoDisableMode);
+                m_pAeroDisableMode->Enable(false);
+                SAFE_RELEASE(m_pAeroDisableMode);
             }
+
+			if (m_eMode == AERO_MODE_TRANSPARENT)
+			{
+				// 注：使用自已的图片阴影+aero透明会导致一个解决不了的问题：窗口改变大小时出现黑边问题，如拖拽和最大化时
+				//     为了规避这个问题，只能采用aero自带的阴影，因此得添加一个WS_THICKFRAME属性以开启阴影，再加上WS_NCCALCSIZE/WS_NCACTIVATE消息
+				//     屏蔽边框的显示
+				long lStyle = GetWindowLong(m_hWnd, GWL_STYLE);
+				SetWindowLong(m_hWnd, GWL_STYLE, lStyle|WS_THICKFRAME);
+				SetWindowPos(m_hWnd, 0,0,0,0,0, SWP_NOZORDER|SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE|SWP_FRAMECHANGED);
+			}
             return;
             // 由外部调用UpdateRgn即可
-            
         }
         else
         {
-            if (m_eMode == AREO_MODE_BLUR)
+            if (m_eMode == AERO_MODE_BLUR)
             {
                 DwmHelper* pDwm = DwmHelper::GetInstance();
                 if (pDwm->pDwmEnableBlurBehindWindow)
@@ -148,35 +171,45 @@ void  AreoWindowWrap::Enable(bool b)
                     MARGINS m = {0};
                     m_pDWM->pDwmExtendFrameIntoClientArea(m_hWnd, &m);
                 }
+
+				if (m_eMode == AERO_MODE_TRANSPARENT)
+				{
+					long lStyle = GetWindowLong(m_hWnd, GWL_STYLE);
+					if (lStyle & WS_THICKFRAME)
+					{
+						SetWindowLong(m_hWnd, GWL_STYLE, lStyle & ~WS_THICKFRAME);
+						SetWindowPos(m_hWnd, 0,0,0,0,0, SWP_NOZORDER|SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE|SWP_FRAMECHANGED);
+					}
+				}
             }
         }
     }
     
     do 
     {
-        if (m_pAreoDisableMode)
+        if (m_pAeroDisableMode)
         {
-            m_pAreoDisableMode->Enable(true);
+            m_pAeroDisableMode->Enable(true);
             break;
         }
 
-        m_pAreoDisableMode = CreateTransparentModeByType(m_eAreoDisableMode);
-        if (!m_pAreoDisableMode)
+        m_pAeroDisableMode = CreateTransparentModeByType(m_eAeroDisableMode);
+        if (!m_pAeroDisableMode)
             break;
 
-        m_pAreoDisableMode->Init(m_pWindow->m_pICustomWindow);
-        m_pAreoDisableMode->Enable(true);
+        m_pAeroDisableMode->Init(m_pWindow->m_pICustomWindow);
+        m_pAeroDisableMode->Enable(true);
 
     } while (0);
 
 
 }
 
-void  AreoWindowWrap::UpdateRgn()
+void  AeroWindowWrap::UpdateRgn()
 {
-    if (m_pAreoDisableMode)
+    if (m_pAeroDisableMode)
     {
-        m_pAreoDisableMode->UpdateRgn();
+        m_pAeroDisableMode->UpdateRgn();
         return;
     }
 
@@ -184,7 +217,7 @@ void  AreoWindowWrap::UpdateRgn()
     DwmHelper*  pDwm = DwmHelper::GetInstance();
     if (pDwm->IsEnable())
     {
-        if (m_eMode == AREO_MODE_BLUR)
+        if (m_eMode == AERO_MODE_BLUR)
         {
             if (pDwm->pDwmEnableBlurBehindWindow)
             {
@@ -215,36 +248,36 @@ void  AreoWindowWrap::UpdateRgn()
                 }
             }
         }
-        else if (AREO_MODE_TRANSPARENT == m_eMode)
+        else if (AERO_MODE_TRANSPARENT == m_eMode)
         {
-            if (m_pDWM->pDwmExtendFrameIntoClientArea)
-            {
-                m_pDWM->pDwmExtendFrameIntoClientArea(m_hWnd, &trans.m_margins);
-            }
+             if (m_pDWM->pDwmExtendFrameIntoClientArea)
+             {
+				 m_pDWM->pDwmExtendFrameIntoClientArea(m_hWnd, &trans.m_margins);
+             }
         }
     }
 }
 
-WINDOW_TRANSPARENT_MODE  AreoWindowWrap::GetModeValue()
+WINDOW_TRANSPARENT_MODE  AeroWindowWrap::GetModeValue()
 {
-    if (m_pAreoDisableMode)
-        return m_pAreoDisableMode->GetModeValue();
+    if (m_pAeroDisableMode)
+        return m_pAeroDisableMode->GetModeValue();
 
-    return WINDOW_TRANSPARENT_MODE_AREO;
+    return WINDOW_TRANSPARENT_MODE_AERO;
 }
 
-bool  AreoWindowWrap::RequireAlphaChannel()
+bool  AeroWindowWrap::RequireAlphaChannel()
 {
-    if (m_pAreoDisableMode)
-        return m_pAreoDisableMode->RequireAlphaChannel();
+    if (m_pAeroDisableMode)
+        return m_pAeroDisableMode->RequireAlphaChannel();
 
     return true;
 }
-bool  AreoWindowWrap::Commit()
+bool  AeroWindowWrap::Commit()
 {
-    if (m_pAreoDisableMode)
+    if (m_pAeroDisableMode)
     {
-        return m_pAreoDisableMode->Commit();
+        return m_pAeroDisableMode->Commit();
     }
 
     return false;

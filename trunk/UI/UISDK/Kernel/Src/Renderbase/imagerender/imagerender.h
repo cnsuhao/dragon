@@ -49,7 +49,7 @@ protected:
 
 	IRenderBitmap*    m_pBitmap;
 	Color*            m_pColorBk;
-	C9Region*     m_pRegion;   // 拉伸绘制时才用
+	C9Region*         m_pRegion;   // 拉伸绘制时才用
     CRect*            m_prcSrc;     // 绘制区域(为NULL表示未设置)，有可能只是绘制图片的一部分.子类可以通过修改该值实现某些需求
 	int               m_nImageDrawType;
     BKCOLOR_FILL_TYPE  m_eBkColorFillType;

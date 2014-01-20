@@ -8,7 +8,7 @@
 namespace UI
 {
 
-interface IAreoWindowWrap;
+interface IAeroWindowWrap;
 
 class WindowUpDownAlphaShowAnimate : public WindowAnimateBase
 {
@@ -38,9 +38,9 @@ protected:
 
     bool  m_bShow;
 
-    // 是否需要处理areo窗口
+    // 是否需要处理aero窗口
     CRegion4  m_rcBlurRegion;
-    IAreoWindowWrap* m_pAeroWindow;
+    IAeroWindowWrap* m_pAeroWindow;
 };
 
 }

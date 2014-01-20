@@ -6,7 +6,7 @@
                   bkgnd.render.type="image" bkgnd.render.image.drawtype="stretch"
                   bkgnd.render.image="shadow_bkg.png" bkgnd.render.image.9region="10" 
                   material.render.region="6" istransparent="1" font="normal" 
-                  transparent.type="areo" transparent.areo.mode="blur" transparent.areo.blur.region="5">
+                  transparent.type="aero" transparent.aero.mode="blur" transparent.aero.blur.region="5">
 			<RenderChain>
 				<!-- 最外层边框 -->
 				<DirectRenderLayer zorder="1" layout.left="0" layout.top="0" layout.right="0" layout.bottom="0" bkgnd.render.type="image" bkgnd.render.image="fringe_bkg.png" bkgnd.render.image.9region="10" bkgnd.render.image.drawtype="stretchborder"/>

@@ -168,9 +168,11 @@ void RichEdit::OnEraseBkgnd(IRenderTarget*  pRendrTarget)
 
 void RichEdit::OnPaint(IRenderTarget*  pRendrTarget, RenderContext* pContext)
 {
-#if 1
 	HDC hDC = pRendrTarget->GetBindHDC();
 	m_wrapRichEidt.Draw(hDC);
+    
+  //  recursive_blur blur;
+  //  blur.blur(hMemBmp, (double)pParam->wParam, (LPRECT)&rcRealInMemBmp);
 
     CRect  rcWnd;
     m_pIRichEdit->GetObjectVisibleRect(&rcWnd, false);
@@ -204,11 +206,6 @@ void RichEdit::OnPaint(IRenderTarget*  pRendrTarget, RenderContext* pContext)
 
 		m_rcInvalidate.SetRectEmpty();
 	}
-#else
-	HDC hDC = pRendrTarget->GetHDC();
-	m_wrapRichEidt.Draw(hDC);
-	pRendrTarget->ReleaseHDC(hDC);
-#endif
 }
 
 // 由WindowlessRichEdit::TxInvalidateRect post过来的消息，延迟刷新

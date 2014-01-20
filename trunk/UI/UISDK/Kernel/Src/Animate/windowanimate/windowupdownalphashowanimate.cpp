@@ -48,16 +48,16 @@ void  WindowUpDownAlphaShowAnimate::Initialize()
     m_pWindow->PaintWindow(NULL);
     m_pWindow->GetRenderChain()->SetCanCommit(true);
 
-    if (m_nWndTranslateType & WINDOW_TRANSPARENT_MODE_AREO)
+    if (m_nWndTranslateType & WINDOW_TRANSPARENT_MODE_AERO)
     {
         DwmHelper*  pDwm = DwmHelper::GetInstance();
         if (pDwm->IsEnable())
         {
-            IID iid = uiiidof(IAreoWindowWrap);
-            m_pAeroWindow = (IAreoWindowWrap*)UISendMessage(m_pWindow, UI_WM_QUERYINTERFACE, (WPARAM)&iid);
+            IID iid = uiiidof(IAeroWindowWrap);
+            m_pAeroWindow = (IAeroWindowWrap*)UISendMessage(m_pWindow, UI_WM_QUERYINTERFACE, (WPARAM)&iid);
             if (m_pAeroWindow)
             {
-                if (AREO_MODE_TRANSPARENT == m_pAeroWindow->GetAeroMode())
+                if (AERO_MODE_TRANSPARENT == m_pAeroWindow->GetAeroMode())
                 {
                     m_pAeroWindow = NULL;
                 }
@@ -131,7 +131,7 @@ void  WindowUpDownAlphaShowAnimate::OnTick(int nCount, IStoryboard** ppTimerArra
         p += m_pLayeredWindow->m_nPitch;
     }
     
-    if (m_pAeroWindow)  // 说明是areo透明窗口
+    if (m_pAeroWindow)  // 说明是aero透明窗口
     {
         CRect  rcClient;
         m_pWindow->GetClientRect(&rcClient);

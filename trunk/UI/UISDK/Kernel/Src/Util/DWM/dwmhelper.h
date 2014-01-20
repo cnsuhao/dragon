@@ -54,6 +54,7 @@ typedef HRESULT (__stdcall *funcDwmEnableBlurBehindWindow)(HWND hWnd, __in const
 typedef HRESULT (__stdcall *funcDwmIsCompositionEnabled)(BOOL *pfEnabled);
 typedef HRESULT (__stdcall *funcDwmGetWindowAttribute)(HWND hwnd, DWORD dwAttribute, PVOID pvAttribute, DWORD cbAttribute);
 typedef HRESULT (__stdcall *funcDwmSetWindowAttribute)(HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
+typedef HRESULT (__stdcall *funcDwmDefWindowProc)(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, LRESULT *plResult);
 
 class DwmHelper
 {
@@ -70,6 +71,7 @@ public:
     funcDwmIsCompositionEnabled       pDwmIsCompositionEnabled;
     funcDwmGetWindowAttribute         pDwmGetWindowAttribute;
     funcDwmSetWindowAttribute         pDwmSetWindowAttribute;
+	funcDwmDefWindowProc              pDwmDefWindowProc;
 
     HMODULE  m_hModule;
 };

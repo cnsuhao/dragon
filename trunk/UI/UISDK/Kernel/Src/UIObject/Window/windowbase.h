@@ -185,6 +185,7 @@ public:
 protected:
 	bool  CreateUI(const TCHAR* szID, HWND hWnd);
 	long  ModalLoop(HWND hWndParent);
+    HMONITOR  GetPrimaryMonitor();
 
 #pragma region // virtual function
 public:

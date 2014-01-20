@@ -5,7 +5,7 @@
                   bkgnd.render.type="image" bkgnd.render.image.drawtype="stretch" bkgnd.render.image="shadow_bkg.png" bkgnd.render.image.9region="10"
                   material.render.region="6" 
                   foregnd.render.type="image" foregnd.render.image="contactmgr_texture" foregnd.render.image.drawtype="stretch" foregnd.render.image.9region="10,50,10,50"
-                  transparent.type="areo" transparent.part="" transparent.part.9region="5" istransparent="1" >
+                  transparent.type="aero" transparent.part="" transparent.part.9region="5" istransparent="1" >
       <RenderChain>
         
         <!-- 最外层边框 -->

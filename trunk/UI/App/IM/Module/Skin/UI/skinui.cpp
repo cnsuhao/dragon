@@ -157,7 +157,7 @@ long  SkinUI::InitSkinData(SkinData* pSkinData)
 {
     ChangeSkin(pSkinData->szPath, pSkinData->nDrawType, pSkinData->bkcol, pSkinData->avgcol);    
 
-    // 如果当前areo不可用，则禁用透明
+    // 如果当前aero不可用，则禁用透明
     m_byteAlpha = pSkinData->byteAlpha;
     m_byteTextureAlpha = pSkinData->byteTextureAlpha;
     if (!IM::GetUIApplication()->IsAeroEnable())
