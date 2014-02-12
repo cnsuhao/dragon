@@ -103,12 +103,6 @@ public:
 	int*     m_pPeaksValue;
 	int*     m_pPeaksDelay; 
 
-    HBITMAP*  m_pArrayWaveBlur;
-    int      m_nArrayWaveBlurSize;
-    int      m_nArrayWaveBlurIndex;
-
-    Gdiplus::Point*   m_pPrevWaveData;
-
 	HDC      m_hRenderWndDC;
 	HDC      m_hRenderWndMemDC;
 	HBITMAP  m_hMemBitmap;

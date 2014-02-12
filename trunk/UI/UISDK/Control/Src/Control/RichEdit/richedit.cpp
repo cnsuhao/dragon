@@ -166,14 +166,12 @@ void RichEdit::OnEraseBkgnd(IRenderTarget*  pRendrTarget)
 
 }
 
+
 void RichEdit::OnPaint(IRenderTarget*  pRendrTarget, RenderContext* pContext)
 {
 	HDC hDC = pRendrTarget->GetBindHDC();
-	m_wrapRichEidt.Draw(hDC);
-    
-  //  recursive_blur blur;
-  //  blur.blur(hMemBmp, (double)pParam->wParam, (LPRECT)&rcRealInMemBmp);
-
+	m_wrapRichEidt.Draw(hDC, m_pIRichEdit->TestStyleEx(RICHEDIT_STYLE_TEXTSHADOW));
+  
     CRect  rcWnd;
     m_pIRichEdit->GetObjectVisibleRect(&rcWnd, false);
 

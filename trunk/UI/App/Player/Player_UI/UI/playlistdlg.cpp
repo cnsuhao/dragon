@@ -79,7 +79,9 @@ void CPlayListDlg::OnBtnClickAdd(IObject* pBtnObj, POINT* pt)
 			CFolderDialog dlg;
 			if( IDCANCEL != dlg.DoModal() )
 			{
+                ::SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_WAIT)));
 				::GetPlayerListMgr()->AddDirectory(dlg.m_szFolderPath);
+                ::SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)));
 			}
 		}
 		break;
@@ -119,7 +121,7 @@ void CPlayListDlg::OnBtnClickDel(IObject* pBtnObj, POINT* pt)
         }
         break;
 
-	case 1204:
+	case 1204: // 全部删除
 		{
 			if (GetPlayerListMgr()->RemoveAllItem())
 			{
@@ -128,6 +130,42 @@ void CPlayListDlg::OnBtnClickDel(IObject* pBtnObj, POINT* pt)
 			}
 		}
 		break;
+
+    case 1205: // 物理删除
+        {
+            ITTPlayerPlaylistItem* pSelItem = m_plistctrl->GetCurSel();
+            if (pSelItem)
+            {
+                // SHFileOperation会提示，就不用再自己提示一次
+//                 String  strInfo;
+//                 strInfo.append(_T("确定删除？\n\n文件名："));
+//                 strInfo.append(pSelItem->GetPlayerListItemInfo()->GetFilePath());
+//                 strInfo.append(_T("\n歌曲名："));
+//                 strInfo.append(pSelItem->GetPlayerListItemInfo()->GetTitle());
+//                 strInfo.append(_T("\n演唱家："));
+//                 strInfo.append(pSelItem->GetPlayerListItemInfo()->GetArtist());
+//                 if (IDOK == ::MessageBox(GetHWND(), strInfo.c_str(), _T("提示"), MB_OKCANCEL|MB_ICONINFORMATION))
+                {
+                    TCHAR szSrcPath[MAX_PATH+1] = {0};
+                    _tcscpy(szSrcPath, pSelItem->GetPlayerListItemInfo()->GetFilePath());
+
+                    SHFILEOPSTRUCT s = {0};
+                    s.wFunc = FO_DELETE;
+                    s.fFlags = FOF_ALLOWUNDO;
+                    s.pFrom = szSrcPath;
+                    if (0 != SHFileOperation(&s))
+                    {       
+                        if (!s.fAnyOperationsAborted)
+                            MessageBox(GetHWND(), _T("删除文件失败"), _T("提示"), MB_OK|MB_ICONERROR);
+
+                        return;
+                    }
+
+                    GetPlayerListMgr()->RemovePlayListItem(pSelItem->GetPlayerListItemInfo());  // 通过 OnRemoveItem 回调
+                }
+            }
+        }
+        break;
 	}
 }
 

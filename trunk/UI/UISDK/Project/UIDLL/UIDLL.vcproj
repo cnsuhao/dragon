@@ -1686,12 +1686,32 @@
 					Name="11. uieffect"
 					>
 					<Filter
-						Name="02. 高斯模糊"
+						Name="02. blur"
 						>
-						<File
-							RelativePath="..\..\Kernel\Src\UIEffect\高斯模糊\gaussblur.h"
+						<Filter
+							Name="shadowblur"
 							>
-						</File>
+							<File
+								RelativePath="..\..\Kernel\Src\UIEffect\blur\webkit\shadowblur.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Kernel\Src\UIEffect\blur\webkit\shadowblur.h"
+								>
+							</File>
+						</Filter>
+						<Filter
+							Name="gaussblur"
+							>
+							<File
+								RelativePath="..\..\Kernel\Src\UIEffect\blur\agg\gaussblur.h"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Kernel\Src\UIEffect\blur\agg\gaussblur_float_2_int.h"
+								>
+							</File>
+						</Filter>
 					</Filter>
 					<Filter
 						Name="01. CacheBitmap"

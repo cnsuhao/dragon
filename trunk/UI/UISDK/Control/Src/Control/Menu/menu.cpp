@@ -1001,8 +1001,17 @@ int  Menu::PopupAsSubMenu(UINT nFlags, Menu* pParentMenu, IListItemBase* pItem)
     x = rcParent.right + m_nSubMenuGap;
     y = rcParent.top + rcItem.top;
 
-    CRect  rcWorkArea;
-    SystemParametersInfo(SPI_GETWORKAREA,0,&rcWorkArea,0);
+    CRect rcWorkArea;
+    MONITORINFO mi = {sizeof(MONITORINFO), 0};
+    if (GetMonitorInfo(MonitorFromWindow(hParentWnd, MONITOR_DEFAULTTONEAREST), &mi))
+    {
+        rcWorkArea = mi.rcWork;
+    }
+    else
+    {
+        ::SystemParametersInfo(SPI_GETWORKAREA, 0, &rcWorkArea, 0);
+    }
+
     m_bPopupAtParentRight = true;
 
     if (x + rcWindow.Width() > rcWorkArea.right)

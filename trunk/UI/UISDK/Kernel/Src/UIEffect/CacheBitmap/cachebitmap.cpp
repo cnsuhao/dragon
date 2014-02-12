@@ -48,7 +48,7 @@ Image*  CacheBitmap::CreateEx(int nWidthReq, int nHeightReq)
     else
     {
         HDC hDC = m_buffer.GetDC();
-        RECT rc = {0, 0, nWidth, nHeight};
+        RECT rc = {0, 0, nWidthReq, nHeightReq};
         ::FillRect(hDC, &rc, (HBRUSH)::GetStockObject(BLACK_BRUSH));
         m_buffer.ReleaseDC();
     }

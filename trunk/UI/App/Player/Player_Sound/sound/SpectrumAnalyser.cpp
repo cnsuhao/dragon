@@ -2,6 +2,7 @@
 #include "SpectrumAnalyser.h"
 #include "DirectSoundEngine.h"
 #include <math.h>
+#include "App\Player\Player_Sound/UIEffect/blur//blur.h"
 
 CSpectrumAnalyser::CSpectrumAnalyser()
 {
@@ -14,7 +15,6 @@ CSpectrumAnalyser::CSpectrumAnalyser()
 	m_nSampleBufferSize = 0;
 	m_nBandCount = 0;
 	m_nSamplesPerBand = 0;
-    m_pArrayWaveBlur = NULL;
 
 	m_pBandValue = NULL;
 	m_pOldBandValue = NULL;
@@ -34,8 +34,6 @@ CSpectrumAnalyser::CSpectrumAnalyser()
 	m_nFps = 1000/25;
 	m_nBandWidth = 7;
 	m_nBandGapWidth = 1;
-    m_nArrayWaveBlurSize = 3;
-    m_nArrayWaveBlurIndex = 0;
 
 	m_hRenderWndDC = NULL;
 	m_hRenderWndMemDC = NULL;
@@ -93,15 +91,6 @@ HRESULT CSpectrumAnalyser::Release()
 	SAFE_ARRAY_DELETE(m_pPeaksDelay);
 	SAFE_ARRAY_DELETE(m_pSampleBuffer);
 	SAFE_ARRAY_DELETE(m_pLeftRightSampleData);
-	if (m_pArrayWaveBlur)
-	{
-		for (int i = 0; i < m_nArrayWaveBlurSize; i++)
-		{
-			SAFE_DELETE_GDIOBJECT(m_pArrayWaveBlur[i]);
-		}
-		SAFE_ARRAY_DELETE(m_pArrayWaveBlur);
-	}
-    m_nArrayWaveBlurSize = 0;
 
 	m_nAnalyserSampleCount = 0;
 	m_nSampleBufferSize = 0;
@@ -308,7 +297,7 @@ bool CSpectrumAnalyser::OnSetVisualization(VisualizationInfo* pInfo)
 				memset( &bmi, 0, sizeof( BITMAPINFO ) );
 				bmi.bmiHeader.biSize = sizeof( BITMAPINFO );
 				bmi.bmiHeader.biWidth = nNewW;
-				bmi.bmiHeader.biHeight = -nNewH;
+				bmi.bmiHeader.biHeight = -nNewH;  // TopDown
 				bmi.bmiHeader.biPlanes = 1;
 				bmi.bmiHeader.biBitCount = USHORT( 32 );
 				bmi.bmiHeader.biCompression = BI_RGB;
@@ -316,16 +305,6 @@ bool CSpectrumAnalyser::OnSetVisualization(VisualizationInfo* pInfo)
 				void* pBits = NULL;
 				m_hMemBitmap = ::CreateDIBSection( NULL, &bmi, DIB_RGB_COLORS, &pBits, NULL, 0 );
 				m_hOldBitmap = (HBITMAP)::SelectObject(m_hRenderWndMemDC, m_hMemBitmap);
-
-				if (!m_pArrayWaveBlur)
-				{
-					m_pArrayWaveBlur = new HBITMAP[m_nArrayWaveBlurSize];
-					for (int i = 0; i < m_nArrayWaveBlurSize; i++)
-					{
-						SAFE_DELETE_GDIOBJECT(m_pArrayWaveBlur[i]);
-						m_pArrayWaveBlur[i] = ::CreateDIBSection( NULL, &bmi, DIB_RGB_COLORS, &pBits, NULL, 0);
-					}
-				}
 			}
 
             if (m_pPeaksValue)
@@ -800,138 +779,82 @@ void CSpectrumAnalyser::DrawBands()
 	::DeleteObject(hWhiteBrush4);
 }
 
-#include "..\UIEffect\高斯模糊\gaussblur.h"
-#include <atlimage.h>
+//#include <atlimage.h>
 void CSpectrumAnalyser::DrawWave()
 {
-	int   nWidth = m_rcRender.right - m_rcRender.left;
-	int   nHeight = m_rcRender.bottom - m_rcRender.top;
-	
-	RECT rc = {0,0, nWidth, nHeight};
-    HDC hDC = ::CreateCompatibleDC(m_hRenderWndMemDC);
-    HBITMAP hOldBmp = (HBITMAP)::SelectObject(hDC, m_hBkgndBmp);
-    ::BitBlt(m_hRenderWndMemDC, 0,0,nWidth, nHeight, hDC, 0,0, SRCCOPY);
-    
-    BLENDFUNCTION bf = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
-    for (int i = m_nArrayWaveBlurIndex+1; i < m_nArrayWaveBlurSize; i++)
-    {
-        UI::recursive_blur<UI::recursive_blur_calc_rgba<> > blur;
-        blur.blur(m_pArrayWaveBlur[i], 3, NULL, 0);    
+    Blur::Blur32(m_hMemBitmap, true);
 
-        SelectObject(hDC, m_pArrayWaveBlur[i]);
-        ::AlphaBlend(m_hRenderWndMemDC, 0, 0, nWidth, nHeight, hDC, 0, 0, nWidth, nHeight, bf);
-    }
-    for (int i = 0; i < m_nArrayWaveBlurIndex; i++)
-    {
-        UI::recursive_blur<UI::recursive_blur_calc_rgba<> > blur;
-        blur.blur(m_pArrayWaveBlur[i], 2, NULL, 0);    
-
-        SelectObject(hDC, m_pArrayWaveBlur[i]);
-        ::AlphaBlend(m_hRenderWndMemDC, 0, 0, nWidth, nHeight, hDC, 0, 0, nWidth, nHeight, bf);
-    }
-   
-    SelectObject(hDC, m_pArrayWaveBlur[m_nArrayWaveBlurIndex]);
-    ::FillRect(hDC, &rc, (HBRUSH)::GetStockObject(BLACK_BRUSH));
-
-	HPEN  hPen = ::CreatePen(PS_SOLID, 1, RGB(0,255,255));
-	HPEN  hOldPen = (HPEN)::SelectObject(hDC, hPen);
+    int   nWidth = m_rcRender.right - m_rcRender.left;
+    int   nHeight = m_rcRender.bottom - m_rcRender.top;
 
 #define XXX 0  // 定义一个值，相差多大时表示相差一级
 
     BITMAP bm = {0};
-    ::GetObject(m_pArrayWaveBlur[m_nArrayWaveBlurIndex], sizeof(bm), &bm);
+    ::GetObject(m_hMemBitmap, sizeof(bm), &bm);
     int*  pnBits = (int*)bm.bmBits;
 
-	int    nPrevY = (int)((nHeight - m_pLeftRightSampleData[0]* nHeight)/2);  // 计算第一个
-//	POINT* ppt = new POINT[2*nWidth];
+    int nPrevY = (int)((nHeight - m_pLeftRightSampleData[0]* nHeight)/2);  // 计算第一个
+    for (int i = 1; i < nWidth; i++)   // 从第二个开始循环
+    {
+        int nx = i;
+        int ny = (int)((nHeight - m_pLeftRightSampleData[i]* nHeight)/2);
 
-	for (int i = 1; i < nWidth; i++)   // 从第二个开始循环
-	{
-		int nx = i;
-		int ny = (int)((nHeight - m_pLeftRightSampleData[i]* nHeight)/2);
-
-//#define SETPIXEL(x,y) ::SetPixel(hDC,x,y,RGB(25,77,92));
+        //#define SETPIXEL(x,y) ::SetPixel(hDC,x,y,RGB(25,77,92));
 #define SETPIXEL(x,y)  \
-        *(pnBits + (y*bm.bmWidth) + x) = 0xFF00FFFF;
+    *(pnBits + (y*bm.bmWidth) + x) = 0xFF00FFFF;
 
         POINT pt1 = {0, 0};
         POINT pt2 = {0, 0};
-		if (ny > nPrevY + XXX)
-		{
-			// 往上爬一格
-// 			ppt[i*2].x = nx;
-// 			ppt[i*2].y = nPrevY;
-// 			ppt[i*2+1].x = nx;
-// 			ppt[i*2+1].y = ++nPrevY;
+        if (ny > nPrevY + XXX)
+        {
+            // 往上爬一格
+            // 			ppt[i*2].x = nx;
+            // 			ppt[i*2].y = nPrevY;
+            // 			ppt[i*2+1].x = nx;
+            // 			ppt[i*2+1].y = ++nPrevY;
             pt1.x = nx;
             pt1.y = nPrevY;
             pt2.x = nx;
             pt2.y = ++nPrevY;
 
-// 			SETPIXEL(nx,nPrevY);
-// 			SETPIXEL(nx,++nPrevY);
-		}
-		else if (ny < nPrevY-XXX)
-		{
-			// 下降一格
-// 			ppt[i*2].x = nx;
-// 			ppt[i*2].y = nPrevY;
-// 			ppt[i*2+1].x = nx;
-// 			ppt[i*2+1].y = --nPrevY;
+            // 			SETPIXEL(nx,nPrevY);
+            // 			SETPIXEL(nx,++nPrevY);
+        }
+        else if (ny < nPrevY-XXX)
+        {
+            // 下降一格
+            // 			ppt[i*2].x = nx;
+            // 			ppt[i*2].y = nPrevY;
+            // 			ppt[i*2+1].x = nx;
+            // 			ppt[i*2+1].y = --nPrevY;
             pt1.x = nx;
             pt1.y = nPrevY;
             pt2.x = nx;
             pt2.y = --nPrevY;
 
-// 			SETPIXEL(nx,nPrevY);
-// 			SETPIXEL(nx,--nPrevY);
-		}
-		else// if (ny == nPrevY)
-		{
-			// 不爬,往右延伸一格
-// 			ppt[i*2].x = nx-1;
-// 			ppt[i*2].y = nPrevY;
-// 			ppt[i*2+1].x = nx;
-// 			ppt[i*2+1].y = nPrevY;
+            // 			SETPIXEL(nx,nPrevY);
+            // 			SETPIXEL(nx,--nPrevY);
+        }
+        else// if (ny == nPrevY)
+        {
+            // 不爬,往右延伸一格
+            // 			ppt[i*2].x = nx-1;
+            // 			ppt[i*2].y = nPrevY;
+            // 			ppt[i*2+1].x = nx;
+            // 			ppt[i*2+1].y = nPrevY;
             pt1.x = nx-1;
             pt1.y = nPrevY;
             pt2.x = nx;
             pt2.y = nPrevY;
 
-// 			SETPIXEL(nx-1,ny);
-// 			SETPIXEL(nx,ny);
-		}
+            // 			SETPIXEL(nx-1,ny);
+            // 			SETPIXEL(nx,ny);
+        }
         SETPIXEL(pt1.x, pt1.y);
         SETPIXEL(pt2.x, pt2.y);
-	}
-	
-//	Polyline(hDC, ppt, 2*nWidth);
-//	delete[] ppt;
-
-    ::AlphaBlend(m_hRenderWndMemDC, 0, 0, nWidth, nHeight, hDC, 0, 0, nWidth, nHeight, bf);
-
-    ::SelectObject(hDC, hOldBmp);
-    ::DeleteDC(hDC);
-
-	::BitBlt(m_hRenderWndDC, m_rcRender.left, m_rcRender.top,nWidth,nHeight,m_hRenderWndMemDC,0,0,SRCCOPY);
-	::SelectObject(m_hRenderWndMemDC, hOldPen);
-	::DeleteObject(hPen);
-
-    m_nArrayWaveBlurIndex++;
-    if (m_nArrayWaveBlurIndex >= m_nArrayWaveBlurSize)
-        m_nArrayWaveBlurIndex = 0;
-
-#ifdef _DEBUGx
-    for (int i = 0; i < m_nArrayWaveBlurSize; i++)
-    {
-        CImage  image;
-        image.Attach(m_pArrayWaveBlur[i]);
-        TCHAR szTest[128] = _T("");
-        _stprintf(szTest, L"c:\\aaa_%d.png", i);
-        image.Save(szTest, Gdiplus::ImageFormatPNG);
-        image.Detach();
     }
-#endif
+
+    ::BitBlt(m_hRenderWndDC, m_rcRender.left, m_rcRender.top,nWidth,nHeight,m_hRenderWndMemDC,0,0,SRCCOPY);
 }
 
 HBITMAP CSpectrumAnalyser::GetVisualSnapshot()

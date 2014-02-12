@@ -6,6 +6,8 @@
 #include "UISDK\Kernel\Inc\Util\ibuffer.h"
 #include "3rd\markup\markup.h"
 
+
+
 // 备注：在CreateTextSerives之后，调用QueryInterface获取ITextServices接口时，总是返回E_NOINTERFACE
 //       问题原来是从riched20.lib中的IID_ITextServices，是错误的。
 const IID IID_ITextServices_Fix = { 0x8d33f740, 0xcf58, 0x11ce, {0xa8, 0x9d, 0x00, 0xaa, 0x00, 0x6c, 0xad, 0xc5} };
@@ -224,45 +226,63 @@ void WindowlessRichEdit::ReleaseRichEidtDll()
 	}
 }
 
-void WindowlessRichEdit::Draw(HDC hDC)
+// 注：TxDraw的最后一个参数很讲究：
+//     当窗口没有焦点时不能用TXTVIEW_ACTIVE，否则在TxDraw中又将光标显示出来
+//     当窗口有焦点时不能用TXTVIEW_INACTIVE，否则光标caret位置不会刷新（例如窗口大小改变时）。
+void WindowlessRichEdit::Draw(HDC hDC, bool bDrawShadow)
 {
 	if(NULL == m_spTextServices || NULL == hDC)  // Remark:如果传递NULL hdc给txdraw，居然会造成内存泄露...
 		return;
+    m_bDuringTxDraw = true;
 
 	CRect  rcClient;
 	this->TxGetClientRect(&rcClient);
+    ::OffsetRect(&rcClient, -rcClient.left, -rcClient.top);
 
-#if 0
-	Image image;
-	image.Create(rcClient.Width(), -rcClient.Height(), 32, Image::createAlphaChannel);
-	image.SetAlpha(1);
-	HBITMAP hBitmap = image.Detach();
-	HDC hCacheDC = UI_GetCacheDC();
-	HBITMAP holdBitmap = (HBITMAP)::SelectObject(hCacheDC, hBitmap);
+    if (bDrawShadow)
+    {
+        IUIApplication* pUIApp = m_pRichEdit->GetIRichEdit()->GetUIApplication();
 
-	::OffsetRect(&rcClient, -rcClient.left, -rcClient.top);
+        HBITMAP hMemBmp = pUIApp->GetCacheBitmap(rcClient.Width(), rcClient.Height());
+        HDC hMemDC = pUIApp->GetCacheDC();
+        HBITMAP hOldBmp = (HBITMAP)::SelectObject(hMemDC, hMemBmp);
 
-	m_spTextServices->TxDraw(DVASPECT_CONTENT, 0, NULL, NULL, hCacheDC/*hDC*/,
-		NULL, (RECTL *)&rcClient, NULL, NULL, NULL, NULL, TXTVIEW_ACTIVE);
+        // 默认所有像素都有255的alpha channel
+        // TxDraw之后，所有alpha channel为0的地方都是有文字的地方
+        // 然后将所有的alpha反转即可
+        Util::FixAlphaData data = {0};
+        data.hBitmap = hMemBmp;
+        data.lprc = &rcClient;
+        data.eMode = Util::SET_ALPHA_255;
+        data.bTopDownDib = true;
+        Util::FixBitmapAlpha(&data);
 
-	::SelectObject(hCacheDC, holdBitmap);
-	UI_ReleaseCacheDC(hCacheDC);
+        m_spTextServices->TxDraw(DVASPECT_CONTENT, 0, NULL, NULL, hMemDC,
+            NULL, (RECTL *)&rcClient, NULL, NULL, NULL, NULL, 
+            m_pRichEdit->GetIRichEdit()->IsFocus()?TXTVIEW_ACTIVE:TXTVIEW_INACTIVE);
 
-	image.Attach(hBitmap);
-	image.FixGDIAlphaChannel(1);
-	image.ForceUseAlpha();
-	image.Draw(hDC, 0,0);
-#endif
+        data.eMode = Util::SET_ALPHA_INVERSE_0_255;
+        Util::FixBitmapAlpha(&data);
 
-	// 注：TxDraw的最后一个参数很讲究：
-	//     当窗口没有焦点时不能用TXTVIEW_ACTIVE，否则在TxDraw中又将光标显示出来
-	//     当窗口有焦点时不能用TXTVIEW_INACTIVE，否则光标caret位置不会刷新（例如窗口大小改变时）。
-	::OffsetRect(&rcClient, -rcClient.left, -rcClient.top);
+        // 阴影颜色，简单起见，直接取一个值，懒得加接口了
+        byte r = GetRValue(m_cf.crTextColor);
+        byte g = GetGValue(m_cf.crTextColor);
+        byte b = GetBValue(m_cf.crTextColor);
+        pUIApp->ShadowBlur(hMemBmp, RGB(255-r,255-g,255-b), &rcClient, 5);
+        
+        // 提交到 hDC 上
+        BLENDFUNCTION bf = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
+        ::AlphaBlend(hDC, rcClient.left, rcClient.top, rcClient.Width(), rcClient.Height(),
+                hMemDC, 0, 0, rcClient.Width(), rcClient.Height(), bf);
 
-    m_bDuringTxDraw = true;
+        SelectObject(hMemDC, hOldBmp);
+        pUIApp->ReleaseCacheDC(hMemDC);
+    }
+
 	m_spTextServices->TxDraw(DVASPECT_CONTENT, 0, NULL, NULL, hDC,
 					NULL, (RECTL *)&rcClient, NULL, NULL, NULL, NULL, 
 					m_pRichEdit->GetIRichEdit()->IsFocus()?TXTVIEW_ACTIVE:TXTVIEW_INACTIVE);
+
     m_bDuringTxDraw = false;
 }
 
@@ -775,15 +795,7 @@ BOOL WindowlessRichEdit::TxCreateCaret(HBITMAP hbmp, INT xWidth, INT yHeight)
     if (!m_bFocus)
         return FALSE;
 
-//     if (NULL == hbmp)  // 如果不为空，当前在richedit中有选中区域，不显示光标
-//     {
-        return m_pRichEdit->GetCaret()->CreateCaret(m_pRichEdit->GetIRichEdit(), hbmp, xWidth, yHeight, CARET_TYPE_UNKNOWN);
-//     }
-//     else
-//     {
-//         m_pRichEdit->GetCaret()->DestroyCaret(false);  // TODO: 这里不能再刷新了，因为该情况可能就是在RE维护过程中了，会导致死循环
-//     }
-// 	return TRUE;
+    return m_pRichEdit->GetCaret()->CreateCaret(m_pRichEdit->GetIRichEdit(), hbmp, xWidth, yHeight, CARET_TYPE_UNKNOWN);
 }
 
 //@cmember Show the caret

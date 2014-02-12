@@ -67,16 +67,16 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 #ifdef DEMO_CLOCK
         ClockWindow* pWnd = NULL;
         ClockWindow::CreateInstance(g_pUIApp, &pWnd);
-
-        pWnd->Attach(g_pUIApp, g_hWnd, _T("clockwin"));
+    
         SetWindowPos(g_hWnd, 0, 50, 50, 630, 660, SWP_NOZORDER);
+        pWnd->Attach(g_pUIApp, g_hWnd, _T("clockwin"));
 
 #elif defined _RESHADOW
         REShadowWindow* pWnd = NULL;
         REShadowWindow::CreateInstance(g_pUIApp, &pWnd);
+        SetWindowPos(g_hWnd, 0, 50, 50, 300, 300, SWP_NOZORDER);
 
         pWnd->Attach(g_pUIApp, g_hWnd, _T("reshadow"));
-        SetWindowPos(g_hWnd, 0, 50, 50, 300, 300, SWP_NOZORDER);
 #else
 
         CControlDemoWindow* pWnd = NULL;
@@ -84,6 +84,10 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
         
   		pWnd->Attach(g_pUIApp, g_hWnd, _T("mainwindow"));
 #endif
+
+        ShowWindow(g_hWnd, nCmdShow);
+        UpdateWindow(g_hWnd);
+
         g_pUIApp->MsgHandleLoop();
 
         pWnd->Detach();
@@ -150,9 +154,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    }
 
    // CreateWindow(_T("BUTTON"), _T("HostWnd Button"), WS_CHILD|WS_VISIBLE|BS_PUSHBUTTON|WS_TABSTOP, 500,500, 200,30, g_hWnd, (HMENU)100, NULL, NULL);
-   ShowWindow(g_hWnd, nCmdShow);
-   UpdateWindow(g_hWnd);
-
    return TRUE;
 }
 

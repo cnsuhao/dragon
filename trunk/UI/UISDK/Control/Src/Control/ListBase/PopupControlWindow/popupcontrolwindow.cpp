@@ -78,8 +78,17 @@ void  PopupControlWindow::Show(POINT pt, BOOL bDoModal)
 
     SIZE size = m_pObject->GetDesiredSize();
 
-    CRect  rcWorkArea;
-    SystemParametersInfo(SPI_GETWORKAREA,0,&rcWorkArea,0);
+    CRect rcWorkArea;
+    MONITORINFO mi = {sizeof(MONITORINFO), 0};
+    if (GetMonitorInfo(MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST), &mi))
+    {
+        rcWorkArea = mi.rcWork;
+    }
+    else
+    {
+        ::SystemParametersInfo(SPI_GETWORKAREA, 0, &rcWorkArea, 0);
+    }
+
     if (pt.x < rcWorkArea.left)
         pt.x = rcWorkArea.left;
     if (pt.x + size.cx > rcWorkArea.right)

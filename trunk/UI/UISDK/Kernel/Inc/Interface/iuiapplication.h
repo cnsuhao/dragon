@@ -82,6 +82,7 @@ interface UISDKAPI IUIApplication : IUnknown
     HDC      GetCacheDC();
     void     ReleaseCacheDC(HDC hDC);
     HBITMAP  GetCacheBitmap(int nWidth, int nHeight);  // 注：不要释放该HBITMAP，由内部维护
+    void     ShadowBlur(HBITMAP hBitmap, COLORREF colorShadow, RECT* prcBlur, int nRadius);
 
     bool     IsUnderXpOS();
     bool     IsVistaOrWin7etc();

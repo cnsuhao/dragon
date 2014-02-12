@@ -301,6 +301,47 @@ BOOL FixBitmapAlpha(FixAlphaData* pData)
 			}
 		}
 		break;
+
+    case  SET_ALPHA_255_IF_RGBA_ISNOT_0:
+        {
+            DWORD* p4 = NULL;
+            DWORD* p4End = NULL;
+            for (int y = rcDest.top ; y < rcDest.bottom; y++)
+            {
+                p4    = (DWORD*)(pBits + (rcDest.left << 2));
+                p4End = (DWORD*)(pBits + (rcDest.right << 2));
+
+                while (p4 < p4End)
+                {
+                    if (0 != (*p4))
+                    {
+                        *p4 |= 0xFF000000;
+                    }
+                    p4 ++;
+                }
+
+                pBits += nPitch;
+            }
+        }
+        break;
+
+    case SET_ALPHA_INVERSE_0_255:
+        {
+            for (int y = rcDest.top ; y < rcDest.bottom; y++)
+            {
+                p    = pBits + (rcDest.left << 2) + 3;
+                pEnd = pBits + (rcDest.right << 2) + 3;
+
+                while (p < pEnd)
+                {
+                    *p = *p^0xFF;  // Òì»ò
+                    p += 4;
+                }
+
+                pBits += nPitch;
+            }
+        }
+        break;
 	}
 	return TRUE;
 }

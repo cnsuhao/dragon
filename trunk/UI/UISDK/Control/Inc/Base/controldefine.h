@@ -48,6 +48,9 @@ namespace UI
 #define EDIT_STYLE_WANTTAB              0x0100    // 接收TAB键消息
 #define EDIT_STYLE_READONNLY            0x0200    // 只读
 
+// richedit style
+#define RICHEDIT_STYLE_TEXTSHADOW       0x0100    // 绘制文本阴影。用在透明背景上，避免文字与背景颜色太接近，增加阴影进行区分
+
     // tree style
 #define TREE_STYLE_HASLINE              0x0100    // 绘制虚线
 

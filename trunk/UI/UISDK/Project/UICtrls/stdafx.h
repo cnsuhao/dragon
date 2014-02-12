@@ -16,6 +16,8 @@
 #include <set>
 using std::set;
 
+#pragma comment(lib, "Msimg32.lib")   // AlphaBlend
+
 #include <Imm.h>
 #pragma comment(lib, "Imm32.lib")
 

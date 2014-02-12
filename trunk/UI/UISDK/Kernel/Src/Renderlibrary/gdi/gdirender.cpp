@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "gdirender.h"
-#include "UISDK\Kernel\Src\UIEffect\高斯模糊\gaussblur.h"
+#include "UISDK\Kernel\Src\UIEffect\blur\webkit\shadowblur.h"
 #include "UISDK\Kernel\Src\UIEffect\CacheBitmap\cachebitmap.h"
 #include "UISDK\Kernel\Src\Renderlibrary\gdiplus\gdiplusrender.h"
-
+#include <math.h>
 
 
 GdiRenderTarget::GdiRenderTarget(HWND hWnd):IRenderTarget(hWnd)
@@ -233,31 +233,6 @@ void  GdiRenderTarget::DrawString(IRenderFont* pRenderFont, DRAWTEXTPARAM* pPara
 
     case TEXT_EFFECT_HALO:
         {
-#if 0
-            RECT rcRealInMemBmp = *(pParam->prc); // 不考虑缩放，仅考虑偏移
-            ::LPtoDP(hDC, (LPPOINT)&rcRealInMemBmp, 2);
-
-            HFONT hOldFont = (HFONT)::SelectObject(hDC, ((GDIRenderFont*)pRenderFont)->GetHFONT());
-            HBITMAP hMemBmp = (HBITMAP)::GetCurrentObject(hDC, OBJ_BITMAP);
-            COLORREF colorShadow = pParam->bkcolor.GetGDICompatibleValue();
-            COLORREF colorText = pParam->color.GetGDICompatibleValue();
-            COLORREF oldColor = ::SetTextColor(hDC, colorShadow);
-
-            // 阴影
-            ::DrawText(hDC, pParam->szText, _tcslen(pParam->szText), (LPRECT)pParam->prc, pParam->nFormatFlag);
-
-            // 模糊
-            recursive_blur blur;
-            blur.blur(hMemBmp, (double)pParam->wParam, (LPRECT)&rcRealInMemBmp);
-
-            // 文字
-            ::SetTextColor(hDC, colorText);
-            ::DrawText(hDC, pParam->szText, _tcslen(pParam->szText), (LPRECT)pParam->prc, pParam->nFormatFlag);
-
-            ::SetTextColor(hDC, oldColor);
-            ::SelectObject(hDC, hOldFont);
-
-#elif 1 // 自己要每次创建一份内存位置，效率太低，废弃
             HDC hMemDC = CreateCompatibleDC(NULL);
             SetBkMode(hMemDC, TRANSPARENT);
 
@@ -280,9 +255,10 @@ void  GdiRenderTarget::DrawString(IRenderFont* pRenderFont, DRAWTEXTPARAM* pPara
             ::DrawText(hMemDC, pParam->szText, _tcslen(pParam->szText), (RECT*)&rcMem, pParam->nFormatFlag);
 
             // 模糊
-            recursive_blur<> blur;
             RECT rc = {0, 0, nWidth, nHeight};
-            blur.blur(hMemBmp, (double)pParam->wParam, &rc, 0);
+//             recursive_blur<> blur;
+//             blur.blur(hMemBmp, (double)pParam->wParam, &rc, 0);
+            ShadowBlur(hMemBmp, pParam->bkcolor.GetGDICompatibleValue(), &rc, pParam->wParam);
 
             // 文字
             COLORREF color = pParam->color.GetGDICompatibleValue();
@@ -294,44 +270,6 @@ void  GdiRenderTarget::DrawString(IRenderFont* pRenderFont, DRAWTEXTPARAM* pPara
             ::SelectObject(hMemDC, hOldFont);
             ::SelectObject(hMemDC, hOldBmp);
             ::DeleteDC(hMemDC);
-#endif
-#if 0  // gdi 放大式阴影实现，效果不对
-            float fScale = (float)1.5;
-            CRect rcSmall(0, 0, pParam->prc->Width()/fScale, pParam->prc->Height()/fScale);
-
-            HDC hTempDC = CreateCompatibleDC(NULL);
-            SetBkMode(hTempDC, TRANSPARENT);
-            Image image;
-            image.Create(rcSmall.Width(), rcSmall.Height(), 24, 0/*Image::createAlphaChannel*/);
-            //image.SetAlpha(255);
-            HBITMAP hTempBmp = image.Detach();
-            SelectObject(hTempDC, hTempBmp);
-
-            SetGraphicsMode(hTempDC, GM_ADVANCED);
-            XFORM xForm = {1/fScale, 0, 0, 1/fScale, 0, 0};
-            SetWorldTransform(hTempDC, &xForm);
-
-            {
-                HFONT hOldFont = (HFONT)::SelectObject(hTempDC, ((GDIRenderFont*)pRenderFont)->GetHFONT());
-                COLORREF oldCol = ::SetTextColor(hTempDC, RGB(255,255,255));
-                RECT rc = { 0, 0, pParam->prc->Width(), pParam->prc->Height() };
-                ::DrawText(hTempDC, pParam->szText, _tcslen(pParam->szText), (RECT*)&rc, pParam->nFormatFlag);
-                ::SelectObject(hTempDC, hOldFont);
-            }
-            ModifyWorldTransform(hTempDC, NULL, MWT_IDENTITY);
-      //      Util::FixGdiAlpha(hTempDC, &rcSmall);
-//             image.Attach(hTempBmp);
-//             image.Save(L"C:\\aaa.bmp", Gdiplus::ImageFormatBMP);
-
-            SetStretchBltMode(hDC, HALFTONE);
-            ::StretchBlt(hDC, pParam->prc->left, pParam->prc->top, pParam->prc->Width(), pParam->prc->Height(), hTempDC, 0, 0, rcSmall.Width(), rcSmall.Height(), SRCCOPY);
-
-            ::DeleteObject(hTempBmp);
-            ::DeleteDC(hTempDC);
-
-            pParam->nEffectFlag = TEXT_EFFECT_NONE;
-            DrawString(pRenderFont, pParam);
-#endif
         }
         break;
     }

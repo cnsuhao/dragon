@@ -19,7 +19,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)Bin\$(ConfigurationName)\"
-			IntermediateDirectory="$(ConfigurationName)"
+			IntermediateDirectory="Debug"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -172,7 +172,7 @@
 		<Configuration
 			Name="Debug_Clock|Win32"
 			OutputDirectory="$(SolutionDir)Bin\Debug\"
-			IntermediateDirectory="$(ConfigurationName)"
+			IntermediateDirectory="Debug"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -247,7 +247,7 @@
 		<Configuration
 			Name="Debug_REShadow|Win32"
 			OutputDirectory="$(SolutionDir)Bin\Debug\"
-			IntermediateDirectory="$(ConfigurationName)"
+			IntermediateDirectory="Debug"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -416,6 +416,10 @@
 			</File>
 			<File
 				RelativePath=".\REShadow\reshadow.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Bin\Debug\Demo\Default\reshadow.xml"
 				>
 			</File>
 		</Filter>

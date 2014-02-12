@@ -198,6 +198,8 @@ namespace UI { namespace Util {
 	{
 		SET_ALPHA_255,                 // 直接将alpha设置为255
 		SET_ALPHA_255_IF_ALPHA_IS_0,   // 如果当前alpha==0，将alpha设置为255
+        SET_ALPHA_255_IF_RGBA_ISNOT_0, // 如果当前像素不是0，则将alpha设置为255
+        SET_ALPHA_INVERSE_0_255,       // alpha 反转 0->255, 255->0
 		// ...
 	//	SET_ALPHA_IF_ALPHA_EQUAL,      // 如果当前alpha==wParam，将alpha设置为lParam
 	//	SET_ALPHA_IF_ALPHA_LESS,       // 如果当前alpha<wParam，将alpha设置为lParam

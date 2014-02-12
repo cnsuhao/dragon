@@ -6,6 +6,7 @@
 #include "UISDK\Kernel\Src\Helper\timer\timermanager.h"
 #include "UISDK\Kernel\Src\Util\dwm\dwmhelper.h"
 #include "UISDK\Kernel\Src\UIEffect\CacheBitmap\cachebitmap.h"
+#include "UISDK\Kernel\Src\UIEffect\blur\webkit\shadowblur.h"
 
 namespace UI
 {
@@ -122,6 +123,10 @@ void  IUIApplication::ReleaseCacheDC(HDC hDC)
 HBITMAP  IUIApplication::GetCacheBitmap(int nWidth, int nHeight)
 {
     return CacheBitmap::GetInstance()->Create(nWidth, nHeight);
+}
+void   IUIApplication::ShadowBlur(HBITMAP hBitmap, COLORREF colorShadow, RECT* prcBlur, int nRadius)
+{
+    ::ShadowBlur(hBitmap, colorShadow, prcBlur, nRadius);
 }
 
 bool     IUIApplication::IsUnderXpOS() { return m_pImpl->IsUnderXpOS(); }

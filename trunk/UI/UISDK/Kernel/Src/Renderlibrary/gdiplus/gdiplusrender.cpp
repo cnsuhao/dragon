@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "gdiplusrender.h"
-#include "UISDK\Kernel\Src\UIEffect\高斯模糊\gaussblur.h"
+#include "UISDK\Kernel\Src\UIEffect\blur\webkit\shadowblur.h"
 #include "UISDK\Kernel\Src\UIEffect\CacheBitmap\cachebitmap.h"
 #include "UISDK\Kernel\Src\Renderlibrary\gdi\gdirender.h"
 
@@ -462,45 +462,6 @@ void  GdiplusRenderTarget::DrawStringEx(Gdiplus::Graphics* pGraphics, HDC hBindD
     }
     else if (TEXT_EFFECT_HALO == pParam->nEffectFlag)
     {
-#if 0
-        RECT rcRealInMemBmp = *(pParam->prc); // 不考虑缩放，仅考虑偏移
-        ::LPtoDP(hBindDC, (LPPOINT)&rcRealInMemBmp, 2);
-        HBITMAP hMemBmp = (HBITMAP)::GetCurrentObject(hBindDC, OBJ_BITMAP);
-
-        Gdiplus::TextRenderingHint eOldHint = pGraphics->GetTextRenderingHint();
-        pGraphics->SetTextRenderingHint(((GdiplusRenderFont*)pRenderFont)->GetTextRenderingHint());
-
-        Gdiplus::Color colorTextShadow;
-        int a = pParam->bkcolor.a;
-        if (a >= 254)
-            a = 254;  // 防止穿透
-        colorTextShadow.SetValue(Gdiplus::Color::MakeARGB(a, pParam->bkcolor.r, pParam->bkcolor.g, pParam->bkcolor.b));
-        Gdiplus::SolidBrush textShadowBrush(colorTextShadow);
-
-        // 阴影
-        pGraphics->DrawString(
-            pParam->szText,
-            -1/*_tcslen(szText)*/,
-            pFont,
-            region,
-            &format,
-            &textShadowBrush);
-
-        // 模糊
-        recursive_blur blur;
-        blur.blur(hMemBmp, (double)pParam->wParam, (LPRECT)&rcRealInMemBmp);
-
-        // 文字
-        pGraphics->DrawString(
-            pParam->szText,
-            -1/*_tcslen(szText)*/,
-            pFont,
-            region,
-            &format,
-            &textBrush);
-
-        pGraphics->SetTextRenderingHint(eOldHint);
-#else
         HDC hMemDC = CreateCompatibleDC(NULL);
         SetBkMode(hMemDC, TRANSPARENT);
 
@@ -517,6 +478,7 @@ void  GdiplusRenderTarget::DrawStringEx(Gdiplus::Graphics* pGraphics, HDC hBindD
         HBITMAP hOldBmp = (HBITMAP)::SelectObject(hMemDC, hMemBmp);
         CacheBitmap::GetInstance()->Clear(0 , &rcMem);
 
+        {
         Gdiplus::Graphics g(hMemDC);
         Gdiplus::TextRenderingHint eOldHint = pGraphics->GetTextRenderingHint();
         g.SetTextRenderingHint(((GdiplusRenderFont*)pRenderFont)->GetTextRenderingHint());
@@ -537,9 +499,11 @@ void  GdiplusRenderTarget::DrawStringEx(Gdiplus::Graphics* pGraphics, HDC hBindD
             &format,
             &textShadowBrush);
 
-        // 模糊
-        recursive_blur<recursive_blur_calc_rgba<> > blur;
-        blur.blur(hMemBmp, (double)pParam->wParam, (LPRECT)&rcMem, 0);
+        // agg模糊
+//          recursive_blur<recursive_blur_calc_rgba<> > blur;
+//          blur.blur(hMemBmp, (double)pParam->wParam, (LPRECT)&rcMem, 0);
+        // webkit模糊
+        ShadowBlur(hMemBmp, pParam->bkcolor.GetGDICompatibleValue(), &rcMem, pParam->wParam);
 
         // 文字
         g.DrawString(
@@ -551,78 +515,14 @@ void  GdiplusRenderTarget::DrawStringEx(Gdiplus::Graphics* pGraphics, HDC hBindD
             &textBrush);
 
         g.SetTextRenderingHint(eOldHint);
+        }
     
        
         BLENDFUNCTION bf = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
         ::AlphaBlend(hBindDC, pParam->prc->left, pParam->prc->top, nWidth, nHeight, hMemDC, 0, 0, nWidth, nHeight, bf);
+        //::BitBlt(hBindDC, pParam->prc->left, pParam->prc->top, nWidth, nHeight, hMemDC, 0, 0, SRCCOPY);
         ::SelectObject(hMemDC, hOldBmp);
         ::DeleteDC(hMemDC);
-
-#endif
-#if 0
-        // 准备一幅小图，用于将该图片放大以产生插值拉伸效果（即光晕）
-
-        int nLevel = pParam->lParam;
-        if (nLevel <= 0 || nLevel > 20)
-            nLevel = 5;
-
-        Gdiplus::Bitmap  smallBitmap(pParam->prc->Width()/nLevel, pParam->prc->Height()/nLevel);
-        Gdiplus::Graphics*  pSmallGraphics = Gdiplus::Graphics::FromImage(&smallBitmap);
-
-        Gdiplus::GraphicsPath path;
-        Gdiplus::FontFamily fontFamily;
-        pFont->GetFamily(&fontFamily);
-
-        Gdiplus::RectF  rcPath = region;
-        rcPath.Offset(-region.X, -region.Y);
-        path.AddString(pParam->szText, -1, &fontFamily, pFont->GetStyle(), (Gdiplus::REAL)-Util::FontSize2Height((int)pFont->GetSize()), rcPath, &format);
-
-        // 用一个matrix实现使用现有的字体大小绘制缩小版的文字
-        Gdiplus::Matrix  matrix(1.0f/nLevel, 0, 0, 1.0f/nLevel, -(1.0f/nLevel),-(1.0f/nLevel));
-        pSmallGraphics->SetTransform(&matrix);
-        pSmallGraphics->SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
-
-        Gdiplus::Pen pen(Gdiplus::Color(64, 255, 255, 255), 1);
-        pSmallGraphics->DrawPath(&pen, &path);
-        pSmallGraphics->FillPath(&Gdiplus::SolidBrush(Gdiplus::Color(64, 255, 255, 255)), &path);
-
-// 
-//         Gdiplus::RectF  smallRect(0, 0,
-//             (Gdiplus::REAL)smallBitmap.GetWidth(), 
-//             (Gdiplus::REAL)smallBitmap.GetHeight());
-
-//         pSmallGraphics->Clear(Gdiplus::Color::Black);
-//         pSmallGraphics->DrawString(
-//             pParam->szText,
-//             -1/*_tcslen(szText)*/,
-//             pFont,
-//             smallRect,
-//             &format,
-//             &textBrush);
-
-        // 提前到真正的graphics上
-
-        pGraphics->SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
-        pGraphics->SetInterpolationMode(Gdiplus::InterpolationModeHighQualityBicubic);
-
-        pGraphics->DrawImage(
-            &smallBitmap, 
-            region, 
-            0, 0, 
-            (Gdiplus::REAL)smallBitmap.GetWidth(), 
-            (Gdiplus::REAL)smallBitmap.GetHeight(), 
-            Gdiplus::UnitPixel);
-
-//        pGraphics->FillPath(&Gdiplus::SolidBrush(Gdiplus::Color::Black), &path);
-        pGraphics->DrawString(
-            pParam->szText,
-            -1/*_tcslen(szText)*/,
-            pFont,
-            region,
-            &format,
-            &textBrush);
-        SAFE_DELETE(pSmallGraphics);
-#endif
     }
 }
 

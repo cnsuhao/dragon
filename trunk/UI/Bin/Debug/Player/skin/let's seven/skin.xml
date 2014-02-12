@@ -236,8 +236,8 @@
     <String id="1203" text="错误的文件" tooltip="删除不支持或者不存在的文件"/>
     <Separator/>
     <String id="1204" text="全部删除"  tooltip="删除当前列表的所有文件"/>
-    <!--Separator/>
-    <String id="1204" text="物理删除"   disable="1" tooltip="从硬盘上删除选中的文件"/-->
+    <Separator/>
+    <String id="1205" text="物理删除"   disable="0" tooltip="从硬盘上删除选中的文件"/>
   </Menu>
 
   <Menu id="menu_playlist_mode">

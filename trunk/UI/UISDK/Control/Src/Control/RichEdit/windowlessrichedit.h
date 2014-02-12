@@ -293,7 +293,7 @@ public:
 	// Function
 	void  BindControl(RichEdit* p);
 	bool  Create(HWND hWndParent);
-	void  Draw(HDC);
+	void  Draw(HDC, bool bDrawShadow);
 	bool  GetInvalidateRect(RECT* prc, bool* pbNeedRedrawScrollbar, bool bClear=true);
 	bool  HitTest(POINT pt);
 

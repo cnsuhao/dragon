@@ -348,10 +348,14 @@
 				<Filter
 					Name="UIEffect"
 					>
-					<File
-						RelativePath=".\UIEffect\¸ßË¹Ä£ºý\gaussblur.h"
+					<Filter
+						Name="blur"
 						>
-					</File>
+						<File
+							RelativePath=".\UIEffect\blur\blur.h"
+							>
+						</File>
+					</Filter>
 				</Filter>
 			</Filter>
 			<Filter
