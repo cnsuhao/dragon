@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <theme name="菁菁世界" preview="preview.png">
-  <main file="main.jpg" drawtype="topright" bkcol="ff00b979" avgcol="3bb87"/>
+  <main file="main.jpg" drawtype="topright" bkcol="ff79b900" avgcol="87bb03"/>
 </theme>
 
 <!--

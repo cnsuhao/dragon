@@ -175,7 +175,7 @@ bool  WindowUpDownAlphaShowAnimate::DoAction(int nId, int nDuration, bool bShow)
 
     IIntLinearMove* pMoveAlgo = NULL;
     IIntTimeline*  pTimeline = static_cast<IIntTimeline*>(
-        CreateTimeline(TLV_INT, 0, ITMA_Linear, (IMoveAlgorithm**)&pMoveAlgo));
+        CreateTimeline(TV_INT, 0, TMA_Linear, (IMoveAlgorithm**)&pMoveAlgo));
     if (NULL == pTimeline)
         return false;
 

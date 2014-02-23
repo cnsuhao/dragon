@@ -84,6 +84,10 @@ rd  ..\..\UISDK\Project\UIDLL\Debug /S /Q
 rd  ..\..\UISDK\Project\UIDLL\Release /S /Q
 del ..\..\UISDK\Project\UIDLL\UIDLL.vcproj.*.user
 
+rd  ..\..\UISDK\Project\UI3D\Debug /S /Q
+rd  ..\..\UISDK\Project\UI3D\Release /S /Q
+del ..\..\UISDK\Project\UI3D\UI3D.vcproj.*.user
+
 rd  ..\..\UISDK\Project\UILog\Debug /S /Q
 rd  ..\..\UISDK\Project\UILog\Release /S /Q
 del ..\..\UISDK\Project\UILog\UILog.vcproj.*.user

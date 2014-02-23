@@ -1021,41 +1021,45 @@
 				<Filter
 					Name="09. animate"
 					>
+					<File
+						RelativePath="..\..\Kernel\Src\Animate\animatemgr.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Kernel\Src\Animate\animatemgr.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Kernel\Src\Animate\ianimate.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Kernel\Src\Animate\movealgo.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Kernel\Src\Animate\noneanimatetimeline.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Kernel\Src\Animate\storyboard.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Kernel\Src\Animate\storyboard.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Kernel\Src\Animate\timeline.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Kernel\Src\Animate\timeline.h"
+						>
+					</File>
 					<Filter
 						Name="windowanimate"
 						>
-						<File
-							RelativePath="..\..\Kernel\Src\Animate\animatemgr.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\Animate\animatemgr.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\Animate\ianimate.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\Animate\intanimatetimeline.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\Animate\intanimatetimeline.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\Animate\noneanimatetimeline.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\Animate\storyboard.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\Animate\storyboard.h"
-							>
-						</File>
 						<Filter
 							Name="02. 3DÐý×ª"
 							>
@@ -1244,6 +1248,34 @@
 								>
 							</File>
 						</Filter>
+					</Filter>
+					<Filter
+						Name="02. ease"
+						>
+						<File
+							RelativePath="..\..\Kernel\Src\Animate\ease\beziertiming.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Kernel\Src\Animate\ease\beziertiming.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Kernel\Src\Animate\ease\easing.cpp"
+							>
+							<FileConfiguration
+								Name="Debug|Win32"
+								>
+								<Tool
+									Name="VCCLCompilerTool"
+									UsePrecompiledHeader="0"
+								/>
+							</FileConfiguration>
+						</File>
+						<File
+							RelativePath="..\..\Kernel\Src\Animate\ease\easing.h"
+							>
+						</File>
 					</Filter>
 				</Filter>
 				<Filter
@@ -1771,6 +1803,10 @@
 					>
 					<File
 						RelativePath="..\..\Kernel\Inc\Interface\ianimate.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Kernel\Inc\Interface\ianimatedef.h"
 						>
 					</File>
 					<File

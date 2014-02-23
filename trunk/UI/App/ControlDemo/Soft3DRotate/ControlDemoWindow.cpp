@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "ControlDemoWindow.h"
-#include "resource.h"
+#include "../Other/resource.h"
 #include "UISDK\Control\Inc\Interface\ibutton.h"
 #include "UISDK\Control\Inc\Interface\ilistbox.h"
 #include "UISDK\Control\Inc\Interface\istringlistitem.h"
@@ -12,7 +12,7 @@
 #include "UISDK\Kernel\Inc\Interface\iobject3dwrap.h"
 #include "UISDK\Control\Inc\Interface\ilabel.h"
 
-CControlDemoWindow::CControlDemoWindow()
+CSoft3DRotateWindow::CSoft3DRotateWindow()
 {
 	m_pCtrl = NULL;
 	m_pCtrl2 = NULL;
@@ -21,11 +21,11 @@ CControlDemoWindow::CControlDemoWindow()
 	m_pBtnEnd = NULL;
 }
 
-CControlDemoWindow::~CControlDemoWindow(void)
+CSoft3DRotateWindow::~CSoft3DRotateWindow(void)
 {
 }
 
-void CControlDemoWindow::OnInitWindow()
+void CSoft3DRotateWindow::OnInitWindow()
 {
     __super::nvProcessMessage(GetCurMsg(), 0, 0);
 
@@ -46,7 +46,7 @@ void CControlDemoWindow::OnInitWindow()
     
 }
 
-LRESULT  CControlDemoWindow::OnDropTargetEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT  CSoft3DRotateWindow::OnDropTargetEvent(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     UI::DROPTARGETEVENT_DATA* pData = (UI::DROPTARGETEVENT_DATA*)lParam;
     UI::UI_LOG_DEBUG(_T("%s  type:%d"), FUNC_NAME, wParam);
@@ -69,11 +69,11 @@ LRESULT  CControlDemoWindow::OnDropTargetEvent(UINT uMsg, WPARAM wParam, LPARAM 
     return 0;
 }
 
-void  CControlDemoWindow::OnPaint(UI::IRenderTarget* pRenderTarget)
+void  CSoft3DRotateWindow::OnPaint(UI::IRenderTarget* pRenderTarget)
 {
 }
 
-void  CControlDemoWindow::Start()
+void  CSoft3DRotateWindow::Start()
 {
 	SetTimer(GetHWND(), 1, 100, NULL);
 	if (m_pCtrl)
@@ -97,7 +97,7 @@ void  CControlDemoWindow::Start()
 		m_pBtnStart->SetEnable(false, true);
 
 }
-void  CControlDemoWindow::End()
+void  CSoft3DRotateWindow::End()
 {
 	KillTimer(GetHWND(),1);
 	if (m_pCtrl)
@@ -114,7 +114,7 @@ void  CControlDemoWindow::End()
 
 	this->UpdateObject(true);
 }
-void  CControlDemoWindow::OnBnClicked(IMessage*  pMsgFrom)
+void  CSoft3DRotateWindow::OnBnClicked(IMessage*  pMsgFrom)
 {
     const TCHAR* szId = static_cast<UI::IButton*>(pMsgFrom)->GetId();
     if (0 == _tcscmp(szId, _T("btnStart")))
@@ -128,7 +128,7 @@ void  CControlDemoWindow::OnBnClicked(IMessage*  pMsgFrom)
         return;
     }
 }
-void  CControlDemoWindow::OnTimer(UINT_PTR nIDEvent, LPARAM lParam)
+void  CSoft3DRotateWindow::OnTimer(UINT_PTR nIDEvent, LPARAM lParam)
 {
     static int i = 0;
     i += 2;

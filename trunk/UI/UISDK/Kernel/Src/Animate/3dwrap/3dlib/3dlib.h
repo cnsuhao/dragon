@@ -587,9 +587,9 @@ typedef struct tagCAMERA
 #define FIXP16_WP_MASK   0xffff0000
 #define FIXP16_ROUND_UP  0x00008000
 
-#define FIXP22_SHIFT     22
+#define FIXP20_SHIFT     20  // 22则代表了纹理的大小不能超过512，否则会溢出，这不行吧。至少得2048。因此修改为20
 #define FIXP28_SHIFT     28
-#define FIXP6_SHIFT      6  // (28 - 22)
+#define FIXP8_SHIFT      8  // (28 - 20)
 
 // 从16.16格式的定点数中提取整数部分和小数部分
 #define FIXP16_WP(fp) ((fp) >> FIXP16_SHIFT)

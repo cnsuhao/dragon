@@ -33,6 +33,7 @@ interface UICTRLAPI IEdit : public IControl
 
     void  SetText(const TCHAR* szText);
     const TCHAR*  GetText();
+    void  Clear(bool bUpdate);
 
     void  SetSel(int nStartChar, int nEndChar);
     void  GetSel(int& nStartChar,int& nEndChar) const;

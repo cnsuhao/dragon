@@ -21,12 +21,12 @@ Object3DWrap::Object3DWrap(Object* pObj)
     m_bBegin = false;
     m_bParamChanged = true;
     
-#if 0
-    m_pTexturemapping = new QuadPerspectiveTextureMapping;
-#elif 0
+#if 1
+    m_pTexturemapping = new QuadPerspectiveTextureMapping;   // 支持了抗锯齿 + AlphaBlend
+#elif 1
     m_pTexturemapping = new AffineTextureMapping;
 #elif 1
-    m_pTexturemapping = new PerspectiveTextureMapping;
+    m_pTexturemapping = new PerspectiveTextureMapping;  // 支持了分段仿射映射
 #endif
 
     if (!g_bInitSinCosTable)
@@ -65,9 +65,10 @@ void  Object3DWrap::Move(int x, int y, int z)
 }
 void  Object3DWrap::Rotate(int x, int y, int z)
 {
-    m_3dpipeline.m_nRotateX = x;
-    m_3dpipeline.m_nRotateY = y;
-    m_3dpipeline.m_nRotateZ = z;
+    // 计算时用的居然是相反的，先在这里减去360度吧
+    m_3dpipeline.m_nRotateX = 360-x;
+    m_3dpipeline.m_nRotateY = 360-y;
+    m_3dpipeline.m_nRotateZ = 360-z;
     m_bParamChanged = true;
     m_p3dLayer->SetDirty(true);
 }
@@ -279,7 +280,6 @@ void  Object3DWrap::OnDrawObject(IRenderTarget* pRenderTarget, RenderContext roc
             m_pObject->RealDrawObject(pTempRenderTarget, rocTemp);
         }
         pTempRenderTarget->EndDraw();
-    //  Util::FixGdiAlpha(hDC, NULL);
         SAFE_RELEASE(pTempRenderTarget);
         pObjBuffer->ReleaseDC();
     }

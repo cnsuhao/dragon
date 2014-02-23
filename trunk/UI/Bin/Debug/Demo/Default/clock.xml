@@ -5,11 +5,11 @@
       <Panel id="panel_clock" width="600" height="600" 
              bkgnd.render.type="image"
              bkgnd.render.image="clock_bk">
-        <PictureCtrl id="hour"  bkgnd.render.type="image" bkgnd.render.image="clock_hour"
+        <PictureCtrl istransparent="false" id="hour"  bkgnd.render.type="image" bkgnd.render.image="clock_hour"
                      layout.left="285" layout.top="0"/>
-        <PictureCtrl id="min"   bkgnd.render.type="image" bkgnd.render.image="clock_min" 
+        <PictureCtrl istransparent="false" id="min"   bkgnd.render.type="image" bkgnd.render.image="clock_min" 
                      layout.left="285" layout.top="0"/>
-        <PictureCtrl id="sec"   bkgnd.render.type="image" bkgnd.render.image="clock_sec" 
+        <PictureCtrl istransparent="false" id="sec"   bkgnd.render.type="image" bkgnd.render.image="clock_sec" 
                      layout.left="285" layout.top="0"/>
       </Panel>
     </Window>

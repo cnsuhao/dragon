@@ -21,7 +21,7 @@ public:
         COLORREF   m_col;
         struct  
         {
-            byte   r;
+            byte   r;  // 注：位图内存中颜色的排列顺序为b g r a
             byte   g;
             byte   b;
             byte   a;

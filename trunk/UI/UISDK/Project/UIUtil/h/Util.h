@@ -103,6 +103,7 @@ namespace UI { namespace Util {
 	bool      UIUTILAPI TranslateRECT(const TCHAR* strRect, RECT* pRect, TCHAR szSep = _T(',') );
 	COLORREF  UIUTILAPI TranslateRGB(const TCHAR* strCol, TCHAR szSep = _T(',') );
     COLORREF  UIUTILAPI TranslateHexColor(const TCHAR* szColor);
+    COLORREF  UIUTILAPI TranslateColor(const TCHAR* szColor);
 	bool      UIUTILAPI TranslateImage9Region(const TCHAR* str, void* p9Region, TCHAR szSep = _T(',') );
 
     interface ISplitStringEnum

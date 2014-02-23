@@ -84,7 +84,15 @@ void ImageRender::SetAttribute(SetAttrPrefixData* pData)
 
 	szText = pMapAttrib->GetAttr(strAttrib.c_str(), pData->bErase);
 	if (szText)
+    {
 		pColorRes->GetColor((BSTR)szText, &m_pColorBk);
+
+        if (!m_pColorBk)
+        {
+            COLORREF color = Util::TranslateColor(szText);  // 直接翻译，不根据ID去映射
+            m_pColorBk = Color::CreateInstance(color);
+        }
+    }
 
     // 拉伸区域
 	strAttrib = strPrefix;
@@ -588,7 +596,7 @@ void  ImageListRender::DrawState(RENDERBASE_DRAWSTATE* pDrawStruct)
 
 		IIntLinearMove* pMoveAlgo = NULL;
         IIntTimeline* pTimeline = (IIntTimeline*)pStoryboard->CreateTimeline(
-            TLV_INT, 0, ITMA_Linear, (IMoveAlgorithm**)&pMoveAlgo);
+            TV_INT, 0, TMA_Linear, (IMoveAlgorithm**)&pMoveAlgo);
         pMoveAlgo->SetParam1(0, 255, 200);
 
 		m_nCurrentAlpha = 0;  // 避免在第一次Tick响应之前被控件强制刷新了，结果此时的m_nCurrentAlpha不是计算得到的值。
@@ -608,7 +616,7 @@ void  ImageListRender::DrawState(RENDERBASE_DRAWSTATE* pDrawStruct)
 
         IIntLinearMove* pMoveAlgo = NULL;
 		IIntTimeline* pTimeline = (IIntTimeline*)pStoryboard->CreateTimeline(
-            TLV_INT, 0, ITMA_Linear, (IMoveAlgorithm**)&pMoveAlgo);
+            TV_INT, 0, TMA_Linear, (IMoveAlgorithm**)&pMoveAlgo);
         pMoveAlgo->SetParam1(255, 0, 200);
 	
         m_nCurrentAlpha = 255;

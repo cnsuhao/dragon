@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <theme name="" preview="preview.png">
-  <main file="skin.png" drawtype="topleft" bkcol="ffe4e3d4" avgcol="d1d7c7"/>
+  <main file="skin.png" drawtype="topleft" bkcol="ffd4e3e4" avgcol="c7d7d1"/>
 </theme>
 
 <!--

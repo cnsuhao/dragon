@@ -123,7 +123,7 @@ void  QuadPerspectiveTextureMapping::Do()
 				// PS: 这四个调用也非常耗CPU，但是不知道怎么优化。越优化CPU越高了
 
  			    pbSrcBits = pSrcBits + (nySrc*nSrcPitch + (nxSrc<<2));
- 			    Color0.m_col = *((DWORD*)(pbSrcBits));
+ 			    Color0.m_col = *((DWORD*)(pbSrcBits));  // 注：这里的顺序是bgra
  			    Color2.m_col = (((DWORD*)(pbSrcBits))[1]);
  			    pbSrcBits += nSrcPitch;
 				Color1.m_col = *((DWORD*)(pbSrcBits));
@@ -153,7 +153,27 @@ void  QuadPerspectiveTextureMapping::Do()
 				ColorResult.r = (byte)((pm0_16*Color0.r + pm1_16*Color1.r + pm2_16*Color2.r + pm3_16*Color3.r) >> FIXP16_SHIFT);
 				ColorResult.g = (byte)((pm0_16*Color0.g + pm1_16*Color1.g + pm2_16*Color2.g + pm3_16*Color3.g) >> FIXP16_SHIFT);
 				ColorResult.b = (byte)((pm0_16*Color0.b + pm1_16*Color1.b + pm2_16*Color2.b + pm3_16*Color3.b) >> FIXP16_SHIFT);
+
+#if 1 // ALPHABELND  // TODO: 怎么将插值算法与alphablend分离成多个函数而不影响效率？
+                // Dst.Red = Src.Red  + (1 - Src.Alpha) * Dst.Red 
+                // Dst.Green = Src.Green + (1 - Src.Alpha) * Dst.Green 
+                // Dst.Blue = Src.Blue + (1 - Src.Alpha) * Dst.Blue 
+                // Dst.Alpha = Src.Alpha + (1 - Src.Alpha) * Dst.Alpha 
+
+                // 与目标值进行alpha混合，还得预乘?
+//                 ColorResult.r = ColorResult.r * ColorResult.a >> 8;
+//                 ColorResult.g = ColorResult.g * ColorResult.a >> 8;
+//                 ColorResult.b = ColorResult.b * ColorResult.a >> 8;
+
+                int nPos = X << 2;
+                int nAlphaSub = 255 - ColorResult.a;
+                pDstBits[nPos  ] = ColorResult.r + (nAlphaSub * pDstBits[nPos  ] >> 8);  // 注:这里仍然用r而不是b，因为获取的时候就是反过来的
+                pDstBits[nPos+1] = ColorResult.g + (nAlphaSub * pDstBits[nPos+1] >> 8);
+                pDstBits[nPos+2] = ColorResult.b + (nAlphaSub * pDstBits[nPos+2] >> 8);
+                pDstBits[nPos+3] = ColorResult.a + (nAlphaSub * pDstBits[nPos+3] >> 8);
+#else
 				((DWORD*)pDstBits)[X] = ColorResult.m_col;
+#endif
 
 // 				float u = (float)fxSrc - nxSrc;
 // 				float v = (float)fySrc - nySrc;

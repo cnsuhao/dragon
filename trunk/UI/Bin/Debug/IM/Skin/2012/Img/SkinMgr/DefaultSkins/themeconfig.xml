@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <theme name="默认皮肤" preview="preview.png">
-  <main file="main_bkg.jpg" drawtype="stretch" bkcol="ff1e7db9" avgcol="ffdcaa58"/>
+  <main file="main_bkg.jpg" drawtype="stretch" bkcol="ffb97d1e" avgcol="ff58aadc"/>
 </theme>
 <!--
 <theme-config PackID="" PackPreview="preview.png" PackLogonPreview="logon_preview.png" PackRecentPreview="recent_preview.png" PackVersion="2.0" PackMinVer="3073" PackName="默认皮肤">

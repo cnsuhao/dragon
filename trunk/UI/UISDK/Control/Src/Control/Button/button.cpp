@@ -227,7 +227,7 @@ void ButtonBase::OnKillFocus(IObject*)
 }
 void ButtonBase::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags )
 {
-	if (VK_SPACE == nChar)
+	if (VK_SPACE == nChar && m_pIButtonBase->IsEnable())
 	{
         // windows控件在SPACE按下时，会去为Button窗口xxxBNSetCapture，
         // 这样所有的鼠标消息都只跑到它里面来
@@ -239,7 +239,7 @@ void ButtonBase::OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags )
 }
 void ButtonBase::OnKeyUp( UINT nChar, UINT nRepCnt, UINT nFlags )
 {
-	if (VK_SPACE == nChar)
+	if (VK_SPACE == nChar && m_pIButtonBase->IsEnable())
 	{
 		m_pIButtonBase->clearStateBit(OSB_FORCEPRESS);
         m_pIButtonBase->ReleaseMouseCapture();

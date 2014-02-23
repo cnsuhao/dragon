@@ -311,7 +311,7 @@ void QQLoginAccountListBox::HandleItemChanged(
             UI::IStoryboard*  pStoryboard = pAnimateMgr->CreateStoryboard();
 
             UI::IIntLinearMove* pMoveAlgo = NULL;
-            UI::IIntTimeline* pTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(UI::TLV_INT, 0, UI::ITMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo);
+            UI::IIntTimeline* pTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(UI::TV_INT, 0, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo);
             pMoveAlgo->SetParam1(pItem->GetHeight(), nItemLastHeight, 150);
             int* pnHeight = NULL;
             pItem->GetHeightRef(&pnHeight);

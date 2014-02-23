@@ -6,13 +6,13 @@ namespace UI
     interface IPictureCtrl;
     interface IButton;
 }
-class CControlDemoWindow : public UI::IWindow
+class CSoft3DRotateWindow : public UI::IWindow
 {
 public:
-    CControlDemoWindow();
-	~CControlDemoWindow(void);
+    CSoft3DRotateWindow();
+	~CSoft3DRotateWindow(void);
 
- 	UI_BEGIN_MSG_MAP_Ixxx(CControlDemoWindow)
+ 	UI_BEGIN_MSG_MAP_Ixxx(CSoft3DRotateWindow)
         UIMSG_WM_PAINT(OnPaint)
         UIMSG_WM_INITIALIZE(OnInitWindow)
         UIMESSAGE_HANDLER_EX(UI_WM_DROPTARGETEVENT, OnDropTargetEvent)

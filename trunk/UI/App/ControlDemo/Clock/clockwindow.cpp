@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "clockwindow.h"
-#include "../resource.h"
+#include "../Other/resource.h"
 #include <time.h>
 #include "UISDK\Control\Inc\Interface\ilabel.h"
 #include "UISDK\Kernel\Inc\Interface\iobject3dwrap.h"
@@ -41,8 +41,8 @@ void ClockWindow::OnInitWindow()
         m_pSec->Get3DWrap()->Rotate(0, 0, 100);
     }
 
-    SetTimer(GetHWND(), 1, 200, NULL);
-    //CheckTime();
+    SetTimer(GetHWND(), 1, 50, NULL);
+    CheckTime();
 }
 
 void  ClockWindow::CheckTime()
@@ -53,26 +53,41 @@ void  ClockWindow::CheckTime()
     time( &t );
     localtime_s( &s_tm, &t );
 
+    // 由时间计算各各指针的旋转角度，满圈360度
+    // 秒针:
+    int nSecRotate = s_tm.tm_sec * 6;
+    // 分针:
+    int nMinRotate = s_tm.tm_min * 6;
+    // 时针： 满圈是12*60分钟也就是720分钟1分钟走0.5度
+    int nHourRotate = ((s_tm.tm_hour%12)*60 + s_tm.tm_min) >> 1;
+
+    bool bNeedUpdate = false;
+    if (nSecRotate != m_nSecRotate && m_pSec)
+    {
+        m_nSecRotate = nSecRotate;
+        m_pSec->Get3DWrap()->Rotate(0, 0, nSecRotate);
+        bNeedUpdate = true;
+    }
+
+    if (nMinRotate != m_nMinRotate && m_pMin)
+    {   
+        m_nMinRotate = nMinRotate;
+        m_pMin->Get3DWrap()->Rotate(0, 0, m_nMinRotate);        
+        bNeedUpdate = true;
+    }
+
+    if (nHourRotate != m_nHourRotate && m_pHour)
+    {
+        m_nHourRotate = nHourRotate;
+        m_pHour->Get3DWrap()->Rotate(0, 0, m_nHourRotate);
+        bNeedUpdate = true;
+    }
+
+    if (bNeedUpdate)
+        this->UpdateObject();
 }
 void  ClockWindow::OnTimer(UINT_PTR nIDEvent, LPARAM lParam)
 {
-    m_nHourRotate += 1;
-    m_nMinRotate += 2;
-    m_nSecRotate += 5;
-
-    if (m_pHour)
-    {
-        m_pHour->Get3DWrap()->Rotate(0, 0, m_nHourRotate);
-    }
-    if (m_pMin)
-    {
-        m_pMin->Get3DWrap()->Rotate(0, 0, m_nMinRotate);
-    }
-    if (m_pSec)
-    {
-        m_pSec->Get3DWrap()->Rotate(0, 0, m_nSecRotate);
-    }
-
-    this->UpdateObject();
+    CheckTime();
     return;
 }

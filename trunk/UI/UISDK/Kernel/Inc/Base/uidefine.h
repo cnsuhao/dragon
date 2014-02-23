@@ -138,6 +138,7 @@ enum PANEL_TYPE
 {
     PANEL_SCROLL           = 1 << CONTROL_TYPE_OFFSET,
     PANEL_LISTCTRLITEMROOT = 2 << CONTROL_TYPE_OFFSET,
+    PANEL_STAGE3D          = 3 << CONTROL_TYPE_OFFSET,
 };
 
 enum LAYER_TYPE
@@ -401,11 +402,14 @@ public:
 //   2. 对于像IButtonBase这种接口，由于ButtonBase没法直接从Control类继承，因此需要在
 //      IButtonBase::CreateImpl中单独调用一次IControl::CreateImpl(NULL)，因此将CreateImpl脱离出来
 //
+
+// 当前模块继承
 #define UI_IMPLEMENT_Ixxx_INTERFACE(interfacename, classname, basename)  \
     UI_IMPLEMENT_Ixxx_INTERFACE_Construct(interfacename, classname)      \
     UI_IMPLEMENT_Ixxx_INTERFACE_ProcessMessage(interfacename, classname) \
     UI_IMPLEMENT_Ixxx_INTERFACE_CreateImpl(interfacename, classname, basename)
 
+// 跨模块继承
 #define UI_IMPLEMENT_Ixxx_INTERFACE2(interfacename, classname, baseinterface)  \
     UI_IMPLEMENT_Ixxx_INTERFACE_Construct(interfacename, classname)      \
     UI_IMPLEMENT_Ixxx_INTERFACE_ProcessMessage(interfacename, classname) \

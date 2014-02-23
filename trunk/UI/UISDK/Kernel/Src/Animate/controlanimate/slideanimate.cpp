@@ -49,7 +49,7 @@ bool  SlideAnimate::Slide(IObject* pObjLeft, IObject* pObjRight, CRect* prcCommi
 
     IIntLinearMove* pMoveAlgo = NULL;
     IIntTimeline* pTimeline = (IIntTimeline*)CreateTimeline(
-        TLV_INT, 0, ITMA_Linear, (IMoveAlgorithm**)&pMoveAlgo);
+        TV_INT, 0, TMA_Linear, (IMoveAlgorithm**)&pMoveAlgo);
    
     pMoveAlgo->SetParam1(0, prcCommitInWindow->Width(), 300);
     this->SetWParam((WPARAM)this);

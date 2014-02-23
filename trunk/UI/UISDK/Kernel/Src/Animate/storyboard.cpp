@@ -2,7 +2,7 @@
 #include "storyboard.h"
 #include "UISDK\Kernel\Inc\Interface\ianimate.h"
 #include "UISDK\Kernel\Src\Animate\animatemgr.h"
-#include "intanimatetimeline.h"
+#include "timeline.h"
 #include "noneanimatetimeline.h"
 
 Storyboard::Storyboard()
@@ -54,24 +54,36 @@ bool  Storyboard::DestroyTimeline(int nTimelineId)
     return false;
 }
 
-ITimeline*  Storyboard::CreateTimeline(E_TIMELINE_VALUE_TYPE eType, int nTimelineId, int nMoveAlgo, IMoveAlgorithm** ppMoveAlgo)
+ITimeline*  Storyboard::CreateTimeline(TIMELINE_VALUE_TYPE eType, int nTimelineId, int nMoveAlgo, IMoveAlgorithm** ppMoveAlgo)
 {
     ITimeline* pRet = NULL;
     switch (eType)
     {
-    case TLV_INT:
+    case TV_INT:
         {
-            IntAnimateTimeline* p = new IntAnimateTimeline();
+            IntTimeline* p = new IntTimeline();
             p->SetAnimateMgrPtr(m_pAnimateMgr);
             pRet = static_cast<ITimeline*>(p);
 
-            IIntMoveAlgorithm* pAlgo = p->CreateMoveAlgorithm((E_INTTIMELINE_MOVE_ALGORITHM)nMoveAlgo);
+            IIntMoveAlgorithm* pAlgo = p->CreateMoveAlgorithm((TIMELINE_MOVE_ALGORITHM)nMoveAlgo);
             if (ppMoveAlgo && pAlgo)
                 *ppMoveAlgo = static_cast<IMoveAlgorithm*>(pAlgo);
         }
         break;
 
-    case TLV_NONE:
+    case TV_FLOAT:
+        {
+            FloatTimeline* p = new FloatTimeline();
+            p->SetAnimateMgrPtr(m_pAnimateMgr);
+            pRet = static_cast<ITimeline*>(p);
+
+            IFloatMoveAlgorithm* pAlgo = p->CreateMoveAlgorithm((TIMELINE_MOVE_ALGORITHM)nMoveAlgo);
+            if (ppMoveAlgo && pAlgo)
+                *ppMoveAlgo = static_cast<IMoveAlgorithm*>(pAlgo);
+        }
+        break;
+
+    case TV_NONE:
         {
             NoneAnimateTimeline* p = new NoneAnimateTimeline();
             p->SetAnimateMgrPtr(m_pAnimateMgr);
@@ -79,7 +91,7 @@ ITimeline*  Storyboard::CreateTimeline(E_TIMELINE_VALUE_TYPE eType, int nTimelin
         }
         break;
 
-    case TLV_RECT:
+    case TV_RECT:
         {
         }
         break;

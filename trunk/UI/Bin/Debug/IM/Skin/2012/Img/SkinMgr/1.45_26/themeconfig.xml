@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <theme name="延绵山脉" preview="preview.png">
-  <main file="main.jpg" drawtype="topright" bkcol="ff000000" avgcol="08274c"/>
+  <main file="main.jpg" drawtype="topright" bkcol="ff000000" avgcol="4c2708"/>
 </theme>
 
 

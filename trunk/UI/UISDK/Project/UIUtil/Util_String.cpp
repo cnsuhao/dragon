@@ -287,14 +287,91 @@ COLORREF  TranslateRGB(const TCHAR* szCol, TCHAR szSep)
     return col;
 }
 
+int Letter2Hex(TCHAR c)
+{
+    switch (c)
+    {
+    case _T('0'):
+        return 0;
+    case _T('1'):
+        return 1;
+    case _T('2'):
+        return 2;
+    case _T('3'):
+        return 3;
+    case _T('4'):
+        return 4;
+    case _T('5'):
+        return 5;
+    case _T('6'):
+        return 6;
+    case _T('7'):
+        return 7;
+    case _T('8'):
+        return 8;
+    case _T('9'):
+        return 9;
+    case _T('a'):
+    case _T('A'):
+        return 0xa;
+    case _T('b'):
+    case _T('B'):
+        return 0xb;
+    case _T('c'):
+    case _T('C'):
+        return 0xc;
+    case _T('d'):
+    case _T('D'):
+        return 0xd;
+    case _T('e'):
+    case _T('E'):
+        return 0xe;
+    case _T('f'):
+    case _T('F'):
+        return 0xf;
+    }
+    return 0;
+}
 COLORREF  TranslateHexColor(const TCHAR* szColor)
 {
     if (NULL == szColor)
         return 0;
 
-    long l = 0;
-    _stscanf(szColor, _T("%x"), &l);
-    return l;
+    int nLength = _tcslen(szColor);
+    
+    if (6 == nLength)
+    {
+        byte r = (Letter2Hex(szColor[0]) << 4) + Letter2Hex(szColor[1]);
+        byte g = (Letter2Hex(szColor[2]) << 4) + Letter2Hex(szColor[3]);
+        byte b = (Letter2Hex(szColor[4]) << 4) + Letter2Hex(szColor[5]);
+
+        return 0xff|(b<<16)|(g<<8)|r;
+    }
+    else if (8 == nLength)
+    {
+        // AARRGGBB
+        byte a = (Letter2Hex(szColor[0]) << 4) + Letter2Hex(szColor[1]);
+        byte r = (Letter2Hex(szColor[2]) << 4) + Letter2Hex(szColor[3]);
+        byte g = (Letter2Hex(szColor[4]) << 4) + Letter2Hex(szColor[5]);
+        byte b = (Letter2Hex(szColor[6]) << 4) + Letter2Hex(szColor[7]);
+
+        return (a<<24)|(b<<16)|(g<<8)|r;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+COLORREF  TranslateColor(const TCHAR* szColor)
+{
+    if (!szColor)
+        return 0;
+
+    if (szColor[0] == _T('#')) // 16½øÖÆ
+        return TranslateHexColor(szColor+1);
+    else
+        return TranslateColor(szColor);
 }
 
 bool  TranslateRECT(const TCHAR* szRect, RECT* pRect, TCHAR szSep)

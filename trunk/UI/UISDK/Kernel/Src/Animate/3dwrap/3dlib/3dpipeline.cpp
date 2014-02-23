@@ -185,7 +185,7 @@ void _3dPipeline::Do()
         if (0 != z)
             i_z = 1/z;
 
-        if (pt3DCamera[i].z > 0)    // 在视平面之内才能采用相似三角形进行计算
+        if (pt3DCamera[i].z > 0)    
         {
             pt3DPerspectivePos[i].x = d * pt3DCamera[i].x * i_z;  
             pt3DPerspectivePos[i].y = d * pt3DCamera[i].y * i_z; 

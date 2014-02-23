@@ -450,6 +450,18 @@ bool EditData::IsSelectionExist()
 	return (m_nCaret!=m_nSelStart);
 }
 
+bool  EditData::Clear()
+{
+    if (m_strText.length() == 0)
+        return false;
+    
+    m_strText.clear();
+    m_nSelStart = m_nCaret = 0;
+    this->Fire_Text_Changed();
+
+    return true;
+}
+
 //
 // BOOL bSetText，表示是否是因为调用Edit.SetText而触发的Change
 //
@@ -731,9 +743,6 @@ Edit::Edit()
 
 	m_nXScroll     = 0;
 	m_nCaretHeight = 16;
-
-	m_nXSelStart   = 0;
-	m_nXSelEnd	   = 0;
 	m_nXCaretPos   = 0;
 
 	m_nDrawFlags   = 0;
@@ -908,6 +917,28 @@ void Edit::SetSel(int nStartChar, int nEndChar)
 void Edit::GetSel(int& nStartChar,int& nEndChar) const
 {
 	m_EditData.GetSelectionInfo(nStartChar, nEndChar);
+}
+
+void  Edit::Clear(bool bUpdate)
+{
+    if (m_EditData.Clear())
+    {
+        bool bUpdate1 = false;
+        int  nOldXCaretPos = m_nXCaretPos;
+        this->CalcCaretPos(0, bUpdate1);
+
+        if (bUpdate)
+        {
+            m_pIEdit->UpdateObject();
+        }
+        if (nOldXCaretPos != m_nXCaretPos)
+        {
+            if (bUpdate)
+                this->UpdateCaretByPos();
+            else
+                m_bNeedUpdateCaretPos = true;
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

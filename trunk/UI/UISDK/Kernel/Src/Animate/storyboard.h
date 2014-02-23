@@ -20,7 +20,7 @@ public:
     bool  AddTimeline(ITimeline* p);
     bool  DestroyTimeline(int nTimelineId);
     ITimeline*  FindTimeline(int nTimelineId);
-    ITimeline*  CreateTimeline(E_TIMELINE_VALUE_TYPE eType, int nTimelineId, int nMoveAlgo, IMoveAlgorithm** ppMoveAlgo);
+    ITimeline*  CreateTimeline(TIMELINE_VALUE_TYPE eType, int nTimelineId, int nMoveAlgo, IMoveAlgorithm** ppMoveAlgo);
 
     IMessage*  GetNotifyObj();
     void  SetNotifyObj(IMessage* pNotify);

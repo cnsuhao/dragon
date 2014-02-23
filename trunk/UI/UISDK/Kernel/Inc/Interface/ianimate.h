@@ -1,4 +1,8 @@
-#pragma once
+#ifndef IANIMATE_H_D4A2D364_BE5D_4a61_985C_C09506B05ACB
+#define IANIMATE_H_D4A2D364_BE5D_4a61_985C_C09506B05ACB
+
+#include "ianimatedef.h"
+
 namespace UI
 {
 	//////////////////////////////////////////////////////////////////////////
@@ -6,25 +10,13 @@ namespace UI
 	//     动画接口
 	//
 	//////////////////////////////////////////////////////////////////////////
-    enum E_TIMELINE_VALUE_TYPE
-    {
-        TLV_NONE,
-        TLV_INT,
-        TLV_RECT,
-    };
-
-    enum TIMELINE_TIME_TYPE
-    {
-        TLT_BY_MS,
-        TLT_BY_SECOND,
-        TLT_BY_FRAME,
-    };
 
 	interface ITimeline : public IRootInterface
 	{
 		virtual void     Destroy() = 0;
 		virtual void     SetRepeateCount(int n) = 0;
         virtual void     SetTimeType(TIMELINE_TIME_TYPE eType) = 0;
+        virtual void     SetAutoReverse(bool b) = 0;
 		virtual bool     IsFinish() = 0;
 		virtual void     GetCurrentValue(void* ppOut) = 0;
 		virtual void     SetId(int nID) = 0;
@@ -39,22 +31,22 @@ namespace UI
 		virtual void     x_OnTick() = 0;
 	};
 
-
-
-    enum E_INTTIMELINE_MOVE_ALGORITHM
-    {
-        ITMA_Linear,
-        ITMA_Accelerate,
-    };
     interface IMoveAlgorithm 
     {
         virtual ~IMoveAlgorithm() = 0 {};
+
+        // 反向动画前，将动画参数进行反转
+        virtual void  Reverse() = 0;
     };
 
     interface IIntMoveAlgorithm : public IMoveAlgorithm
     {
         // t表示从动画开始到现在经过的时间(frame/ms/s)
         virtual bool OnTick(int t, int* pCurrentValue) = 0;
+    };
+    interface IFloatMoveAlgorithm : public IMoveAlgorithm
+    {
+        virtual bool OnTick(int t, float* pCurrentValue) = 0;
     };
 
     // S = VT
@@ -63,6 +55,12 @@ namespace UI
         virtual void SetParam1(int from, int to, int t) = 0;
         virtual void SetParam2(int from, int to, float v) = 0;
         virtual void SetParam3(int from, float v, int t) = 0;
+    };
+    interface IFloatLinearMove : public IFloatMoveAlgorithm
+    {
+        virtual void SetParam1(float from, float to, float t) = 0;
+        virtual void SetParam2(float from, float to, float v) = 0;
+        virtual void SetParam3(float from, float v, float t) = 0;
     };
 
     // Vt^2 - Vo^2 = 2as
@@ -73,6 +71,21 @@ namespace UI
         virtual void SetParam1(int from, int to, int t, float Vo) = 0;
         //virtual void SetParam2(int from, int t, int a, int Vo, int Vt) = 0;
     };
+    interface IFloatAccelerateMove : public IFloatMoveAlgorithm
+    {
+        virtual void SetParam1(float from, float to, float t, float Vo) = 0;
+    };
+
+    interface IIntEasingMove : public IIntMoveAlgorithm
+    {
+        virtual void SetParam(int from, int to, int t, EaseType eType) = 0;
+    };
+    interface IFloatEasingMove : public IFloatMoveAlgorithm
+    {
+        virtual void SetParam(float from, float to, float t, EaseType eType) = 0;
+    };
+
+
 
 	interface IIntTimeline : public ITimeline
 	{
@@ -90,6 +103,11 @@ namespace UI
 // 		virtual void   SetFromBy(LPRECT lprcFrom, LPRECT lprcBy) = 0;
 	};
 
+    interface IFloatTimeline : public ITimeline
+    {
+        virtual void   SetOutRef(float* pRef) = 0;
+    };
+
 
     class Storyboard;
     interface UISDKAPI IStoryboard : public IRootInterface
@@ -106,7 +124,7 @@ namespace UI
         void    SetLParam(LPARAM lParam);
         LPARAM  GetLParam();
 
-        ITimeline*  CreateTimeline(E_TIMELINE_VALUE_TYPE eType, int nTimelineId, int nMoveAlgo, IMoveAlgorithm** ppMoveAlgo);
+        ITimeline*  CreateTimeline(TIMELINE_VALUE_TYPE eType, int nTimelineId, int nMoveAlgo, IMoveAlgorithm** ppMoveAlgo);
         ITimeline*  FindTimeline(int nTimelineId);
 //        bool  AddTimeline(ITimeline* p);
 //        bool  DestroyTimeline(int nTimelineId);
@@ -172,13 +190,6 @@ namespace UI
         UI_DECLARE_Ixxx_INTERFACE_CreateImpl(IControlAnimateBase, ControlAnimateBase);
     };
 
-    enum SLIDE_ANIMATE_FLAG
-    {
-        SLIDE_LEFT2RIGHT,
-        SLIDE_TOP2BOTTOM,
-        SLIDE_RIGHT2LEFT,
-        SLIDE_BOTTOM2TOP,
-    };
 
     // 两个控件滑动
     class SlideAnimate;
@@ -188,17 +199,6 @@ namespace UI
         UI_DECLARE_Ixxx_INTERFACE_CreateImpl(ISlideAnimate, SlideAnimate);
 
         bool  Slide(IObject* pObj1Left, IObject* pObj2Right, CRect* prcCommitInWindow, int nFlags);
-    };
-
-	enum E_WINDOW_ANIMATE_TYPE
-	{
-		E_WINDOW_ANIMATE_3D_ROTATE,
-        E_WINDOW_ANIMATE_UPDOWNALPHASHOW,
-        E_WINDOW_ANIMATE_ALPHASHOW,
-	};
-    enum E_CONTROL_ANIMATE_TYPE
-    {
-        E_CONTROL_ANIMATE_SLIDE,
     };
 
     class AnimateManager;
@@ -222,3 +222,5 @@ namespace UI
         AnimateManager*  m_pImpl;
 	}; 
 }
+
+#endif // IANIMATE_H_D4A2D364_BE5D_4a61_985C_C09506B05ACB

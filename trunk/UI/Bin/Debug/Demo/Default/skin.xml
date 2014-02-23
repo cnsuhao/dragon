@@ -7,6 +7,9 @@
 
   <include>clock.xml</include>
   <include>reshadow.xml</include>
+  <include>stage3d.xml</include>
+  <include>stageleave.xml</include>
+  <include>animate.xml</include>
   <layout>
     <Window id="mainwindow" minwidth="200" minheight="200">
       <Button id="btnStart" layout.left="30" layout.top="10" width="100" height="28" text="Start"
@@ -18,13 +21,13 @@
               bkgnd.render.image.drawtype="stretch" istransparent="1" drawfocus="0"/>
 
       <PictureCtrl id="pic" layout.left="50" layout.top="70" width="300" height="300" istransparent="1"
-              xbkgnd.render.type="image" bkgnd.render.image="test" bkgnd.render.image.drawtype="stretch"
-              bkgnd.render.type="color" bkgnd.render.color="black"
+              bkgnd.render.type="image" bkgnd.render.image="test" bkgnd.render.image.drawtype="stretch"
+              xbkgnd.render.type="color" bkgnd.render.color="black"
               bkgnd.render.border="1" bkgnd.render.border.color="border"/>
 
       <PictureCtrl id="pic2" layout.left="400" layout.top="70" width="300" height="300" istransparent="1"
-              xbkgnd.render.type="image" bkgnd.render.image="test" bkgnd.render.image.drawtype="stretch"
-              bkgnd.render.type="color" bkgnd.render.color="black"
+              bkgnd.render.type="image" bkgnd.render.image="test" bkgnd.render.image.drawtype="stretch"
+              xbkgnd.render.type="color" bkgnd.render.color="black"
               bkgnd.render.border="1" bkgnd.render.border.color="border"/>
 
       <PictureCtrl id="pic3" layout.left="800" layout.top="70" width="300" height="300" istransparent="1"
@@ -39,15 +42,19 @@
     <image id="test" path="test.png" count="3"/>
     
     <!-- 时钟demo -->
-    <image id="clock_bk" path="clock.jpg"/>
-    <image id="clock_hour" path="hourhand.png"/>
-    <image id="clock_min"  path="minhand.png"/>
-    <image id="clock_sec"  path="sechand.png"/>
+    <image id="clock_bk"   path="clock\clock.jpg"/>
+    <image id="clock_hour" path="clock\hourhand.png"/>
+    <image id="clock_min"  path="clock\minhand.png"/>
+    <image id="clock_sec"  path="clock\sechand.png"/>
+    
+    <!-- 落叶 -->
+    <image id="leave_text" path="leaves\textBackground.png"></image>
   </image>
 
   <font>
     <item id="normal" facename="微软雅黑" size="9" bold="0"/>
     <item id="normal2" facename="宋体" size="9"/>
+    <item id="fall_leaves_text" facename="Georgia" size="24"/>
   </font>
 
   <color>

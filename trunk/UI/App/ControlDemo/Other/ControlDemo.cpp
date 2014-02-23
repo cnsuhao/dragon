@@ -3,9 +3,12 @@
 
 #include "stdafx.h"
 #include "ControlDemo.h"
-#include "ControlDemoWindow.h"
-#include "Clock/clockwindow.h"
-#include "REShadow/reshadow.h"
+#include "../Soft3DRotate/ControlDemoWindow.h"
+#include "../Clock/clockwindow.h"
+#include "../REShadow/reshadow.h"
+#include "../Stage3D/Stage3DWindow.h"
+#include "../Stage3D_Leaves/StageLeavesWindow.h"
+#include "../Animate/AnimateWindow.h"
 
 #define MAX_LOADSTRING 100
 
@@ -61,9 +64,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
     g_pUIApp->SetLog(NULL, (BSTR)str.c_str());
 
     UI_Ctrl_RegisterUIObject(g_pUIApp);
-//    IM_Ctrl_RegisterUIObject(g_pUIApp);
-  	{
 
+    {
 #ifdef DEMO_CLOCK
         ClockWindow* pWnd = NULL;
         ClockWindow::CreateInstance(g_pUIApp, &pWnd);
@@ -77,10 +79,34 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
         SetWindowPos(g_hWnd, 0, 50, 50, 300, 300, SWP_NOZORDER);
 
         pWnd->Attach(g_pUIApp, g_hWnd, _T("reshadow"));
+
+#elif defined DEMO_STAGE3D
+        UI::UI3D_RegisterUIObject(g_pUIApp);
+
+        CStage3DWindow* pWnd = NULL;
+        CStage3DWindow::CreateInstance(g_pUIApp, &pWnd);
+        SetWindowPos(g_hWnd, 0, 50, 50, 500, 500, SWP_NOZORDER);
+
+        pWnd->Attach(g_pUIApp, g_hWnd, _T("stage3d"));
+
+#elif defined DEMO_STAGELEAVES
+		UI::UI3D_RegisterUIObject(g_pUIApp);
+
+		CStageLeavesWindow* pWnd = NULL;
+		CStageLeavesWindow::CreateInstance(g_pUIApp, &pWnd);
+		SetWindowPos(g_hWnd, 0, 50, 0, 610, 860, SWP_NOZORDER);
+
+		pWnd->Attach(g_pUIApp, g_hWnd, _T("stageparticle"));
+
+#elif defined DEMO_ANIMATE
+        CAnimateWindow* pWnd = NULL;
+        CAnimateWindow::CreateInstance(g_pUIApp, &pWnd);
+
+        pWnd->Attach(g_pUIApp, g_hWnd, _T("animate"));
 #else
 
-        CControlDemoWindow* pWnd = NULL;
-        CControlDemoWindow::CreateInstance(g_pUIApp, &pWnd);
+        CSoft3DRotateWindow* pWnd = NULL;
+        CSoft3DRotateWindow::CreateInstance(g_pUIApp, &pWnd);
         
   		pWnd->Attach(g_pUIApp, g_hWnd, _T("mainwindow"));
 #endif

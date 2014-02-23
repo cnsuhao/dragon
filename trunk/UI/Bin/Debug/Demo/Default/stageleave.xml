@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<skin>
+  <layout>
+    <Window id="stageparticle"  minwidth="500" minheight="500" bkgnd.render.type="color" bkgnd.render.color="#FF4E4226">
+      <Panel layout.left="46" layout.top="46" width="508" height="708" bkgnd.render.type="color" bkgnd.render.color="#ff5c090a">
+        <Stage3D id="stageparticle" layout.left="4" layout.top="4" width="500" height="700">
+          <Panel id="text" layout.left="0" layout.top="180" layout.right="0" height="324" bkgnd.render.type="image" bkgnd.render.image="leave_text" bkgnd.render.image.drawtype="stretch">
+            <Label layout.left="0" layout.top="0" layout.right="0" layout.bottom="0"
+              text="Fall leaves are beautiful..." textrender.type="normal" textrender.color="#FF5C090A" textrender.font="fall_leaves_text"/>
+          </Panel>
+        </Stage3D>
+      </Panel>
+    </Window>
+  </layout>
+  
+</skin>

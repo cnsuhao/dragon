@@ -648,7 +648,7 @@ void  CMainDlg::ShowList(MainDlgListPluginInfo* pListInfo)
     UI::IStoryboard* pStoryboard = GetUIApplication()->GetAnimateMgr()->CreateStoryboard();
     UI::IIntAccelerateMove* pMoveAlgo = NULL;
     UI::IIntTimeline* pTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(
-        UI::TLV_INT, 0, UI::ITMA_Accelerate, (UI::IMoveAlgorithm**)&pMoveAlgo);
+        UI::TV_INT, 0, UI::TMA_Accelerate, (UI::IMoveAlgorithm**)&pMoveAlgo);
 
     pMoveAlgo->SetParam1(0, m_pPanelList->GetWidth(), 100, m_pPanelList->GetWidth()*20/1000.0f);
     

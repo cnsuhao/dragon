@@ -9,6 +9,7 @@ GdiplusRenderTarget::GdiplusRenderTarget(HWND hWnd):IRenderTarget(hWnd)
 	m_pGraphics = NULL;
 	m_hDC = NULL;
 	m_hRgnMeta = NULL;
+    m_pGdiMemBitmap = NULL;
 }
 GdiplusRenderTarget::~GdiplusRenderTarget()
 {

@@ -121,12 +121,15 @@ void  PerspectiveTextureMapping::DoFlatTopTriangle(TexturePoint* A, TexturePoint
     int  Bz = (1<<FIXP28_SHIFT) / nBz;
     int  Cz = (1<<FIXP28_SHIFT) / nCz;
 
-    int   Au = (A->u << FIXP22_SHIFT) / nAz; 
-    int   Av = (A->v << FIXP22_SHIFT) / nAz; 
-    int   Bu = (B->u << FIXP22_SHIFT) / nBz; 
-    int   Bv = (B->v << FIXP22_SHIFT) / nBz; 
-    int   Cu = (C->u << FIXP22_SHIFT) / nCz; 
-    int   Cv = (C->v << FIXP22_SHIFT) / nCz; 
+    int   Au = (A->u << FIXP20_SHIFT) / nAz; 
+    int   Av = (A->v << FIXP20_SHIFT) / nAz; 
+    int   Bu = (B->u << FIXP20_SHIFT) / nBz; 
+    int   Bv = (B->v << FIXP20_SHIFT) / nBz; 
+    int   Cu = (C->u << FIXP20_SHIFT) / nCz; 
+    int   Cv = (C->v << FIXP20_SHIFT) / nCz; 
+
+    // 避免图片太大导致溢出。FIXP20_SHIFT只能保证2048的大小
+    assert(Au > 0 && Av > 0 && Bu > 0 && Bv > 0 && Cu > 0 && Cv > 0);  
 
     int  nHeight = (C->yt - A->yt);  // A-B等高
 
@@ -177,12 +180,15 @@ void  PerspectiveTextureMapping::DoFlatBottomTriangle(TexturePoint* A, TexturePo
     int  Bz = (1<<FIXP28_SHIFT) / nBz;
     int  Cz = (1<<FIXP28_SHIFT) / nCz;
 
-    int  Au = (A->u << FIXP22_SHIFT) / nAz; 
-    int  Av = (A->v << FIXP22_SHIFT) / nAz; 
-    int  Bu = (B->u << FIXP22_SHIFT) / nBz; 
-    int  Bv = (B->v << FIXP22_SHIFT) / nBz; 
-    int  Cu = (C->u << FIXP22_SHIFT) / nCz; 
-    int  Cv = (C->v << FIXP22_SHIFT) / nCz; 
+    int  Au = (A->u << FIXP20_SHIFT) / nAz; 
+    int  Av = (A->v << FIXP20_SHIFT) / nAz; 
+    int  Bu = (B->u << FIXP20_SHIFT) / nBz; 
+    int  Bv = (B->v << FIXP20_SHIFT) / nBz; 
+    int  Cu = (C->u << FIXP20_SHIFT) / nCz; 
+    int  Cv = (C->v << FIXP20_SHIFT) / nCz; 
+
+    // 避免图片太大导致溢出。FIXP20_SHIFT只能保证2048的大小
+    assert(Au > 0 && Av > 0 && Bu > 0 && Bv > 0 && Cu > 0 && Cv > 0);  
 
     int  nHeight = (C->yt - A->yt);  // B-C等高
 
@@ -241,12 +247,15 @@ void  PerspectiveTextureMapping::DoGeneralTriangle(TexturePoint* A, TexturePoint
     int  Bz = (1<<FIXP28_SHIFT) / nBz;
     int  Cz = (1<<FIXP28_SHIFT) / nCz;
 
-    int   Au = (A->u << FIXP22_SHIFT) / nAz;   // 将u,v转化为u/z,v/z后，才能采用线性插值的方法
-    int   Av = (A->v << FIXP22_SHIFT) / nAz;
-    int   Bu = (B->u << FIXP22_SHIFT) / nBz;
-    int   Bv = (B->v << FIXP22_SHIFT) / nBz;
-    int   Cu = (C->u << FIXP22_SHIFT) / nCz;
-    int   Cv = (C->v << FIXP22_SHIFT) / nCz;
+    int   Au = (A->u << FIXP20_SHIFT) / nAz;   // 将u,v转化为u/z,v/z后，才能采用线性插值的方法
+    int   Av = (A->v << FIXP20_SHIFT) / nAz;
+    int   Bu = (B->u << FIXP20_SHIFT) / nBz;
+    int   Bv = (B->v << FIXP20_SHIFT) / nBz;
+    int   Cu = (C->u << FIXP20_SHIFT) / nCz;
+    int   Cv = (C->v << FIXP20_SHIFT) / nCz;
+
+    // 避免图片太大导致溢出。FIXP20_SHIFT只能保证2048的大小
+    assert(Au > 0 && Av > 0 && Bu > 0 && Bv > 0 && Cu > 0 && Cv > 0);  
 
     param.uStart = Au;   // 扫描线所对应的纹理坐标范围
     param.vStart = Av;
@@ -448,21 +457,23 @@ void  PerspectiveTextureMapping::_do_triangle(MappingParam* pParam)
 
         for (int x = xStart; x <= xEnd; x++)
         {
-			// [注]：两次除尘导致效率太低了
+			// [注]：两次除法导致效率太低了
 
 			// v/z要还原为v，需要再乘回z. 在这里 nz = 1/z，因此 ny = nv/nz
+
+#if 1
 			__asm
 			{
-				// ny = (nv << FIXP6_SHIFT) / nz;
+				// ny = (nv << FIXP8_SHIFT) / nz;
 				mov    eax, nv
-				shl    eax, 6 
+				shl    eax, 8 
 				cdq         
 				idiv   nz
 				mov    edi, eax  ;  // ny <- edi
 
-				// nx = (nu << FIXP6_SHIFT) / nz;
+				// nx = (nu << FIXP8_SHIFT) / nz;
 				mov    eax, nu     
-				shl    eax, 6 
+				shl    eax, 8 
 				cdq         
 				idiv   nz 
 				mov    edx, eax  ;  // nx <- edx 
@@ -475,11 +486,11 @@ void  PerspectiveTextureMapping::_do_triangle(MappingParam* pParam)
 				mov    dword ptr[ecx], eax
 			}
 
-#if 0
-			nx = (nu << FIXP6_SHIFT) / nz;
-			ny = (nv << FIXP6_SHIFT) / nz;
+#else
+			nx = (nu << FIXP8_SHIFT) / nz;
+			ny = (nv << FIXP8_SHIFT) / nz;
 
-//             if (nx < uvRange.left || ny < uvRange.top || nx >= uvRange.right || ny >= uvRange.bottom)
+//             if (nx < 0 || ny < 0/* || nx >= uvRange.right || ny >= uvRange.bottom*/)
 //             {
 // 
 //             }
@@ -487,7 +498,7 @@ void  PerspectiveTextureMapping::_do_triangle(MappingParam* pParam)
             {
                 // *pDestBuf =  GetPixelValue(pSrcBit, nSrcPitch, nx, ny);
                 // *pDestBuf =  *((pdwTextureYIndex[ny])+nx);
-                *pDestBuf =  GetPixelValue2(pSrcBit, nPitchOffset, nx, ny);
+                *pDestBuf = GetPixelValue2(pSrcBit, nPitchOffset, nx, ny);
             }
 #endif
             nu += kuScanline;
@@ -551,10 +562,10 @@ void  PerspectiveTextureMapping::_do_triangle_subdivided_affine(MappingParam* pP
 		xEnd = (pParam->xEnd + FIXP16_ROUND_UP) >> FIXP16_SHIFT;
 		xWidth = xEnd - xStart;
 
-		uStart = ((pParam->uStart << FIXP6_SHIFT) / (pParam->zStart >> FIXP6_SHIFT)) << FIXP16_SHIFT;
-		vStart = ((pParam->vStart << FIXP6_SHIFT) / (pParam->zStart >> FIXP6_SHIFT)) << FIXP16_SHIFT;
-		uEnd   = ((pParam->uEnd << FIXP6_SHIFT) / (pParam->zEnd >> FIXP6_SHIFT)) << FIXP16_SHIFT;
-		vEnd   = ((pParam->vEnd << FIXP6_SHIFT) / (pParam->zEnd >> FIXP6_SHIFT)) << FIXP16_SHIFT;
+		uStart = ((pParam->uStart << FIXP8_SHIFT) / (pParam->zStart >> FIXP8_SHIFT)) << 12;  // uStart仍是FIXP20_SHIFT，因此还需要<<12: (20+8 - (28-8))+12 = 20
+		vStart = ((pParam->vStart << FIXP8_SHIFT) / (pParam->zStart >> FIXP8_SHIFT)) << 12;
+		uEnd   = ((pParam->uEnd << FIXP8_SHIFT) / (pParam->zEnd >> FIXP8_SHIFT)) << 12;
+		vEnd   = ((pParam->vEnd << FIXP8_SHIFT) / (pParam->zEnd >> FIXP8_SHIFT)) << 12;
 		
 		int  kuScanline = 0;
 		int  kvScanline = 0;
@@ -571,8 +582,8 @@ void  PerspectiveTextureMapping::_do_triangle_subdivided_affine(MappingParam* pP
 			kvScanline = (vEnd - vStart);
 		}
 
-		int   nu = uStart;  
-		int   nv = vStart;
+		int  nu = uStart;  
+		int  nv = vStart;
 
 		DWORD* pDestBuf = GetPixelAddr(pDstBit, nDstPitch, xStart, y);
 
@@ -591,42 +602,15 @@ void  PerspectiveTextureMapping::_do_triangle_subdivided_affine(MappingParam* pP
 		{
 			xEnd = nDstWidth;
 		}
-#if 1
+
 		for (int x = xStart; x <= xEnd; x++)
 		{
-			*pDestBuf =  GetPixelValue2(pSrcBit, nPitchOffset, (nu>>FIXP22_SHIFT), (nv>>FIXP22_SHIFT));
+    	    *pDestBuf = GetPixelValue2(pSrcBit, nPitchOffset, (nu>>FIXP20_SHIFT), (nv>>FIXP20_SHIFT));
 
 			nu += kuScanline;
 			nv += kvScanline;
 			pDestBuf++;
 		}
-#else
-		__asm mov    edi, dword ptr [pDestBuf]
-		for (int x = xStart; x <= xEnd; x++)
-		{
-			__asm
-			{
-				mov    eax, nv
-				shr    eax, 16h  ;  // ny = nv>>FIXP22_SHIFT;
-				mov    ecx, nPitchOffset 
-				shl    eax, cl   ;  // ny << nPitchOffset
-				mov    ebx, eax  ;  // ny : ebx
-				add    ebx, pSrcBit;// pSrc += ny
-
-				mov    eax, nu   
-				shr    eax, 16h  ;  // nx = nu>>FIXP22_SHIFT;
-				mov    edx, eax  ;  // nx <- edx 
-
-				mov    eax, dword ptr [ebx+edx*4] 
-				;mov    edi, dword ptr [pDestBuf]
-				mov    dword ptr[edi], eax
-			}
-
-			nu += kuScanline;
-			nv += kvScanline;
-			__asm add edi, 4; // pDestBuf++;
-		}
-#endif
 
 		pParam->xStart += pParam->kxLeft;
 		pParam->xEnd += pParam->kxRight;

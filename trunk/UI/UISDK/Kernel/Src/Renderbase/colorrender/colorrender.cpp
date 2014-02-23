@@ -119,8 +119,16 @@ void ColorRender::SetAttribute(SetAttrPrefixData* pData)
 	strAttrib.append(XML_RENDER_COLOR);
 
 	const TCHAR* szText = pMapAttrib->GetAttr(strAttrib.c_str(), pData->bErase);
-	if (szText)
-		pColorRes->GetColor((BSTR)szText, &m_pBkColor);
+	if (szText) 
+    { 
+		pColorRes->GetColor((BSTR)szText, &m_pBkColor); 
+
+        if (!m_pBkColor)
+        {
+            COLORREF color = Util::TranslateColor(szText);  // 直接翻译，不根据ID去映射
+            m_pBkColor = Color::CreateInstance(color);
+        }
+    }
 
     strAttrib.clear();
     if (szPrefix)
@@ -128,7 +136,14 @@ void ColorRender::SetAttribute(SetAttrPrefixData* pData)
     strAttrib.append(XML_RENDER_BORDERCOLOR);
     szText = pMapAttrib->GetAttr(strAttrib.c_str(), pData->bErase);
     if (szText)
+    {
         pColorRes->GetColor((BSTR)szText, &m_pBorderColor);
+        if (!m_pBorderColor)
+        {
+            COLORREF color = Util::TranslateColor(szText);
+            m_pBorderColor = Color::CreateInstance(color);
+        }
+    }
 
     strAttrib.clear();
     if (szPrefix)
@@ -350,13 +365,27 @@ void GradientRender::SetAttribute(SetAttrPrefixData* pData)
 	strAttrib.append(XML_RENDER_COLORFROM);
 	const TCHAR* szText = pMapAttrib->GetAttr(strAttrib.c_str(), pData->bErase);
 	if (szText)
+    {
 		pColorRes->GetColor((BSTR)szText, &m_pColorFrom);
+        if (!m_pColorFrom)
+        {
+            COLORREF color = Util::TranslateColor(szText);  // 直接翻译，不根据ID去映射
+            m_pColorFrom = Color::CreateInstance(color);
+        }
+    }
 
 	strAttrib = szPrefix ? szPrefix:_T("");
 	strAttrib.append(XML_RENDER_COLORTO);
 	szText = pMapAttrib->GetAttr(strAttrib.c_str(), pData->bErase);
 	if (szText)
+    {
 		pColorRes->GetColor((BSTR)szText, &m_pColorTo);
+        if (!m_pColorTo)
+        {
+            COLORREF color = Util::TranslateColor(szText);  // 直接翻译，不根据ID去映射
+            m_pColorTo = Color::CreateInstance(color);
+        }
+    }
 
     strAttrib = szPrefix ? szPrefix:_T("");
     strAttrib.append(XML_RENDER_COLOR_GRADIENT_DIR);
@@ -373,7 +402,14 @@ void GradientRender::SetAttribute(SetAttrPrefixData* pData)
     strAttrib.append(XML_RENDER_BORDERCOLOR);
     szText = pMapAttrib->GetAttr(strAttrib.c_str(), pData->bErase);
     if (szText)
+    {
         pColorRes->GetColor((BSTR)szText, &m_pBorderColor);
+        if (!m_pBorderColor)
+        {
+            COLORREF color = Util::TranslateColor(szText);  // 直接翻译，不根据ID去映射
+            m_pBorderColor = Color::CreateInstance(color);
+        }
+    }
 
     strAttrib = szPrefix ? szPrefix : _T("");
     strAttrib.append(XML_RENDER_BORDER);
@@ -515,6 +551,12 @@ void ColorListRender::SetAttribute(SetAttrPrefixData* pData)
 			if (! vColors[i].empty())
 			{
 				pColorRes->GetColor((BSTR)vColors[i].c_str(), &m_vBkColor[i]);
+
+                if (!m_vBkColor[i])
+                {
+                    COLORREF color = Util::TranslateColor(szText);  // 直接翻译，不根据ID去映射
+                    m_vBkColor[i] = Color::CreateInstance(color);
+                }
 			}
 		}
 	}
@@ -536,6 +578,12 @@ void ColorListRender::SetAttribute(SetAttrPrefixData* pData)
 			if (! vColors[i].empty())
 			{
 				pColorRes->GetColor((BSTR)vColors[i].c_str(), &m_vBorderColor[i]);
+
+                if (!m_vBorderColor[i])
+                {
+                    COLORREF color = Util::TranslateColor(szText);  // 直接翻译，不根据ID去映射
+                    m_vBorderColor[i] = Color::CreateInstance(color);
+                }
 			}
 		}
 	}

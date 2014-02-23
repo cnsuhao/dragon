@@ -76,6 +76,7 @@ public:
 	void    SetSelectionInfo(int nStart, int nEnd, bool& bUpdate);
 	void    GetSelectionText(String& str);
 	bool    IsSelectionExist();
+    bool    Clear();
 
 	bool    CP2X(int nCP, int* pX);
 	bool    X2CP(int nX, int* pnCP, int* pbTrailOrLead);
@@ -224,6 +225,7 @@ public:
     bool  DoPaste();
 	void  SetSel(int nStartChar, int nEndChar);
 	void  GetSel(int& nStartChar,int& nEndChar) const;
+    void  Clear(bool bUpdate);
 
     bool  IsReadOnly();
     void  SetReadOnly(bool b, bool bUpdate);
@@ -249,9 +251,6 @@ private:
 
 	int			m_nXScroll;	                // 字符滚动的长度
 	int			m_nCaretHeight;				// 光标的高度
-
-	int			m_nXSelStart;				// 被选择的字符起点的x坐标
-	int			m_nXSelEnd;					// 被选择的字符终点的x坐标
 	int			m_nXCaretPos;				// 光标的位置，基于padding.left
 
 	int         m_nDrawFlags;               // 绘制的一些参数设置

@@ -194,7 +194,7 @@ void CChatDlg::OnBnClickAnimate()
     UI::IAnimateManager* pAnimateMgr = GetUIApplication()->GetAnimateMgr();
     UI::IStoryboard*  pStoryboard = pAnimateMgr->CreateStoryboard();
     UI::IIntLinearMove* pMoveAlgo = NULL;
-    UI::IIntTimeline* pIntTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(UI::TLV_INT, 0, UI::ITMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo);
+    UI::IIntTimeline* pIntTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(UI::TV_INT, 0, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo);
 
 	if (m_eRightPanelState == RIGHT_PANEL_STATE_COLLAPSE)
 	{

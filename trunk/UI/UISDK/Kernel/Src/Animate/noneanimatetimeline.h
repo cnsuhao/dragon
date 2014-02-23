@@ -8,8 +8,9 @@ class NoneAnimateTimeline : public ITimelineImpl<INoneTimeline>
 {
 public:
     virtual void  GetCurrentValue(void* ppOut){}
-    virtual void  x_OnTick(){}
-    virtual void  Init(){}
+    virtual void  Init() {};
+    virtual bool  OnTick(int nTimeElapse) { return true; }
+    virtual void  OnReverse() {}
 };
 
 }

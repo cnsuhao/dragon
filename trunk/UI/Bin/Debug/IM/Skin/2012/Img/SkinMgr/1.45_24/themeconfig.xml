@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <theme name="竹韵" preview="preview.png">
-  <main file="main.jpg" drawtype="topright" bkcol="ffedece8" avgcol="dfe3dd"/>
+  <main file="main.jpg" drawtype="topright" bkcol="ffe8eced" avgcol="dde3df"/>
 </theme>
 
 

@@ -47,12 +47,12 @@ public:
         int    kzLeft;  // [定点数]
         int    kzRight; // [定点数]
         
-        int    uStart;  // [定点数] 扫描线所对应的纹理坐标范围, FIXP22_SHIFT
+        int    uStart;  // [定点数] 扫描线所对应的纹理坐标范围, FIXP20_SHIFT
         int    vStart;  // [定点数]
         int    uEnd;    // [定点数]
         int    vEnd;    // [定点数]
 
-        int    kuLeft;  // [定点数] 纹理坐标在y方向上的增加率, FIXP22_SHIFT
+        int    kuLeft;  // [定点数] 纹理坐标在y方向上的增加率, FIXP20_SHIFT
         int    kvLeft;  // [定点数]
         int    kuRight; // [定点数]
         int    kvRight; // [定点数]

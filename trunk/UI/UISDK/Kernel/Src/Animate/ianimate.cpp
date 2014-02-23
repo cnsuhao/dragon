@@ -33,7 +33,7 @@ UI_IMPLEMENT_Ixxx_INTERFACE_CreateImpl(ISlideAnimate, SlideAnimate, ControlAnima
 
 // bool  IStoryboard::AddTimeline(ITimeline* p)             { return m_pStoryboardImpl->AddTimeline(p); }
 // bool  IStoryboard::DestroyTimeline(int nTimelineId)      { return m_pStoryboardImpl->DestroyTimeline(nTimelineId); }
-ITimeline*  IStoryboard::CreateTimeline(E_TIMELINE_VALUE_TYPE eType, int nTimelineId, int nMoveAlgo, IMoveAlgorithm** ppMoveAlgo)
+ITimeline*  IStoryboard::CreateTimeline(TIMELINE_VALUE_TYPE eType, int nTimelineId, int nMoveAlgo, IMoveAlgorithm** ppMoveAlgo)
 { return m_pStoryboardImpl->CreateTimeline(eType, nTimelineId, nMoveAlgo, ppMoveAlgo); }
 ITimeline*  IStoryboard::FindTimeline(int nTimelineId)   { return m_pStoryboardImpl->FindTimeline(nTimelineId); }
 void  IStoryboard::Begin()                               { m_pStoryboardImpl->Begin(); }

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 
 <theme name="欣欣向荣" preview="preview.png">
-  <main file="main.jpg" drawtype="topright" bkcol="ffbe8058" avgcol="b27e5c"/>
+  <main file="main.jpg" drawtype="topright" bkcol="ff5880be" avgcol="5c7eb2"/>
 </theme>
 
 
