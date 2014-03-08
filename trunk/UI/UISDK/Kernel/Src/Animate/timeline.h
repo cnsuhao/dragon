@@ -5,9 +5,9 @@
 
 namespace UI
 {
-#define ANIMATE_TIME_LINE_FLAG_FINISH       0x0004   // 指示一个timeline是否已经到期结束了
-#define ANIMATE_TIME_LINE_FLAG_NEED_RESET   0x0008   // 表示一个timeline一次循环结束，下次开始前需要重置
-#define ANIMATE_TIME_LIEN_FLAG_REVERSING    0x0010   // 表示正在反向进行动画
+#define TIMELINE_FLAG_FINISH       0x0004   // 指示一个timeline是否已经到期结束了
+#define TIMELINE_FLAG_NEED_RESET   0x0008   // 表示一个timeline一次循环结束，下次开始前需要重置
+#define TIMELIEN_FLAG_REVERSING    0x0010   // 表示正在反向进行动画
 
     template <class T>
     class ITimelineImpl : public T //public ITimeline
@@ -39,7 +39,11 @@ namespace UI
         }
         virtual bool  IsFinish() 
         { 
-            return m_nFlags & ANIMATE_TIME_LINE_FLAG_FINISH ? true:false; 
+            return m_nFlags & TIMELINE_FLAG_FINISH ? true:false; 
+        }
+        virtual void SetFinish() 
+        { 
+            m_nFlags |= TIMELINE_FLAG_FINISH;
         }
         virtual void  SetUserData(LPARAM lParam)
         { 
@@ -75,30 +79,25 @@ namespace UI
             this->Init();
             m_nBeginTime = GetTickCount();
         }
-        virtual void x_SetFinishFlag() 
-        { 
-            m_nFlags |= ANIMATE_TIME_LINE_FLAG_FINISH;
-        }
-
 
         // 注：GetTickCount的精度很低，只有15/16ms
-        virtual void x_OnTick()
+        // 返回是否结束
+        virtual bool x_OnTick()
         {
-            if (m_nFlags & ANIMATE_TIME_LINE_FLAG_NEED_RESET)
+            if (m_nFlags & TIMELINE_FLAG_NEED_RESET)
             {
-                m_nFlags &= ~ANIMATE_TIME_LINE_FLAG_NEED_RESET;
+                m_nFlags &= ~TIMELINE_FLAG_NEED_RESET;
 
                 m_nFrameElapse = 0;
                 m_nBeginTime = GetTickCount();
             }
             else if (IsFinish())
             {
-                return;
+                return true;
             }
 
             m_nFrameElapse ++;
 
-            BOOL bTimelineFinish = FALSE;
             int nTimeElapse = 0;
             switch (m_eTimeType)
             {
@@ -114,30 +113,29 @@ namespace UI
                 nTimeElapse = (GetTickCount() - m_nBeginTime)/1000;
             }
 
-            bTimelineFinish = OnTick(nTimeElapse);
-
+            bool bTimelineFinish = OnTick(nTimeElapse);
             if (bTimelineFinish)
             {
                 if (m_bAutoReverse)
                 {
-                    m_nFlags |= ANIMATE_TIME_LINE_FLAG_NEED_RESET;  // 下次开始前先重置动画参数
+                    m_nFlags |= TIMELINE_FLAG_NEED_RESET;  // 下次开始前先重置动画参数
 
                     // 将数据进行反向
                     OnReverse();
 
                     // 反向的结束，代表一次播放结束
-                    if (m_nFlags&ANIMATE_TIME_LIEN_FLAG_REVERSING)
+                    if (m_nFlags&TIMELIEN_FLAG_REVERSING)
                     {
                         if (m_nRepeatTimes > 0 && 0 == --m_nRepeatTimes)
                         {
-                            x_SetFinishFlag();
+                            SetFinish();
                         }
-                        m_nFlags &= ~ANIMATE_TIME_LIEN_FLAG_REVERSING;
+                        m_nFlags &= ~TIMELIEN_FLAG_REVERSING;
                     }
                     // 正向的结束，进入反向
                     else
                     {
-                        m_nFlags |= ANIMATE_TIME_LIEN_FLAG_REVERSING;
+                        m_nFlags |= TIMELIEN_FLAG_REVERSING;
                     }
                 }
                 else
@@ -145,14 +143,16 @@ namespace UI
                     // 一次播放结束
                     if (m_nRepeatTimes > 0 && 0 == --m_nRepeatTimes)
                     {
-                        x_SetFinishFlag();
+                        SetFinish();
                     }
                     else
                     {
-                        m_nFlags |= ANIMATE_TIME_LINE_FLAG_NEED_RESET;  // 下次开始前先重置动画参数
+                        m_nFlags |= TIMELINE_FLAG_NEED_RESET;  // 下次开始前先重置动画参数
                     }
                 }
             }
+
+            return IsFinish();
         }
 
 

@@ -27,18 +27,18 @@ public:
 	~CStageLeavesWindow(void);
 
  	UI_BEGIN_MSG_MAP_Ixxx(CStageLeavesWindow)
-        UIMSG_WM_ANIMATE_TICK(OnAnimateTick)
+    //    UIMSG_WM_ANIMATE_TICK(OnAnimateTick)
         UIMSG_WM_INITIALIZE(OnInitWindow)
  	UI_END_MSG_MAP_CHAIN_PARENT(IWindow)
 
  	void  OnInitWindow();
-    void  OnAnimateTick(int nCount, UI::IStoryboard** ppArray);
+   // void  OnAnimateTick(int nCount, UI::IStoryboard** ppArray);
 
 protected:
-    void  ResetLeaf(UI::IImageElement* pElem);
+   // void  ResetLeaf(UI::IImageElement* pElem);
 
 private:
-    UI::IStage3D*  m_pStage3D;
+   // UI::IStage3D*  m_pStage3D;
 
 	float  m_fyWorldDropFrom; // 树叶开始降落的高度
 	float  m_fyWorldDropTo;  // 树叶降落到的价格

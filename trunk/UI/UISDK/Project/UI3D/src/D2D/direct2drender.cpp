@@ -1,94 +1,10 @@
 #include "stdafx.h"
 #include "direct2drender.h"
 
-#ifdef UI_D2D_REDNER
-Direct2DRenderGlobalData  g_D2DGlobalData;
-
-#pragma region //Global data
-Direct2DRenderGlobalData::Direct2DRenderGlobalData()
-{
-	m_dwRef = 0;
-	m_pD2DFactory = NULL;
-	m_pDWriteFactory = NULL;
-	m_pWICFactory = NULL;
-}
-
-//
-// Remark;
-//	不要尝试在静态/全局类的析构函数中释放COM对象。
-//  因为此时COM库可能已经卸载了
-//
-Direct2DRenderGlobalData::~Direct2DRenderGlobalData()
-{
-	UIASSERT(0 == m_dwRef);
-	UIASSERT(NULL == m_pD2DFactory);
-	m_pD2DFactory = NULL;
-	m_dwRef = 0;
-	m_pDWriteFactory = NULL;
-	m_pWICFactory = NULL;
-}
-long Direct2DRenderGlobalData::AddRef()
-{
-	m_dwRef ++;
-	return m_dwRef;
-}
-long Direct2DRenderGlobalData::Release()
-{
-	if (0 == -- m_dwRef)
-	{
-		SAFE_RELEASE(m_pWICFactory);
-		SAFE_RELEASE(m_pDWriteFactory);
-		SAFE_RELEASE(m_pD2DFactory);
-		UI_LOG_INFO(_T("%s"), FUNC_NAME);
-		return 0;
-	}
-	return m_dwRef;
-}
-
-HRESULT Direct2DRenderGlobalData::CreateD2D()
-{
-	UI_LOG_INFO(_T("%s"), FUNC_NAME);
-
-	HRESULT hr = S_OK;
-	if (NULL == m_pD2DFactory)
-	{
-		// Create a Direct2D factory.
-		hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &m_pD2DFactory);
-	}
-
-		
-	if (NULL == m_pDWriteFactory && SUCCEEDED(hr))
-	{
-		// Create a DirectWrite factory.
-		hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(m_pDWriteFactory),
-					reinterpret_cast<IUnknown **>(&m_pDWriteFactory));
-	}
-
-	if (NULL == m_pWICFactory && SUCCEEDED(hr))
-	{
-		hr = CoCreateInstance(
-					CLSID_WICImagingFactory,
-					NULL,
-					CLSCTX_INPROC_SERVER,
-					IID_IWICImagingFactory,
-					reinterpret_cast<void **>(&m_pWICFactory)
-					);
-	}
-
-	if (FAILED(hr))
-	{
-		UI_LOG_ERROR(_T("%s failed. hr=0x%08x"), FUNC_NAME, hr);
-	}
-
-	return hr;
-}
-#pragma  endregion
-
+#if 0
 #pragma  region // D2D Font
 Direct2DRenderFont::Direct2DRenderFont()
 {
-	g_D2DGlobalData.AddRef();
-
 	m_pTextFormat = NULL;
 	m_hFont = NULL;
 	m_bCreateOrAttach = true;
@@ -98,8 +14,6 @@ Direct2DRenderFont::~Direct2DRenderFont()
 {
 	UI_LOG_DEBUG(_T("Direct2DRenderFont Delete. ptr=0x%08X"), this);
 	this->DestroyFont();
-
-	g_D2DGlobalData.Release();
 }
 
 void  Direct2DRenderFont::DestroyFont()
@@ -134,16 +48,12 @@ bool Direct2DRenderFont::Load( LOGFONT* plogfont )
 	m_pLogFont = plogfont;  // 该plogfont应该是pojo_fontitem中的成员变量
 	
 	HRESULT hr = E_FAIL;
-	if (NULL == g_D2DGlobalData.m_pDWriteFactory)
-		g_D2DGlobalData.CreateD2D();
-	if (NULL == g_D2DGlobalData.m_pDWriteFactory)
-		return false;
 
 	// TODO: 下划线要怎么搞
 	UIASSERT(0 == plogfont->lfUnderline);
 
 	// Create a DirectWrite text format object.
-	hr = g_D2DGlobalData.m_pDWriteFactory->CreateTextFormat(
+	hr = g_pD2DApp->m_pDWriteFactory->CreateTextFormat(
 			plogfont->lfFaceName,
 			NULL,
 			plogfont->lfWeight>= FW_BOLD?DWRITE_FONT_WEIGHT_BOLD:DWRITE_FONT_WEIGHT_NORMAL,
@@ -203,7 +113,7 @@ SIZE Direct2DRenderFont::MeasureString( const TCHAR* szText, int nLimitWidth)
 			nLimitWidth = (int)MAX_LAYOUT_SIZE;
 
 		IDWriteTextLayout* pLayout = NULL;
-		HRESULT hr = g_D2DGlobalData.m_pDWriteFactory->CreateTextLayout(
+		HRESULT hr = g_pD2DApp->m_pDWriteFactory->CreateTextLayout(
 			szText, _tcslen(szText), m_pTextFormat, (FLOAT)nLimitWidth, MAX_LAYOUT_SIZE, &pLayout);
 		
 		if (SUCCEEDED(hr) && NULL != pLayout)
@@ -275,53 +185,22 @@ bool Direct2DRenderFont::GetLogFont(LOGFONT* plf)
 
 #pragma region // D2D DC
 //////////////////////////////////////////////////////////////////////////
-// Direct2DRenderTarget::Direct2DRenderTarget()
-// {
-// 	g_D2DGlobalData.AddRef();
-// 	m_hWnd = NULL;
-// 	m_pRenderTarget = NULL;
-// 	UIASSERT(0);
-// }
-// Direct2DRenderTarget::Direct2DRenderTarget(HDC hDC)
-// {
-// 	g_D2DGlobalData.AddRef();
-// 	m_hWnd = NULL;
-// 	m_pRenderTarget = NULL;
-// 	UIASSERT(0);
-// }
 Direct2DRenderTarget::Direct2DRenderTarget(HWND hWnd):IRenderTarget(hWnd)
 {
-	g_D2DGlobalData.AddRef();
 	m_pRenderTarget = NULL;
 }
-// Direct2DRenderTarget::Direct2DRenderTarget(HWND hWnd, int nWidth, int nHeight)
-// {
-// 	g_D2DGlobalData.AddRef();
-// 
-// 	m_pRenderTarget = NULL;
-// 	m_hWnd = hWnd;
-// }
 Direct2DRenderTarget::~Direct2DRenderTarget()
 {
 	SAFE_RELEASE(m_pRenderTarget);
 	m_hWnd = NULL;
-
-	g_D2DGlobalData.Release();
 }
 
 #include <comdef.h>
 bool  Direct2DRenderTarget::BeginDraw(HDC hDC, RECT* prcArray, int rcCount, bool bClear)
 {
 	if (m_pRenderTarget)
-	{
 		return false;
-	}
-
-	if (NULL == g_D2DGlobalData.m_pD2DFactory)
-		g_D2DGlobalData.CreateD2D();
-	if (NULL == g_D2DGlobalData.m_pD2DFactory)
-		return false;
-
+	
 	// Create a DC render target.
 	D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
 		D2D1_RENDER_TARGET_TYPE_DEFAULT,
@@ -334,7 +213,7 @@ bool  Direct2DRenderTarget::BeginDraw(HDC hDC, RECT* prcArray, int rcCount, bool
 		D2D1_FEATURE_LEVEL_DEFAULT
 		);
 
-	HRESULT hr = g_D2DGlobalData.m_pD2DFactory->CreateDCRenderTarget(&props,&m_pRenderTarget);
+	HRESULT hr = g_pD2DApp->m_pD2DFactory->CreateDCRenderTarget(&props,&m_pRenderTarget);
 	UIASSERT(SUCCEEDED(hr));
 	if (FAILED(hr))
 		return false;
@@ -501,14 +380,5 @@ void Direct2DRenderTarget::DrawBitmap(IRenderBitmap* pBitmap, DRAWBITMAPPARAM* p
 	}
 }
 #pragma  endregion
-
-// Direct2DMemRenderDC::Direct2DMemRenderDC(HWND hWnd, int nWidth, int nHeight)
-// {
-// 	
-// }
-// Direct2DMemRenderDC::~Direct2DMemRenderDC()
-// {
-// 
-// }
 
 #endif

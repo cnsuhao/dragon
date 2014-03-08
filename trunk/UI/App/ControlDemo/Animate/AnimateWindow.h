@@ -2,8 +2,6 @@
 #include "UISDK\Kernel\Inc\Interface\iwindow.h"
 
 #include "UISDK\Project\UI3D\inc\inc.h"
-#pragma comment(lib, "UI3D.lib")
-#include "UISDK\Project\UI3D\inc\istage3d.h"
 
 namespace UI
 {

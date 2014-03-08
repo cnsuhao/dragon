@@ -15,6 +15,7 @@
 #include "UISDK\Kernel\Src\Helper\layout\layout.h"
 #include "UISDK\Kernel\Src\Helper\layout\canvaslayout.h"
 #include "UISDK\Kernel\Src\Animate\3dwrap\ui3dwrap.h"
+#include "UISDK\Kernel\Src\RenderLayer2\renderlayer2.h"
 
 namespace UI
 {
@@ -45,6 +46,7 @@ Object::Object()
     m_pIMapAttributeRemain = NULL;
     m_pObject3DWrap = NULL;
     m_pLayoutParam = NULL;
+    m_pRenderLayer = NULL;
 }
 
  // 注意：不要在构造或者析构函数中调用虚函数
@@ -571,6 +573,14 @@ bool Object::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 	szText = pMapAttrib->GetAttr(XML_CURSOR, true);
 	if (szText)
 		this->SetCursor(szText);
+
+    // 分层
+    bool bLayer = false;
+    pMapAttrib->GetAttr_bool(L"layer", true, &bLayer);
+    if (bLayer)
+    {
+
+    }
 
 	return true;
 }
@@ -2697,4 +2707,13 @@ Object3DWrap*  Object::Get3DWrap()
     return m_pObject3DWrap;
 }
 
+bool  Object::CreateRenderLayer()
+{
+    if (m_pRenderLayer)
+        return true;
+
+    m_pRenderLayer = new RenderLayer2;
+
+    return false;   
+}
 }

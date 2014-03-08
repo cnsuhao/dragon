@@ -45,13 +45,11 @@ void  CMaskWnd::OnInitialize()
 		m_pBmp->LoadFromFile(m_vecPicInFolder[m_nCurPicIndex].c_str(), true);
 		
 		GetUIApplication()->GetAnimateMgr()->SetFps(50);
-		UI::IStoryboard* pStoryboard = GetUIApplication()->GetAnimateMgr()->CreateStoryboard();
+		UI::IStoryboard* pStoryboard = GetUIApplication()->GetAnimateMgr()->CreateStoryboard(this, 1);
 		UI::IIntLinearMove* pMoveAlgo = NULL;
 		UI::IIntTimeline* pTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(UI::TV_INT, 1, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo);
 		pMoveAlgo->SetParam1(0, 255, 300);
 		pTimeline->SetOutRef(&m_nAlphaBmp);
-		pStoryboard->SetId(1);
-		pStoryboard->SetNotifyObj(this);
 		pStoryboard->Begin();
 	}
 	srand(GetTickCount());
@@ -85,13 +83,11 @@ void  CMaskWnd::OnTimer(UINT_PTR nIDEvent, LPARAM lParam)
 	{
 		KillTimer(GetHWND(), 1);
 
-		UI::IStoryboard* pStoryboard = GetUIApplication()->GetAnimateMgr()->CreateStoryboard();
+		UI::IStoryboard* pStoryboard = GetUIApplication()->GetAnimateMgr()->CreateStoryboard(this, 3);
 		UI::IIntLinearMove* pMoveAlgo = NULL;
 		UI::IIntTimeline* pTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(UI::TV_INT, 1, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo);
 		pMoveAlgo->SetParam1(255, 0, 300);
 		pTimeline->SetOutRef(&m_nAlphaBmp);
-		pStoryboard->SetId(3);
-		pStoryboard->SetNotifyObj(this);
 		pStoryboard->Begin();
 
 		return;
@@ -157,7 +153,7 @@ void  CMaskWnd::OnSwitchPic()
 	}
 	m_pTemp->LoadFromFile(m_vecPicInFolder[m_nCurPicIndex].c_str(), true);
 
-	UI::IStoryboard* pStoryboard = GetUIApplication()->GetAnimateMgr()->CreateStoryboard();
+	UI::IStoryboard* pStoryboard = GetUIApplication()->GetAnimateMgr()->CreateStoryboard(this, 2);
 
 	UI::IIntLinearMove* pMoveAlgoNew = NULL;
 	UI::IIntTimeline* pTimelineNew = (UI::IIntTimeline*)pStoryboard->CreateTimeline(UI::TV_INT, 2, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgoNew);
@@ -165,8 +161,6 @@ void  CMaskWnd::OnSwitchPic()
 	pTimelineNew->SetOutRef(&m_nAlphaBmp);
 	m_nAlphaBmp = 0;
 
-	pStoryboard->SetNotifyObj(this);
-	pStoryboard->SetId(2);
 	pStoryboard->Begin();
 
 	this->UpdateObject(true);

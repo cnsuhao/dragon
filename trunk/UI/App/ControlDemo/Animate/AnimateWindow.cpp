@@ -28,9 +28,7 @@ void  CAnimateWindow::OnBnClick()
     UI::IUIApplication*  pUIApp = GetUIApplication();
     UI::IAnimateManager* pAniMgr = pUIApp->GetAnimateMgr();
     
-    UI::IStoryboard*  pStoryboard = pAniMgr->CreateStoryboard();
-    pStoryboard->SetNotifyObj(this);
-    pStoryboard->SetId(1);
+    UI::IStoryboard*  pStoryboard = pAniMgr->CreateStoryboard(this, 1);
 
     // x
     {
@@ -51,8 +49,13 @@ void  CAnimateWindow::OnBnClick()
         //pTimeline->SetAutoReverse(true);
     } 
 
+#if 0
     pStoryboard->Begin();
     m_pButton->SetEnable(false);
+#else
+    pStoryboard->BeginBlock();
+#endif
+    
 }
 
 void  CAnimateWindow::OnAnimateOver()

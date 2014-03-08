@@ -102,10 +102,6 @@ void RenderBitmapFactory::CreateInstance(GRAPHICS_RENDER_LIBRARY_TYPE eGraphicsR
 #endif
 	}
 
-// 	if (*ppOut)
-// 	{
-// 		(*ppOut)->SetAttribute(mapAttrib);
-// 	} 
 }
  
 //////////////////////////////////////////////////////////////////////////
@@ -188,10 +184,7 @@ GRAPHICS_RENDER_LIBRARY_TYPE GetRenderLibraryType(IObject* pObj)
 	    {
 		    if (WS_EX_LAYERED & ::GetWindowLong(pWindow->GetHWND(), GWL_EXSTYLE))
 		    {
-		    //	if (UI_IsUnderXpOS())
-				    e = GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS;
-    // 			else
-    // 				e = GRAPHICS_RENDER_LIBRARY_TYPE_DIRECT2D;
+			    e = GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS;
 		    }
 		    else
 		    {
@@ -229,10 +222,6 @@ IRenderTarget*  UICreateRenderTarget(GRAPHICS_RENDER_LIBRARY_TYPE eType, HWND hW
     }
     return pRenderTarget;
 }
-// IRenderTarget* UICreateRenderTarget(HWND hWnd)
-// {
-//     return UICreateRenderTarget(GetRenderLibraryType(hWnd), hWnd);
-// }
 
 void  UICreateRenderBitmap(GRAPHICS_RENDER_LIBRARY_TYPE eGraphicsRenderType, IMAGE_ITEM_TYPE eType, IRenderBitmap** ppOut)
 {

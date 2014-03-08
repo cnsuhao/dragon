@@ -7,6 +7,7 @@
 #define UI3D_API __declspec(dllimport)
 #endif
 
+#include "ui3ddefine.h"
 
 namespace UI
 {

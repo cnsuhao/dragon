@@ -1,11 +1,10 @@
 #pragma once
 #include "UISDK\Project\UI3D\inc\istage3d.h"
-#include "UISDK\Project\UI3D\src\D3D\Wrap\camera.h"
+#include "UISDK\Project\UI3D\src\D3D\Wrap\camera\camera.h"
 namespace UI
 {
 interface IStage3D;
 class Element;
-class DxTexture;
 
 class Stage3D : public MessageProxy
 {
@@ -40,9 +39,8 @@ public:
 	void  OnViewMatrixChanged();
 	void  OnResetDevice();
 
-    void  SetBkgndColor(DWORD dwColor) { m_dwBkgndColor = dwColor; }
-    DWORD  GetBkgndColor() { return m_dwBkgndColor; }
-    void  SetBkgndTexture(const TCHAR* szPath);
+    void  SetBkgndColor(DWORD dwColor);
+    DWORD  GetBkgndColor();
 
 	void  EnableCamera(bool b) { m_bEnableCamera = b; }
 	bool  IsCameraEnable() { return m_bEnableCamera; }
@@ -68,8 +66,7 @@ private:
     IStage3D*  m_pIStage3D;
 
     // Ë¢±³¾°
-    DWORD  m_dwBkgndColor;
-    DxTexture*  m_pBkgndImage;
+    float  m_fBkgndColor[4];  // red,green,blue,alpha, [0-1]
 
     SIZE  m_sizeStage;
     list<Element*>  m_listElement;

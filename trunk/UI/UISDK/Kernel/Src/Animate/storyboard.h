@@ -6,8 +6,8 @@ namespace UI
 interface ITimeline;
 class  AnimateManager;
 
-typedef list<ITimeline*>  TimelineList;
-typedef list<ITimeline*>::iterator  TimelineIter;
+typedef vector<ITimeline*>  TimelineList;
+typedef vector<ITimeline*>::iterator  TimelineIter;
 
 
 // 用于管理一个动画中的几个timeline 
@@ -19,6 +19,7 @@ public:
 
     bool  AddTimeline(ITimeline* p);
     bool  DestroyTimeline(int nTimelineId);
+    ITimeline*  GetTimeline(unsigned int nIndex);
     ITimeline*  FindTimeline(int nTimelineId);
     ITimeline*  CreateTimeline(TIMELINE_VALUE_TYPE eType, int nTimelineId, int nMoveAlgo, IMoveAlgorithm** ppMoveAlgo);
 
@@ -32,7 +33,7 @@ public:
     LPARAM  GetLParam() { return m_pLParam; }
 
     void  Begin();
-    void  End();
+    void  BeginBlock();
     
     void  SetIStoryboard(IStoryboard* p) { m_pIStoryboard = p; };
     IStoryboard*  GetIStoryboard() { return m_pIStoryboard; }
@@ -40,9 +41,9 @@ public:
 public:
     void  SetAnimateMgr(AnimateManager*  p);
     void  OnAnimateStart();
-    void  SetFinishFlag();
+    void  SetFinish();
     bool  IsFinish();
-    void  OnTick(bool* pbFinish);
+    bool  OnTick();
 
 protected:
     void  DestroyAllTimeline();
@@ -55,7 +56,7 @@ protected:
     WPARAM             m_pWParam;
     LPARAM             m_pLParam;
 
-    list<ITimeline*>   m_listTimeline;
+    TimelineList       m_listTimeline;  // 使用数组，加快外部直接定位，避免查找
 };
 
 }

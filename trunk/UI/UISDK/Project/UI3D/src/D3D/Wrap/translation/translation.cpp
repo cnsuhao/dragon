@@ -3,7 +3,6 @@
 
 namespace UI
 {
-
 DxTranslation::DxTranslation()
 {
 	m_xPos = m_yPos = m_zPos = 0.0f;
@@ -120,14 +119,15 @@ D3DXMATRIX*  DxTranslation::GetMatrix()
 {
 	return &m_matWorld;
 }
-void  DxTranslation::ApplyDevice(IDirect3DDevice9* pDevice)
-{
-	if (!pDevice)
-		return;
 
-	Update();
-	pDevice->SetTransform(D3DTS_WORLD, &m_matWorld);
-}
+// void  DxTranslation::ApplyDevice(IDirect3DDevice9* pDevice)
+// {
+// 	if (!pDevice)
+// 		return;
+// 
+// 	Update();
+// 	pDevice->SetTransform(D3DTS_WORLD, &m_matWorld);
+// }
 
 void  DxTranslation::GetPos(float* px, float* py, float* pz)
 {
@@ -156,4 +156,5 @@ void  DxTranslation::GetScale(float* px, float* py, float* pz)
     if (pz)
         *pz = m_zScale;
 }
+
 }

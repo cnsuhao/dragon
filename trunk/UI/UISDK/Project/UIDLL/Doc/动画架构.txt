@@ -41,3 +41,24 @@ position£ºabsolute£¬relative£¬fixed£¨static²»ÄÜ£¬ËüÎªÎÞÌØÊâ¶¨Î»£¬¶ÔÏó×ñÑ­HTML¶¨Î
       (3)ÔÚRenderBoxModelObject::styleDidChange()º¯ÊýÀï½«ÐÂ´´½¨µÄRenderLayer²åÈëRenderLayerÊ÷ÖÐÈ¥¡£
 ´úÂë£º m_layer->insertOnlyThisLayer();
 
+
+//---------------------------------------------------------------------------------------------------------
+2014.3.6 ÐÂ·Ö²ãÉè¼Æ
+
+1. Ã¿¸öobjectÔö¼ÓÒ»¸örenderlayer* ±äÁ¿
+2. renderlayerÒÀÈ»Çø·ÖÊÇ·ñ×Ô´ø»º´æ
+
+ºÃ´¦£º
+1. ¿ÉÒÔÊµÏÖÄ³Ò»²ãlayerµÄÌØÐ§£¬Èçalpha
+2. ¿ÉÒÔÊµÏÖgif/flash¶¯Ì¬±³¾°£¬Èç¸ÅÄî°æqqÁªÏµÈËÁÐ±í
+3. ¿ÉÒÔÊµÏÖºá·ù¶ÔÁª
+
+ÎÊÌâ
+1. Èç¹ûÕâÑù×ö£¬ÄÇÔõÃ´ÊµÏÖÒ»Ð©²ãÒ»Ö±Î»ÓÚ¶¥²ã£¬¶ø²»»á±»ÆäËü¿Ø¼þË¢ÐÂÊ±¸øÕÚ×¡£¿
+   ÓÐÁ½¸ö¸ÅÄî£¬Ò»¸öÊÇZÐò£¬Ò»¸öÊÇ»º´æ
+   ÕâÓ¦¸ÃËãÁ½ÖÖlayer?Ò»¸öÊÇÎªÁËÊµÏÖÖÃ¶¥(ÖÃµ×)£¬Ò»¸öÊÇÎªÁË»º´æÌáÉýÐ§ÂÊ
+   
+   ¸¸¶ÔÏóDrawChildObjectµÄÊ±ºò£¬Èç¹û·¢ÏÖ×Ó¶ÔÏóÊÇÒ»¸ölayer£¬ÔòÌø¹ý¡£
+   ×îºóÔÙ½«ËùÓÐµÄlayer½øÐÐ»ìºÏ
+   
+  

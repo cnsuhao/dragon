@@ -7,6 +7,7 @@
 #include "UISDK\Kernel\Src\Base\Message\message.h"
 #include "UISDK\Kernel\Inc\Interface\imapattr.h"
 #include "UISDK\Kernel\Src\RenderLayer\renderchain.h"
+#include "UISDK\Kernel\Src\RenderLayer2\renderchain2.h"
 #include "UISDK\Kernel\Src\Helper\topwindow\topwindowmanager.h"
 
 namespace UI
@@ -27,6 +28,7 @@ WindowBase::WindowBase()
 	m_nMinWidth = m_nMinHeight = NDEF;
 	m_nMaxWidth = m_nMaxHeight = NDEF;
     m_pRenderChain = NULL;
+    m_pRenderChain2 = NULL;
 }
 WindowBase::~WindowBase()
 {
@@ -36,8 +38,15 @@ WindowBase::~WindowBase()
 
 	SAFE_RELEASE(m_pDefaultFont);
 
-    delete m_pRenderChain->GetIRenderChain();
-    m_pRenderChain = NULL;
+    if (m_pRenderChain)
+    {
+        delete m_pRenderChain->GetIRenderChain();
+        m_pRenderChain = NULL;
+    }
+    if (m_pRenderChain2)
+    {
+        delete m_pRenderChain2;
+    }
 }
 
 HRESULT  WindowBase::FinalConstruct(IUIApplication* p)
@@ -54,6 +63,7 @@ HRESULT  WindowBase::FinalConstruct(IUIApplication* p)
     m_pRenderChain = pIRenderChain->GetImpl();
     m_pRenderChain->Init(this);
 
+    m_pRenderChain2 = new RenderChain2;
     return S_OK;
 }
 
@@ -840,12 +850,20 @@ LRESULT WindowBase::_OnEraseBkgnd( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 			m_bFirsetEraseBkgnd = false;
 
             m_pRenderChain->OnWindowPaint((HDC)wParam);
-            ValidateRect(m_hWnd, NULL);  // 清空无效区域
+            //ValidateRect(m_hWnd, NULL);  // 清空无效区域-- 注掉，见下文
             
 			// 如果什么也不做，会导致窗口第一次显示时，窗口先显示一次黑色，例如combobox.listbox/menu
 			// 如果直接调用DefWindowProc会导致窗口显示白色，但最终显示的界面不一定就是白色的，也会导致闪烁
             // 因此在这里先做一次全量绘制
 			// DefWindowProc(uMsg, wParam, lParam); 
+
+            // Bug 2014.3.7 在分层窗口中，第一次触发该函数时，有这种情况:
+            //   ShowWindow(SW_SHOW);
+            //   SetWidowPos(x, y, cx, cy);
+            // 结果在SetWindowPos中触发第一次erasebkgnd，但还没有走到windowposchanging中，导致
+            // layeredwindow::commit中使用旧的窗口位置提交分层窗口，新的窗口位置无效（但分层窗口中
+            // 保存的仍然是x,y,下一次刷新才能更新到正确位置)，因此将ValidateRect(NULL)注掉，避免出现这种问题
+            // 
 		}
 		
 		return 1;   // 对于Dialog类型，需要返回1来阻止系统默认绘制

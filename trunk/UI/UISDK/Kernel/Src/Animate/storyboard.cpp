@@ -120,6 +120,13 @@ void  Storyboard::DestroyAllTimeline()
     m_listTimeline.clear();
 }
 
+ITimeline*  Storyboard::GetTimeline(unsigned int nIndex)
+{
+    if (nIndex >= m_listTimeline.size())
+        return NULL;
+
+    return m_listTimeline[nIndex];
+}
 ITimeline*  Storyboard::FindTimeline(int nTimelineId)
 {
     TimelineIter iter = m_listTimeline.begin();
@@ -136,9 +143,9 @@ void  Storyboard::Begin()
 {
     m_pAnimateMgr->AddStoryboard(m_pIStoryboard);
 }
-void  Storyboard::End()
+void  Storyboard::BeginBlock()
 {
-
+    m_pAnimateMgr->AddStoryboardBlock(m_pIStoryboard);
 }
 
 IMessage*  Storyboard::GetNotifyObj()
@@ -161,13 +168,19 @@ void  Storyboard::OnAnimateStart()
     }
 }
 
-// TODO: 优化
-void  Storyboard::SetFinishFlag()
+void  Storyboard::SetFinish()
 {
     TimelineIter iter = m_listTimeline.begin();
     for (; iter != m_listTimeline.end(); iter++)
     {
-        (*iter)->x_SetFinishFlag();
+        (*iter)->SetFinish();
+    }
+
+    // 在AnimateMgr::OnTick中将释放自己
+    ObjectStoryboard* p = m_pAnimateMgr->FindObjectStoryboard(m_pNotify);
+    if (p)
+    {
+        p->SetNeedCheckFinishFlag(true);
     }
 }
 
@@ -182,16 +195,26 @@ bool  Storyboard::IsFinish()
     return true;
 }
 
-void  Storyboard::OnTick(bool* pbFinish)
+bool  Storyboard::OnTick()
 {
-    *pbFinish = true; // 不判断指针有效性了，外部去保证
-
+    bool bAllFinish = true;
     TimelineIter iter = m_listTimeline.begin();
     for (; iter != m_listTimeline.end(); iter++)
     {
-        ((*iter)->x_OnTick());
-
-        if (!(*iter)->IsFinish())
-            *pbFinish = false;
+        if (!(*iter)->x_OnTick())
+        {
+            bAllFinish = false;
+        }
     }
+
+    if (bAllFinish)
+    {
+        ObjectStoryboard* p = m_pAnimateMgr->FindObjectStoryboard(m_pNotify);
+        if (p)
+        {
+            p->SetNeedCheckFinishFlag(true);
+        }
+    }
+
+    return bAllFinish;
 }

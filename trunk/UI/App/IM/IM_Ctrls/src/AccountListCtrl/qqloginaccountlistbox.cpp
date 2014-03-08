@@ -308,7 +308,10 @@ void QQLoginAccountListBox::HandleItemChanged(
 
 		//if (bAnimate)
 		{
-            UI::IStoryboard*  pStoryboard = pAnimateMgr->CreateStoryboard();
+            UI::IStoryboard*  pStoryboard = pAnimateMgr->CreateStoryboard(
+				static_cast<UI::IMessage*>(m_pIQQLoginAccountListBox),
+				(int)_ttoi(pItem->GetAccount()),
+				(WPARAM)pItem);
 
             UI::IIntLinearMove* pMoveAlgo = NULL;
             UI::IIntTimeline* pTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(UI::TV_INT, 0, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo);
@@ -317,9 +320,6 @@ void QQLoginAccountListBox::HandleItemChanged(
             pItem->GetHeightRef(&pnHeight);
             pTimeline->SetOutRef(pnHeight);
 
-            pStoryboard->SetWParam((WPARAM)pItem);
-            pStoryboard->SetNotifyObj(static_cast<UI::IMessage*>(m_pIQQLoginAccountListBox));
-            pStoryboard->SetId((int)_ttoi(pItem->GetAccount()));
             pStoryboard->Begin();
 		}
 	}

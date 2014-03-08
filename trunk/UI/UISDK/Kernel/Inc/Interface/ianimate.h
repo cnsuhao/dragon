@@ -18,6 +18,7 @@ namespace UI
         virtual void     SetTimeType(TIMELINE_TIME_TYPE eType) = 0;
         virtual void     SetAutoReverse(bool b) = 0;
 		virtual bool     IsFinish() = 0;
+        virtual void     SetFinish() = 0;
 		virtual void     GetCurrentValue(void* ppOut) = 0;
 		virtual void     SetId(int nID) = 0;
 		virtual int      GetId() = 0;
@@ -26,9 +27,8 @@ namespace UI
 		
 
 		// 只能内部使用的接口，外面不要调用
-		virtual void     x_SetFinishFlag() = 0;
 		virtual void     x_OnAnimateStart() = 0;  
-		virtual void     x_OnTick() = 0;
+		virtual bool     x_OnTick() = 0;
 	};
 
     interface IMoveAlgorithm 
@@ -125,13 +125,12 @@ namespace UI
         LPARAM  GetLParam();
 
         ITimeline*  CreateTimeline(TIMELINE_VALUE_TYPE eType, int nTimelineId, int nMoveAlgo, IMoveAlgorithm** ppMoveAlgo);
+        ITimeline*  GetTimeline(unsigned int nIndex);
         ITimeline*  FindTimeline(int nTimelineId);
-//        bool  AddTimeline(ITimeline* p);
-//        bool  DestroyTimeline(int nTimelineId);
 
         bool  IsFinish();
         void  Begin();
-        void  End();
+        void  BeginBlock();
     };
 
     class WindowAnimateBase;
@@ -214,7 +213,7 @@ namespace UI
         void  ClearStoryboardOfNotify(IMessage* pMsg);
         void  RemoveStoryboard(IStoryboard* p);
 
-        IStoryboard*  CreateStoryboard();
+        IStoryboard*  CreateStoryboard(IMessage* pNotify, int nId = 0, WPARAM wParam = 0, LPARAM lParam = 0);
         IWindowAnimateBase*  CreateWindowAnimateInstance(E_WINDOW_ANIMATE_TYPE eType, IWindowBase* pWindow);
         IControlAnimateBase*  CreateControlAnimateInstance(E_CONTROL_ANIMATE_TYPE eType);
 

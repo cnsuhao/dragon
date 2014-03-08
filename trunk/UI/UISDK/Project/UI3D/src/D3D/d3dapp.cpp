@@ -1,276 +1,294 @@
 #include "stdafx.h"
-#include "d3dapp.h"
-#include "UISDK\Project\UI3D\src\D3D\stage3d.h"
-#include "UISDK\Project\UI3D\src\D3D\Wrap\sprite.h"
+#include "D3DApp.h"
+#include "UISDK\Project\UI3D\other\resource.h"
+#include "UISDK\Project\UI3D\src\D3D\element\element.h"
 
 namespace UI
 {
 HWND  CreateTempWindow();
 
-D3DApp::D3DApp()
+D3D10App::D3D10App()
 {
 	m_hWnd = NULL;
-	m_pD3D = NULL;
 	m_pDevice = NULL;
-    m_pSprite = NULL;
-	memset(&m_d3dpp, 0, sizeof(D3DPRESENT_PARAMETERS));
+    m_pSwapChain = NULL;
+    m_pRenderTargetView = NULL;
 
-    m_pRenderTargetTexture = NULL;
-    m_pTextureSurface = NULL;
-    m_pOffScreenPlainSurface = NULL;
-    m_pOldBackSurface = NULL;
+	m_pEffect = NULL;
+	m_pET_FillRectWorld = NULL;
+	m_pIL_FillRectScreen = NULL;
 }
 
-D3DApp::~D3DApp()
+D3D10App::~D3D10App()
 {
-	Clear();
+	Release();
 }
 
-bool D3DApp::Init()
-{
-	if (!m_pD3D)
-		m_pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-	if (!m_pD3D)
-		return false;
 
+void  D3D10App::Release()
+{
+	if (m_pDevice)
+		m_pDevice->ClearState();
+
+    // 释放所有元素的static变量
+	Element::Unload();
+
+	ReleaseBackBuffer();
+	SAFE_RELEASE(m_pIL_FillRectScreen);
+	m_pET_FillRectWorld = NULL;
+	SAFE_RELEASE(m_pEffect);
+	SAFE_RELEASE(m_pRenderTargetView);
+	SAFE_RELEASE(m_pSwapChain);
+	SAFE_RELEASE(m_pDevice);
+
+	m_listStage3D.clear();
+}
+
+
+
+HRESULT CreateD3DDevice(
+						IDXGIAdapter *pAdapter,
+						D3D10_DRIVER_TYPE driverType,
+						UINT flags,
+						ID3D10Device1 **ppDevice
+						)
+{
+	HRESULT hr = S_OK;
+
+	static const D3D10_FEATURE_LEVEL1 levelAttempts[] =
+	{
+		D3D10_FEATURE_LEVEL_10_0,
+		D3D10_FEATURE_LEVEL_9_3,
+		D3D10_FEATURE_LEVEL_9_2,
+		D3D10_FEATURE_LEVEL_9_1,
+	};
+
+	for (UINT level = 0; level < ARRAYSIZE(levelAttempts); level++)
+	{
+		ID3D10Device1 *pDevice = NULL;
+		hr = D3D10CreateDevice1(
+			pAdapter,
+			driverType,
+			NULL,
+			flags,
+			levelAttempts[level],
+			D3D10_1_SDK_VERSION,
+			&pDevice
+			);
+
+		if (SUCCEEDED(hr))
+		{
+			// transfer reference
+			*ppDevice = pDevice;
+			pDevice = NULL;
+			break;
+		}
+	}
+
+	return hr;
+}
+bool D3D10App::Init()
+{
 	if (!m_hWnd)
 		m_hWnd = CreateTempWindow();
 	if (!m_hWnd)
 		return false;
 
-	D3DDISPLAYMODE dispMode = {0};
-	m_pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &dispMode);
+	// 若要使用 Direct2D，必须使用 D3D10_CREATE_DEVICE_BGRA_SUPPORT 
+	// 标志创建提供 IDXGISurface 的 Direct3D 设备。
+    UINT  nCreateDeviceFlags = D3D10_CREATE_DEVICE_BGRA_SUPPORT; 
+#ifdef _DEBUG
+    nCreateDeviceFlags |= D3D10_CREATE_DEVICE_DEBUG;
+#endif
 
-	memset(&m_d3dpp, 0, sizeof(D3DPRESENT_PARAMETERS));
-	m_d3dpp.Windowed = TRUE;
-	m_d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	m_d3dpp.BackBufferFormat = D3DFMT_A8R8G8B8/*dispMode.Format*/;
-	m_d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
-	m_d3dpp.EnableAutoDepthStencil = TRUE;
-	m_d3dpp.BackBufferCount = 1;
-	// m_d3dpp.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;  // 没有这个标识，GetBackBuffer将不能Lock，也不能直接调用GetDC，但会导致效率很低，不要用
+	ID3D10Device1*  pDevice = NULL;
+	IDXGIDevice*    pDXGIDevice = NULL;
+	IDXGIAdapter*   pAdapter = NULL;
+	IDXGIFactory*   pDXGIFactory = NULL;
+	IDXGISurface*   pSurface = NULL;
 
-	struct CreateDeviceType
+	// Create device
+	HRESULT hr = CreateD3DDevice(
+		NULL,
+		D3D10_DRIVER_TYPE_HARDWARE,
+		nCreateDeviceFlags,
+		&pDevice
+		);
+
+	if (FAILED(hr))
 	{
-		D3DDEVTYPE  eDevType;
-		DWORD  dwBehavior;
-	};
-
-	CreateDeviceType arr[4] = {
-		{D3DDEVTYPE_HAL, D3DCREATE_HARDWARE_VERTEXPROCESSING},
-		{D3DDEVTYPE_HAL, D3DCREATE_MIXED_VERTEXPROCESSING},
-		{D3DDEVTYPE_HAL, D3DCREATE_SOFTWARE_VERTEXPROCESSING},
-		{D3DDEVTYPE_REF, D3DCREATE_SOFTWARE_VERTEXPROCESSING},
-	};
-
-	for (int i = 0; i < 4; i++)
-	{
-		m_pD3D->CreateDevice(
-			D3DADAPTER_DEFAULT,
-			arr[i].eDevType,
-			m_hWnd,
-			arr[i].dwBehavior,
-			&m_d3dpp,
-			&m_pDevice);
-
-		if (m_pDevice)
-			break;
+		hr = CreateD3DDevice(
+			NULL,
+			D3D10_DRIVER_TYPE_WARP,
+			nCreateDeviceFlags,
+			&pDevice
+			);
 	}
 
+	if (!pDevice)
+		return false;
+
+	hr = pDevice->QueryInterface(__uuidof(ID3D10Device), (void**)&m_pDevice);
 	if (!m_pDevice)
 		return false;
 
-//     m_pSprite = new DxSprite;
-//     m_pSprite->Create(m_pDevice);
+	hr = pDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&pDXGIDevice);
+	hr = pDXGIDevice->GetAdapter(&pAdapter);
+	hr = pAdapter->GetParent(IID_PPV_ARGS(&pDXGIFactory));
 
-    InitDeviceSetting();
+	DXGI_SWAP_CHAIN_DESC swapDesc;
+	::ZeroMemory(&swapDesc, sizeof(swapDesc));
+
+	swapDesc.BufferDesc.Width = 100;   // TODO:
+	swapDesc.BufferDesc.Height = 100;
+	swapDesc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	swapDesc.BufferDesc.RefreshRate.Numerator = 60;
+	swapDesc.BufferDesc.RefreshRate.Denominator = 1;
+	swapDesc.SampleDesc.Count = 1;
+	swapDesc.SampleDesc.Quality = 0;
+	swapDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapDesc.BufferCount = 1;
+	swapDesc.OutputWindow = m_hWnd;
+	swapDesc.Windowed = TRUE;
+
+	hr = pDXGIFactory->CreateSwapChain(m_pDevice, &swapDesc, &m_pSwapChain);
+
+	SAFE_RELEASE(pDevice);
+	SAFE_RELEASE(pDXGIDevice);
+	SAFE_RELEASE(pAdapter);
+	SAFE_RELEASE(pDXGIFactory);
+
+	ID3D10Texture2D*  pBuffer = NULL;
+	hr = m_pSwapChain->GetBuffer(0, __uuidof(ID3D10Texture2D), (VOID**)&pBuffer);
+	if (FAILED(hr))
+		return false;
+#if 0
+
+    D3D10_TEXTURE2D_DESC descText2D;
+    ZeroMemory(&desc, sizeof(D3D10_TEXTURE2D_DESC));
+    descText2D.Width = 64;
+    descText2D.Height = 64;
+    descText2D.ArraySize = 1;
+    descText2D.SampleDesc.Count = 1;
+    descText2D.SampleDesc.Quality = 0;
+    descText2D.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+    descText2D.MipLevels = 1;
+    descText2D.MiscFlags = 0;
+    descText2D.BindFlags = 0;
+    descText2D.CPUAccessFlags = D3D10_CPU_ACCESS_READ;
+    descText2D.Usage = D3D10_USAGE_STAGING;  // cpu可读写
+
+    ID3D10Texture2D* pTexture;
+    hr = m_pDevice->CreateTexture2D(&descText2D, NULL, &pTexture);;
+    //http://m.blog.csdn.net/blog/ljlees0830/7853617
+#endif
+	// We need to create a render target view because we would like to bind the back buffer 
+	// of our swap chain as a render target, so that Direct3D 10 can render onto it. 
+    hr = m_pDevice->CreateRenderTargetView(/*pTexture*/pBuffer, NULL, &m_pRenderTargetView);
+    pBuffer->Release();
+    if (FAILED(hr))
+        return false;
+
+//     IDXGISurface1* pSurface = NULL;
+//     pTexture->QueryInterface(__uuidof(IDXGISurface1), (void **)(&pSurface));
+//     HDC hDC = NULL;
+//     hr = pSurface->GetDC(FALSE, &hDC);
+//     pSurface->ReleaseDC(NULL);
+
+    m_pDevice->OMSetRenderTargets(1, &m_pRenderTargetView, NULL);
+    
+    // Setup the viewport
+	// The viewport maps clip space coordinates, where X and Y range from -1 to 1
+	// and Z ranges from 0 to 1, to render target space, sometimes known as pixel 
+	// space. In Direct3D 9, if the application does not set up a viewport, a default 
+	// viewport is set up to be the same size as the render target. In Direct3D 10, 
+	// no viewport is set by default. Therefore, we must do so before we can see 
+	// anything on the screen. Since we would like to use the entire render target 
+	// for the output, we set the top left point to (0, 0) and width and height to 
+	// be identical to the render target's size. 
+
+    D3D10_VIEWPORT vp;
+    vp.Width = 100;
+    vp.Height = 100;
+    vp.MinDepth = 0.0f;
+    vp.MaxDepth = 1.0f;
+    vp.TopLeftX = 0;
+    vp.TopLeftY = 0;
+    m_pDevice->RSSetViewports( 1, &vp );
+
+    // Create Effect
+    DWORD dwShaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
+#ifdef _DEBUG
+    dwShaderFlags |= D3D10_SHADER_DEBUG;
+#endif
+    // 必须放在 RCDATA 资料当中
+    hr = D3DX10CreateEffectFromResource(g_hInstance, MAKEINTRESOURCE(IDR_SHADER_D3D10), 0,
+                NULL, NULL, "fx_4_0", dwShaderFlags, 0, m_pDevice, NULL, NULL, &m_pEffect, NULL, NULL);
+    if (FAILED(hr))
+        return false;
+
+   
+	// Create an orthographic projection matrix for 2D rendering.
+	//D3DXMatrixOrthoLH(&m_orthoMatrix, (float)screenWidth, (float)screenHeight, screenNear, screenDepth);
+
     return true;
 }
 
-void  D3DApp::InitDeviceSetting()
+
+void  D3D10App::OnDeviceLost()
 {
-	m_pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);  // 正反面都显示
-	m_pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);         // 关闭光照
-	m_pDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
-	m_pDevice->SetRenderState(D3DRS_AMBIENT, 0xffffffff);
-    //m_pDevice->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, TRUE);   // 抗锯齿
-
-    // 设置转换坐标
-    D3DXMATRIX  matWorld;
-    D3DXMatrixIdentity(&matWorld);
-    m_pDevice->SetTransform( D3DTS_WORLD, &matWorld );
-
-    D3DXVECTOR3 vEyePt( 0.0f, 3.0f,-5.0f );
-    D3DXVECTOR3 vLookatPt( 0.0f, 0.0f, 0.0f );
-    D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
-    D3DXMATRIXA16 matView;
-    D3DXMatrixLookAtLH( &matView, &vEyePt, &vLookatPt, &vUpVec );
-    m_pDevice->SetTransform( D3DTS_VIEW, &matView );
-
-    D3DXMATRIX  matrixProj;
-    D3DXMatrixPerspectiveFovLH( &matrixProj, D3DX_PI/4, 1.0f, 1.0f, 1000.f);
-    m_pDevice->SetTransform(D3DTS_PROJECTION, &matrixProj);
-}
-
-void  D3DApp::Clear()
-{
-    SAFE_DELETE(m_pSprite);
-    ReleaseBackBuffer();
-    SAFE_RELEASE(m_pDevice);
-    SAFE_RELEASE(m_pD3D);
-    m_listStage3D.clear();
-}
-
-void  D3DApp::OnDeviceLost()
-{
-    if (m_pSprite)
-        m_pSprite->Lost();
-
     FireDeviceLostNotify();
 }
 
 // 注：如果有哪个指针没有正确释放也会导致Reset返回InvalidCall
 //     例如GetBackBuffer获得的指针必须释放 
-HRESULT  D3DApp::ResetDevice()
+HRESULT  D3D10App::ResetDevice()
 {
-	HRESULT hr = m_pDevice->Reset(&m_d3dpp);
-	if (FAILED(hr))
-		return hr;
-
-    if (m_pSprite)
-        m_pSprite->Reset();
-    
-	InitDeviceSetting();
-	FireResetDeviceNotify();
-	return hr;
+    return E_NOTIMPL;
 }
 
-void  D3DApp::FireDeviceLostNotify()
+void  D3D10App::FireDeviceLostNotify()
 {
 
 }
-void  D3DApp::FireResetDeviceNotify()
+void  D3D10App::FireResetDeviceNotify()
 {
-	list<Stage3D*>::iterator iter = m_listStage3D.begin();
-	for (; iter != m_listStage3D.end(); iter++)
-	{
-		(*iter)->OnResetDevice();
-	}
 }
 
-bool D3DApp::RequestBackBuffer(DWORD nWidth, DWORD nHeight )
+bool D3D10App::RequestBackBuffer(DWORD nWidth, DWORD nHeight )
 {
-//     if (m_pRenderTargetTexture)
-//     {
-//         D3DSURFACE_DESC  desc;
-//         memset(&desc, 0, sizeof(desc));
-// 
-//         m_pRenderTargetTexture->GetLevelDesc(0, &desc);
-//         if (desc.Width < nWidth || desc.Height < nHeight)
-//         {
-//             ReleaseBackBuffer();
-//         }
-//     }
-
-	if (nWidth != m_d3dpp.BackBufferWidth || nHeight != m_d3dpp.BackBufferHeight)
-	{
-		//SetWindowPos(m_hWnd, NULL, 0, 0, nWidth, nHeight, SWP_NOZORDER|SWP_NOMOVE|SWP_NOACTIVATE);  // 不用改变窗口大小也可以
-		m_d3dpp.BackBufferWidth = nWidth;
-		m_d3dpp.BackBufferHeight = nHeight;
-
-		ReleaseBackBuffer();
-		if (FAILED(ResetDevice()))
-		{
-			return false;
-		}
-	}
-
-	if (m_pRenderTargetTexture) // 不需要重新创建
-		return true;
-
-    bool bOk = false;
-    do 
-    {
-        HRESULT hr = m_pDevice->CreateOffscreenPlainSurface(nWidth, nHeight, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &m_pOffScreenPlainSurface, NULL);
-        if (FAILED(hr))
-            break;
-
-        hr = D3DXCreateTexture(m_pDevice, nWidth, nHeight, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pRenderTargetTexture);
-        if (FAILED(hr))
-            break;
-
-        hr = m_pRenderTargetTexture->GetSurfaceLevel(0, &m_pTextureSurface);
-        if (FAILED(hr))
-            break;
-
-        m_pDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_pOldBackSurface);
-        m_pDevice->SetRenderTarget(0, m_pTextureSurface);
-
-        bOk = true;
-    } while (0);
-
-    if (!bOk)
-    {
-        ReleaseBackBuffer();
-        return false;
-    }
     return true;
 }
 
-void  D3DApp::ReleaseBackBuffer()
+void  D3D10App::ReleaseBackBuffer()
 {
-	if (m_pOldBackSurface)
-	{
-		m_pDevice->SetRenderTarget(0, m_pOldBackSurface);
-		SAFE_RELEASE(m_pOldBackSurface);
-	}
-
-    SAFE_RELEASE(m_pRenderTargetTexture);
-    SAFE_RELEASE(m_pTextureSurface);
-    SAFE_RELEASE(m_pOffScreenPlainSurface);
 }
 
 
 // 规定从surface的左上角开始提交
-void  D3DApp::CommitBackBuffer(IRenderTarget* pRenderTarget, int nWidth, int nHeight)
+void  D3D10App::CommitBackBuffer(IRenderTarget* pRenderTarget, int nWidth, int nHeight)
 {
-    HRESULT hr = m_pDevice->GetRenderTargetData(m_pTextureSurface, m_pOffScreenPlainSurface);  // 最耗时函数！
+}
 
-    HDC hDC = NULL;
-    if (FAILED(m_pOffScreenPlainSurface->GetDC(&hDC)))
+
+void  D3D10App::AddStage(Stage3D* pStage)
+{
+    if (!pStage)
         return;
 
-	BLENDFUNCTION bf = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
-	//if (!AlphaBlend(pRenderTarget->GetBindHDC(), 0, 0, nWidth, nHeight, hDC, 0, 0, nWidth, nHeight, bf))
-	{
-		// TODO: Win7 64位 TNND，为什么会失败！！！
-//		UIASSERT(0 && _T("AlphaBlend Failed!"));
-        BitBlt(pRenderTarget->GetBindHDC(), 0, 0, nWidth, nHeight, hDC, 0, 0, SRCCOPY);
-	}
-
-    m_pOffScreenPlainSurface->ReleaseDC(hDC);
+    m_listStage3D.push_back(pStage);
 }
-
-void  D3DApp::AddStage(Stage3D* pStage)
+void  D3D10App::RemoveStage(Stage3D* pStage)
 {
-	if (!pStage)
-		return;
+    if (!pStage)
+        return;
 
-	m_listStage3D.push_back(pStage);
+    list<Stage3D*>::iterator iter = std::find(m_listStage3D.begin(), m_listStage3D.end(), pStage);
+    if (iter != m_listStage3D.end())
+    {
+        m_listStage3D.erase(iter);
+    }
 }
-void  D3DApp::RemoveStage(Stage3D* pStage)
-{
-	if (!pStage)
-		return;
-
-	list<Stage3D*>::iterator iter = std::find(m_listStage3D.begin(), m_listStage3D.end(), pStage);
-	if (iter != m_listStage3D.end())
-	{
-		m_listStage3D.erase(iter);
-	}
-}
-
-// 将一个RECT
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -287,8 +305,8 @@ HWND  CreateTempWindow()
 	wcex.lpszClassName	= _T("Direct3DWindow");
 	RegisterClassEx(&wcex);
 
-	return CreateWindow(wcex.lpszClassName, _T(""), WS_POPUP,
-		CW_USEDEFAULT, CW_USEDEFAULT, 1, 1, NULL, NULL, NULL, NULL);
+	return CreateWindow(wcex.lpszClassName, _T(""), WS_POPUP|WS_VISIBLE,
+		CW_USEDEFAULT, CW_USEDEFAULT, 500, 500, NULL, NULL, NULL, NULL);
 }
 
 }

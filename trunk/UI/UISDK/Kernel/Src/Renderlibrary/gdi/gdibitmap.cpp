@@ -19,7 +19,6 @@ GDIImageListRenderBitmap::GDIImageListRenderBitmap()
 }
 void GDIImageListRenderBitmap::CreateInstance(IRenderBitmap** ppOutRef)
 {
-	UIASSERT(NULL != ppOutRef);
 	if (NULL == ppOutRef)
 		return;
 

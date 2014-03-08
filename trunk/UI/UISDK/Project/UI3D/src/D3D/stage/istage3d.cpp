@@ -1,9 +1,13 @@
 #include "stdafx.h"
 #include "UISDK\Project\UI3D\inc\istage3d.h"
-#include "UISDK\Project\UI3D\Src\D3D\stage3d.h"
+#include "UISDK\Project\UI3D\Src\D3D\stage\stage3d.h"
+#include "UISDK\Project\UI3D\src\D3D\element\rectangleelement.h"
+
+#if 0
 #include "UISDK\Project\UI3D\src\Element\mesh\meshelem.h"
 #include "UISDK\Project\UI3D\src\Element\particle\particle.h"
 #include "UISDK\Project\UI3D\src\Element\image\imageelement.h"
+#endif
 
 namespace UI
 {
@@ -18,6 +22,18 @@ DWORD  IStage3D::GetClearColor()
     return m_pStage3DImpl->GetBkgndColor();
 }
 
+IRectangleElement*  IStage3D::AddRectangleElement()
+{
+    RectangleElement* pElem = new RectangleElement;
+    if (!m_pStage3DImpl->AddElement(pElem))
+    {
+        delete pElem;
+        return NULL;
+    }
+    return pElem->GetIRectangleElement();
+}
+
+#if 0
 IMeshElement*  IStage3D::AddMeshElement()
 {
 	MeshElement* pElem = new MeshElement;
@@ -53,7 +69,7 @@ IImageElement*  IStage3D::AddImageElement()
 
     return pElem->GetIImageElement();
 }
-
+#endif
 void  IStage3D::GetFullWorldCoord(float fzWorld, float*  pfWidth, float* pfHeight)
 {
 	m_pStage3DImpl->GetFullWorldCoord(fzWorld, pfWidth, pfHeight);

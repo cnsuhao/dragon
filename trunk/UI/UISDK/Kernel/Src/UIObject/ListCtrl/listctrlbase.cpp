@@ -979,7 +979,7 @@ void ListCtrlBase::OnSize(UINT nType, int cx, int cy)
         bHeightNotConfiged = ((pParam->GetConfigTop() == NDEF || pParam->GetConfigBottom() == NDEF) && pParam->GetConfigHeight() == AUTO);
     }
 
-	if (bWidthNotConfiged || bHeightNotConfiged)
+	if (bWidthNotConfiged || bHeightNotConfiged)  // 动态控件，大小由内容决定
 	{
 		CRect rcRegion1;
         CRect rcRegion2;

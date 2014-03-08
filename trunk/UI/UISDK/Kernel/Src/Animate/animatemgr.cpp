@@ -12,7 +12,7 @@ AnimateManager::AnimateManager()
 	m_hTimer = NULL;
 
 	m_bHandlingTimerCallback = false;
-	m_nFps = 50;
+	m_nFps = 60;
 	m_pUIApplication = NULL;
 }
 
@@ -54,11 +54,17 @@ void AnimateManager::Destroy()
 	m_listObjStoryboard.clear();
 }
 
-IStoryboard*  AnimateManager::CreateStoryboard()
+IStoryboard*  AnimateManager::CreateStoryboard(IMessage* pNotify, int nId, WPARAM wParam, LPARAM lParam)
 {
     IStoryboard* p = new IStoryboard;
     p->CreateImpl();
-    p->GetImpl()->SetAnimateMgr(this);
+
+	Storyboard* pStoryboard = p->GetImpl();
+    pStoryboard->SetAnimateMgr(this);
+	pStoryboard->SetNotifyObj(pNotify);
+	pStoryboard->SetId(nId);
+	pStoryboard->SetWParam(wParam);
+	pStoryboard->SetLParam(lParam);
 
     return p;
 }
@@ -122,6 +128,7 @@ ObjectStoryboard::ObjectStoryboard(IMessage* p)
 	m_pNotifyObject = p;
 	m_pStoryboardList = NULL; 
 	m_nCount = 0;
+    m_bNeedCheckFinish = false;
 }
 ObjectStoryboard::~ObjectStoryboard()
 {
@@ -141,9 +148,9 @@ void AnimateManager::RemoveStoryboard(IStoryboard* p)
 	if (NULL == p)
 		return;
 
-    if (m_bHandlingTimerCallback)  // 如果正在对m_listObjTimeline进行遍历中，则我们在这里对list做erase操作
+    if (m_bHandlingTimerCallback)  // 如果正在对m_listObjTimeline进行遍历中，则不能在这里对list做erase操作
     {
-        p->GetImpl()->SetFinishFlag();
+        p->GetImpl()->SetFinish();
     }
     else
     {
@@ -173,12 +180,12 @@ void AnimateManager::ClearStoryboardOfNotify(IMessage* pMsg)
 	if (iter == m_listObjStoryboard.end())
 		return;
 
-	if (m_bHandlingTimerCallback)  // 如果正在对m_listObjTimeline进行遍历中，则我们在这里对list做erase操作
+	if (m_bHandlingTimerCallback)  // 如果正在对m_listObjTimeline进行遍历中，则不能在这里对list做erase操作
 	{
 		ObjectStoryboard* pObjTimeline = *iter;
 		for (int i = 0; i < pObjTimeline->m_nCount; i++)
 		{
-			pObjTimeline->m_pStoryboardList[i]->GetImpl()->SetFinishFlag();;
+			pObjTimeline->m_pStoryboardList[i]->GetImpl()->SetFinish();;
 		}
 	}
 	else
@@ -210,6 +217,43 @@ void AnimateManager::AddStoryboard(IStoryboard* p)
 		StartAnimate();
 
     p->GetImpl()->OnAnimateStart();
+}
+
+// 阻塞型动画
+void  AnimateManager::AddStoryboardBlock(IStoryboard* p)
+{
+    if (!p)
+        return;
+
+    Storyboard*  pStoryboard = p->GetImpl();
+    IMessage*    pNotify = pStoryboard->GetNotifyObj();
+
+    int nSleep = 1000/m_nFps;
+
+    bool bFinish = false;
+    while (1)
+    {
+        bFinish = pStoryboard->OnTick();
+
+        if (pNotify)
+        {
+            UISendMessage(pNotify, UI_WM_ANIMATE_TICK, (WPARAM)1, (LPARAM)&p);
+        }
+
+        if (bFinish)
+        {
+            if (pNotify)
+            {
+                UISendMessage(pNotify, UI_WM_ANIMATE_OVER);  // TODO: 有可能该对象还有其它非阻塞型动画
+            }
+            SAFE_DELETE_Ixxx(p);
+            return;
+        }
+        else
+        {
+            ::Sleep(nSleep);    
+        }
+    }
 }
 
 // 查找相同ID的time line，要添加时，如果发现该ID已经存在，则先取消前一个time line
@@ -288,6 +332,11 @@ void ObjectStoryboard::RemoveStoryboard(IStoryboard* p)
 
 void ObjectStoryboard::CheckFinishFlag()
 {
+    if (!m_bNeedCheckFinish)
+        return;
+
+    m_bNeedCheckFinish = false;
+
 	int nAliveCount = 0;
 	for (int i = 0; i < m_nCount; i++)
 	{
@@ -361,56 +410,41 @@ void AnimateManager::OnWaitForHandleObjectCallback(HANDLE h, LPARAM l)
 	ObjectStoryboardIter iter = m_listObjStoryboard.begin();
 	ObjectStoryboardIter iterEnd = m_listObjStoryboard.end();
 
-	bool bFinish = false;
 	for (; iter != iterEnd;)
 	{
-//		BOOL bNeedCheckFinish = FALSE;
-
 		ObjectStoryboard* pObjStoryboard = *iter;
 		for (int i = 0; i < pObjStoryboard->m_nCount; i++)
 		{
-			bFinish = false;
-			pObjStoryboard->m_pStoryboardList[i]->GetImpl()->OnTick(&bFinish);
-			if (bFinish)
-			{
-				pObjStoryboard->m_pStoryboardList[i]->GetImpl()->SetFinishFlag();
-//              bNeedCheckFinish = TRUE;
-			}
+			pObjStoryboard->m_pStoryboardList[i]->GetImpl()->OnTick();
 		}
 
 		// 统一发送消息。有可能一个pNotify添加了多个属性变化的动画，但只能发送一个通知，让它知道所有值的最终结果即可
+        // 这样也只用刷新一次
 		if (pObjStoryboard->m_pNotifyObject)
 		{
-			// 注： 在消息处理中，有可能对象将某个objtimeline给remove或者clear了，导致接下来的iter无效，最终崩溃。
 			UISendMessage(pObjStoryboard->m_pNotifyObject, UI_WM_ANIMATE_TICK, (WPARAM)pObjStoryboard->m_nCount, (LPARAM)pObjStoryboard->m_pStoryboardList);
 		}
+        // 	注：有可能在UISendMessage中调用了RemoveStoryboard
 
-// 		if (bNeedCheckFinish)   因为有可能在UISendMessage中调用了RemoveStoryboard，因此这里不判断bNeedCheckFinish了
-// 		{
-			pObjStoryboard->CheckFinishFlag();
-			if (0 == pObjStoryboard->m_nCount)
-			{
-				// 通知对象它的动画结束了
-				if (pObjStoryboard->m_pNotifyObject)
-				{
-					UISendMessage(pObjStoryboard->m_pNotifyObject, UI_WM_ANIMATE_OVER);
-				}
+        pObjStoryboard->CheckFinishFlag();
+        if (0 == pObjStoryboard->m_nCount)
+        {
+            // 通知对象它的动画结束了
+            if (pObjStoryboard->m_pNotifyObject)
+            {
+                UISendMessage(pObjStoryboard->m_pNotifyObject, UI_WM_ANIMATE_OVER);
+            }
 
-				iter = m_listObjStoryboard.erase(iter);
-				SAFE_DELETE(pObjStoryboard);
+            iter = m_listObjStoryboard.erase(iter);
+            SAFE_DELETE(pObjStoryboard);
 
-				if (0 == m_listObjStoryboard.size())
-					KillTimer();
-			}
-			else
-			{
-				iter++;
-			}
-// 		}
-// 		else
-// 		{
-// 			iter++;
-// 		}
+            if (0 == m_listObjStoryboard.size())
+                KillTimer();
+        }
+        else
+        {
+            iter++;
+        }
 	}
 
 	m_bHandlingTimerCallback = false;

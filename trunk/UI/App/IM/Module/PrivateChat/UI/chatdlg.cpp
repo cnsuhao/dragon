@@ -192,7 +192,7 @@ void CChatDlg::OnBnClickAnimate()
 		return;
 
     UI::IAnimateManager* pAnimateMgr = GetUIApplication()->GetAnimateMgr();
-    UI::IStoryboard*  pStoryboard = pAnimateMgr->CreateStoryboard();
+    UI::IStoryboard*  pStoryboard = pAnimateMgr->CreateStoryboard(this, ANIMATE_ID_RIGHT_PANEL);
     UI::IIntLinearMove* pMoveAlgo = NULL;
     UI::IIntTimeline* pIntTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(UI::TV_INT, 0, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo);
 
@@ -228,8 +228,6 @@ void CChatDlg::OnBnClickAnimate()
 		m_nLeftPanelWidth = m_pLeftPanel->GetWidth();
 	}
 
-    pStoryboard->SetId(ANIMATE_ID_RIGHT_PANEL);
-    pStoryboard->SetNotifyObj(this);
     pStoryboard->Begin();
 }
 

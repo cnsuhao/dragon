@@ -1028,11 +1028,7 @@ int  Menu::PopupAsSubMenu(UINT nFlags, Menu* pParentMenu, IListItemBase* pItem)
     if (y + rcWindow.Height() > rcWorkArea.bottom)
         y = rcWorkArea.bottom - rcWindow.Height();
 
-    // 如果直接在SetWindowPos ShowWindow会导致窗口在第一次显示时先变黑一次（第一次Bitblt时）
-    // 因此将ShowWindow单独移出来。原因不清楚。
-
-    ::ShowWindow(m_pPopupWrapWnd->GetHWND(), SW_SHOWNA);// 放在SetWindowPos后面还是会导致黑一次
-    ::SetWindowPos(m_pPopupWrapWnd->GetHWND(), NULL,x,y, rcWindow.Width(), rcWindow.Height(), SWP_NOZORDER|/*SWP_SHOWWINDOW|*/SWP_NOACTIVATE);
+    ::SetWindowPos(m_pPopupWrapWnd->GetHWND(), HWND_TOP, x,y, rcWindow.Width(), rcWindow.Height(), SWP_SHOWWINDOW|SWP_NOACTIVATE);  // 增加HWND_TOP,避免子菜单跑到父菜单的下面去了
 
     m_pIMenu->ClearNotify();
     pParentMenu->GetIMenu()->CopyNotifyTo(m_pIMenu);

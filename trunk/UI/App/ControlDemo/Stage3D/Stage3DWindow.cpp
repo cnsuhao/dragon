@@ -20,6 +20,12 @@ void CStage3DWindow::OnInitWindow()
 
     m_pStage3D = (UI::IStage3D*)FindChildObject(_T("stage3d"));
 
+    UI::IRectangleElement*  pRectElme = m_pStage3D->AddRectangleElement();
+    UI::RECTF rc;
+    rc.Set(-0.5f, 0.5f, 0.5f, -0.5f);
+    pRectElme->SetRect(&rc, 0);
+
+#if 0
 	const TCHAR* szSkinResPath = g_pUIApp->GetActiveSkinRes()->GetPath();
 	if (m_pStage3D)
 	{
@@ -36,4 +42,5 @@ void CStage3DWindow::OnInitWindow()
 		UI::IMeshElement*  pMeshElementTiger = m_pStage3D->AddMeshElement();
 		pMeshElementTiger->LoadFromFile(szXPath);
 	}
+#endif
 }

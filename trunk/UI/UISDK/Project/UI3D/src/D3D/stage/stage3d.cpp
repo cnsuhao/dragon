@@ -1,18 +1,21 @@
 #include "stdafx.h"
 #include "stage3d.h"
-#include "UISDK\Project\UI3D\src\Element\element.h"
+#include "UISDK\Project\UI3D\src\D3D\element\element.h"
 #include "UISDK\Project\UI3D\src\D3D\d3dapp.h"
+
+#if 0
 #include "UISDK\Project\UI3D\src\Element\mesh\meshelem.h"
 #include "UISDK\Project\UI3D\src\Element\particle\particle.h"
 #include "UISDK\Project\UI3D\src\D3D\Wrap\sprite.h"
+#endif
 
 namespace UI
 {
 
 Stage3D::Stage3D() : m_camera(this)
 {
-    m_dwBkgndColor = 0x00000000;
-    m_pBkgndImage = NULL;
+    for (int i = 0; i < 4; i++)
+        m_fBkgndColor[i] = 0;
     m_pIStage3D = NULL;
     m_sizeStage.cx = m_sizeStage.cy = 0;
 
@@ -62,13 +65,12 @@ void  Stage3D::ClearElement()
         SAFE_DELETE(p);
     }
     m_listElement.clear();
-    SAFE_DELETE(m_pBkgndImage);
 }
 
 
 void  Stage3D::OnObjectLoaded()
 {
-	m_camera.Init(GetDevice(), m_pIStage3D->GetHWND());
+	m_camera.Init(m_pIStage3D->GetHWND());
 }
 
 void Stage3D::ResetAttribute()
@@ -91,6 +93,30 @@ void  Stage3D::OnViewMatrixChanged()
 void  Stage3D::OnResetDevice()
 {
 	
+}
+void  Stage3D::SetBkgndColor(DWORD dwColor)
+{
+    m_fBkgndColor[0] = (float)GetRValue(dwColor)/255.0f;
+    m_fBkgndColor[1] = GetGValue(dwColor)/255.0f;
+    m_fBkgndColor[2] = GetBValue(dwColor)/255.0f;
+    m_fBkgndColor[3] = (dwColor>>24)/255.0f;
+}
+DWORD  Stage3D::GetBkgndColor()
+{
+    DWORD r = (DWORD)((m_fBkgndColor[0] * 255) + 0.5f);
+    DWORD g = (DWORD)((m_fBkgndColor[1] * 255) + 0.5f);
+    DWORD b = (DWORD)((m_fBkgndColor[2] * 255) + 0.5f);
+    DWORD a = (DWORD)((m_fBkgndColor[3] * 255) + 0.5f);
+
+    if (r>255)
+        r = 255;
+    if (g>255)
+        g = 255;
+    if (b>255)
+        b = 255;
+    if (a>255)
+        a = 255;
+    return RGBA(r,g,b,a);
 }
 
 void  Stage3D::OnSize(UINT nType, int cx, int cy)
@@ -115,20 +141,46 @@ LRESULT  Stage3D::HandleMessage(UINT message, WPARAM wParam, LPARAM lParam, BOOL
 	return 0;
 }
 
-void  Stage3D::SetBkgndTexture(const TCHAR* szPath)
-{
-    if (m_pBkgndImage)
-        SAFE_DELETE(m_pBkgndImage);
-    
-    if (szPath)
-    {
-        m_pBkgndImage = new DxTexture;
-        m_pBkgndImage->LoadFile(szPath, GetDevice());
-    }
-}
-
 void  Stage3D::OnPaint(IRenderTarget* pRenderTarget)
 {
+    // 	Clear the back buffer 
+    GetDevice()->ClearRenderTargetView(g_pD3DApp->m_pRenderTargetView, m_fBkgndColor);
+
+    //     FillRectWorld f;
+    // 
+    //     RECTF rc;
+    //     rc.Set(-0.8f, 0.8f, 0.8f, -0.8f);
+    //     f.CreateBuffer(&rc, 0);
+    // 
+    //     f.OnPaint();
+
+    list<Element*>::iterator iter = m_listElement.begin();
+    for (; iter != m_listElement.end(); iter++)
+    {
+        (*iter)->OnPaint();
+    }
+
+    // Present the information rendered to the back buffer to the front buffer (the screen)
+    g_pD3DApp->m_pSwapChain->Present( 0, 0 );
+
+//     IDXGISurface1* g_pSurface1 = NULL;
+//     g_pD3DApp->m_pSwapChain->GetBuffer(0, __uuidof(IDXGISurface1), (void**)&g_pSurface1);
+//     HDC hDC = NULL;
+//     g_pSurface1->GetDC(FALSE, &hDC);
+    
+//     BLENDFUNCTION bf = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
+//     //if (!AlphaBlend(pRenderTarget->GetBindHDC(), 0, 0, nWidth, nHeight, hDC, 0, 0, nWidth, nHeight, bf))
+//     {
+//         BitBlt(pRenderTarget->GetBindHDC(), 0, 0, 500, 500, hDC, 0, 0, SRCCOPY);
+//     }
+
+
+//     RECT rcEmpty = {0,0,0,0};
+//     g_pSurface1->ReleaseDC(&rcEmpty);
+//     g_pSurface1->Release();
+
+
+#if 0
     GetDevice()->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER, m_dwBkgndColor, 1.0f, 0);
     if (FAILED(GetDevice()->BeginScene()))
         return;
@@ -146,10 +198,12 @@ void  Stage3D::OnPaint(IRenderTarget* pRenderTarget)
     // 提取数据
     g_pD3DApp->CommitBackBuffer(pRenderTarget, m_sizeStage.cx, m_sizeStage.cy);
  //   GetDevice()->Present(NULL, NULL, NULL, NULL);
+#endif
 }
 
 void  Stage3D::Screen2World(int xScreen, int yScreen, float zWorld, float* pxWorld, float* pyWorld)
 {
+#if 0
 	D3DXMATRIX  matProj;
 	GetDevice()->GetTransform(D3DTS_PROJECTION, &matProj);
 	
@@ -196,6 +250,8 @@ void  Stage3D::Screen2World(int xScreen, int yScreen, float zWorld, float* pxWor
 		*py = xProj*inverseMatWorldView._12 + yProj*inverseMatWorldView._22 + zProj*inverseMatWorldView._32; 
 	if (pz)
 		*pz = xProj*inverseMatWorldView._13 + yProj*inverseMatWorldView._23 + zProj*inverseMatWorldView._33; 
+#endif
+
 #endif
 }
 

@@ -99,12 +99,9 @@ void  PopupControlWindow::Show(POINT pt, BOOL bDoModal)
         pt.y = rcWorkArea.bottom - size.cy;
 
     HWND hPopupWnd = GetHWND();
-    ::SetWindowPos(hPopupWnd, NULL, pt.x, pt.y, size.cx, size.cy, SWP_NOZORDER|SWP_NOACTIVATE);
+    ::SetWindowPos(hPopupWnd, NULL, pt.x, pt.y, size.cx, size.cy, SWP_SHOWWINDOW|SWP_NOZORDER|SWP_NOACTIVATE);
 	if (!GetUIApplication()->IsDesignMode())
 	{
-		::ShowWindow(hPopupWnd, SW_SHOWNA); 
-		::UpdateWindow(hPopupWnd);
-
 		IMessageFilterMgr* pMgr = NULL;
 		GetUIApplication()->GetMessageFilterMgr(&pMgr);
 		pMgr->AddMessageFilter(static_cast<IPreTranslateMessage*>(this));

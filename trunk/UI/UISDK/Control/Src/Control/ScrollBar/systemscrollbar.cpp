@@ -206,7 +206,8 @@ void  SystemScrollBar::GetDesiredSize(SIZE* pSize)
     if (p)
     {
         *pSize = p->GetDesiredSize();
-        return;
+        if (pSize->cx || pSize->cy)   // 2014.3.7 有可能bkgnd是null，导致返回0。此时不处理
+            return;
     }
 
 	if (m_pBtnThumb)
@@ -428,11 +429,11 @@ void  SystemScrollBar::CalcScrollBarVisible()
 		{
 		case SCROLLBAR_VISIBLE_AUTO:
 			if (m_pISystemScrollBar->IsMySelfVisible())
-				m_pISystemScrollBar->SetVisible(false, false/*true*/);
+				m_pISystemScrollBar->SetVisible(false, false, false);
 			break;
 
 		case SCROLLBAR_VISIBLE_SHOW_ALWAYS:
-			this->m_pBtnThumb->SetVisible(false, false/*true*/);
+			this->m_pBtnThumb->SetVisible(false, false, false);
 			break;
 		}
 	}
@@ -442,11 +443,11 @@ void  SystemScrollBar::CalcScrollBarVisible()
 		{
 		case SCROLLBAR_VISIBLE_AUTO:
 			if (false == m_pISystemScrollBar->IsMySelfVisible())
-				this->m_pISystemScrollBar->SetVisible(true, false/*true*/);
+				this->m_pISystemScrollBar->SetVisible(true, false, false);
 			break;
 
 		case SCROLLBAR_VISIBLE_SHOW_ALWAYS:
-			this->m_pBtnThumb->SetVisible(true, false/*true*/);
+			this->m_pBtnThumb->SetVisible(true, false, false);
 			break;
 		}
 	}

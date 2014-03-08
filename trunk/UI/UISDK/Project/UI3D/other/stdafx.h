@@ -13,16 +13,29 @@
 #include <atlbase.h>
 #include <algorithm>
 
-#include <d3d9.h>
-#include <d3dx9math.h>
-#include <d3dx9tex.h>
-#include <d3dx9mesh.h>
-#include <d3dx9core.h>
+// D2D
+#include <d2d1.h>
+#include <d2d1helper.h>
+#include <dwrite.h>
+#include <wincodec.h>
+#pragma comment(lib, "d2d1.lib")
+#pragma comment(lib, "dwrite.lib")
+#pragma comment(lib, "windowscodecs.lib")
+
+// D3D
+#include <D3D10.h>
+#include <d3dx10.h>
+#include <D3D10_1.h> 
+
+#pragma comment(lib, "D3D10_1.lib")
+#pragma comment(lib, "d3d10.lib")
+#ifdef _DEBUG
+#pragma comment(lib, "d3dx10d.lib")
+#else
+#pragma comment(lib, "d3dx10.lib")
+#endif
 
 #pragma comment(lib, "Msimg32.lib")   // AlphaBlend
-
-#pragma comment(lib, "d3dx9.lib")
-#pragma comment(lib, "d3d9.lib")
 
 #include "UISDK\Project\UIUtil\h\Util.h"
 #pragma comment(lib, "UIUtil.lib")
@@ -34,8 +47,12 @@
 #include "UISDK\Kernel\Inc\Base\leakdetect.h"
 using namespace UI;
 
+#include "UISDK\Project\UI3D\inc\inc.h"
 #include "UISDK\Project\UI3D\src\D3D\d3dapp.h"
-extern D3DApp*  g_pD3DApp;
-IDirect3DDevice9*  GetDevice();
+#include "UISDK\Project\UI3D\src\D2D\d2dapp.h"
+ID3D10Device*  GetDevice();
 
+extern D3D10App*  g_pD3DApp;
+extern D2DApp*    g_pD2DApp;
 extern UI::IUIApplication*  g_pUIApplication;
+extern HMODULE  g_hInstance;

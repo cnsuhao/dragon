@@ -443,6 +443,16 @@ enum
 //
 #define  UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE  132831132
 
+// UI::GRAPHICS_RENDER_LIBRARY_TYPE OnGetGraphicsRenderType()
+#define UIMSG_WM_GETGRAPHICSRENDERLIBRARYTYPE(func)       \
+    if (uMsg == UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE)   \
+    {                                                     \
+        SetMsgHandled(TRUE);                              \
+        pMsg->lRet = (long)func();                        \
+        if (IsMsgHandled())                               \
+            return TRUE;                                  \
+    } 
+
 //  获取窗口的透明类型，用于判断当前窗口是分层的，还是aero
 //  wparam: 
 //  lparam:
@@ -872,16 +882,6 @@ struct EDITORGETOBJECTATTRLISTDATA
         if (IsMsgHandled()) \
             return TRUE; \
     }
-
-// UI::GRAPHICS_RENDER_LIBRARY_TYPE OnGetGraphicsRenderType()
-#define UIMSG_WM_GETGRAPHICSRENDERLIBRARYTYPE(func)       \
-    if (uMsg == UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE)   \
-    {                                                     \
-        SetMsgHandled(TRUE);                              \
-        pMsg->lRet = (long)func();                        \
-        if (IsMsgHandled())                               \
-            return TRUE;                                  \
-    } 
 
 
 // void OnCalcParentNonClientRect(CRegion4* prcNonClientRegion)

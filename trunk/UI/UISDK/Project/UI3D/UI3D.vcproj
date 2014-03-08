@@ -200,8 +200,12 @@
 			Name="02. src"
 			>
 			<Filter
-				Name="01. Direct3D"
+				Name="02. Direct3D"
 				>
+				<File
+					RelativePath=".\src\D3D\d3d10.fx"
+					>
+				</File>
 				<File
 					RelativePath=".\src\D3D\d3dapp.cpp"
 					>
@@ -211,149 +215,117 @@
 					>
 				</File>
 				<Filter
-					Name="stage"
+					Name="Wrap"
 					>
-					<File
-						RelativePath=".\src\D3D\istage3d.cpp"
+					<Filter
+						Name="01. Texture"
 						>
-					</File>
-					<File
-						RelativePath=".\src\D3D\stage3d.cpp"
+						<File
+							RelativePath=".\src\D3D\wrap\texture\texture.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\src\D3D\wrap\texture\texture.h"
+							>
+						</File>
+					</Filter>
+					<Filter
+						Name="02. Mesh"
 						>
-					</File>
-					<File
-						RelativePath=".\src\D3D\stage3d.h"
+					</Filter>
+					<Filter
+						Name="03. Translation"
 						>
-					</File>
+						<File
+							RelativePath=".\src\D3D\wrap\translation\translation.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\src\D3D\wrap\translation\translation.h"
+							>
+						</File>
+					</Filter>
+					<Filter
+						Name="04. Camera"
+						>
+						<File
+							RelativePath=".\src\D3D\wrap\camera\camera.cpp"
+							>
+						</File>
+						<File
+							RelativePath=".\src\D3D\wrap\camera\camera.h"
+							>
+						</File>
+					</Filter>
 				</Filter>
 				<Filter
-					Name="wrap"
+					Name="Element"
 					>
 					<Filter
-						Name="01. camera"
+						Name="Base"
 						>
 						<File
-							RelativePath=".\src\D3D\Wrap\camera.cpp"
+							RelativePath=".\src\D3D\element\element.cpp"
 							>
 						</File>
 						<File
-							RelativePath=".\src\D3D\Wrap\camera.h"
+							RelativePath=".\src\D3D\element\element.h"
+							>
+						</File>
+						<File
+							RelativePath=".\src\D3D\element\ielement.cpp"
 							>
 						</File>
 					</Filter>
 					<Filter
-						Name="02. texture"
+						Name="Rectangle"
 						>
 						<File
-							RelativePath=".\src\D3D\Wrap\texture.cpp"
+							RelativePath=".\src\D3D\element\rectangleelement.cpp"
 							>
 						</File>
 						<File
-							RelativePath=".\src\D3D\Wrap\texture.h"
+							RelativePath=".\src\D3D\element\rectangleelement.h"
 							>
 						</File>
 					</Filter>
-					<Filter
-						Name="03. mesh"
+				</Filter>
+				<Filter
+					Name="Stage"
+					>
+					<File
+						RelativePath=".\src\D3D\stage\istage3d.cpp"
 						>
-						<File
-							RelativePath=".\src\D3D\Wrap\mesh.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\src\D3D\Wrap\mesh.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="04. translation"
+					</File>
+					<File
+						RelativePath=".\src\D3D\stage\stage3d.cpp"
 						>
-						<File
-							RelativePath=".\src\D3D\Wrap\translation.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\src\D3D\Wrap\translation.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="05. sprite--xx£¨Î´Ê¹ÓÃ£©"
+					</File>
+					<File
+						RelativePath=".\src\D3D\stage\stage3d.h"
 						>
-						<File
-							RelativePath=".\src\D3D\Wrap\sprite.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\src\D3D\Wrap\sprite.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="06. statemanager"
-						>
-						<File
-							RelativePath=".\src\D3D\Wrap\statemanager.cpp"
-							>
-						</File>
-						<File
-							RelativePath=".\src\D3D\Wrap\statemanager.h"
-							>
-						</File>
-					</Filter>
+					</File>
 				</Filter>
 			</Filter>
 			<Filter
-				Name="02. Element"
+				Name="01. Direct2D"
 				>
 				<File
-					RelativePath=".\src\Element\element.cpp"
+					RelativePath=".\src\D2D\d2dapp.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Element\element.h"
+					RelativePath=".\src\D2D\d2dapp.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Element\ielement.cpp"
+					RelativePath=".\src\D2D\direct2drender.cpp"
 					>
 				</File>
-				<Filter
-					Name="01. mesh"
+				<File
+					RelativePath=".\src\D2D\direct2drender.h"
 					>
-					<File
-						RelativePath=".\src\Element\mesh\meshelem.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\src\Element\mesh\meshelem.h"
-						>
-					</File>
-				</Filter>
-				<Filter
-					Name="02. particle"
-					>
-					<File
-						RelativePath=".\src\Element\particle\particle.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\src\Element\particle\particle.h"
-						>
-					</File>
-				</Filter>
-				<Filter
-					Name="03. image"
-					>
-					<File
-						RelativePath=".\src\Element\image\imageelement.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\src\Element\image\imageelement.h"
-						>
-					</File>
-				</Filter>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter
@@ -414,7 +386,15 @@
 				>
 			</File>
 			<File
-				RelativePath="other\UI3D.rc"
+				RelativePath=".\other\UI3D.rc"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="10. doc"
+			>
+			<File
+				RelativePath=".\doc\directx.txt"
 				>
 			</File>
 		</Filter>

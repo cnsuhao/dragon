@@ -1,53 +1,15 @@
 #ifndef DIRECT2DRENDER_H_C734C4CB_CCC1_464b_8C07_AB893622714C
 #define DIRECT2DRENDER_H_C734C4CB_CCC1_464b_8C07_AB893622714C
-#ifdef UI_D2D_RENDER
 
-#include <d2d1.h>
-#include <d2d1helper.h>
-#include <dwrite.h>
-#include <wincodec.h>
-#pragma comment(lib, "d2d1.lib")
-#pragma comment(lib, "dwrite.lib")
-#pragma comment(lib, "windowscodecs.lib")
-
-// msdn url:
-// http://msdn.microsoft.com/zh-cn/library/dd370994(v=vs.85).aspx
-// http://technet.microsoft.com/zh-tw/library/dd370971.aspx
-// http://msdn.microsoft.com/en-us/magazine/ee819134.aspx
 
 namespace UI
 {
-#if 1
-class Direct2DRenderGlobalData
-{
-public:
-	Direct2DRenderGlobalData();
-	~Direct2DRenderGlobalData();
-
-	long     AddRef();
-	long     Release();
-
-	HRESULT  CreateD2D();
-
-public:
-	ID2D1Factory*        m_pD2DFactory;    // 貌似如果不释放它，将一直占用很大内存
-	IDWriteFactory*      m_pDWriteFactory;
-	IWICImagingFactory*  m_pWICFactory;
-
-private:
-	long    m_dwRef;
-};
-}
-extern Direct2DRenderGlobalData  g_D2DGlobalData;
-namespace UI
-{
+#if 0
 class Direct2DRenderBitmap : public IRenderResourceImpl<IRenderBitmap>
 {
 protected:
 	Direct2DRenderBitmap()
 	{
-		g_D2DGlobalData.AddRef();
-
 		m_nWidth = m_nHeight = 0;
 		m_pConverter = NULL;
 	}
@@ -58,11 +20,10 @@ public:
 		UI_LOG_DEBUG(_T("Direct2DRenderBitmap Delete. ptr=0x%08X"), this);
 
 		SAFE_RELEASE(m_pConverter);
-		g_D2DGlobalData.Release();
 	}
 
 
-	virtual GRAPHICS_RENDER_TYPE GetGraphicsRenderLibraryType() { return GRAPHICS_RENDER_LIBRARY_TYPE_DIRECT2D; }
+	virtual GRAPHICS_RENDER_LIBRARY_TYPE GetGraphicsRenderLibraryType() { return GRAPHICS_RENDER_LIBRARY_TYPE_DIRECT2D; }
 
 	static  void CreateInstance( IRenderBitmap** ppOutRef )
 	{
@@ -87,11 +48,6 @@ public:
 	//
 	virtual bool  LoadFromFile(const String& strPath, bool bCreateAlphaChannel, const ATTRMAP& mapAttrib)
 	{
-		if (NULL == g_D2DGlobalData.m_pWICFactory)
-			g_D2DGlobalData.CreateD2D();
-		if (NULL == g_D2DGlobalData.m_pWICFactory)
-			return false;
-
 		//////////////////////////////////////////////////////////////////////////
 		// 1.使用 IWICImagingFactory::CreateDecoderFromFileName 方法创建 IWICBitmapDecoder。
 
@@ -99,7 +55,7 @@ public:
 		IWICBitmapFrameDecode *pSource = NULL;
 //		IWICFormatConverter *pConverter = NULL;
 
-		HRESULT hr = g_D2DGlobalData.m_pWICFactory->CreateDecoderFromFilename(
+		HRESULT hr = g_pD2DApp->m_pWICFactory->CreateDecoderFromFilename(
 			strPath.c_str(),
 			NULL,
 			GENERIC_READ,
@@ -127,7 +83,7 @@ public:
 
 			// Convert the image format to 32bppPBGRA
 			// (DXGI_FORMAT_B8G8R8A8_UNORM + D2D1_ALPHA_MODE_PREMULTIPLIED).
-			hr = g_D2DGlobalData.m_pWICFactory->CreateFormatConverter(&m_pConverter);
+			hr = g_pD2DApp->m_pWICFactory->CreateFormatConverter(&m_pConverter);
 
 		}
 
@@ -314,16 +270,6 @@ protected:
 	HWND     m_hWnd;
 	ID2D1DCRenderTarget*  m_pRenderTarget;
 };
-
-// class Direct2DMemRenderDC : public Direct2DRenderTarget
-// {
-// public:
-// 	Direct2DMemRenderDC(HWND hWnd, int nWidth, int nHeight);
-// 	virtual ~Direct2DMemRenderDC();
-// };
 #endif
 }
-
-#endif
-
 #endif  // DIRECT2DRENDER_H_C734C4CB_CCC1_464b_8C07_AB893622714C

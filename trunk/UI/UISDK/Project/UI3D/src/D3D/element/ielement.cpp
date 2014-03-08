@@ -1,9 +1,12 @@
 #include "stdafx.h"
 #include "UISDK\Project\UI3D\inc\ielement.h"
+#include "UISDK\Project\UI3D\src\D3D\element\element.h"
+#include "UISDK\Project\UI3D\src\D3D\element\rectangleelement.h"
+#if 0
 #include "UISDK\Project\UI3D\src\Element\mesh\meshelem.h"
 #include "UISDK\Project\UI3D\src\Element\particle\particle.h"
 #include "UISDK\Project\UI3D\src\Element\image\imageelement.h"
-
+#endif
 namespace UI
 {
 
@@ -43,6 +46,16 @@ void  IElement::GetScale(float* px, float* py, float* pz)
     m_pElementImpl->GetWorldMatrix()->GetScale(px, py, pz);
 }
 
+IRectangleElement::IRectangleElement(RectangleElement* pImpl) : IElement(static_cast<Element*>(pImpl))
+{
+    m_pRectangleElementImpl = pImpl;
+}
+void  IRectangleElement::SetRect(RECTF* prc, float z)
+{
+    m_pRectangleElementImpl->CreateBuffer(prc, z);  // TODO: add update method
+}
+
+#if 0
 IMeshElement::IMeshElement(MeshElement* pImpl) : IElement(static_cast<Element*>(pImpl))
 {
 	m_pMeshElementImpl = pImpl;
@@ -89,6 +102,6 @@ void  IParticleElement::InitParticles(unsigned int nCacheCount, unsigned int nAl
 {
 	m_pParticleElementImpl->InitParticles(nCacheCount, nAliveCount);
 }
-
+#endif
 }
 

@@ -2,7 +2,6 @@
 
 namespace UI
 {
-
 class DxTranslation
 {
 public:
@@ -23,7 +22,7 @@ public:
 
 	void  Update();
 	D3DXMATRIX*  GetMatrix();
-	void  ApplyDevice(IDirect3DDevice9* pDevice);
+	//void  ApplyDevice(IDirect3DDevice9* pDevice);
 
     void  GetPos(float* px, float* py, float* pz);
     void  GetRotate(float* px, float* py, float* pz);
@@ -50,5 +49,4 @@ protected:
 	D3DXMATRIX*  m_pmatCombine1;
 	D3DXMATRIX*  m_pmatCombine2;
 };
-
 }

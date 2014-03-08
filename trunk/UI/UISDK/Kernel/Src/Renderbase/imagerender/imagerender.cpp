@@ -591,12 +591,10 @@ void  ImageListRender::DrawState(RENDERBASE_DRAWSTATE* pDrawStruct)
 		IAnimateManager* pAnimateMgr = pUIApp->GetAnimateMgr();
         pAnimateMgr->ClearStoryboardOfNotify(static_cast<IMessage*>(m_pIImageListRender));
 
-        IStoryboard*  pStoryboard = pAnimateMgr->CreateStoryboard();
-        pStoryboard->SetNotifyObj(static_cast<IMessage*>(m_pIImageListRender));
+        IStoryboard*  pStoryboard = pAnimateMgr->CreateStoryboard(static_cast<IMessage*>(m_pIImageListRender));
 
 		IIntLinearMove* pMoveAlgo = NULL;
-        IIntTimeline* pTimeline = (IIntTimeline*)pStoryboard->CreateTimeline(
-            TV_INT, 0, TMA_Linear, (IMoveAlgorithm**)&pMoveAlgo);
+        IIntTimeline* pTimeline = (IIntTimeline*)pStoryboard->CreateTimeline(TV_INT, 0, TMA_Linear, (IMoveAlgorithm**)&pMoveAlgo);
         pMoveAlgo->SetParam1(0, 255, 200);
 
 		m_nCurrentAlpha = 0;  // 避免在第一次Tick响应之前被控件强制刷新了，结果此时的m_nCurrentAlpha不是计算得到的值。
@@ -611,8 +609,7 @@ void  ImageListRender::DrawState(RENDERBASE_DRAWSTATE* pDrawStruct)
 		IAnimateManager* pAnimateMgr = pUIApp->GetAnimateMgr();
         pAnimateMgr->ClearStoryboardOfNotify(static_cast<IMessage*>(m_pIImageListRender));
 
-        IStoryboard*  pStoryboard = pAnimateMgr->CreateStoryboard();
-        pStoryboard->SetNotifyObj(static_cast<IMessage*>(m_pIImageListRender));
+        IStoryboard*  pStoryboard = pAnimateMgr->CreateStoryboard(static_cast<IMessage*>(m_pIImageListRender));
 
         IIntLinearMove* pMoveAlgo = NULL;
 		IIntTimeline* pTimeline = (IIntTimeline*)pStoryboard->CreateTimeline(

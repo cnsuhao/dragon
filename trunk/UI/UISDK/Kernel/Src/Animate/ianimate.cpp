@@ -31,13 +31,12 @@ UI_IMPLEMENT_Ixxx_INTERFACE_CreateImpl(IControlAnimateBase, ControlAnimateBase, 
 UI_IMPLEMENT_Ixxx_INTERFACE_Construct2(ISlideAnimate, SlideAnimate)
 UI_IMPLEMENT_Ixxx_INTERFACE_CreateImpl(ISlideAnimate, SlideAnimate, ControlAnimateBase)
 
-// bool  IStoryboard::AddTimeline(ITimeline* p)             { return m_pStoryboardImpl->AddTimeline(p); }
-// bool  IStoryboard::DestroyTimeline(int nTimelineId)      { return m_pStoryboardImpl->DestroyTimeline(nTimelineId); }
 ITimeline*  IStoryboard::CreateTimeline(TIMELINE_VALUE_TYPE eType, int nTimelineId, int nMoveAlgo, IMoveAlgorithm** ppMoveAlgo)
 { return m_pStoryboardImpl->CreateTimeline(eType, nTimelineId, nMoveAlgo, ppMoveAlgo); }
 ITimeline*  IStoryboard::FindTimeline(int nTimelineId)   { return m_pStoryboardImpl->FindTimeline(nTimelineId); }
+ITimeline*  IStoryboard::GetTimeline(unsigned int nIndex){ return m_pStoryboardImpl->GetTimeline(nIndex); }
 void  IStoryboard::Begin()                               { m_pStoryboardImpl->Begin(); }
-void  IStoryboard::End()                                 { m_pStoryboardImpl->End(); }
+void  IStoryboard::BeginBlock()                          { m_pStoryboardImpl->BeginBlock(); }
 IMessage*  IStoryboard::GetNotifyObj()                   { return m_pStoryboardImpl->GetNotifyObj(); }
 void  IStoryboard::SetNotifyObj(IMessage* pNotify)       { m_pStoryboardImpl->SetNotifyObj(pNotify); }
 void  IStoryboard::SetId(int nID)                        { m_pStoryboardImpl->SetId(nID) ;}
@@ -100,7 +99,7 @@ int   IAnimateManager::SetFps(int n) { return m_pImpl->SetFps(n); }
 void  IAnimateManager::ClearStoryboardOfNotify(IMessage* pMsg) { return m_pImpl->ClearStoryboardOfNotify(pMsg); }
 void  IAnimateManager::RemoveStoryboard(IStoryboard* p){ return m_pImpl->RemoveStoryboard(p); }
 
-IStoryboard*  IAnimateManager::CreateStoryboard() { return m_pImpl->CreateStoryboard(); }
+IStoryboard*  IAnimateManager::CreateStoryboard(IMessage* pNotify, int nId, WPARAM wParam, LPARAM lParam) { return m_pImpl->CreateStoryboard(pNotify, nId, wParam, lParam); }
 IWindowAnimateBase*  IAnimateManager::CreateWindowAnimateInstance(E_WINDOW_ANIMATE_TYPE eType, IWindowBase* pWindow)
 { return m_pImpl->CreateWindowAnimateInstance(eType, pWindow) ; }
 IControlAnimateBase*  IAnimateManager::CreateControlAnimateInstance(E_CONTROL_ANIMATE_TYPE eType)

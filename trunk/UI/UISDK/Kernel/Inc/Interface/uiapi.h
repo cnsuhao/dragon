@@ -30,12 +30,6 @@ typedef  HRESULT (*funRegisterUIObjectPtr)(IUIApplication* p);
 
 UISDKAPI HRESULT CreateUIApplicationInstance(IUIApplication** pp);
 
-// UISDKAPI HRESULT CreateRenderBaseByName(const TCHAR* szType, IObject* pObj, IRenderBase** pp);
-// UISDKAPI HRESULT CreateRenderBase(RENDER_TYPE eType, IObject* pObj, IRenderBase** pp);
-// 
-// UISDKAPI HRESULT CreateTextRenderBaseByName(const TCHAR* szType, IObject* pObj, ITextRenderBase** pp);
-// UISDKAPI HRESULT CreateTextRenderBase(TEXTRENDER_TYPE eType, IObject* pObj, ITextRenderBase** pp);
-
 UISDKAPI long    UIPostMessage(IUIApplication* pUIApp, UIMSG* pMsg, int nMsgMapID=0);
 UISDKAPI long    UIPostMessage(HWND   hForwardMsgWnd,  UIMSG* pMsg, int nMsgMapID=0);
 UISDKAPI long    UISendMessage(UIMSG* pMsg, int nMsgMapID=0, BOOL* pbHandled = NULL);
@@ -49,7 +43,7 @@ UISDKAPI void    _cdecl UI_LOG_ERROR( TCHAR*, ... );
 UISDKAPI void    _cdecl UI_LOG_FATAL( TCHAR*, ... );
 #define UI_LOG_TEST  UI_LOG_DEBUG
 
-UISDKAPI GRAPHICS_RENDER_LIBRARY_TYPE GetRenderLibraryType(IObject* pObj);
+UISDKAPI GRAPHICS_RENDER_LIBRARY_TYPE  GetRenderLibraryType(IObject* pObj);
 UISDKAPI IRenderTarget*  UICreateRenderTarget(GRAPHICS_RENDER_LIBRARY_TYPE eType, HWND hWnd=NULL);
 UISDKAPI void  UICreateRenderBitmap(GRAPHICS_RENDER_LIBRARY_TYPE eGraphicsRenderType, IMAGE_ITEM_TYPE eType, IRenderBitmap** ppOut);
 
@@ -60,14 +54,12 @@ UISDKAPI void  UILoadXmlDocument(const TCHAR* szXmlPath, IUIDocument** ppDoc);
 UISDKAPI HBITMAP CreateMemBitmap(int nWidth, int nHeight, int* pnPitch, byte** ppBits);
 
 // 创建一个TCHAR buffer
+// 用于解决返回一个TCHAR*字符串，但仍然由分配都去释放内存，调用者只需要调用Release
 UISDKAPI void  CreateTCHARBuffer(IBuffer** pBuffer);
 
-// 创建一个IDataObject
+// 创建一个IDataObject，用于实现拖拽源。避免每个拖拽源都得再实现一次IDataObject IDropSource接口
 UISDKAPI void  CreateDataObjectInstance(IDataObject**  pp);
 UISDKAPI void  CreateDropSourceInstance(IDropSource**  pp);
-
-// 特效接口
-//UISDKAPI void  RecursiveBlur(HBITMAP hBitmap, double radius, RECT* prc, int nFlag);
 
 }
 #endif  // UIAPI_H_C4207403_E0A4_418b_B141_663726A982E7

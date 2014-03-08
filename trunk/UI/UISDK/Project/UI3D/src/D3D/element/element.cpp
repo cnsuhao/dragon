@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "element.h"
+#include "UISDK\Project\UI3D\src\D3D\element\rectangleelement.h"
 
 namespace UI
 {
@@ -34,4 +35,9 @@ void Element::SetAttribute(IMapAttribute* pMapAttrib)
     
 }
 
+// 退出前，释放一些静态变量
+void  Element::Unload()
+{
+    RectangleElement::Release();
+}
 }

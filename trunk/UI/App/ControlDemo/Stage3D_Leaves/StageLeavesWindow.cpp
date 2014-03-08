@@ -6,7 +6,7 @@
 
 CStageLeavesWindow::CStageLeavesWindow()
 {
-    m_pStage3D = NULL;
+ //   m_pStage3D = NULL;
 
 	m_fyWorldDropTo = -2.0f;
 	m_fyWolrdDropToFade = -1.8f;
@@ -48,7 +48,7 @@ float randomFloat(float low, float high)
 void CStageLeavesWindow::OnInitWindow()
 {
     __super::nvProcessMessage(GetCurMsg(), 0, 0);
-
+#if 0
     m_pStage3D = (UI::IStage3D*)FindChildObject(_T("stageparticle"));
     if (!m_pStage3D)
         return;
@@ -91,8 +91,10 @@ void CStageLeavesWindow::OnInitWindow()
         UI::IImageElement* pImageElement = m_pStage3D->AddImageElement();
         ResetLeaf(pImageElement);
     }
+#endif
 }
 
+#if 0
 void  CStageLeavesWindow::ResetLeaf(UI::IImageElement* pImageElement)
 {
     const TCHAR* szSkinResPath = g_pUIApp->GetActiveSkinRes()->GetPath();
@@ -112,9 +114,7 @@ void  CStageLeavesWindow::ResetLeaf(UI::IImageElement* pImageElement)
     pImageElement->MoveWorld(randomFloat(-2.0f, 1.0f), 0, 0);
     pImageElement->SetTransparency(1.0f);
 
-    UI::IStoryboard*  pStoryboard = pAniMgr->CreateStoryboard();
-    pStoryboard->SetNotifyObj(this);
-    pStoryboard->SetWParam((WPARAM)pImageElement);
+    UI::IStoryboard*  pStoryboard = pAniMgr->CreateStoryboard(this, 0, (WPARAM)pImageElement);
 
     // rotate
     {
@@ -176,3 +176,4 @@ void  CStageLeavesWindow::OnAnimateTick(int nCount, UI::IStoryboard** ppArray)
 
     m_pStage3D->UpdateObject();
 }
+#endif

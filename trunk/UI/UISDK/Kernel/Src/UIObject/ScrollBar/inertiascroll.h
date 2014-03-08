@@ -59,7 +59,6 @@ private:
     bool    m_bEnable;
     bool    m_bMouseWheelUpDown;   // 从下至下滚动，还是从下至上
     IStoryboard*  m_pAnimateStoryboard;
-    int     m_nOldFps;      // 平滑滚动的帧数太高，需要临时修改。保存修改之前的值用于还原
 
     int     m_nScroll_S;    // 每一次MOUSEWHEEL加SCROLL_HEIGHT_EACH_MOUSEWHEEL，每次tick减m_nScroll_V
     float   m_nScroll_A;    // 通过 2as = V0^2 计算而来

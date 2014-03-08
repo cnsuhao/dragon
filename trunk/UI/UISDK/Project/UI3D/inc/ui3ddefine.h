@@ -4,7 +4,34 @@
 namespace UI
 {
 
-#define 
+class  RECTF
+{
+public:
+    RECTF()
+    {
+        fLeft = fTop = fRight = fBottom = 0;
+    }
+
+    void CopyFromm(RECTF* pScr)
+    {
+        fLeft = pScr->fLeft;
+        fTop = pScr->fTop;
+        fRight = pScr->fRight;
+        fBottom = pScr->fBottom;
+    }
+	void  Set(float _fLeft, float _fTop, float _fRight, float _fBottom)
+	{
+		fLeft = _fLeft;
+		fTop = _fTop;
+		fRight = _fRight;
+		fBottom = _fBottom;
+	}
+public:
+    float  fLeft;
+    float  fTop;
+    float  fRight;
+    float  fBottom;
+};
 
 
 }

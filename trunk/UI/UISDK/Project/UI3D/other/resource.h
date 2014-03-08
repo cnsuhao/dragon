@@ -2,6 +2,8 @@
 // Microsoft Visual C++ generated include file.
 // Used by UI3D.rc
 
+#define IDR_SHADER_D3D10                101
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

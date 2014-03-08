@@ -7,6 +7,7 @@ class Element;
 class MeshElement;
 class ImageElement;
 class ParticleElement;
+class RectangleElement;
 
 interface UI3D_API IElement
 {
@@ -26,6 +27,17 @@ private:
 	Element*  m_pElementImpl;
 };
 
+interface UI3D_API IRectangleElement : public IElement
+{
+public:
+    IRectangleElement(RectangleElement* pImpl);
+    void  SetRect(RECTF* prc, float z);
+
+private:
+    RectangleElement*  m_pRectangleElementImpl;
+};
+
+#if 0
 interface UI3D_API IMeshElement : public IElement
 {
 public:
@@ -61,6 +73,7 @@ public:
 private:
 	ParticleElement*  m_pParticleElementImpl;
 };
+#endif
 
 }
 

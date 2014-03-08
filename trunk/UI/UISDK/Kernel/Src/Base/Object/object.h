@@ -15,6 +15,7 @@ class RenderChain;
 class WindowBase;
 interface ILayoutParam;
 class Object3DWrap;
+class RenderLayer2;
 
 class Object : public ObjTree
 {
@@ -224,6 +225,12 @@ public:
     Object3DWrap*  Get3DWrap();
 #pragma endregion
 
+#pragma region // render layer
+    bool  CreateRenderLayer();
+    
+#pragma endregion 
+
+
 	IRenderFont*  GetRenderFont();
 	ITextRenderBase*  GetTextRender();
 	IRenderBase*  GetBkRender();
@@ -327,11 +334,12 @@ protected:
     LPVOID   m_pUserData;                    // 自定义数据（目前是用于在UIBuilder做数据关联）
     IMapAttribute*  m_pIMapAttributeRemain;  // 用于扩展。未解析的属性，例如Tooltip
 
-    IRenderBase*   m_pBkgndRender;           // 背景渲染
-    IRenderBase*   m_pForegndRender;         // 前景渲染
+    IRenderBase*      m_pBkgndRender;        // 背景渲染
+    IRenderBase*      m_pForegndRender;      // 前景渲染
     ITextRenderBase*  m_pTextRender;         // 文字渲染
-    IUICursor*  m_pCursor;                   // 对象的鼠标样式
-    Object3DWrap*  m_pObject3DWrap;          // 3d包装器
+    IUICursor*        m_pCursor;             // 对象的鼠标样式
+    Object3DWrap*     m_pObject3DWrap;       // 3d包装器
+    RenderLayer2*     m_pRenderLayer;        // 该对象是否创建了一个layer
     
     void**  m_ppOutRef;                      // 为了解决一个类成员对象，有可能被自己的父对象删除后，这个类却不知道，再删除该对象时崩溃了.
     IUIApplication*  m_pUIApplication;       // 该对象所在的App(为了实现多实例，将app不再做为全局变量，每个Object能够快速引用到app接口)

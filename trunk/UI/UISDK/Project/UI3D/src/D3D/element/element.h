@@ -1,5 +1,5 @@
 #pragma once
-#include "UISDK\Project\UI3D\src\D3D\Wrap\translation.h"
+#include "UISDK\Project\UI3D\src\D3D\Wrap\translation\translation.h"
 
 namespace UI
 {
@@ -15,6 +15,8 @@ public:
 
     void  SetTransparency(float fAlpha);
 	DxTranslation*  GetWorldMatrix(); 
+
+    static  void  Unload();
 
 protected:
     byte  m_byteTransparent;  // 透明度 0-255 255表示不透明

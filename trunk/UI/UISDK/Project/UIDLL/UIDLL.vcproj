@@ -1279,7 +1279,7 @@
 					</Filter>
 				</Filter>
 				<Filter
-					Name="06. renderlibrary"
+					Name="06. graphicslibrary"
 					>
 					<File
 						RelativePath="..\..\Kernel\Src\Renderlibrary\renderlibrary.cpp"
@@ -1378,18 +1378,6 @@
 						</File>
 						<File
 							RelativePath="..\..\Kernel\Src\Renderlibrary\gdiplus\gdiplusrender.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="03. d2d"
-						>
-						<File
-							RelativePath="..\..\Kernel\Src\Renderlibrary\d2d\direct2drender.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\Renderlibrary\d2d\direct2drender.h"
 							>
 						</File>
 					</Filter>
@@ -1754,6 +1742,34 @@
 						</File>
 						<File
 							RelativePath="..\..\Kernel\Src\UIEffect\CacheBitmap\cachebitmap.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
+				<Filter
+					Name="7.5 renderlayer2"
+					>
+					<Filter
+						Name="renderlayer"
+						>
+						<File
+							RelativePath="..\..\Kernel\Src\RenderLayer2\renderlayer2.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Kernel\Src\RenderLayer2\renderlayer2.h"
+							>
+						</File>
+					</Filter>
+					<Filter
+						Name="renderchain"
+						>
+						<File
+							RelativePath="..\..\Kernel\Src\RenderLayer2\renderchain2.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Kernel\Src\RenderLayer2\renderchain2.h"
 							>
 						</File>
 					</Filter>

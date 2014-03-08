@@ -1,2 +1,5 @@
 1. 使用VS2008进行编译。自己没有下载安装其它VS版本，因此目前无法兼容其它版本
 2. PLAYER_SOUND， UI3D 模块需要安装DirectX SDK
+   
+2014.3.8
+UI3D 修改为D2D+D3D10.1,因此需要win7+Dx10

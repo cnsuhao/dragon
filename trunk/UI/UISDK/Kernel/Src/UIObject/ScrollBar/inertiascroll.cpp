@@ -14,7 +14,6 @@ InertiaScroll::InertiaScroll()
     m_nScroll_S = 0;
     m_nScroll_A = 0;
     m_nScroll_V = 0;
-    m_nOldFps = 0;
 }
 InertiaScroll::~InertiaScroll()
 {
@@ -66,12 +65,10 @@ void  InertiaScroll::AddPower(int zDelta)
     if (NULL == m_pAnimateStoryboard && m_pUIApplication)
     {
         IAnimateManager* pAnimateMgr = m_pUIApplication->GetAnimateMgr();
-        m_pAnimateStoryboard = pAnimateMgr->CreateStoryboard();
-        m_pAnimateStoryboard->SetNotifyObj(this->GetIMessage());
+        m_pAnimateStoryboard = pAnimateMgr->CreateStoryboard(this->GetIMessage());
         INoneTimeline* pTimeline = (INoneTimeline*)m_pAnimateStoryboard->CreateTimeline(TV_NONE, 0, 0, NULL);
         m_pAnimateStoryboard->Begin();
 
-        m_nOldFps = pAnimateMgr->SetFps(66);
         if (m_pCallback)
         {
             m_pCallback->InertiaScroll_Start();
@@ -108,8 +105,6 @@ void  InertiaScroll::StopInertia()
     if (m_pUIApplication)
     {
         IAnimateManager* pAnimateMgr = m_pUIApplication->GetAnimateMgr();
-        pAnimateMgr->SetFps(m_nOldFps);
-        m_nOldFps = 0;
 
         pAnimateMgr->RemoveStoryboard(m_pAnimateStoryboard);
         m_pAnimateStoryboard = NULL;

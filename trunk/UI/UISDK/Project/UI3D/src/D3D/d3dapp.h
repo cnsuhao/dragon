@@ -1,19 +1,27 @@
 #pragma once
 
+//
+// IA-Input Assembler State
+// SO-Stream Output State
+// OM-Output Merger State
+// VS-Vertex Shader
+// PS-Pixel Shader
+// GS-Geometry Shader
+//
 namespace UI
 {
-class Stage3D;
-class DxSprite;
 
-class D3DApp
+class Stage3D;
+
+class D3D10App
 {
 public:
-	D3DApp();
-	~D3DApp();
+	D3D10App();
+	~D3D10App();
 
 public:
 	bool  Init();
-	void  Clear();
+	void  Release();
 	HRESULT  ResetDevice();
     void  OnDeviceLost();
 	void  FireResetDeviceNotify();
@@ -23,29 +31,29 @@ public:
     void  ReleaseBackBuffer();
     void  CommitBackBuffer(IRenderTarget* pRenderTarget, int width, int height);
 
-    void  InitDeviceSetting();
-
-	void  AddStage(Stage3D* pStage);
-	void  RemoveStage(Stage3D* pStage);
+    void  AddStage(Stage3D* pStage);
+    void  RemoveStage(Stage3D* pStage);
 
 public:
-	LPDIRECT3D9  m_pD3D;
-	LPDIRECT3DDEVICE9  m_pDevice;
-    DxSprite*  m_pSprite;
 
-	D3DPRESENT_PARAMETERS  m_d3dpp;
 private:
-	
+
+public:
+	ID3D10Device*    m_pDevice;
+    IDXGISwapChain*  m_pSwapChain;
+    ID3D10RenderTargetView*  m_pRenderTargetView;
+
+
+	// Effect
+	ID3D10Effect*  m_pEffect;
+	ID3D10EffectTechnique*  m_pET_FillRectWorld;  // 不需要释放
+	ID3D10InputLayout*  m_pIL_FillRectScreen;
+
+private:
 	HWND  m_hWnd;
 
-    // RenderTarget，替换BackBuffer
-    IDirect3DTexture9*  m_pRenderTargetTexture;
-    IDirect3DSurface9*  m_pTextureSurface;
-    IDirect3DSurface9*  m_pOffScreenPlainSurface;
-    IDirect3DSurface9*  m_pOldBackSurface;
-
-	// stage list
-	list<Stage3D*>  m_listStage3D;
+    // stage list
+    list<Stage3D*>  m_listStage3D;
 };
 
 

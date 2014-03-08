@@ -85,7 +85,7 @@ enum TEXT_EFFECT
 interface IRenderResource
 {
     virtual ~IRenderResource() = 0 {};
-    virtual GRAPHICS_RENDER_LIBRARY_TYPE GetGraphicsRenderLibraryType() = 0;
+    virtual GRAPHICS_RENDER_LIBRARY_TYPE  GetGraphicsRenderLibraryType() = 0;
     virtual void  SetOutRef(IRenderResource** ppOutRef) = 0;
     virtual long  AddRef() = 0;
     virtual long  Release() = 0;
@@ -95,7 +95,7 @@ interface IRenderBitmap : public IRenderResource
 {
 
 //  各个子类去实现CreateInstance new self.
-//  CreateInstance不做 AddRef，需要外部根据需要自行 AddRef（为了满足 CPojo_ImageItem::m_pImage不计算Ref的原因）
+//  CreateInstance不做 AddRef，需要外部根据需要自行 AddRef（为了满足 CImageItem::m_pImage不计算Ref的原因）
 //	static void  CreateInstance( IRenderBitmap** pOutRef );
 
 	virtual bool  LoadFromFile(const TCHAR* szPath, bool bCreateAlphaChannel) = 0;

@@ -19,6 +19,7 @@
 namespace UI
 {
 class RenderChain;
+class RenderChain2;
 // 
 //	用于在创建窗口的时候，拦截第一个窗口消息，并进行子类化
 //
@@ -172,6 +173,7 @@ public:
     void  RemoveCommitWindowBufferListener(ICommitWindowBufferListener* p);
     RenderChain*  GetRenderChain() { return m_pRenderChain; }
     IRenderChain*  GetIRenderChain();
+    RenderChain2*  GetRenderChain2() { return m_pRenderChain2; }
 
     // 获取字体流程：先获取自己的m_pTextRender，如果没有则调用自己的m_pWindow的GetRenderFont
     IRenderFont*  GetWindowDefaultRenderFont() { return m_pDefaultFont; }
@@ -260,10 +262,10 @@ protected:
 
     WindowDragDropMgr  m_MgrDragDrop;       // 拖拽管理器
 	WindowMouseMgr     m_MgrMouse;          // 鼠标消息处理器
-//	WindowKeyboardMgr  m_MgrKeyboard;       // 键盘消息处理器
 
 	CommitWindowBufferListenerMgr  m_MgrCWBL;   // 窗口刷新监听者管理
 	RenderChain*   m_pRenderChain;            // 多层渲染
+    RenderChain2*  m_pRenderChain2;         // 多层渲染V2
 
 	bool  m_bDoModal;              // 模态窗口数据
 	bool  m_bEndModal;

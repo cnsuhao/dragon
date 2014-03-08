@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "camera.h"
-#include "UISDK\Project\UI3D\src\D3D\stage3d.h"
+#include "UISDK\Project\UI3D\src\D3D\stage\stage3d.h"
 
 namespace UI
 {
@@ -184,7 +184,7 @@ DxCamera::~DxCamera()
 
 }
 
-void  DxCamera::Init(IDirect3DDevice9* pDevice, HWND hWnd)
+void  DxCamera::Init(HWND hWnd)
 {
 	m_ViewArcBall.SetHWND(hWnd);
 }
@@ -248,13 +248,12 @@ void DxCamera::SetViewParam( D3DXVECTOR3* pvEye/*, D3DXVECTOR3* pvLookat */)
 	m_fRadius = D3DXVec3Length(pvEye);
 }
 
-void  DxCamera::SetDeviceView(IDirect3DDevice9* pDevice)
-{
-	if (!pDevice)
-		return;
-
-	pDevice->SetTransform(D3DTS_VIEW, &m_matView);
-}
-
+// void  DxCamera::SetDeviceView(IDirect3DDevice9* pDevice)
+// {
+// 	if (!pDevice)
+// 		return;
+// 
+// 	pDevice->SetTransform(D3DTS_VIEW, &m_matView);
+// }
 
 }

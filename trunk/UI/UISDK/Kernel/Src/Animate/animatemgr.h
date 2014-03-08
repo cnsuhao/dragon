@@ -38,7 +38,9 @@ namespace UI
 	// http://gamebabyrocksun.blog.163.com/blog/static/571534632010219544464/  游戏引擎循环机制
 	
 	// 仿WPF动画原理
-	class ObjectStoryboard  // 一个对象可能同时添加多个Storyboard。为了实现给该对象一次tick只发送一个通知，将该对象所有的Storyboard串起来管理
+    // 一个对象可能同时添加多个Storyboard。为了实现给该对象一次tick只发送一个通知，将该对象所有的Storyboard串起来管理
+    // PS: 如果去掉ObjectStoryboard这一层逻辑会简单很多……一个对象同时添加多个Storyboard概率很多吗？
+	class ObjectStoryboard  
 	{
 	public:
 		ObjectStoryboard(IMessage* p);
@@ -48,10 +50,15 @@ namespace UI
 		void  RemoveStoryboard(IStoryboard* p);
 		void  CheckFinishFlag();
 		int   FindStoryboard(int nID);
+        void  SetNeedCheckFinishFlag(bool b)
+                { m_bNeedCheckFinish = b; }
 
 		IMessage*      m_pNotifyObject;  // 有可能为NULL
 		IStoryboard**  m_pStoryboardList;
 		int            m_nCount;
+
+    private:
+        bool   m_bNeedCheckFinish;         // 如果有一个storyboard结束了，将设置该标识。在OnWaitForHandleObjectCallback中将检查该标识
 	};
 
 	typedef list<ObjectStoryboard*>  ObjectStoryboardList;
@@ -63,10 +70,12 @@ namespace UI
 		~AnimateManager();
 
 		void  AddStoryboard(IStoryboard* p);
+        void  AddStoryboardBlock(IStoryboard* p);
 		void  ClearStoryboardOfNotify(IMessage* pMsg);
 		void  RemoveStoryboard(IStoryboard* p);
+        ObjectStoryboard*  FindObjectStoryboard(IMessage* pNotify);
 		
-        IStoryboard*  CreateStoryboard();
+        IStoryboard*  CreateStoryboard(IMessage* pNotify, int nId = 0, WPARAM wParam = 0, LPARAM lParam = 0);
 		IWindowAnimateBase*  CreateWindowAnimateInstance(E_WINDOW_ANIMATE_TYPE eType, IWindowBase* pWindow);
         IControlAnimateBase* CreateControlAnimateInstance(E_CONTROL_ANIMATE_TYPE eType);
 
@@ -89,7 +98,6 @@ namespace UI
 		void    SetTimer();
 		void    KillTimer();
 
-		ObjectStoryboard*  FindObjectStoryboard(IMessage* pNotify);
 		ObjectStoryboardIter  FindObjectStoryboardIter(IMessage* pNotify);
 
 	protected:
@@ -97,8 +105,7 @@ namespace UI
 
 		HANDLE m_hTimer;
 		int    m_nFps;
-		bool   m_bHandlingTimerCallback;
-
+		bool   m_bHandlingTimerCallback;   // 避免在遍历stl过程中外部又删除一个对象，导致崩溃
 
 		ObjectStoryboardList  m_listObjStoryboard;
 		UIApplication*  m_pUIApplication;

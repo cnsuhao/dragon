@@ -2,6 +2,7 @@
 
 namespace UI
 {
+
 class Stage3D;
 class DxArcBall
 {
@@ -42,11 +43,10 @@ public:
 	~DxCamera();
 
 public:
-	void  Init(IDirect3DDevice9* pDevice, HWND hWnd);
+	void  Init(HWND hWnd);
 
 	LRESULT  ProcessMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	void  SetViewParam(D3DXVECTOR3* pvEye/*, D3DXVECTOR3* pvLookat*/);
-	void  SetDeviceView(IDirect3DDevice9* pDevice);
 
 	D3DXMATRIX*  GetViewMatrix() { return &m_matView; }
 

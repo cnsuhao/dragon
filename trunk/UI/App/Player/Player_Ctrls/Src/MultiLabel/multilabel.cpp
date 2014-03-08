@@ -212,8 +212,7 @@ void  MultiLabel::OnTimer(UINT_PTR nIDEvent, LPARAM lParam)
 
         UI::IAnimateManager*  pAnimateMgr = m_pIMultiLabel->GetUIApplication()->GetAnimateMgr();
 
-        UI::IStoryboard*  pStoryboard = pAnimateMgr->CreateStoryboard();
-        pStoryboard->SetNotifyObj(m_pIMultiLabel);
+        UI::IStoryboard*  pStoryboard = pAnimateMgr->CreateStoryboard(m_pIMultiLabel);
 
         UI::IIntLinearMove* pMoveAlgo = NULL;
         UI::IIntTimeline* p = (UI::IIntTimeline*)pStoryboard->CreateTimeline(UI::TV_INT, 0, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo);

@@ -645,7 +645,7 @@ void  CMainDlg::ShowList(MainDlgListPluginInfo* pListInfo)
         pAnimate2->SetObjectPos(-rcClient.Width(), 0, rcClient.Width(), rcClient.Height(), SWP_NOUPDATELAYOUTPOS|SWP_NOREDRAW);
     pAnimate2->SetVisible(true, false, false);
 
-    UI::IStoryboard* pStoryboard = GetUIApplication()->GetAnimateMgr()->CreateStoryboard();
+    UI::IStoryboard* pStoryboard = GetUIApplication()->GetAnimateMgr()->CreateStoryboard(this, 0, (WPARAM)pAnimate1, (LPARAM)pAnimate2);
     UI::IIntAccelerateMove* pMoveAlgo = NULL;
     UI::IIntTimeline* pTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(
         UI::TV_INT, 0, UI::TMA_Accelerate, (UI::IMoveAlgorithm**)&pMoveAlgo);
@@ -657,8 +657,5 @@ void  CMainDlg::ShowList(MainDlgListPluginInfo* pListInfo)
     else
         pStoryboard->SetId(STORYBOARD_ID_SWITCH_LIST_RIGHT2LEFT);
 
-    pStoryboard->SetNotifyObj(this);
-    pStoryboard->SetWParam((WPARAM)pAnimate1);
-    pStoryboard->SetLParam((LPARAM)pAnimate2);
     pStoryboard->Begin();
 }
