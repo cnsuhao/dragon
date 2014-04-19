@@ -109,6 +109,10 @@ void  IAeroWindowWrap::UpdateRgn()
 {
     m_pImpl->UpdateRgn();
 }
+void  IAeroWindowWrap::SetTransparentMargins(RECT* prcMargin)
+{
+	m_pImpl->SetTransparentMargins(prcMargin);
+}
 
 
 //////////////////////////////////////////////////////////////////////////

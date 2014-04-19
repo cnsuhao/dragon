@@ -357,6 +357,10 @@ BOOL Message::DoHook( UIMSG* pMsg, int nMsgMapID )
 
 void Message::AddHook(IMessage* pObj, int nMsgMapIDToHook, int nMsgMapIDToNotify )
 {
+	if (m_lHookMsgMap.size() > 0)
+	{
+		int a = 0;
+	}
 	list< MsgHook* >::iterator  iter    = m_lHookMsgMap.begin();
 	list< MsgHook* >::iterator  iterEnd = m_lHookMsgMap.end();
 	for( ; iter!=iterEnd; iter++ )

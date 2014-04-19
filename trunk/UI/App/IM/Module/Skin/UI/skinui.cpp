@@ -47,7 +47,7 @@ void  SkinUI::CreateShareSkinRender()
     if (NULL == pRenderBase)
         return;
 
-    m_pShareSkinRender = (UI::IImageRender*)pRenderBase->QueryInterface(UI::uiiidof(IImageRender));
+    m_pShareSkinRender = (UI::IImageRender*)pRenderBase->QueryInterface(uiiidof(IImageRender));
     
     UI::IMapAttribute*  pMapAttrib = NULL;
     UI::UICreateIMapAttribute(&pMapAttrib);
@@ -57,7 +57,7 @@ void  SkinUI::CreateShareSkinRender()
     m_pShareSkinRender->SetAttribute(pMapAttrib, NULL, true);
     SAFE_RELEASE(pMapAttrib);
 
-    UI::IImageRender* pImageRender = (UI::IImageRender*)pRenderBase->QueryInterface(UI::IID_UI_IImageRender);
+    UI::IImageRender* pImageRender = (UI::IImageRender*)pRenderBase->QueryInterface(uiiidof(IImageRender));
     if (pImageRender)
     {
         pImageRender->SetBkColorFillType(UI::BKCOLOR_FILL_EMPTY);

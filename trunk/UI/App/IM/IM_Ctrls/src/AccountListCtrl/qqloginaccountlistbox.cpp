@@ -56,7 +56,7 @@ void  QQLoginAccountListBox::SetAttribute(UI::IMapAttribute* pMapAttrib, bool bR
         pUIApp->CreateTextRenderBase(UI::TEXTRENDER_TYPE_COLORLIST, m_pIQQLoginAccountListBox, &pTextRender);
 		if (pTextRender)
 		{
-            UI::IColorListTextRender* p = (UI::IColorListTextRender*)pTextRender->QueryInterface(UI::uiiidof(IColorListTextRender));
+            UI::IColorListTextRender* p = (UI::IColorListTextRender*)pTextRender->QueryInterface(uiiidof(IColorListTextRender));
             if (p)
             {
 			    p->SetCount(8);

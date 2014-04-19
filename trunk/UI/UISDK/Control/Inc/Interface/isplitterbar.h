@@ -5,6 +5,8 @@
 
 namespace UI
 {
+// 通知外部正在拖拽
+#define UI_WM_SPLITTERBAR_POSCHANGED  1404191909
 
 class SplitterBar;
 interface UICTRLAPI ISplitterBar : public IPanel

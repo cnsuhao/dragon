@@ -29,6 +29,7 @@ public:
     AERO_MODE  GetAeroMode();
     void  GetBlurRegion(CRegion4* pregion);
     void  UpdateRgn();
+	void  SetTransparentMargins(RECT* prcMargin);
 
     AeroWindowWrap*  m_pImpl;
 };

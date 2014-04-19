@@ -1,5 +1,6 @@
 #pragma once
 #include "chatdlgbase.h"
+#include "UISDK\Control\Inc\Interface\isplitterbar.h"
 
 namespace UI
 {
@@ -8,9 +9,9 @@ namespace UI
     interface  ISliderCtrl;
     interface  IPanel;
     interface  IRichEdit;
-    interface  ISplitterBar;
     interface  ICheckButton;
     interface  IComboBox;
+	interface  IIEWrap;
 }
 class CPrivateChatUI;
 
@@ -32,6 +33,8 @@ public:
         UIMSG_BN_CLICKED2(m_pBtnClose, OnBtnClose)
         UIMSG_BN_CLICKED2(m_pBtnSend, OnBtnSend)
         UIMSG_BN_CLICKED2(m_pBtnSendMode, OnBtnSendMode)
+		UIMESSAGE_HANDLER_EX(UI_WM_SPLITTERBAR_POSCHANGED, OnSplitterbarPosChanged)
+		UIMSG_WM_SIZE(OnSize)
 
         UIMESSAGE_HANDLER_EX(WM_EMOTION_DLG_HIDE, OnEmotionDlgHide)
         UIMESSAGE_HANDLER_EX(WM_EMOTION_INSERT, OnInsertEmotion)
@@ -42,6 +45,8 @@ public:
 
 public:
 	void  OnInitWindow();
+	void  OnSize(UINT nType, int cx, int cy);
+	LRESULT  OnSplitterbarPosChanged(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void  OnTextureAlphaChanged(int nNewAlpha);
     void  OnBtnFont();
     void  OnBtnEmotion();
@@ -61,9 +66,12 @@ public:
     LRESULT  OnInsertEmotion(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     virtual void  SetSkin(UI::IRenderBase* p);
+
+	void  AdjustIETransMargins();
 private:
     UI::IRichEdit*  m_pRichEditInput;
     UI::IRichEdit*  m_pRichEditOutput;
+	UI::IIEWrap*    m_pIEOutput;
     UI::ISplitterBar*  m_pSplitterBar;
     UI::ICheckButton*  m_pBtnFont;
     UI::IButton*   m_pBtnEmotion;

@@ -177,7 +177,7 @@ void  CChatDlg::OnTextureAlphaChanged(int nNewAlpha)
     if (NULL == p)
         return;
 
-    UI::IImageRender*  pBkgndRender = (UI::IImageRender*)p->QueryInterface(UI::uiiidof(IImageRender));
+    UI::IImageRender*  pBkgndRender = (UI::IImageRender*)p->QueryInterface(uiiidof(IImageRender));
     if (NULL == pBkgndRender)
         return;
 

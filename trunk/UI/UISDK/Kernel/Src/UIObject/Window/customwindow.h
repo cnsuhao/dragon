@@ -79,6 +79,7 @@ public:
 	void  SetWndTransMode(IWndTransMode* pMode);
 	void  SetWndTransMode(WINDOW_TRANSPARENT_MODE eMode, bool bRedraw);
     WINDOW_TRANSPARENT_MODE  GetWndTransMode();
+	IWndTransMode*  GetWndTransModePtr();
 
 protected:
     void  ResetAttribute();

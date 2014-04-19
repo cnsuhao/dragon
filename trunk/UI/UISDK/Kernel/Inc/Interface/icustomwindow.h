@@ -18,6 +18,7 @@ namespace UI
 #define WRSB_NONE             0x0
 
 class CustomWindow;
+interface IWndTransMode;
 interface UISDKAPI ICustomWindow : public IWindow
 {
     UI_DECLARE_Ixxx_INTERFACE(ICustomWindow, CustomWindow)
@@ -25,6 +26,7 @@ interface UISDKAPI ICustomWindow : public IWindow
     void  SetWindowResizeType(UINT nType);
     void  SetWndTransMode(WINDOW_TRANSPARENT_MODE eMode, bool bRedraw);
     WINDOW_TRANSPARENT_MODE  GetWndTransMode();
+	IWndTransMode*  GetWndTransModePtr();
 };
 
 }

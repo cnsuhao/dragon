@@ -5,12 +5,12 @@
 #include "UISDK\Kernel\Inc\Interface\ianimate.h"
 #include "UISDK\Control\Inc\Interface\irichedit.h"
 #include "privatechatui.h"
-#include "UISDK\Control\Inc\Interface\isplitterbar.h"
 #include "UISDK\Control\Inc\Interface\icheckbutton.h"
 #include "UISDK\Control\Inc\Interface\icombobox.h"
 #include "UISDK\Kernel\Inc\Util\ibuffer.h"
 #include "UISDK\Control\Inc\Interface\ilistbox.h"
-
+#include "UISDK\Kernel\Inc\Interface\iwndtransmode.h"
+#include "UISDK\Control\Inc\Interface\iiewrap.h"
 
 CChatDlg2::CChatDlg2(void)
 {
@@ -22,6 +22,7 @@ CChatDlg2::CChatDlg2(void)
     m_pBtnSendMode = NULL;
 
     m_pRichEditInput = m_pRichEditOutput = NULL;
+	m_pIEOutput = NULL;
     m_pPanelFontToolbar = NULL;
     m_pBtnFontBold = NULL;
     m_pBtnFontItalic = NULL;
@@ -59,6 +60,7 @@ void CChatDlg2::OnInitWindow()
         m_pBtnClose = (UI::IButton*)this->FindChildObject(_T("btnclose"));
         m_pBtnSend = (UI::IButton*)this->FindChildObject(_T("btnsend"));
         m_pBtnSendMode = (UI::IButton*)this->FindChildObject(_T("btnsendmode"));
+		m_pIEOutput = (UI::IIEWrap*)this->FindChildObject(_T("outputie"));
 
     if (m_pPanelFontToolbar)
     {
@@ -135,12 +137,46 @@ void  CChatDlg2::OnTextureAlphaChanged(int nNewAlpha)
     if (NULL == p)
         return;
 
-    UI::IImageRender*  pBkgndRender = (UI::IImageRender*)p->QueryInterface(UI::uiiidof(IImageRender));
+    UI::IImageRender*  pBkgndRender = (UI::IImageRender*)p->QueryInterface(uiiidof(IImageRender));
     if (NULL == pBkgndRender)
         return;
 
     pBkgndRender->SetAlpha(nNewAlpha);
 #endif
+}
+
+void  CChatDlg2::OnSize(UINT nType, int cx, int cy)
+{
+	AdjustIETransMargins();
+}
+LRESULT  CChatDlg2::OnSplitterbarPosChanged(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	AdjustIETransMargins();
+	return 0;
+}
+
+// 在aero模式下面设置透明区域范围
+void  CChatDlg2::AdjustIETransMargins()
+{
+	if (!m_pIEOutput)
+		return;
+
+	UI::IWndTransMode*  pTransMode = this->GetWndTransModePtr();
+	if (pTransMode->GetModeValue() != UI::WINDOW_TRANSPARENT_MODE_AERO)
+		return;
+
+	UI::IAeroWindowWrap* pAeroTransMode = (UI::IAeroWindowWrap*)this->QueryInterface(uiiidof(IAeroWindowWrap));
+	if (pAeroTransMode->GetAeroMode() != UI::AERO_MODE_TRANSPARENT)
+		return;
+
+	CRect  rc;
+	m_pIEOutput->GetWindowRect(&rc);
+
+	CRect  rcWnd;
+	::GetClientRect(GetHWND(), &rcWnd);
+
+	RECT  rcMargin = {rc.left, rc.top, rcWnd.Width()-rc.right, rcWnd.Height()-rc.bottom};
+	pAeroTransMode->SetTransparentMargins(&rcMargin);
 }
 
 void CChatDlg2::OnSysCommand(UINT nID, CPoint point)

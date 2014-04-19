@@ -961,7 +961,6 @@ LRESULT WindowBase::_OnSize( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHan
 
         bHandled = TRUE;
 		notify_WM_SIZE(wParam, LOWORD(lParam), HIWORD(lParam));
-		UpdateMyLayout(false);
         
         if (IsWindowVisible(m_hWnd))
         {

@@ -295,6 +295,13 @@ void  SplitterBar::OnDraging(POINT ptInParent)  // 相对于父对象的坐标
     {
         UpdateUpBottomCtrlPos(ptAvailable.y);
     }
+
+	UIMSG  msg;
+	msg.pMsgFrom = m_pISplitterBar;
+	msg.wParam = (WPARAM)m_pISplitterBar;
+	msg.message = UI_WM_SPLITTERBAR_POSCHANGED;
+		
+	m_pISplitterBar->DoNotify(&msg);
 }
 
 
@@ -497,7 +504,6 @@ void  SplitterBar::UpdateUpBottomCtrlPos(int nPos)
     rc.top = top;
     rc.bottom = bottom;
     m_pISplitterBar->SetObjectPos(&rc, SWP_NOREDRAW|SWP_NOSENDCHANGING);
-    //m_pISplitterBar->UpdateObject(false);
 
     if (m_pObjTop)
     {
@@ -505,7 +511,6 @@ void  SplitterBar::UpdateUpBottomCtrlPos(int nPos)
         m_pObjTop->GetParentRect(&rcUpCtrl);
         rcUpCtrl.bottom = top;
         m_pObjTop->SetObjectPos(&rcUpCtrl, SWP_NOREDRAW);
-    //    m_pObjLeft->UpdateObject(false);
     }
     if (m_pObjBottom)
     {
@@ -513,11 +518,9 @@ void  SplitterBar::UpdateUpBottomCtrlPos(int nPos)
         m_pObjBottom->GetParentRect(&rcBottomCtrl);
         rcBottomCtrl.top = bottom;
         m_pObjBottom->SetObjectPos(&rcBottomCtrl);
-    //    m_pObjRight->UpdateObject(false);
     }
 
     m_pISplitterBar->GetParentObject()->UpdateObject(true);
-   // m_pISplitterBar->GetWindowObject()->CommitDoubleBuffet2Window(NULL, NULL, 0);
 }
 
 // 在窗口大小改变时，要重新调整两侧控件大小，保证二者都可见

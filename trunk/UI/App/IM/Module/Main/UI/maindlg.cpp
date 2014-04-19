@@ -311,7 +311,7 @@ void  CMainDlg::ChangeTextureAlpha(int nNewAlpha)
      if (NULL == p)
          return;
  
-     UI::IImageRender*  pBkgndRender = (UI::IImageRender*)p->QueryInterface(UI::uiiidof(IImageRender));
+     UI::IImageRender*  pBkgndRender = (UI::IImageRender*)p->QueryInterface(uiiidof(IImageRender));
      if (NULL == pBkgndRender)
          return;
  
@@ -382,7 +382,7 @@ UI::IButton*  CMainDlg::InsertPluginBtn2Servicebar(IM::IMainDlgToolbarPlugin* pP
 //         if (NULL == m_pServicebarBtnBkgndrender)
 //         {
 //             pUIApplication->CreateRenderBase(UI::RENDER_TYPE_IMAGELIST, NULL, &m_pServicebarBtnBkgndrender);
-//             UI::IImageListRender*  pImagelistRender = (UI::IImageListRender*)m_pServicebarBtnBkgndrender->QueryInterface(UI::uiiidof(IImageListRender));
+//             UI::IImageListRender*  pImagelistRender = (UI::IImageListRender*)m_pServicebarBtnBkgndrender->QueryInterface(uiiidof(IImageListRender));
 //             
 //             // ͼƬ
 //             UI::IImageRes*  pImgRes = pUIApplication->GetActiveSkinImageRes();

@@ -370,7 +370,7 @@ void  Button::SetIconFromFile(const TCHAR* szIconPath)
 
     IRenderBase*   pForeRender = NULL;
     pUIApplication->CreateRenderBase(RENDER_TYPE_IMAGE, m_pIButton, &pForeRender);
-    IImageRender*  pImageForeRender = (IImageRender*)pForeRender->QueryInterface(UI::uiiidof(IImageRender));
+    IImageRender*  pImageForeRender = (IImageRender*)pForeRender->QueryInterface(uiiidof(IImageRender));
 
     UI::IRenderBitmap*  pRenderBitmap = NULL;
     UI::UICreateRenderBitmap(pUIApplication, m_pIButton->GetGraphicsRenderLibraryType(), IMAGE_ITEM_TYPE_IMAGE, &pRenderBitmap);
@@ -406,7 +406,7 @@ void  Button::SetIconFromImageId(const TCHAR* szImageId)
 
     IRenderBase*   pForeRender = NULL;
     pUIApplication->CreateRenderBase(RENDER_TYPE_IMAGE, m_pIButton, &pForeRender);
-    IImageRender*  pImageForeRender = (IImageRender*)pForeRender->QueryInterface(UI::uiiidof(IImageRender));
+    IImageRender*  pImageForeRender = (IImageRender*)pForeRender->QueryInterface(uiiidof(IImageRender));
 
     pImageForeRender->SetRenderBitmap(pRenderBitmap);
     pImageForeRender->SetImageDrawType(UI::DRAW_BITMAP_CENTER);
@@ -432,7 +432,7 @@ void  Button::SetIconFromHBITMAP(HBITMAP hBitmap)
 
     IRenderBase*   pForeRender = NULL;
     pUIApplication->CreateRenderBase(RENDER_TYPE_IMAGE, m_pIButton, &pForeRender);
-    IImageRender*  pImageForeRender = (IImageRender*)pForeRender->QueryInterface(UI::uiiidof(IImageRender));
+    IImageRender*  pImageForeRender = (IImageRender*)pForeRender->QueryInterface(uiiidof(IImageRender));
 
     UI::IRenderBitmap*  pRenderBitmap = NULL;
     UI::UICreateRenderBitmap(pUIApplication, UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDI, IMAGE_ITEM_TYPE_IMAGE, &pRenderBitmap);

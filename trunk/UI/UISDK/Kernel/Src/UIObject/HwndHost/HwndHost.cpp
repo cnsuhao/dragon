@@ -217,7 +217,7 @@ LRESULT	HwndHost::WndProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
                 HWND hWndParent = m_pIHwndHost->GetHWND();
                 ::MapWindowPoints(NULL, hWndParent, (LPPOINT)&rcWindow, 2);
 
-                __super::WindowRect2ObjectClientRect(&rcWindow, &m_rcParent);
+                m_pParent->WindowRect2ObjectClientRect(&rcWindow, &m_rcParent);
             }
         }
         break;

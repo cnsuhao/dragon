@@ -281,6 +281,9 @@ void  CalcUpdateDamageObjectContextArray(__in  Object*  pObjDamage,
         CopyRect(&rcOffset, &prcObjDamageArray[i]);
         ::OffsetRect(&rcOffset, ptOffset.x, ptOffset.y);
         //if (IntersectRect(&prcVisibleInLayer[nRealCount], &rcOffset, &rcVisibleInLayer))
+
+		// 有可能prcObjDamageArray就超出了控件，因此需要做一个并集
+		IntersectRect(&rcOffset, &rcOffset, &rcVisibleInLayer);
 		prcVisibleInLayer[nRealCount] = rcOffset;
         {
             nRealCount++;

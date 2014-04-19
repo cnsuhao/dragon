@@ -115,7 +115,7 @@ void  CSettingWnd::OnTransparentPosChanged( int nPos, int nScrollType )
 	}
 	else
 	{
-        UI::ILayeredWindowWrap*  pLayeredWnd = (UI::ILayeredWindowWrap*)UISendMessage(GetMainWnd(), UI_WM_QUERYINTERFACE, (WPARAM)&UI::uiiidof(ILayeredWindowWrap));
+        UI::ILayeredWindowWrap*  pLayeredWnd = (UI::ILayeredWindowWrap*)UISendMessage(GetMainWnd(), UI_WM_QUERYINTERFACE, (WPARAM)&uiiidof(ILayeredWindowWrap));
         if (pLayeredWnd)
         {
             pLayeredWnd->SetAlpha(nPos, true);

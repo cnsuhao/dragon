@@ -806,7 +806,7 @@ void  ListItemBase::SetIconFromFile(const TCHAR* szIconPath)
     }
 
     pUIApplication->CreateRenderBase(RENDER_TYPE_IMAGE, GetIListCtrlBase(), &m_pIconRender);
-    IImageRender*  pImageForeRender = (IImageRender*)m_pIconRender->QueryInterface(UI::uiiidof(IImageRender));
+    IImageRender*  pImageForeRender = (IImageRender*)m_pIconRender->QueryInterface(uiiidof(IImageRender));
 
     UI::IRenderBitmap*  pRenderBitmap = NULL;
     UI::UICreateRenderBitmap(
@@ -844,7 +844,7 @@ void  ListItemBase::SetIconFromImageId(const TCHAR* szImageId)
         return;
 
     pUIApplication->CreateRenderBase(RENDER_TYPE_IMAGE, GetIListCtrlBase(), &m_pIconRender);
-    IImageRender*  pImageForeRender = (IImageRender*)m_pIconRender->QueryInterface(UI::uiiidof(IImageRender));
+    IImageRender*  pImageForeRender = (IImageRender*)m_pIconRender->QueryInterface(uiiidof(IImageRender));
     pImageForeRender->SetRenderBitmap(pRenderBitmap);
     pImageForeRender->SetImageDrawType(UI::DRAW_BITMAP_CENTER);
     SAFE_RELEASE(pRenderBitmap);

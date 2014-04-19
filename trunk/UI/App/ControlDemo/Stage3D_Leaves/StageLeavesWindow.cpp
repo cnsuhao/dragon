@@ -144,7 +144,7 @@ void  CStageLeavesWindow::ResetLeaf(UI::IPictureCtrl* pImg)
         UI::GRAPHICS_RENDER_LIBRARY_TYPE  eGrphicsType = this->GetIWindowRender()->GetGraphicsRenderType();
 
         UI::IRenderBase*   pBkRenderBase = pImg->GetBkRender();
-        UI::IImageRender*  pBkImgRender = (UI::IImageRender*)pBkRenderBase->QueryInterface(UI::uiiidof(IImageRender));
+        UI::IImageRender*  pBkImgRender = (UI::IImageRender*)pBkRenderBase->QueryInterface(uiiidof(IImageRender));
         if (!pBkImgRender)
             return;
 

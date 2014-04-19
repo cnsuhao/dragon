@@ -51,9 +51,6 @@ LRESULT Panel::OnGetLayoutPtr(UINT uMsg, WPARAM wParam, LPARAM lParam)
 void  Panel::virtualOnSize(UINT nType, UINT cx, UINT cy)
 {
 	Object::virtualOnSize(nType, cx, cy);
-    if (this->GetObjectType() == OBJ_WINDOW)  // 窗口的大小改变由_OnSize处理过了
-        return;
-
     if (m_pLayout)
         m_pLayout->Arrange(NULL);
 }

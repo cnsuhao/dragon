@@ -43,6 +43,7 @@ public:
     IAeroWindowWrap*  GetIAeroWndTransMode();
     AERO_MODE  GetAeroMode();
     void  GetBlurRegion(CRegion4* pregion);
+	void  SetTransparentMargins(RECT* prcMargin);
 
 public:
 

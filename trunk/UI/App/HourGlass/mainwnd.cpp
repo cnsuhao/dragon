@@ -36,7 +36,7 @@ void  CMainWnd::OnInitialize()
 #endif
 
 	GetUIApplication()->GetActiveSkinRes()->ChangeSkinHLS(GetConfig()->GetHls_h(), 0, GetConfig()->GetHls_s(), CHANGE_SKIN_HLS_FLAG_H|CHANGE_SKIN_HLS_FLAG_S);
-    UI::ILayeredWindowWrap*  pLayeredWnd = (UI::ILayeredWindowWrap*)UISendMessage(this, UI_WM_QUERYINTERFACE, (WPARAM)&UI::uiiidof(ILayeredWindowWrap));
+    UI::ILayeredWindowWrap*  pLayeredWnd = (UI::ILayeredWindowWrap*)UISendMessage(this, UI_WM_QUERYINTERFACE, (WPARAM)&uiiidof(ILayeredWindowWrap));
     if (pLayeredWnd)
     {
         pLayeredWnd->SetAlpha(GetConfig()->GetTransparent(), false);

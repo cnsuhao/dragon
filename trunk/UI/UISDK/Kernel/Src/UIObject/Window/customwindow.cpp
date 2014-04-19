@@ -197,6 +197,10 @@ void  CustomWindow::SetWndTransMode(IWndTransMode* pMode)
     }
 }
 
+IWndTransMode*  CustomWindow::GetWndTransModePtr()
+{
+	return m_pTransparentMode;
+}
 void  CustomWindow::virtualOnPostDrawObjectErasebkgnd()
 {
 	if (m_bNeedToSetWindowRgn)

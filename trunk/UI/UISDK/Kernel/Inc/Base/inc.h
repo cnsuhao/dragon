@@ -4,8 +4,6 @@
 #include <tchar.h>  // _T 
 #include <Unknwn.h> // IUnknown
 
-namespace UI
-{
 // {9E72CAB8-58BF-448f-872C-2CAD749A53C8}
 static const GUID IID_UI_IMessage = { 0x9e72cab8, 0x58bf, 0x448f, { 0x87, 0x2c, 0x2c, 0xad, 0x74, 0x9a, 0x53, 0xc8 } };
 // {567BA01E-F602-4b39-9C0A-C9865191468A}
@@ -206,8 +204,6 @@ static const GUID IID_UI_IAeroWindowWrap = { 0x90f08cee, 0x4ee2, 0x4d85, { 0xac,
 // {986D9004-A75E-4e42-870C-BAD642FA9852}
 static const GUID IID_UI_ILayeredWindowWrap = { 0x986d9004, 0xa75e, 0x4e42, { 0x87, 0xc, 0xba, 0xd6, 0x42, 0xfa, 0x98, 0x52 } };
 
-
-}
 
 #include "UISDK\Project\UILog\UILog_i.h"
 

@@ -15,7 +15,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Chinese (P.R.C.) resources
+// 中文(中华人民共和国) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
 #ifdef _WIN32
@@ -136,7 +136,7 @@ END
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ PRODUCTVERSION 0,10,440,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -151,13 +151,13 @@ BEGIN
     BEGIN
         BLOCK "080404b0"
         BEGIN
-            VALUE "FileDescription", "Player_U Application"
+            VALUE "FileDescription", "Player Application"
             VALUE "FileVersion", "0.8.220.0"
             VALUE "InternalName", "Player_UI"
-            VALUE "LegalCopyright", "Copyright (C) 2009-2012"
+            VALUE "LegalCopyright", "Copyright (C) 2009-2014"
             VALUE "OriginalFilename", "Player_U.exe"
             VALUE "ProductName", "Player_UI Application"
-            VALUE "ProductVersion", "0.8.220.0"
+            VALUE "ProductVersion", "0, 10, 440, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -178,7 +178,7 @@ BEGIN
     IDC_DEMO_WIN32          "DEMO_WIN32"
 END
 
-#endif    // Chinese (P.R.C.) resources
+#endif    // 中文(中华人民共和国) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

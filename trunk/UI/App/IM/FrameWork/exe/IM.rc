@@ -33,7 +33,7 @@ LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION 1,0,0,1
- PRODUCTVERSION 0,9,350,0
+ PRODUCTVERSION 0,10,440,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -52,10 +52,10 @@ BEGIN
             VALUE "FileDescription", "IM 应用程序"
             VALUE "FileVersion", "1, 0, 0, 1"
             VALUE "InternalName", "IM"
-            VALUE "LegalCopyright", "Copyright (C) 2013"
+            VALUE "LegalCopyright", "Copyright (C) 2014"
             VALUE "OriginalFilename", "IM.exe"
             VALUE "ProductName", "IM 应用程序"
-            VALUE "ProductVersion", "0, 9, 350, 0"
+            VALUE "ProductVersion", "0, 10, 440, 0"
         END
     END
     BLOCK "VarFileInfo"

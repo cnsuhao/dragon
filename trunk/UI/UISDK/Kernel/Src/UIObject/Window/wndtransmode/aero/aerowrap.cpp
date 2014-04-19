@@ -134,6 +134,17 @@ void  AeroWindowWrap::GetBlurRegion(CRegion4* pregion)
     }
 }
 
+void  AeroWindowWrap::SetTransparentMargins(RECT* prcMargin)
+{
+	if (m_eMode != AERO_MODE_TRANSPARENT)
+		return;
+
+	trans.m_margins.cxLeftWidth = prcMargin->left;
+	trans.m_margins.cxRightWidth = prcMargin->right;
+	trans.m_margins.cyTopHeight = prcMargin->top;
+	trans.m_margins.cyBottomHeight = prcMargin->bottom;
+}
+
 void  AeroWindowWrap::Enable(bool b)
 {
     if (m_pDWM->IsEnable())

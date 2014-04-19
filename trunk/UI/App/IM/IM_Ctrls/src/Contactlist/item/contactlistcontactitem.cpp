@@ -78,13 +78,13 @@ void  ContactListContactItem::OnInitialize()
         UI::IRenderFont* pFont = m_pTreeView->GetRenderFont();
         if (pFont)
         {
-            UI::INormalTextRender*  pNormal = (UI::INormalTextRender*)m_pShareData->m_pTextRender1->QueryInterface(UI::uiiidof(INormalTextRender));
+            UI::INormalTextRender*  pNormal = (UI::INormalTextRender*)m_pShareData->m_pTextRender1->QueryInterface(uiiidof(INormalTextRender));
             if (pNormal)
             {
                 pNormal->SetRenderFont(pFont);
             }
 
-            pNormal = (UI::INormalTextRender*)m_pShareData->m_pTextRender2->QueryInterface(UI::uiiidof(INormalTextRender));
+            pNormal = (UI::INormalTextRender*)m_pShareData->m_pTextRender2->QueryInterface(uiiidof(INormalTextRender));
             if (pNormal)
             {
                 pNormal->SetRenderFont(pFont);

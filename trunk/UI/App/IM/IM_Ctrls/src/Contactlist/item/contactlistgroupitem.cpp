@@ -46,7 +46,7 @@ void  ContactListGroupItem::OnInitialize()
         UI::IRenderBase*  pRenderBase = m_pTreeView->GetExpandIconRender();
         if (pRenderBase)
         {
-            UI::IImageListRender* pImagelistRender = (UI::IImageListRender*)pRenderBase->QueryInterface(UI::uiiidof(IImageListRender));
+            UI::IImageListRender* pImagelistRender = (UI::IImageListRender*)pRenderBase->QueryInterface(uiiidof(IImageListRender));
             if (pImagelistRender)
             {
                 m_pShareData->m_nExpandIconItemWidth = pImagelistRender->GetItemWidth();
