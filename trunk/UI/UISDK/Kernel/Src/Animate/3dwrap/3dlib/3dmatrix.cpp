@@ -287,4 +287,103 @@ int Mat_Inverse_4X4(MATRIX_4_4_PTR m, MATRIX_4_4_PTR mi)
 
 /////////////////////////////////////////////////////////////////
 
+void  Mat_Move_4X4(MATRIX_4_4_PTR m, int x, int y, int z)
+{
+	m->M[3][0] = (float)x;
+	m->M[3][1] = (float)y;
+	m->M[3][2] = (float)z;
+}
+void  Mat_Rotate_4X4(MATRIX_4_4_PTR m, int x, int y, int z)
+{
+    Init_Sin_Cos_Tables();
+
+	float fDegreeX = (float)x;
+	float fDegreeY = (float)y;
+	float fDegreeZ = (float)z;
+
+	MATRIX_4_4  matTemp1, matTemp2;
+	MATRIX_4_4  matRotateY, matRotateX, matRotateZ;
+
+	MATRIX_4_4_PTR pLeftArg = NULL;
+	if (0 != fDegreeY)
+	{
+		// 			matRotateY = {
+		// 				Fast_Cos(fDegreeY),  0, -Fast_Sin(fDegreeY), 0,
+		// 				0, 1, 0, 0,
+		// 				Fast_Sin(fDegreeY),  0,  Fast_Cos(fDegreeY), 0,
+		// 				0, 0, 0, 1
+		//			};
+		MAT_IDENTITY_4_4(&matRotateY);
+		matRotateY.M00 = Fast_Cos(fDegreeY);
+		matRotateY.M02 = -Fast_Sin(fDegreeY);
+		matRotateY.M20 = Fast_Sin(fDegreeY);
+		matRotateY.M22 = Fast_Cos(fDegreeY);
+
+		pLeftArg = &matRotateY;
+	}
+
+	if (0 != fDegreeX)
+	{
+		// 			MATRIX_4_4 matRotateX= {
+		// 				1, 0, 0, 0,
+		// 				0,  Fast_Cos(fDegreeX), Fast_Sin(fDegreeX), 0,
+		// 				0, -Fast_Sin(fDegreeX), Fast_Cos(fDegreeX), 0,
+		// 				0, 0, 0, 1
+		// 			};
+
+		MAT_IDENTITY_4_4(&matRotateX);
+		matRotateX.M11 = Fast_Cos(fDegreeX);
+		matRotateX.M12 = Fast_Sin(fDegreeX);
+		matRotateX.M21 = -Fast_Sin(fDegreeX);
+		matRotateX.M22 = Fast_Cos(fDegreeX);
+
+		if (NULL == pLeftArg)
+		{
+			pLeftArg = &matRotateX;
+		}
+		else
+		{
+			Mat_Mul_4X4(pLeftArg, &matRotateX, &matTemp1);
+			pLeftArg = &matTemp1;
+		}
+	}
+
+	if (0 != fDegreeZ)
+	{
+		// 			MATRIX_4_4 matRotateZ= {
+		//  			Fast_Cos(fDegreeZ), Fast_Sin(fDegreeZ), 0, 0
+		// 				-Fast_Sin(fDegreeZ), Fast_Cos(fDegreeZ), 1, 0,
+		// 				0, 0, 1, 0,
+		// 				0, 0, 0, 1
+		// 			};
+
+		MAT_IDENTITY_4_4(&matRotateZ);
+		matRotateZ.M00 = Fast_Cos(fDegreeZ);
+		matRotateZ.M01 = Fast_Sin(fDegreeZ);
+		matRotateZ.M10 = -Fast_Sin(fDegreeZ);
+		matRotateZ.M11 = Fast_Cos(fDegreeZ);
+
+		if (NULL == pLeftArg)
+		{
+			pLeftArg = &matRotateZ;
+		}
+		else
+		{
+			Mat_Mul_4X4(pLeftArg, &matRotateZ, &matTemp2);
+			pLeftArg = &matTemp2;
+		}
+	}
+
+// 	MAT_IDENTITY_4_4(m);
+// 	if (pLeftArg)
+// 		memcpy(m, pLeftArg, sizeof(MATRIX_4_4));
+
+	if (pLeftArg)
+		Mat_Mul_4X4(m, pLeftArg, m);
+}
+void  Mat_Scale_4X4(MATRIX_4_4_PTR m, int x, int y, int z)
+{
+	
+}
+
 }

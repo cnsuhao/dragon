@@ -319,7 +319,8 @@ LRESULT IEWrap::DefWindowProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
 void  IEWrap::OnPaint(IRenderTarget* pRenderTarget, RenderContext* pContext)
 {   
     m_bNeedFixAlpha = false;
-    if (pContext->m_bRequireAlphaChannel && m_hWndIE)   // 在分层拖拽窗口过程中由于忽略了WS_CLIPCHILDREN样式，导致IE在拖拽中不能显示，造成闪烁，在这里画上去
+    if (pRenderTarget->GetGraphicsRenderLibraryType() != GRAPHICS_RENDER_LIBRARY_TYPE_GDI
+        && m_hWndIE)   // 在分层拖拽窗口过程中由于忽略了WS_CLIPCHILDREN样式，导致IE在拖拽中不能显示，造成闪烁，在这里画上去
     {
         if (WINDOW_TRANSPARENT_MODE_LAYERED == UISendMessage(m_pIIEWrap->GetWindowObject(), UI_WM_GET_WINDOW_TRANSPARENT_MODE, 0))
         {
@@ -327,7 +328,7 @@ void  IEWrap::OnPaint(IRenderTarget* pRenderTarget, RenderContext* pContext)
             CRect rc;
             ::GetClientRect(m_hWndIE, &rc);
 
-            Render2DC(pRenderTarget->GetBindHDC(), 0, 0, &rc); // hDC已自带偏移
+            Render2DC(pRenderTarget->GetHDC(), 0, 0, &rc); // hDC已自带偏移
         }
     }
 }
@@ -406,6 +407,7 @@ void  IEWrap::Render2DC(HDC hDCDst, int nxOffset, int nyOffset, CRect* prcUpdate
 //
 LRESULT	IEWrap::WndProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
+#if 0
     if (WM_PAINT == uMsg && m_bNeedFixAlpha && !m_bPrintingWindow)
     {
 		CRect rcUpdate;
@@ -421,13 +423,14 @@ LRESULT	IEWrap::WndProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
         CRect  rcWnd;
         m_pIIEWrap->GetWindowRect(&rcWnd);
 
-        HDC hDCDst = m_pIIEWrap->GetRenderLayer()->GetRenderTarget()->GetBindHDC();
+        HDC hDCDst = m_pIIEWrap->GetRenderLayer()->GetRenderTarget()->GetHDC();
         Render2DC(hDCDst, rcWnd.left, rcWnd.top, &rcUpdate);
         OffsetRect(&rcUpdate, rcWnd.left, rcUpdate.top);
         m_pIIEWrap->GetRenderChain()->Commit(&rcUpdate);
 
         return 0;
     }
+#endif
     return DefWindowProc(uMsg, wParam, lParam);
 }
 

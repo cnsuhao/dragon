@@ -6,9 +6,10 @@
 #include "UISDK\Kernel\Src\Helper\layout\layout.h"
 #include "UISDK\Kernel\Src\Base\Message\message.h"
 #include "UISDK\Kernel\Inc\Interface\imapattr.h"
-#include "UISDK\Kernel\Src\RenderLayer\renderchain.h"
-#include "UISDK\Kernel\Src\RenderLayer2\renderchain2.h"
+#include "UISDK\Kernel\Src\RenderLayer2\layer\renderlayer2.h"
+#include "UISDK\Kernel\Src\RenderLayer2\layer\windowrender.h"
 #include "UISDK\Kernel\Src\Helper\topwindow\topwindowmanager.h"
+#include "UISDK\Kernel\Src\Resource\skinres.h"
 
 namespace UI
 {
@@ -18,7 +19,8 @@ WindowBase::WindowBase()
     m_pIWindowBase = NULL;
 	this->m_hWnd = NULL;
 	this->m_oldWndProc = NULL;
-	this->m_pDefaultFont  = NULL;
+	this->m_pDefaultFont = NULL;
+	this->m_pSkinRes = NULL;
 
 	m_bFirsetEraseBkgnd = true;
 	this->m_bDoModal = false;
@@ -27,8 +29,7 @@ WindowBase::WindowBase()
 
 	m_nMinWidth = m_nMinHeight = NDEF;
 	m_nMaxWidth = m_nMaxHeight = NDEF;
-    m_pRenderChain = NULL;
-    m_pRenderChain2 = NULL;
+    m_pWindowRender = NULL;
 }
 WindowBase::~WindowBase()
 {
@@ -38,14 +39,9 @@ WindowBase::~WindowBase()
 
 	SAFE_RELEASE(m_pDefaultFont);
 
-    if (m_pRenderChain)
+    if (m_pWindowRender)
     {
-        delete m_pRenderChain->GetIRenderChain();
-        m_pRenderChain = NULL;
-    }
-    if (m_pRenderChain2)
-    {
-        delete m_pRenderChain2;
+        delete m_pWindowRender;
     }
 }
 
@@ -56,14 +52,11 @@ HRESULT  WindowBase::FinalConstruct(IUIApplication* p)
         return hr;
 
     this->m_MgrMouse.SetUIApplication(p, this);
-    this->m_MgrCWBL.SetWindowPtr(this);
+//    this->m_MgrCWBL.SetWindowPtr(this);
     this->m_MgrDragDrop.SetWindowBase(this);
 
-    IRenderChain*  pIRenderChain = new IRenderChain;
-    m_pRenderChain = pIRenderChain->GetImpl();
-    m_pRenderChain->Init(this);
-
-    m_pRenderChain2 = new RenderChain2;
+    m_pWindowRender = new WindowRender(this);       
+	CreateRenderLayer();
     return S_OK;
 }
 
@@ -75,9 +68,20 @@ void WindowBase::ResetAttribute()
 	m_nMinWidth = m_nMinHeight = NDEF;
 	m_nMaxWidth = m_nMaxHeight = NDEF;
 	this->ModifyStyle(0, OBJECT_STYLE_TRANSPARENT, false);  // 取消Panel基本中的透明属性
+
+	if (m_pWindowRender)
+	{
+		m_pWindowRender->ResetAttribute();
+	}
 }
+
 void WindowBase::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 {
+	if (m_pWindowRender)  // 放在最前面，设置好Graphics Render Library
+	{
+		m_pWindowRender->SetAttribute(pMapAttrib, bReload);
+	}
+
 	Panel::SetAttribute(pMapAttrib, bReload);
 
 	IFontRes* pFontRes = GetUIApplication()->GetActiveSkinFontRes();
@@ -87,7 +91,7 @@ void WindowBase::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 	// 字体样式 
     const TCHAR* szText = pMapAttrib->GetAttr(XML_FONT, true);
 	if (szText)
-		pFontRes->GetFont((BSTR)szText, GetRenderLibraryType(m_pIWindowBase), &m_pDefaultFont);
+		pFontRes->GetFont((BSTR)szText, m_pWindowRender->GetGraphicsRenderType(), &m_pDefaultFont);
 
 	// 创建默认字体
 	if (NULL == m_pDefaultFont)
@@ -96,17 +100,17 @@ void WindowBase::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 		HFONT hFont = (HFONT)::SendMessage(m_hWnd, WM_GETFONT, 0,0);
 		if (hFont)
         {
-            UI_AttachFont(&m_pDefaultFont, hFont, GetRenderLibraryType(m_pIObject));
+            UI_AttachFont(&m_pDefaultFont, hFont, m_pWindowRender->GetGraphicsRenderType());
         }
         else
 		{
             // UI Font Res Defualt Font
-			pFontRes->GetDefaultFont(GetRenderLibraryType(m_pIObject), &m_pDefaultFont);
+			pFontRes->GetDefaultFont(m_pWindowRender->GetGraphicsRenderType(), &m_pDefaultFont);
 			if (NULL == m_pDefaultFont)
 			{
                 // System Default Font
 				hFont = (HFONT)GetStockObject(SYSTEM_FONT);
-                UI_AttachFont(&m_pDefaultFont, hFont, GetRenderLibraryType(m_pIObject));
+                UI_AttachFont(&m_pDefaultFont, hFont, m_pWindowRender->GetGraphicsRenderType());
 			}
 		}
 	}
@@ -164,11 +168,12 @@ void  WindowBase::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
 bool WindowBase::CreateUI(const TCHAR* szID, HWND hWnd)
 {
 	this->m_hWnd = hWnd;
+	this->m_pSkinRes = m_pUIApplication->GetActiveSkinRes()->GetImpl();
 
 	if (szID && _tcslen(szID)>0)   
 	{
 		//	加载子控件
-		ILayoutManager* pLayoutMgr = m_pUIApplication->GetActiveSkinLayoutMgr();
+		ILayoutManager* pLayoutMgr = m_pSkinRes->GetILayoutManager();
 		if (NULL == pLayoutMgr)
 		{
 			UI_LOG_ERROR(_T("%s GetLayoutManager Failed."), FUNC_NAME);
@@ -251,28 +256,9 @@ WindowBase::operator HWND() const
 //
 
 
-// 获取一个控件在窗口上的图像
-// 注：有可能一个对象是隐藏的，或者不在窗口
-// HBITMAP WindowBase::PaintObject(Object* pObj)
-// {
-// 	if (NULL == pObj || NULL == GetRenderChainMemDC())
-// 		return NULL;
-// 
-// 	pObj->UpdateObject(false);
-// 
-// 	CRect rcWindow;
-// 	pObj->GetClientRectInWindow(&rcWindow);
-// 	
-// 	Image image;
-// 	image.Create(rcWindow.Width(), rcWindow.Height(), 32, Image::createAlphaChannel);
-// 	HDC hDC = image.BeginDrawToMyself();
-// 	::BitBlt(hDC, 0,0, rcWindow.Width(), rcWindow.Height(), GetRenderChainMemDC(), rcWindow.left, rcWindow.top, SRCCOPY);
-// 	image.EndDrawToMyself();
-// 	return image.Detach();
-// }
 void  WindowBase::PaintWindow(HDC hDC)
 {
-    m_pRenderChain->OnWindowPaint(hDC);    
+    m_pWindowRender->OnWindowPaint(hDC);
 }
 
 bool WindowBase::Create(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent, RECT* prc/*=NULL*/)
@@ -287,7 +273,7 @@ bool WindowBase::Create(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndPare
 	
 	this->SetUIApplication(pUIApp);
     if (szID)
-	__super::m_strID = szID;   // 提前给id赋值，便于日志输出
+	__super::m_strId = szID;   // 提前给id赋值，便于日志输出
 
 	//	创建窗口句柄
 	CREATESTRUCT cs;
@@ -309,7 +295,7 @@ bool WindowBase::Create(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndPare
     else
     {
 	    cs.x = cs.y  = 0;
-	    cs.cx = cs.cy = 500; //CW_USEDEFAULT;
+	    cs.cx = cs.cy = CW_USEDEFAULT;  //500; 这里不能直接写一个值。有可能窗口配置的也是这个大小，将导致收不到WM_SIZE消息，布局失败
     }
 
     UISendMessage(this, UI_WM_PRECREATEWINDOW, (WPARAM)&cs);
@@ -338,9 +324,9 @@ void WindowBase::Attach(IUIApplication* pUIApp, HWND hWnd, const TCHAR* szID)
 	this->SetUIApplication(pUIApp);
 
     if (szID)
-	    m_strID = szID;   // 提前给id赋值，便于日志输出
+	    m_strId = szID;   // 提前给id赋值，便于日志输出
     else
-        m_strID.clear();
+        m_strId.clear();
 
 	m_hWnd = hWnd;
 
@@ -399,7 +385,7 @@ long WindowBase::DoModal(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID
 //
 // 创建一个空的模态对话框
 //
-long WindowBase::DoModal(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent )
+long WindowBase::DoModal(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent, bool canResize)
 {
 
 #if 0
@@ -447,7 +433,7 @@ long WindowBase::DoModal(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndPar
 	GlobalFree(hgbl); 
 	return lRet;
 #endif
-	HWND hWnd = this->DoModeless(pUIApp, szID, hWndParent);
+	HWND hWnd = this->DoModeless(pUIApp, szID, hWndParent, canResize);
 	if( NULL == hWnd )
 	{
 		return -1;
@@ -528,18 +514,24 @@ BOOL WindowBase::PreTranslateMessage(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 	return FALSE;
 }
 
-HWND WindowBase::DoModeless(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndOnwer)
+
+// 2014.4.15
+// 注：在win7 aero下面，无WS_THICKFRAME样式的Dialog会变大10px,10px
+//     为了解决该问题，为每一个Dialog加上WS_THICKFRAME，同时修改WM_NCHITTEST消息、删除SysMenu中的SC_SIZE.
+///    因此外部在调用该函数时，需要传递一个canResize标志
+//
+HWND WindowBase::DoModeless(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndOnwer, bool canResize)
 {
 	UIASSERT(NULL == m_hWnd);
 	this->SetUIApplication(pUIApp);
 
 	CREATESTRUCT cs;
 	memset(&cs, 0, sizeof(CREATESTRUCT));
-	cs.style        = WS_POPUP | WS_BORDER | WS_SYSMENU | DS_MODALFRAME | WS_CAPTION;
+	cs.style        = WS_POPUP | WS_BORDER | WS_SYSMENU | DS_MODALFRAME | WS_CAPTION | WS_THICKFRAME;
 	cs.lpszClass    = WND_CLASS_NAME;
 	cs.lpszName     = _T("");
 	cs.x  = cs.y    = 0;
-	cs.cx = cs.cy   = 100;//CW_USEDEFAULT;
+	cs.cx = cs.cy   = 0;
 	cs.dwExStyle    = WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR | WS_EX_WINDOWEDGE;
     UISendMessage(this, UI_WM_PRECREATEWINDOW, (WPARAM)&cs);
 
@@ -567,7 +559,7 @@ HWND WindowBase::DoModeless(IUIApplication* pUIApp, const TCHAR* szID, HWND hWnd
 
 	s_create_wnd_data.AddCreateWndData(&m_thunk.cd, this);
     if (szID)
-	m_strID = szID;
+	m_strId = szID;
 
 	if (m_pUIApplication)
 	{
@@ -582,21 +574,54 @@ HWND WindowBase::DoModeless(IUIApplication* pUIApp, const TCHAR* szID, HWND hWnd
 		// fix默认的#32770窗口过程在大小改变时不刷新的问题
 		// TODO:?? 为什么带THICKFRAME的窗口就能自己刷新
 		SetClassLong(m_hWnd, GCL_STYLE, CS_HREDRAW | CS_VREDRAW |CS_DBLCLKS);
+
+        // 删除最大化
+        if (!canResize)
+        {
+            HMENU hMenu = GetSystemMenu(m_hWnd, FALSE);
+            if (hMenu)
+            {
+                DeleteMenu(hMenu, SC_SIZE, 0);
+            }
+            ModifyStyle(WINDOW_STYLE_DIALOG_NORESIZE, 0, true);
+        }
 	}
 	GlobalFree(hgbl); 
 	return m_hWnd;
 }
-HWND WindowBase::DoModeless(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndOnwer )
+HWND WindowBase::DoModeless(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndOnwer)
 {
 	UIASSERT( NULL == m_hWnd );
 	this->SetUIApplication(pUIApp);
 
 	s_create_wnd_data.AddCreateWndData(&m_thunk.cd, (void*)this);
     if (szID)
-	m_strID = szID;
+	m_strId = szID;
 
     // 注： hWndParent仅是Owner，并不是parent
 	m_hWnd = CreateDialog(hResInst, MAKEINTRESOURCE(nResID), hWndOnwer, (DLGPROC)WindowBase::StartDialogProc);
+
+    long lStyle = GetWindowLong(m_hWnd, GWL_STYLE);
+    if (!(lStyle & WS_CHILD))
+    {
+        if (! (lStyle&WS_THICKFRAME))
+        {
+            CRect  rcWindow;
+            ::GetWindowRect(m_hWnd, &rcWindow);
+
+            SetWindowLong(m_hWnd, GWL_STYLE, lStyle|WS_THICKFRAME);
+
+            HMENU hMenu = GetSystemMenu(m_hWnd, FALSE);
+            if (hMenu)
+            {
+               DeleteMenu(hMenu, SC_SIZE, 0);
+            }
+            ModifyStyle(WINDOW_STYLE_DIALOG_NORESIZE, 0, true);
+
+            // 重新修改窗口为正确的大小
+            SetWindowPos(m_hWnd, 0, rcWindow.left, rcWindow.top, rcWindow.Width(), rcWindow.Height(), SWP_NOZORDER|SWP_NOACTIVATE|SWP_FRAMECHANGED);
+        }
+    }
 	return m_hWnd;
 }
 
@@ -803,7 +828,8 @@ LRESULT WindowBase::_OnSetCursor( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 	{
 		if (LOWORD(lParam) != HTCLIENT)    // 用于鼠标位于system window的边缘时，应该调用默认的处理过程。包括当自己弹出一个模态框，返回HTERROR时
 		{
-			return DefWindowProc(uMsg,wParam,lParam);
+			//return DefWindowProc(uMsg,wParam,lParam);  // 2014.4.10 dialog直接return 0居然没反应，不会根据hittest设置鼠标。因此直接调用defwindowproc
+            return ::DefWindowProc(m_hWnd, uMsg, wParam, lParam);
 		}
 
 //      Removed 20120824 -- 在实现windowless richedit时，不能采用延时发送setcursor的办法，否则在
@@ -833,6 +859,25 @@ LRESULT WindowBase::_OnSetCursor( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 	return TRUE;
 }
 
+LRESULT  WindowBase::_OnNcHitTest( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
+{
+    bHandled = FALSE;
+    if (!m_oldWndProc)
+    {
+        if (TestStyle(WINDOW_STYLE_DIALOG_NORESIZE))
+        {
+            LRESULT lr = ::DefWindowProc(m_hWnd, uMsg, wParam, lParam);
+            if (lr >= HTLEFT && lr <= HTTOPRIGHT)
+            {
+                lr = HTBORDER;
+                bHandled = TRUE;
+                return lr;
+            }
+        }
+    }
+    return 0;
+}
+
 // 该消息已在WM_PAINT中分发。
 // 为了实现无闪烁的绘制，必须将所有的绘制代码放在一个地方处理，要么在WM_ERASEBKGND，要么在WM_PAINT
 // 但WM_ERASEBKGND不是每次都会触发的（在处理异形窗口时出现该问题），因此考虑将绘制代码都放在WM_PAINT中处理
@@ -849,7 +894,7 @@ LRESULT WindowBase::_OnEraseBkgnd( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 		{
 			m_bFirsetEraseBkgnd = false;
 
-            m_pRenderChain->OnWindowPaint((HDC)wParam);
+            //m_pWindowRender->OnWindowPaint((HDC)wParam);
             //ValidateRect(m_hWnd, NULL);  // 清空无效区域-- 注掉，见下文
             
 			// 如果什么也不做，会导致窗口第一次显示时，窗口先显示一次黑色，例如combobox.listbox/menu
@@ -878,7 +923,7 @@ LRESULT WindowBase::_OnPaint( UINT uMsg, WPARAM wParam,LPARAM lParam, BOOL& bHan
 	if (NULL == wParam)
 		hDC = ::BeginPaint(this->m_hWnd ,&ps);
 
-	PaintWindow(hDC);
+    PaintWindow(hDC);
 
 	if(NULL == wParam)
 		EndPaint(m_hWnd,&ps);
@@ -915,10 +960,13 @@ LRESULT WindowBase::_OnSize( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHan
 			SetConfigHeight(rcWindow.bottom-rcWindow.top);
 
         bHandled = TRUE;
-        m_pRenderChain->OnWindowResize(wParam, LOWORD(lParam), HIWORD(lParam));  // 在窗口刷新之前更新窗口缓冲区大小
+		notify_WM_SIZE(wParam, LOWORD(lParam), HIWORD(lParam));
+		UpdateMyLayout(false);
         
         if (IsWindowVisible(m_hWnd))
-            m_pRenderChain->OnWindowPaint(NULL);
+        {
+            m_pWindowRender->OnWindowPaint(NULL);
+        }
 	}
 
 	return 0;
@@ -927,11 +975,16 @@ LRESULT WindowBase::_OnCreate( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 {
 	bHandled = FALSE;
 
-	if (false == this->CreateUI(m_strID.c_str(), m_hWnd))
+	if (false == this->CreateUI(m_strId.c_str(), m_hWnd))
 	{
-		UI_LOG_ERROR(_T("%s CreateUI failed. id=%s"), FUNC_NAME, m_strID.c_str());
+		UI_LOG_ERROR(_T("%s CreateUI failed. id=%s"), FUNC_NAME, m_strId.c_str());
 		return 0;
 	}
+
+    // 特殊处理：
+    // 用于将D2D RenderTarget绑定到窗口上面.D2D与GDI/GDIPlus不一样，它不需要再弄一个双缓冲
+    // 直接begindraw/enddraw即可
+    m_pRenderLayer->GetRenderTarget()->BindHWND(m_hWnd);
 
 	//
 	//  有可能m_strID为空（不加载资源，例如临时的popupconotrolwindow）
@@ -956,7 +1009,8 @@ LRESULT WindowBase::_OnCreate( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 
         // 因为Attach到的窗口初始化时已经收不到WM_SIZE了，因此自己再发一次，
         // 通知创建RenderTarget，否则后面的一些刷新将失败
-        m_pRenderChain->OnWindowResize(0, m_rcParent.Width(), m_rcParent.Height());  // 在窗口刷新之前更新窗口缓冲区大小
+		notify_WM_SIZE(0, m_rcParent.Width(), m_rcParent.Height());
+        this->UpdateLayout(false);
 	}
     else
     {
@@ -981,16 +1035,16 @@ LRESULT WindowBase::_OnCreate( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
     this->OnInnerInitWindow();
 
     // 防止在实现显示动画时，先显示了一些初始化中刷新的内容。注：不能只限制一个layer
-    m_pRenderChain->SetCanCommit(false);  
+    m_pWindowRender->SetCanCommit(false);  
     UISendMessage(this, UI_WM_INITIALIZE);
-	m_pRenderChain->SetCanCommit(true);
+	m_pWindowRender->SetCanCommit(true);
 
 	// 设置默认对象
 	m_MgrMouse.SetDefaultObject(m_MgrMouse.GetOriginDefaultObject(), false);
 
     if (m_nStyle&WINDOW_STYLE_ATTACH) // 主动触发刷新
     {
-        m_pRenderChain->OnWindowPaint(NULL);
+        m_pWindowRender->OnWindowPaint(NULL);
     }
 	return 0;
 }
@@ -1267,15 +1321,13 @@ void WindowBase::OnEraseBkgnd(IRenderTarget* pRenderTarget)
 		}
 		else                         // Window类型，直接调用系统过程
 		{
-			HDC hDC = pRenderTarget->GetBindHDC();
-			DefWindowProc(WM_ERASEBKGND, (WPARAM)hDC, 1);  // 与原始消息进行区分
+			HDC hDC = pRenderTarget->GetHDC();
+            if (hDC)
+            {
+			    DefWindowProc(WM_ERASEBKGND, (WPARAM)hDC, 1);  // 与原始消息进行区分
+            }
 		}
 	}	
-}
-
-LRESULT WindowBase::OnGetGraphicsRenderType()
-{
-	return  /*GRAPHICS_RENDER_TYPE_GDIPLUS*/ GRAPHICS_RENDER_LIBRARY_TYPE_AUTO;
 }
 
 LRESULT  WindowBase::OnGetMouseKeyboardMgr(UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -1284,19 +1336,15 @@ LRESULT  WindowBase::OnGetMouseKeyboardMgr(UINT uMsg, WPARAM wParam, LPARAM lPar
 }
 
 //
-//  在响应完窗口的WM_NCDESTROY后，会触发该函数。
-//  不要尝试在消息响应中调用delete this; 但可以再该函数中调用
-//
-// void WindowBase::OnFinalMessage()
-// {
-// 	
-// }
-
-//
 //	将双缓存数据提交到窗口DC上
 //
 void WindowBase::CommitDoubleBuffet2Window(HDC hDCWnd, RECT* prcCommit, int nRectCount)
 {
+	IRenderTarget* pRenderTarget = m_pRenderLayer->GetRenderTarget();
+
+	POINT  ptSrc = {0, 0};
+    m_pRenderLayer->GetOffsetDrawInBuffer(&ptSrc);
+
 	HDC hDC = hDCWnd;
 	if (NULL == hDC)
     {
@@ -1305,28 +1353,44 @@ void WindowBase::CommitDoubleBuffet2Window(HDC hDCWnd, RECT* prcCommit, int nRec
 
 		hDC = GetDC(m_hWnd);
     }
-
-	CRect rcCommit;
+    
+	CRect rcCommitTemp;
 	if (NULL == prcCommit)
 	{
-		::GetClientRect(m_hWnd, &rcCommit);
+		::GetClientRect(m_hWnd, &rcCommitTemp);
 		nRectCount = 1;
-	}
-// 	else
-// 		rcCommit.CopyRect(prcCommit);
 
-    HDC hMemDC = m_pRenderChain->GetMemoryDC();
-	m_MgrCWBL.DoPre(hDC, hMemDC, prcCommit, nRectCount);
+        prcCommit = &rcCommitTemp;
+	}
+
+    CRect  rcSrc;
+//	m_MgrCWBL.DoPre(hDC, pRenderTarget, prcSrc, nRectCount);
 	for (int i = 0; i < nRectCount; i++)
 	{
-		rcCommit.CopyRect(&prcCommit[i]);
+		rcSrc.CopyRect(&prcCommit[i]);
+        OffsetRect(&rcSrc, ptSrc.x, ptSrc.y);
 
-		::BitBlt(hDC, rcCommit.left, rcCommit.top, 
-            rcCommit.Width(), rcCommit.Height(), 
-            hMemDC, rcCommit.left, rcCommit.top,
-            SRCCOPY);
+        Render2TargetParam  param = {0};
+        param.xDst = prcCommit[i].left;
+        param.yDst = prcCommit[i].top;
+        param.wDst = rcSrc.Width();
+        param.hDst = rcSrc.Height();
+        param.xSrc = rcSrc.left;
+        param.ySrc = rcSrc.top;
+        param.wSrc = rcSrc.Width();
+        param.hSrc = rcSrc.Height();
+        param.bAlphaBlend = false;
+        param.opacity = 255;
+
+        pRenderTarget->Render2DC(hDC, &param);
+
+#ifdef TRACE_DRAW_PROCESS
+        UI_LOG_DEBUG(_T("Commit2Wnd: (%d,%d, %d,%d)"),
+            prcCommit[i].left, prcCommit[i].top,
+            prcCommit[i].right, prcCommit[i].bottom);
+#endif
 	}
-	m_MgrCWBL.DoPost(hDC, hMemDC, prcCommit, nRectCount);
+//	m_MgrCWBL.DoPost(hDC, pRenderTarget, prcSrc, nRectCount);
 
 	if (NULL == hDCWnd)
 	{
@@ -1412,14 +1476,14 @@ BOOL WindowBase::IsChildWindow()
 // {
 // 	return m_MgrCWBL;
 // }
-void  WindowBase::AddCommitWindowBufferListener(ICommitWindowBufferListener* p) 
-{ 
-    m_MgrCWBL.AddListener(p); 
-}
-void  WindowBase::RemoveCommitWindowBufferListener(ICommitWindowBufferListener* p) 
-{ 
-    m_MgrCWBL.RemoveListener(p); 
-}
+// void  WindowBase::AddCommitWindowBufferListener(ICommitWindowBufferListener* p) 
+// { 
+//     m_MgrCWBL.AddListener(p); 
+// }
+// void  WindowBase::RemoveCommitWindowBufferListener(ICommitWindowBufferListener* p) 
+// { 
+//     m_MgrCWBL.RemoveListener(p); 
+// }
 
 Object* WindowBase::GetHoverObject()
 {
@@ -1474,27 +1538,17 @@ void WindowBase::SaveMemBitmap(TCHAR* szFile)
 #endif
 }
 
-HDC  WindowBase::GetRenderChainMemDC() 
-{
-    return m_pRenderChain->GetMemoryDC(); 
-}
-IRenderChain*  WindowBase::GetIRenderChain() 
-{
-    return m_pRenderChain->GetIRenderChain(); 
-}
-
 // 将内存位图绘图到指定区域
-void WindowBase::DrawMemBitmap(HDC hDC, RECT* prc)
+void WindowBase::DrawMemBitmap(HDC hDC, RECT* prc, bool bAlphaBlend)
 {
-    HDC hMemDC = m_pRenderChain->GetMemoryDC();
-    Image*  pBuffer = m_pRenderChain->GetMemoryBuffer();
-	if (NULL == pBuffer || NULL == hMemDC)
-		return;
+    HDC hMemDC = m_pRenderLayer->GetRenderTarget()->GetHDC();
+    POINT  ptOffset;
+    m_pRenderLayer->GetOffsetDrawInBuffer(&ptOffset);
 
-	if (this->IsTransparent()) 
+	if (bAlphaBlend) 
 	{
         BLENDFUNCTION bf = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
-        AlphaBlend(hDC, prc->left, prc->top, LPRECTW(prc), LPRECTH(prc), hMemDC, 0, 0, pBuffer->GetWidth(), pBuffer->GetHeight(), bf);
+        AlphaBlend(hDC, prc->left, prc->top, LPRECTW(prc), LPRECTH(prc), hMemDC, ptOffset.x, ptOffset.y, LPRECTW(prc), LPRECTH(prc), bf);
 	}
 	else
 	{
@@ -1502,14 +1556,14 @@ void WindowBase::DrawMemBitmap(HDC hDC, RECT* prc)
 		int nRet = ::GetWindowRgn(m_hWnd, hRgn);
         if (ERROR == nRet)
         {
-            BitBlt(hDC, prc->left, prc->top, LPRECTW(prc), LPRECTH(prc), hMemDC, 0, 0, SRCCOPY);
+            BitBlt(hDC, prc->left, prc->top, LPRECTW(prc), LPRECTH(prc), hMemDC, ptOffset.x, ptOffset.y, SRCCOPY);
         }
         else
         {
 		    ::SelectClipRgn(hDC, hRgn);
 		    ::OffsetClipRgn(hDC, prc->left, prc->top);
     		
-            BitBlt(hDC, prc->left, prc->top, LPRECTW(prc), LPRECTH(prc), hMemDC, 0, 0, SRCCOPY);
+            BitBlt(hDC, prc->left, prc->top, LPRECTW(prc), LPRECTH(prc), hMemDC, ptOffset.x, ptOffset.y, SRCCOPY);
 
 		    ::SelectClipRgn(hDC, NULL);
         }
@@ -1627,6 +1681,11 @@ void  WindowBase::SetFocusObject(Object* pObj)
     m_MgrMouse.SetFocusObject(pObj);
 }
 
+SkinRes*   WindowBase::GetSkinRes()
+{
+	return m_pSkinRes;
+}
+
 // 获取当前鼠标下的对象 
 Object*  WindowBase::GetObjectByCursorPos()
 {
@@ -1634,14 +1693,14 @@ Object*  WindowBase::GetObjectByCursorPos()
     GetCursorPos(&pt);
     ::ScreenToClient(m_hWnd, &pt);
 
-    return m_MgrMouse.GetObjectByPos(this, &pt);
+    return m_MgrMouse.GetObjectByPos(this, &pt, NULL);
 }
 Object*  WindowBase::GetObjectByPos(Object* pObjParent, POINT* pt, bool bSkinBuilderInvoke)
 {
     if (bSkinBuilderInvoke)
-        return m_MgrMouse.GetObjectByPos_UIEditor(pObjParent, pt);
+        return m_MgrMouse.GetObjectByPos_UIEditor(pObjParent, pt, NULL);
     else
-        return m_MgrMouse.GetObjectByPos(pObjParent, pt);
+        return m_MgrMouse.GetObjectByPos(pObjParent, pt, NULL);
 }
 #endif
 
@@ -1667,4 +1726,8 @@ IObject* WindowBase::OnGetDefId()
     }
 }
 
+IRenderFont*  WindowBase::GetWindowDefaultRenderFont() 
+{
+	return m_pDefaultFont; 
+}
 }

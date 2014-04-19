@@ -143,6 +143,7 @@ public:
 	LONG  SetAccelPos(LONG l_accelpos);
     bool  SetCharFormatByLogFont(LOGFONT* plf);
 	bool  SetCharFormat(CHARFORMAT2* pcf);
+	LRESULT  SetCharFormatEx(UINT nPart, CHARFORMAT2* pcf);
     void  GetCharFormat(CHARFORMAT2* pcf);
 	void  InitDefaultParaFormat();
 	bool  IsWordWrap() { return m_fWordWrap; }
@@ -303,7 +304,7 @@ public:
     void  GetTextW(IBuffer** ppBuffer);
     int   GetTextLengthW();
     bool  GetEncodeTextW(IBuffer** ppBuffer);
-    bool  AppendText(const TCHAR* szText, int nSize=-1);
+    bool  AppendText(const TCHAR* szText, int nLength=-1);
     bool  AppendEncodeTextW(const TCHAR* szText, int nSize);
     bool  ReplaceSelectionText(const TCHAR* szText, int nSize);
 

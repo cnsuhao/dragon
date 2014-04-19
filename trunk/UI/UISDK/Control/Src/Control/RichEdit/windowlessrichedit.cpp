@@ -5,6 +5,7 @@
 #include "UISDK\Kernel\Inc\Interface\iscrollbarmanager.h"
 #include "UISDK\Kernel\Inc\Util\ibuffer.h"
 #include "3rd\markup\markup.h"
+#include "UISDK\Control\Inc\Interface\imenu.h"
 
 
 
@@ -254,7 +255,7 @@ void WindowlessRichEdit::Draw(HDC hDC, bool bDrawShadow)
         data.hBitmap = hMemBmp;
         data.lprc = &rcClient;
         data.eMode = Util::SET_ALPHA_255;
-        data.bTopDownDib = true;
+        data.bTopDownDib = TRUE;
         Util::FixBitmapAlpha(&data);
 
         m_spTextServices->TxDraw(DVASPECT_CONTENT, 0, NULL, NULL, hMemDC,
@@ -1235,6 +1236,31 @@ bool ITextHostImpl::SetCharFormat(CHARFORMAT2* pcf)
             TXTBIT_CHARFORMATCHANGE);
     }
 	return true;
+}
+
+//
+// SCF_ALL
+// Applies the formatting to all text in the control. Not valid with SCF_SELECTION or SCF_WORD.
+// SCF_SELECTION
+// Applies the formatting to the current selection. If the selection is empty, the character formatting is applied to the insertion point, and the new character format is in effect only until the insertion point changes.
+// SCF_WORD
+// Applies the formatting to the selected word or words. If the selection is empty but the insertion point is inside a word, the formatting is applied to the word. The SCF_WORD value must be used in conjunction with the SCF_SELECTION value.
+// SCF_ASSOCIATEFONT
+// RichEdit 4.1: Associates a font to a given script, thus changing the default font for that script. To specify the font, use the following members of CHARFORMAT2: yHeight, bCharSet, bPitchAndFamily, szFaceName, and lcid.
+// SCF_ASSOCIATEFONT2
+// RichEdit 4.1: Associates a surrogate (plane-2) font to a given script, thus changing the default font for that script. To specify the font, use the following members of CHARFORMAT2: yHeight, bCharSet, bPitchAndFamily, szFaceName, and lcid.
+// SCF_DEFAULT
+// RichEdit 4.1: Sets the default font for the control. 
+// SCF_NOKBUPDATE
+// RichEdit 4.1: Prevents keyboard switching to match the font. For example, if an Arabic font is set, normally the autokeyboard feature for Bidi languages changes the keyboard to an Arabic keyboard.
+// SCF_USEUIRULES
+// RichEdit 4.1: Used with SCF_SELECTION. Indicates that format came from a toolbar or other UI tool, so UI formatting rules should be used instead of literal formatting.
+//
+LRESULT  ITextHostImpl::SetCharFormatEx(UINT nPart, CHARFORMAT2* pcf)
+{
+	LRESULT  lr = 0;
+	m_spTextServices->TxSendMessage(EM_SETCHARFORMAT, (WPARAM)nPart, (LPARAM)pcf, &lr);
+	return lr;
 }
 
 void  ITextHostImpl::GetCharFormat(CHARFORMAT2* pcf)
@@ -2360,19 +2386,89 @@ HRESULT __stdcall WindowlessRichEdit::GetDragDropEffect(BOOL fDrag, DWORD grfKey
 // 例如在一个COM对象处右击，可能seltype=2, lpoleobj = xxx;
 HRESULT __stdcall WindowlessRichEdit::GetContextMenu(WORD seltype, LPOLEOBJECT lpoleobj, CHARRANGE FAR * lpchrg, HMENU FAR * lphmenu)
 {
-#ifdef _DEBUG
-	HMENU& hMenu = *lphmenu;
-	TCHAR szInfo[128] = _T("");
-	_stprintf(szInfo, _T("GetContextMenu Args: seltype=%d, lpoleobj=%08x, lpchrg=%d,%d"),
-		seltype, lpoleobj, lpchrg->cpMin, lpchrg->cpMax);
+// #ifdef _DEBUG
+// 	HMENU& hMenu = *lphmenu;
+// 	TCHAR szInfo[128] = _T("");
+// 	_stprintf(szInfo, _T("GetContextMenu Args: seltype=%d, lpoleobj=%08x, lpchrg=%d,%d"),
+// 		seltype, lpoleobj, lpchrg->cpMin, lpchrg->cpMax);
+// 
+// 	hMenu = CreatePopupMenu();
+// 	BOOL bRet = ::AppendMenu(hMenu, MF_STRING, 10001, szInfo);
+//     POINT pt;
+//     GetCursorPos(&pt);
+//     ::TrackPopupMenu(hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hParentWnd, NULL);
+//     DestroyMenu(hMenu);
+// #endif
 
-	hMenu = CreatePopupMenu();
-	BOOL bRet = ::AppendMenu(hMenu, MF_STRING, 10001, szInfo);
-    POINT pt;
-    GetCursorPos(&pt);
-    ::TrackPopupMenu(hMenu, TPM_RETURNCMD, pt.x, pt.y, 0, m_hParentWnd, NULL);
-    DestroyMenu(hMenu);
-#endif
+    IMenu* pMenu = NULL;
+    IMenu::CreateInstance(m_pRichEdit->GetIRichEdit()->GetUIApplication(), &pMenu);
+    pMenu->InitDefaultAttrib();
+
+#define MENU_ID_CUT     1
+#define MENU_ID_COPY    2
+#define MENU_ID_PASTE   3
+#define MENU_ID_SELALL  4
+
+    IListItemBase* pCutItem   = pMenu->AppendString(_T("剪切"), MENU_ID_CUT);
+    IListItemBase* pCopyItem  = pMenu->AppendString(_T("复制"), MENU_ID_COPY);
+    IListItemBase* pPasteItem = pMenu->AppendString(_T("粘贴"), MENU_ID_PASTE);
+    pMenu->AppendSeparator(-1);
+    IListItemBase* pSelAllItem = pMenu->AppendString(_T("全选"), MENU_ID_SELALL);
+
+    int nSel = 0, nSelLength = 0;
+    GetSel(&nSel, &nSelLength);
+    if (0 == nSelLength)
+    {
+        pCutItem->SetDisable(true);
+        pCopyItem->SetDisable(true);
+    }
+    if (!::IsClipboardFormatAvailable(CF_TEXT) &&
+        !::IsClipboardFormatAvailable(CF_UNICODETEXT))
+    {
+        pPasteItem->SetDisable(true);
+    }
+    if (0 == GetTextLengthW())
+    {
+        pSelAllItem->SetDisable(true);
+    }
+	if (IsReadOnly())
+	{	
+		pCutItem->SetDisable(true);
+		pPasteItem->SetDisable(true);
+	}
+    CPoint pt;
+    ::GetCursorPos(&pt);
+    UINT nRetCmd = pMenu->TrackPopupMenu(TPM_RETURNCMD, pt.x, pt.y, m_pRichEdit->GetIRichEdit());
+    SAFE_DELETE_Ixxx(pMenu);
+
+    switch (nRetCmd)
+    {
+    case MENU_ID_CUT:
+        {
+            LRESULT lr = 0;
+            m_spTextServices->TxSendMessage(WM_CUT, 0, 0, &lr);
+        }
+        break;
+
+    case MENU_ID_COPY:
+        {
+            LRESULT lr = 0;
+            m_spTextServices->TxSendMessage(WM_COPY, 0, 0, &lr);
+        }
+        break;
+
+    case MENU_ID_PASTE:
+        {
+            LRESULT lr = 0;
+            m_spTextServices->TxSendMessage(WM_PASTE, 0, 0, &lr);
+        }
+        break;
+
+    case MENU_ID_SELALL:
+        SetSel(0, -1);
+        break;
+    }
+
 	return S_OK;
 }
 
@@ -2396,7 +2492,7 @@ void  WindowlessRichEdit::GetSel(int* pnPos, int* pnLen)
         if (pnPos)
             *pnPos = range.cpMin;
         if (pnLen)
-            *pnLen = range.cpMin+range.cpMax;
+            *pnLen = range.cpMax-range.cpMin;
     }
 }
 #pragma endregion

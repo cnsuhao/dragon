@@ -10,12 +10,19 @@ interface IRenderFont;
 interface ITextRenderBase;
 interface IRenderBase;
 class UICursor;
-class RenderLayer;
-class RenderChain;
 class WindowBase;
 interface ILayoutParam;
 class Object3DWrap;
 class RenderLayer2;
+class WindowRender;
+class Object;
+
+struct AncestorDamageInfo
+{
+	Object*  pAncestor; // 
+	RECT  rcDamage;     // client rect. 被刷新的对象在自己的区域内的脏区域
+    bool  bDrawBkgnd;   // 是否需要重新绘制自己的背景
+};
 
 class Object : public ObjTree
 {
@@ -31,7 +38,7 @@ public:
         UIMSG_WM_HITTEST(OnHitTest)
         UIMSG_WM_GETRENDERFONT(GetRenderFont)
         UIMSG_WM_THEMECHANGED(OnThemeChanged)
-        UIMESSAGE_HANDLER_EX(UI_WM_SKINMATERIALCHANGED, OnSkinMaterialChanged)
+        UIMESSAGE_HANDLER_EX(UI_WM_SKINTEXTURECHANGED, OnSkinTextureChanged)
         UIMSG_WM_VISIBLE_CHANGED(OnVisibleChanged)
         UIMSG_WM_REDRAWOBJECT(OnRedrawObject)
 
@@ -51,28 +58,85 @@ public:
 	void     FinalRelease();                       // 子类在实现该虚函数必须先调用父类的实现           
 
 public:
-	const  TCHAR*  GetId() { return m_strID.c_str(); }
-	void     SetId(const TCHAR* szText);
 
-    TCHAR*    GetObjectName();
-    OBJ_TYPE  GetObjectType();
-    CONTROL_TYPE  GetObjectExtentType();
+    //////////////////////////////////////////////////////////////////////////
+    //  Get/Set
+    //////////////////////////////////////////////////////////////////////////
+	const  TCHAR*       GetId();
+	void                SetId(const TCHAR* szText);
 
-	WindowBase*  GetWindowObject();
-    RenderLayer* GetRenderLayer();
-    RenderChain* GetRenderChain();
-	HWND     GetHWND();
-	Object*  FindChildObject(const TCHAR* szObjId);
-    Object*  GetObjectByPos(POINT* pt);
+    TCHAR*              GetObjectName();
+    OBJ_TYPE            GetObjectType();
+    CONTROL_TYPE        GetObjectExtentType();
 
-	void  UpdateObject(bool bUpdateNow = true);
-	void  UpdateObjectBkgnd(bool bUpdateNow);
-	void  UpdateLayout(bool bUpdate);
-	void  UpdateObjectNonClientRegion();
-	void  ClearMyTreeRelationOnly();
+	WindowBase*         GetWindowObject();
+    WindowRender*       GetWindowRender();
+    RenderLayer2*       GetSelfRenderLayer2();   
+    RenderLayer2*       GetRenderLayer2();
+	HWND                GetHWND();
+	Object*             FindChildObject(const TCHAR* szObjId);
+    Object*             GetObjectByPos(POINT* pt);
+    Object*             GetRenderLayerCreateObject();
 
-public:
-#pragma region // 区域操作函数
+    IRenderFont*        GetRenderFont();
+    ITextRenderBase*    GetTextRender();
+    IRenderBase*        GetBkRender();
+    IRenderBase*        GetForeRender();
+    void                SetBkgndRender(IRenderBase* p);
+    void                SetForegndRender(IRenderBase* p);
+    void                SetTextRender(ITextRenderBase* p);
+    bool                CreateRenderLayer();
+
+    // 扩展属性操作
+    void                InitDefaultAttrib();
+    void                SetUserData(LPVOID p);
+    LPVOID              GetUserData();
+    IUIApplication*     GetUIApplication();
+    void                SetUIApplication(IUIApplication* p);
+    void                SetOutRef(void** ppOutRef);
+    HRGN                GetRgn();
+    int                 GetZOrder();
+    void                SetZorderDirect(int z);
+
+    // 其它
+    bool                SetCursor(const TCHAR* szCursorId);
+    DWORD               CalcContrastTextColor();
+    bool                SetMouseCapture(int nNotifyMsgId);
+    bool                ReleaseMouseCapture();
+    bool                SetKeyboardCapture(int nNotifyMsgId);
+    bool                ReleaseKeyboardCapture();
+
+    //////////////////////////////////////////////////////////////////////////
+    // 绘制
+    //////////////////////////////////////////////////////////////////////////
+
+    bool               DrawObject(IRenderTarget* pRenderTarget, RenderContext c);
+    void               RealDrawObject(IRenderTarget* pRenderTarget, RenderContext c);
+    void               DrawChildObject(IRenderTarget* pRenderTarget, RenderContext& c);
+    HBITMAP            TakeSnapshot();
+    HBITMAP            TakeBkgndSnapshot();
+    GRAPHICS_RENDER_LIBRARY_TYPE  GetGraphicsRenderLibraryType();
+
+    void               GetUpdateObjectBoundRect(RECT*  prc);
+	void               UpdateObject(bool bUpdateNow = true);
+    void               UpdateObjectEx(RECT* prcObjArray, int nCount, bool bUpdateNow);
+    void               RealUpdateObjectEx(RECT* prcObjArray, int nCount, bool bUpdateNow);
+	void               UpdateObjectBkgnd(bool bUpdateNow);
+	void               UpdateLayout(bool bUpdate);
+    void               UpdateMyLayout(bool bUpdate);
+	void               UpdateObjectNonClientRegion();
+	void               ClearMyTreeRelationOnly();
+
+    void               HandleDamageStackContext(Object* pObjDamage, IRenderTarget*  pRenderTarget, RenderContext context, stack<AncestorDamageInfo>& stackContext);
+	void               TestZorderOverlapLess(Object* pObj, IRenderTarget* pRenderTarget, RECT* prcClip, RenderContext context);
+    void               TestZorderOverlapGreat(Object* pObj, IRenderTarget* pRenderTarget, RECT* prcClip, RenderContext context);
+
+
+    //////////////////////////////////////////////////////////////////////////
+    //  区域操作函数
+    //////////////////////////////////////////////////////////////////////////
+
+#pragma region 
 	void  GetNonClientRegion(CRegion4* prc) { prc->CopyRect(m_rcNonClient); }
 	void  SetNonClientRegionExcludePaddingBorder( CRegion4* prc );
 	void  SetNonClientRegionExcludePaddingBorderL( int n );
@@ -107,9 +171,6 @@ public:
 	int   GetMarginB() { return m_rcMargin.bottom; }
 	int   GetMarginW() { return m_rcMargin.left + m_rcMargin.right; }
 	int   GetMarginH() { return m_rcMargin.top + m_rcMargin.bottom; }
-	void  GetClientRect( CRect* prc );
-	void  GetClientRectAsWin32(CRect* prc);
-	void  GetClientRectInWindow(CRect* prc);
 	void  GetParentRect( CRect* prc );
 	int   GetParentRectL() { return m_rcParent.left; }
 	int   GetParentRectT() { return m_rcParent.top; }
@@ -138,33 +199,72 @@ public:
     void  SetConfigBottom(int n);
 #pragma endregion
 
-#pragma region // pos width height
-	POINT  GetRealPosInWindow();
-	void  GetWindowRect(CRect* lprc);
-	void  WindowPoint2ObjectPoint(const POINT* ptWindow, POINT* ptObj);
-	void  WindowPoint2ObjectClientPoint(const POINT* ptWindow, POINT* ptObj);
-	void  WindowPoint2ObjectClientPoint_CalcScroll(const POINT* ptWindow, POINT* ptObj);
-	void  ObjectPoint2ObjectClientPoint(const POINT* ptWindow, POINT* ptObj);
-	void  ClientRect2ObjectRect(const RECT* rcClient, RECT* rcObj);
-    void  WindowRect2ObjectClientRect(const RECT* rcWindow, RECT* rcObj);
-	bool  GetScrollOffset(int* pxOffset, int* pyOffset);
-	bool  GetScrollRange(int* pxRange, int* pyRange);
-	bool  GetObjectVisibleRect(RECT* prc, bool bInWindowOrLayer);
-    bool  GetObjectVisibleClientRect(RECT* prc, bool bInWindowOrLayer);
-//	HRGN  GetClipRgnInWindow();
+    //////////////////////////////////////////////////////////////////////////
+    // Position
+    //////////////////////////////////////////////////////////////////////////
+
+#pragma region
 
 	int   GetWidth();
 	int   GetHeight();
 	int   GetWidthWithMargins();
 	int   GetHeightWithMargins();
 
+    bool  IntersectWindowRect(const RECT* rcWindow, RECT* rcIntersectWnd, RECT* rcIntersectObj);
+	bool  GetScrollOffset(int* pxOffset, int* pyOffset);
+	bool  GetScrollRange(int* pxRange, int* pyRange);
+
+	void  GetClientRect( CRect* prc );
+	void  GetClientRectAsWin32(CRect* prc);
+	void  GetClientRectInWindow(CRect* prc);
+
+	bool  GetVisibleRectInWindow(RECT* prc);
+    bool  GetVisibleRectInLayer(RECT* prc);
+    bool  GetVisibleClientRectInLayer(RECT* prc);
+    bool  CalcVisibleRectInAncestor(__in Object*  pObjAncestor, __in const RECT* prcObjPart, __out RECT* prcOut);
+
 	void  SetObjectPos( int x, int y, int cx, int cy, int nFlag=0 );
 	void  SetObjectPos( CRect* prc, int nFlag=0 );
     void  UpdateLayoutPos();
 
+	POINT  GetWindowPoint();
+	void  GetWindowRect(CRect* lprc);
+	void  WindowPoint2ObjectPoint(const POINT* ptWindow, POINT* ptObj, bool bCalcTransform);
+	void  WindowPoint2ObjectClientPoint(const POINT* ptWindow, POINT* ptObj, bool bCalcTransform);
+	void  WindowRect2ObjectClientRect(const RECT* rcWindow, RECT* rcObj);
+	void  WindowRect2ObjectRect(const RECT* rcWindow, RECT* rcObj);
+
+    void  notify_WM_SIZE(UINT nType, UINT nWidth, UINT nHeight);
+    SIZE  GetDesiredSize();
+
+	static void  ParentClientPoint2ChildPoint(Object* pObjChild, const POINT* pt, POINT* pOut);
+
+	static void  ObjectPoint2ObjectClientPoint(Object* pObj, const POINT* pt, POINT* pOut);
+    static void  ObjectPoint2ObjectNonClientPoint(Object* pObj, const POINT* pt, POINT* pOut);
+	static void  ObjectRect2ObjectClientRect(Object* pObj, const RECT* prc, RECT* pOut);
+
+	static void  ParentClientPoint2ChildClientPoint(Object* pObjChild, const POINT* pt, POINT* pOut);
+	static void  ParentClientRect2ChildClientRect(Object* pObjChild, const RECT* prc, RECT* pOut);
+
+	static void  ParentPoint2ChildPoint(Object* pObjChild, const POINT* pt, POINT* pOut);
+	static void  ParentRect2ChildRect(Object* pObjChild, const RECT* prc, RECT* pOut);
+
+	static void  ChildPoint2ParentClientPoint(Object* pObjChild, const POINT* ptChild, POINT*  ptOut);
+	static void  ChildRect2ParentClientRect(Object* pObjChild, const RECT* prc, RECT*  pOut);
+
+	static void  ObjectClientPoint2ObjectPoint(Object*  pObj, const POINT* ptChild, POINT*  ptOut);
+	static void  ObjectClientRect2ObjectRect(Object*  pObj, const RECT* prc, RECT*  pOut);
+
+	static void  ChildPoint2ParentPoint(Object* pObjChild, const POINT* ptChild, POINT*  ptOut);
+	static void  ChildRect2ParentRect(Object* pObjChild, const RECT* prc, RECT*  pOut);	
+
 #pragma endregion
 
-#pragma region	// 样式操作
+    //////////////////////////////////////////////////////////////////////////
+    // 样式操作
+    //////////////////////////////////////////////////////////////////////////
+
+#pragma region 
 	int   GetStateBit() { return m_nStateBit; }
 	bool  IsFocus();
 	void  SetFocus(bool b, bool bNoitfy=true);
@@ -180,7 +280,6 @@ public:
 	void  SetVisible(bool b, bool bRedraw=true, bool bUpdateLayout=true);
 	void  SetEnable(bool b, bool bUpdateNow=true, bool bNotify=true);
 	bool  IsDefault();
-//	bool  IsReadonly();
 	bool  IsHover();
 	bool  IsPress();
 	bool  IsForcePress();
@@ -188,7 +287,6 @@ public:
     bool  IsSelected();
     void  SetSelected(bool b, bool bNotify=true);
 	void  SetDefault(bool b, bool bNotify=true);
-//	void  SetReadonly(bool b);
 	void  SetForceHover(bool b, bool bNotify=true);
 	void  SetForcePress(bool b, bool bNotify=true);
 	void  SetHover(bool b, bool bNotify=true);
@@ -220,54 +318,20 @@ public:
 #pragma  endregion
 
 #pragma region // 3d op
-    Object3DWrap*  Begin3D();
-    void  End3D();
-    Object3DWrap*  Get3DWrap();
+//     Object3DWrap*  Begin3D();
+//     void  End3D();
+//     Object3DWrap*  Get3DWrap();
 #pragma endregion
 
-#pragma region // render layer
-    bool  CreateRenderLayer();
-    
-#pragma endregion 
-
-
-	IRenderFont*  GetRenderFont();
-	ITextRenderBase*  GetTextRender();
-	IRenderBase*  GetBkRender();
-	IRenderBase*  GetForeRender();
-	void  SetBkgndRender(IRenderBase* p);
-	void  SetForegndRender(IRenderBase* p);
-	void  SetTextRender(ITextRenderBase* p);
-
-	// 扩展属性操作
-    void  InitDefaultAttrib();
-	void  SetUserData(LPVOID p);
-	LPVOID  GetUserData();
-	IUIApplication*  GetUIApplication() { return m_pUIApplication; }
-	void  SetUIApplication(IUIApplication* p);
-	void  SetOutRef(void** ppOutRef);
-	HRGN  GetRgn() { return m_hRgn; }
-
-	// 绘制
-	virtual bool  DrawObject(IRenderTarget* pRenderTarget, RenderContext roc);  // CustomWindow需要从该函数进行定制，另外HwndHost也继承了
-    virtual void  RealDrawObject(IRenderTarget* pRenderTarget, RenderContext roc);
-	void  DrawChildObject(IRenderTarget* pRenderTarget, RenderContext& roc);
-	void  DrawObjectTransparentBkgnd(IRenderTarget* pRenderTarget, RenderContext& roc, bool bSelfTransparent);
-    HBITMAP  TakeSnapshot();
-    HBITMAP  TakeBkgndSnapshot();
-
-	// 其它
-	bool  SetCursor(const TCHAR* szCursorId);
-    DWORD  CalcContrastTextColor();
-    bool  SetMouseCapture(int nNotifyMsgId);
-    bool  ReleaseMouseCapture();
-    bool  SetKeyboardCapture(int nNotifyMsgId);
-    bool  ReleaseKeyboardCapture();
-
+	
 protected:
-	Object*  _findChildObjectItem(const TCHAR* szobjId);
-	void  _drawNcChildObject(IRenderTarget*, RenderContext& roc);
-	void  _parseLayoutAttribute(IMapAttribute* pMapAttrib);
+	Object*    _findChildObjectItem(const TCHAR* szobjId);
+	void       _drawNcChildObject(IRenderTarget*, RenderContext& roc);
+	void       _parseLayoutAttribute(IMapAttribute* pMapAttrib);
+
+    //////////////////////////////////////////////////////////////////////////
+    //  属性
+    //////////////////////////////////////////////////////////////////////////
 
 public:
 	// 将xml用的配置转成对象的属性，注意，子类重载该函数时，必须先调用父类的该方法
@@ -279,20 +343,7 @@ public:
 	// 注意，子类重载该函数时，必须先调用父类的该方法
 	void  ResetAttribute();
 
-	// 在布局过程中返回自己所需要的大小(包括padding+margin)。如果没有指定大小，
-	// 则会调用GetAutoSize获取自适应大小。
-	// 在Panel::GetAutoSize会去调用m_pLayout->Measure，Layout又会去再调用
-	// LayoutManager子类的MeasureChildObject虚函数
-	SIZE  GetDesiredSize();
-
 	void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA*  pData);
-
-protected:
-	// 在没有指定控件的大小(width or height)的情况下，由自己计算自己所需要的大小，
-	// 返回值不包括margin，margin的计算由GetDesiredSize完成，但padding则由子对象自己完成
-    // SIZE  GetAutoSize() { SIZE s = {0,0}; return s; }
-
-public:
 //	bool  SetChildObjectAttribute(Object* pChildObj, const String& strPrefix, IMapAttribute* pMapAttrib, bool bReload);
     void  SetAttributeByPrefix(const TCHAR* szPrefix, IMapAttribute* pMatAttrib, bool bReload, bool bErase);
     void  ParseStyleAndSetAttribute(IMapAttribute* pMatAttrib, bool bReload);
@@ -301,48 +352,63 @@ public:
     void  AddAttribute(const TCHAR* szKey, const TCHAR*  szValue);
     void  GetMapAttribute(IMapAttribute** ppMapAttribute);  // 需要release
 
+    //////////////////////////////////////////////////////////////////////////
+    // 消息处理
+    //////////////////////////////////////////////////////////////////////////
 protected:
-    void*  QueryInterface(const IID* pIID);
-	void  OnEraseBkgnd( IRenderTarget* );
-	BOOL  OnSetCursor( HWND hWnd, UINT nHitTest, UINT message );
-	UINT  OnHitTest( POINT* pt );
-	void  OnThemeChanged();
-    LRESULT  OnSkinMaterialChanged(UINT, WPARAM, LPARAM);
-    void  OnVisibleChanged(BOOL bVisible, IObject* pObjChanged);
-    void  OnRedrawObject();
-
-//////////////////////////////////////////////////////////////////////////
+    void*     QueryInterface(const IID* pIID);
+	void      OnEraseBkgnd( IRenderTarget* );
+	BOOL      OnSetCursor( HWND hWnd, UINT nHitTest, UINT message );
+	UINT      OnHitTest(POINT* pt, __out POINT* ptInChild);
+	void      OnThemeChanged();
+    LRESULT   OnSkinTextureChanged(UINT, WPARAM, LPARAM);
+    void      OnVisibleChanged(BOOL bVisible, IObject* pObjChanged);
+    void      OnRedrawObject();
 
 protected:
-    IObject* m_pIObject;
-    String   m_strID;                        // 该对象在XML中的标识
+	//////////////////////////////////////////////////////////////////////////
+	// virtual function
+	//////////////////////////////////////////////////////////////////////////
+
+	virtual void  virtualOnSize(UINT nType, UINT nWidth, UINT nHeight);
+	virtual void  virtualOnPostDrawObjectErasebkgnd(){};   // 用于CustomWindow更新窗口异形
+
+    //////////////////////////////////////////////////////////////////////////
+    // Member Var
+    //////////////////////////////////////////////////////////////////////////
+
+protected:
+
+    IObject*          m_pIObject;
+    IUIApplication*   m_pUIApplication;        // 该对象所在的App(为了实现多实例，将app不再做为全局变量，每个Object能够快速引用到app接口)
+    String            m_strId;                 // 该对象在XML中的标识
     
 #pragma region //坐标相关数据
-    CRect     m_rcParent;                    // 该对象的范围，相对于parent.对于Window对象是客户区域位置，即左上角为0，0
-    CRegion4  m_rcNonClient;                 // 如果没有滚动条、Header等其它占用空间的控件，m_rcNonClient即为m_rcPadding+m_rcBorder
-    CRegion4  m_rcMargin;
-    CRegion4  m_rcPadding;
-    CRegion4  m_rcBorder;       
-    HRGN      m_hRgn;                        // （未使用）如果该对象是一个不规则区域，必须设置该值，该值对window类型对象无效. rgn是相对于窗口左上角的。
-    ILayoutParam*  m_pLayoutParam;           // 布局参数。由Object负责释放
+    CRect             m_rcParent;              // 该对象的范围，相对于parent的client区域.对于Window对象是客户区域位置，即左上角为0，0
+    CRegion4          m_rcNonClient;           // 如果没有滚动条、Header等其它占用空间的控件，m_rcNonClient即为m_rcPadding+m_rcBorder
+    CRegion4          m_rcMargin;
+    CRegion4          m_rcPadding;
+    CRegion4          m_rcBorder;       
+    HRGN              m_hRgn;                  // （未使用）如果该对象是一个不规则区域，必须设置该值，该值对window类型对象无效. rgn是相对于窗口左上角的。
+    ILayoutParam*     m_pLayoutParam;          // 布局参数。由Object负责释放
 #pragma endregion
 
-    int      m_nCanRedrawRef;                // TODO: 用于解决多处调用SetRedraw(false)后，必须所有地方放开SetRedraw(true)才能进行绘制
-    UINT     m_nStateBit;                    // 对象的状态，如visible/disable
-    UINT     m_nStyle;                       // 普通样式
-    UINT     m_nStyle2;                      // 控件样式，与的关系
-    LPVOID   m_pUserData;                    // 自定义数据（目前是用于在UIBuilder做数据关联）
-    IMapAttribute*  m_pIMapAttributeRemain;  // 用于扩展。未解析的属性，例如Tooltip
+    int               m_nCanRedrawRef;         // TODO: 用于解决多处调用SetRedraw(false)后，必须所有地方放开SetRedraw(true)才能进行绘制
+    UINT              m_nStateBit;             // 对象的状态，如visible/disable
+    UINT              m_nStyle;                // 普通样式
+    UINT              m_nStyle2;               // 控件样式，与的关系
+    int               m_nzOrder;               // 控件z序，用于实现控件重叠时的刷新判断依据
+    LPVOID            m_pUserData;             // 自定义数据（目前是用于在UIBuilder做数据关联）
+    IMapAttribute*    m_pIMapAttributeRemain;  // 用于扩展。未解析的属性，例如Tooltip
 
-    IRenderBase*      m_pBkgndRender;        // 背景渲染
-    IRenderBase*      m_pForegndRender;      // 前景渲染
-    ITextRenderBase*  m_pTextRender;         // 文字渲染
-    IUICursor*        m_pCursor;             // 对象的鼠标样式
-    Object3DWrap*     m_pObject3DWrap;       // 3d包装器
-    RenderLayer2*     m_pRenderLayer;        // 该对象是否创建了一个layer
+    IRenderBase*      m_pBkgndRender;          // 背景渲染
+    IRenderBase*      m_pForegndRender;        // 前景渲染
+    ITextRenderBase*  m_pTextRender;           // 文字渲染
+    IUICursor*        m_pCursor;               // 对象的鼠标样式
+    Object3DWrap*     m_pObject3DWrap;         // 3d包装器
+    RenderLayer2*     m_pRenderLayer;          // 该对象是否创建了一个layer
     
-    void**  m_ppOutRef;                      // 为了解决一个类成员对象，有可能被自己的父对象删除后，这个类却不知道，再删除该对象时崩溃了.
-    IUIApplication*  m_pUIApplication;       // 该对象所在的App(为了实现多实例，将app不再做为全局变量，每个Object能够快速引用到app接口)
+    void**            m_ppOutRef;              // 为了解决一个类成员对象，有可能被自己的父对象删除后，这个类却不知道，再删除该对象时崩溃了.
 };
 
 }

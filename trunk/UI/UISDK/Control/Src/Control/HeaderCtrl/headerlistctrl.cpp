@@ -149,7 +149,7 @@ void  HeaderListCtrl::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 
     IUIApplication*  pUIApp = m_pIHeaderListCtrl->GetUIApplication();
     ITextRenderBase*  pTextRender = NULL;
-    pMapAttrib->GetAttr_TextRenderBase(XML_TEXTRENDER_TYPE, true, pUIApp, static_cast<IObject*>(m_pIHeaderListCtrl), &pTextRender);
+    pMapAttrib->GetAttr_TextRenderBase(NULL, XML_TEXTRENDER_TYPE, true, pUIApp, static_cast<IObject*>(m_pIHeaderListCtrl), &pTextRender);
     if (pTextRender)
     {
         m_pIHeaderListCtrl->SetTextRender(pTextRender);
@@ -326,12 +326,11 @@ IListItemBase* HeaderListCtrl::HitTest(POINT ptWindow, HEADERLISTCTRL_HITTEST* p
     // 转换为内部坐标
 
     POINT pt;
-    m_pIHeaderListCtrl->WindowPoint2ObjectPoint(&ptWindow, &pt);
+    m_pIHeaderListCtrl->WindowPoint2ObjectPoint(&ptWindow, &pt, true);
     if (FALSE == rcClient.PtInRect(pt))
         return NULL;
 
     m_pIHeaderListCtrl->ObjectPoint2ObjectClientPoint(&pt, &pt);
-    pt.x += GetHScrollOffset();
 
     int nDividerWidth = HEADER_DIVIDER_EXTENT_SIZE;
     int x1 = m_pIHeaderListCtrl->GetNonClientL();
@@ -614,6 +613,10 @@ int  HeaderListCtrl::GetColumnTotalWidth()
     return nRet;
 }
 
+ColumnsInfoImpl*  HeaderListCtrl::GetColumnsInfo() 
+{
+    return &m_pColumnsInfo; 
+}
 
 LRESULT  HeaderListCtrl::OnHitTest(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {

@@ -7,7 +7,6 @@ namespace UI
 {
 interface IWindowMouseMgr;
 interface IWindowKeyboardMgr;
-interface IRenderChain;
 
 #define ANCHOR_NONE        0
 #define ANCHOR_LEFT        0x0001
@@ -78,15 +77,15 @@ struct  SyncWindowData
 
 
 class WindowBase;
-interface UISDKAPI IWindowBase : public IWindowRenderLayer
+interface UISDKAPI IWindowBase : public IPanel
 {
     UI_DECLARE_Ixxx_INTERFACE(IWindowBase, WindowBase)
 
     WindowBase*  GetWindowBaseImpl() { return m_pWindowBaseImpl; }
 
     HWND  GetHWND();
-    HDC   GetRenderChainMemDC();
-    IRenderChain*  GetIRenderChain();
+    IWindowRender*  GetIWindowRender();
+	ISkinRes*  GetSkinRes();
 
     BOOL  IsChildWindow();
     void  ShowWindow();
@@ -105,21 +104,21 @@ interface UISDKAPI IWindowBase : public IWindowRenderLayer
     bool  Create(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent=NULL, RECT* prc=NULL);
     void  Attach(IUIApplication* pUIApp, HWND hWnd, const TCHAR* szID);
     void  Detach();
-    long  DoModal(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent );
+    long  DoModal(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent, bool canResize);
     long  DoModal(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndParent);
-    HWND  DoModeless(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent );
+    HWND  DoModeless(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent, bool canResize);
     HWND  DoModeless(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndParent);
     void  EndDialog(INT_PTR);
 
     void  CommitDoubleBuffet2Window(HDC hDCWnd, RECT* prcCommit, int nRectCount=1);
     void  SaveMemBitmap(TCHAR* szFile);
-    void  DrawMemBitmap(HDC hDC, RECT* prc);
+    void  DrawMemBitmap(HDC hDC, RECT* prc, bool bAlphaBlend);
 
     void  CalcWindowSizeByClientSize( SIZE sizeClient, SIZE* pSizeWindow );
     void  CalcClientRectByWindowRect( RECT* rcWindow, RECT* rcClient );
 
-    void  AddCommitWindowBufferListener(ICommitWindowBufferListener* p);
-    void  RemoveCommitWindowBufferListener(ICommitWindowBufferListener* p);
+//     void  AddCommitWindowBufferListener(ICommitWindowBufferListener* p);
+//     void  RemoveCommitWindowBufferListener(ICommitWindowBufferListener* p);
 
     bool  AddAnchorItem(const SyncWindowData& data);
     void  HideAllAnchorItem();

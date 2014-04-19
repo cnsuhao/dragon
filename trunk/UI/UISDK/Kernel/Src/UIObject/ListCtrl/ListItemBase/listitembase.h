@@ -64,6 +64,7 @@ public:
     void  SetPrevSelection(ListItemBase* p){ m_pPrevSelection = p; }
 	void  AddChild(ListItemBase* p);
 	void  AddChildFront(ListItemBase* p);
+    void  RemoveMeInTheTree();
     
     const CRect*  GetParentRect() { return &m_rcParent; }
     void  GetParentRect(CRect* prc){ prc->CopyRect(&m_rcParent); }
@@ -95,6 +96,7 @@ public:
     void  SetIconRenderType(RENDER_TYPE eType);
     int   GetItemRenderState();
     void  SetIconFromFile(const TCHAR* szIconPath);
+    void  SetIconFromImageId(const TCHAR* szImageId);
 
     UINT  GetItemState(); 
     UINT  GetItemDelayOp();

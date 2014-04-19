@@ -12,94 +12,51 @@ enum TRIANGLE_TYPE
 	TRIANGLE_FLAT_BOTTOM, // 平底
 };
 
+
+// TextMapping Mode
+#define  TextMapping_Bilinear     0x0001
+#define  TextMapping_AlphaBlend   0x0010
+
 class TextureMappingBase
 {
 public:
-    TextureMappingBase()
-    {
-        m_pDestBuffer = NULL;
-        m_pTexture = NULL;
-        memset(&m_quad, 0, sizeof(Quad));
-        memset(m_point, 0, sizeof(TexturePoint)*4);
-    }
-    virtual ~TextureMappingBase()
-    {
+    TextureMappingBase();
+    virtual ~TextureMappingBase(){}
 
-    }
+    virtual void  GetTexturePadding(RECT* prc);
 
-    virtual void Do()
-	{
+    virtual void  Do(POINT*  ptOffset, RECT* prcClip);
+	void  DoTriangle(TexturePoint* V0, TexturePoint* V1, TexturePoint* V2);
+	virtual void  DoFlatTopTriangle(TexturePoint* A, TexturePoint* B, TexturePoint* C){}
+	virtual void  DoFlatBottomTriangle(TexturePoint* A, TexturePoint* B, TexturePoint* C){}
+	virtual void  DoGeneralTriangle(TexturePoint* A, TexturePoint* B, TexturePoint* C){}
 
-	}
-    virtual void SetQuad(Quad* pQuad, RECT* prc) 
-	{
-		if (pQuad)
-		{
-			memcpy(&m_quad, pQuad, sizeof(Quad));
-			m_point[0].xt = pQuad->Ax;
-			m_point[0].yt = pQuad->Ay;
-            m_point[0].z  = pQuad->Az;
+    virtual void  SetQuad(Quad* pQuad, RECT* prc);
+    virtual void  MousePoint2TexturePoint(POINT pt, float* pfx, float* pfy){UIASSERT(0);};
 
-			m_point[1].xt = pQuad->Bx;
-			m_point[1].yt = pQuad->By;
-            m_point[1].z  = pQuad->Bz;
-
-			m_point[2].xt = pQuad->Cx;
-			m_point[2].yt = pQuad->Cy;
-            m_point[2].z  = pQuad->Cz;
-
-			m_point[3].xt = pQuad->Dx;
-			m_point[3].yt = pQuad->Dy;
-            m_point[3].z  = pQuad->Dz;
-		}
-		if (prc)
-			m_rect.CopyRect(prc);
-	}
-    
-    void SetSrcBuffer(Image* pBuffer)
-    {
-        m_pTexture = pBuffer;
-    }
-    void SetDstBuffer(Image* pBuffer)
-    {
-        m_pDestBuffer = pBuffer;
-    }
-    void SetTexturePointA(int x, int y, int u, int v)
-    {
-        SetTexturePoint(0, x, y, u, v);
-    }
-    void SetTexturePointB(int x, int y, int u, int v)
-    {
-        SetTexturePoint(1, x, y, u, v);
-    }
-    void SetTexturePointC(int x, int y, int u, int v)
-    {
-        SetTexturePoint(2, x, y, u, v);
-    }
-    void SetTexturePointD(int x, int y, int u, int v)
-    {
-        SetTexturePoint(3, x, y, u, v);
-    }
+    void SetSrcBuffer(ImageData* pBuffer);
+    void SetDstBuffer(ImageData* pBuffer);
+    void SetTexturePointA(int u, int v);
+    void SetTexturePointB(int u, int v);
+    void SetTexturePointC(int u, int v);
+    void SetTexturePointD(int u, int v);
 
 private:
-    void SetTexturePoint(int nIndex, int x, int y, int u, int v)
-    {
-        if (nIndex < 0 || nIndex > 3)
-            return;
-
-        m_point[nIndex].x = x;
-        m_point[nIndex].y = y;
-        m_point[nIndex].u = u;
-        m_point[nIndex].v = v;
-    }
+    void SetTexturePoint(int nIndex, int u, int v);
 
 public:
-    Image*  m_pDestBuffer;
-    Image*  m_pTexture;
+    ImageData  m_destBuffer;
+    ImageData  m_texture;
 
-	CRect  m_rect;             // 控件的窗口坐标
-    Quad   m_quad;             // 映射后的结果坐标
-    TexturePoint  m_point[4];  // 源数据坐标及纹理坐标
+	CRect  m_rect;             // 原坐标
+    Quad   m_quad;             // 3d映射后的坐标
+    TexturePoint  m_texturePoint[4];  // 纹理坐标
+
+	long  m_lTextMappingMode;
+
+	//////////////////////////////////////////////////////////////////////////
+	POINT  m_ptOffset;
+	CRect  m_rcClip;
 };
 
 }

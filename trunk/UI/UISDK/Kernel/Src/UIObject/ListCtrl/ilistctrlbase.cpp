@@ -88,6 +88,14 @@ void  IListCtrlBase::ExpandItem(IListItemBase* pItem, bool bUpdate)
         return;
     m_pListCtrlBaseImpl->ExpandItem(pItem->GetImpl(), bUpdate); 
 }
+void  IListCtrlBase::CollapseAll(bool bUpdate)
+{
+    m_pListCtrlBaseImpl->CollapseAll(bUpdate);
+}
+void  IListCtrlBase::ExpandAll(bool bUpdate)
+{
+    m_pListCtrlBaseImpl->ExpandAll(bUpdate);
+}
 
 
 IListItemBase*  IListCtrlBase::GetHoverItem()           
@@ -164,9 +172,9 @@ IObject*  IListCtrlBase::GetFocusObject()
     return NULL;
 }
 
-IListItemBase*  IListCtrlBase::HitTest(POINT ptWindow)         
+IListItemBase*  IListCtrlBase::HitTest(POINT ptWindow, __out POINT*  ptItem)         
 { 
-    ListItemBase* p = m_pListCtrlBaseImpl->HitTest(ptWindow); 
+    ListItemBase* p = m_pListCtrlBaseImpl->HitTest(ptWindow, ptItem); 
     if (p)        
         return p->GetIListItemBase();
     else
@@ -310,22 +318,22 @@ void  IListCtrlBase::SetInvalidateAllItems()                                { m_
 void  IListCtrlBase::ClearInvalidateItems()                                 { m_pListCtrlBaseImpl->ClearInvalidateItems(); }
 int   IListCtrlBase::GetInvalidateItemCount()                               { return m_pListCtrlBaseImpl->GetInvalidateItemCount(); }
 void  IListCtrlBase::Refresh() { m_pListCtrlBaseImpl->Refresh(); }
-void  IListCtrlBase::RedrawItem(IListItemBase** ppItemArray, int nCount) 
-{
-    if (nCount < 0)
-        return;
-
-    ListItemBase** pp = new ListItemBase*[nCount];
-    for (int i = 0; i < nCount; i++)
-    {
-        if (ppItemArray[i])
-        {
-            pp[i] = ppItemArray[i]->GetImpl();
-        }
-    }
-    m_pListCtrlBaseImpl->RedrawItem(pp, nCount);
-    SAFE_ARRAY_DELETE(pp);
-}
+// void  IListCtrlBase::RedrawItem(IListItemBase** ppItemArray, int nCount) 
+// {
+//     if (nCount < 0)
+//         return;
+// 
+//     ListItemBase** pp = new ListItemBase*[nCount];
+//     for (int i = 0; i < nCount; i++)
+//     {
+//         if (ppItemArray[i])
+//         {
+//             pp[i] = ppItemArray[i]->GetImpl();
+//         }
+//     }
+//     m_pListCtrlBaseImpl->RedrawItem(pp, nCount);
+//     SAFE_ARRAY_DELETE(pp);
+// }
 void  IListCtrlBase::RedrawItemByInnerCtrl(IRenderTarget* pRenderTarget, RenderContext* pContext, IListItemBase* pItem) 
 { m_pListCtrlBaseImpl->RedrawItemByInnerCtrl(pRenderTarget, pContext, pItem?pItem->GetImpl():NULL); }
 void  IListCtrlBase::MakeItemVisible(IListItemBase* pItem, bool* pbNeedUpdate) 

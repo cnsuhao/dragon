@@ -116,6 +116,7 @@ public:
 
     void  SetIconFromFile(const TCHAR* szIconPath);
     void  SetIconFromHBITMAP(HBITMAP hBitmap);
+    void  SetIconFromImageId(const TCHAR* szImageId);
 
 protected:
     HRESULT FinalConstruct(IUIApplication* p);

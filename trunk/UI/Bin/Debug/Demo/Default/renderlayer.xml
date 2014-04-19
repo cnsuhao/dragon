@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<skin>
+  <layout>
+    <CustomWindow id="playlistdlg" resizecapability="all"
+                     width="270" height="165" minwidth="270" minheight="165"
+                     layout.left="300" layout.top="468"
+                     bkgnd.render.type="image" bkgnd.render.image="playlist_skin.bmp" bkgnd.render.image.9region="100,60,50,15,15,15,20,15"
+                     xbkgnd.render.image.drawtype="stretch"
+                     xtransparent.type="maskcolor" xtransparent.maskcolor="maskcolor" xtransparent.maskcolor.9region="14,-14,14,0,0,0,0,0">
+    </CustomWindow>
+    <Window id="renderlayer" graphics="gdiplus" minwidth="500" minheight="500" bkgnd.render.type="color" bkgnd.render.color="0xffffffff">
+          <xButton id="switch_flash" istransparent="1" layer="1" layout.left="10" layout.top="10" width="100" height="40" text="switch_flash"
+                       bkgnd.render.type="imagelist" bkgnd.render.image="btn" bkgnd.render.image.drawtype="stretch" bkgnd.render.image.9region="10"/>
+      
+      <ScrollPanel id="scrollpanel" viewsize="1000,1000" istransparent="0" vscrollbar.type="SystemVScrollBar" hscrollbar.type="SystemHScrollBar" 
+                   layout.left="50" layout.top="50" layout.right="50" layout.bottom="50"
+                   bkgnd.render.type="color" bkgnd.render.color="0xfff0f0f0">
+        <Button id="button1" zorder="1" istransparent="1" layout.left="10" layout.top="10" width="100" height="30" text="button1"
+                bkgnd.render.type="imagelist" bkgnd.render.image="btn" bkgnd.render.image.drawtype="stretch" bkgnd.render.image.9region="10"/>
+        <Button id="button2" zorder="2" istransparent="1" layout.left="20" layout.top="15" width="100" height="30" text="button2"/>
+        <SliderCtrl id="slider" layout.left="10" layout.top="50" width="300" height="30" thumbarrow="bottom"/>
+
+        <Panel id="panel" zorder="1" istransparent="1" layer="1" layout.left="10" layout.top="100" width="500" height="280" 
+               bkgnd.render.type="color" bkgnd.render.color="0xffab23b4">
+          <FlashWrap zorder="-1" id="flash" wmode="opaque" layout.left="0" layout.top="0" layout.right="0" layout.bottom="0"/>
+          <Panel id="控件层" layer="1" zorder="1" layout.left="0" layout.top="0" layout.right="0" layout.bottom="0">
+            <Button id="switch_flash" istransparent="1" layout.left="10" layout.top="10" width="160" height="40" text="switch_flash"
+                   bkgnd.render.type="imagelist" bkgnd.render.image="btn" bkgnd.render.image.drawtype="stretch" bkgnd.render.image.9region="10"/>
+            <Button id="button_jump" zorder="1" istransparent="1" layout.left="180" layout.top="180" width="175" height="30" text="点不着" bkgnd.render.type="imagelist"
+                    bkgnd.render.image="btn" bkgnd.render.image.drawtype="stretch" bkgnd.render.image.9region="10"/>
+            <Edit id="edit" zorder="2" istransparent="1" layout.left="180" layout.top="140" width="180" height="22" text="button2"
+                  bkgnd.render.type="color" bkgnd.render.border.color="0xffffffff" bkgnd.render.color="0xff808080" bkgnd.render.border="1,1,1,1" padding="2"/>
+          </Panel>
+          <PictureCtrl id="灰色遮罩层" zorder="2" layout.left="0" layout.top="50" layout.right="0" layout.bottom="50"
+                         bkgnd.render.type="image" bkgnd.render.image="layer_mask" bkgnd.render.image.drawtype="stretch"
+                         bkgnd.render.image.9region="0,5,0,5"/>
+        </Panel>
+      </ScrollPanel>
+    </Window>
+  </layout>
+</skin>
+
+<!--
+      <XPictureCtrl id="pic1" layout.left="100" layout.top="100"  bkgnd.render.type="image" bkgnd.render.image="btn"/>
+      <Button id="button1" istransparent="1" layout.left="10" layout.top="10" width="75" height="25" text="button" bkgnd.render.type="imagelist" bkgnd.render.image="btn"/>
+      <Button id="button2" istransparent="1" layout.left="100" layout.top="10" width="75" height="25" text="button" />
+      <Panel zorder="1" id="" layout.left="10" layout.top="100" width="200" height="200" bkgnd.render.type="color" bkgnd.render.color="0xffab23b4">
+        
+        <FlashWrap zorder="-1" id="flash" wmode="opaque" layout.left="10" layout.top="10"/>
+        
+       
+        <PictureCtrl id="灰色遮罩层" zorder="1" layout.left="0" layout.top="0" layout.right="0" layout.bottom="0"
+                     bkgnd.render.type="image" bkgnd.render.image="layer_mask" bkgnd.render.image.drawtype="stretch"
+                     bkgnd.render.image.9region="0,5,0,5"/>
+      </Panel>
+      -->

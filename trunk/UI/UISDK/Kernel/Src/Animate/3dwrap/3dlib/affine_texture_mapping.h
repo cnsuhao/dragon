@@ -27,8 +27,6 @@ public:
     AffineTextureMapping();
     ~AffineTextureMapping();
 
-    virtual void  Do();
-
     struct MappingParam
     {
         int    yStart;
@@ -50,10 +48,9 @@ public:
         float  kvRight; 
     };
 private:
-    void  DoTriangle(TexturePoint* V0, TexturePoint* V1, TexturePoint* V2);
-    void  DoFlatTopTriangle(TexturePoint* A, TexturePoint* B, TexturePoint* C);
-	void  DoFlatBottomTriangle(TexturePoint* A, TexturePoint* B, TexturePoint* C);
-    void  DoGeneralTriangle(TexturePoint* A, TexturePoint* B, TexturePoint* C);
+    virtual void  DoFlatTopTriangle(TexturePoint* A, TexturePoint* B, TexturePoint* C);
+	virtual void  DoFlatBottomTriangle(TexturePoint* A, TexturePoint* B, TexturePoint* C);
+    virtual void  DoGeneralTriangle(TexturePoint* A, TexturePoint* B, TexturePoint* C);
     void  _do_triangle(MappingParam* pParam);
 };
 

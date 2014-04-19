@@ -197,11 +197,35 @@
 		<class id="changeskin.preview.btn" bkgnd.render.type="image" bkgnd.render.image.drawtype="stretch" foregnd.render.type="imagelist" foregnd.render.image="skinbtn_mouseover" foregnd.render.image.drawtype="stretch" foregnd.render.image.9region="5" drawfocus="0" cursor="idc_hand" margin="1"/>
 		<class id="changeskin.bigpreview.btn" inherit=".changeskin.preview.btn" foregnd.render.image="skinbtn_mouseover2"/>
 		<class id="checkimagebtn" foregnd.render.imagelist.alphaanimate="1" autosize="content" drawfocus="0" istransparent="1" foregnd.render.type="imagelist" foregnd.render.image="checkbox_icon"/>
-		<Menu border="7" itemheight="22" bkgnd.render.type="image" bkgnd.render.image="menu_bkg.png" bkgnd.render.image.9region="35,10,10,10" bkgnd.render.image.drawtype="stretch" foregnd.render.type="imagelist" foregnd.render.image="menu_highlight.png" foregnd.render.image.drawtype="stretch" foregnd.render.image.9region="3" icongutterwidth="24" textleftindent="10" textrightindent="0" xseparatorheight="3" submenugap="-8" separator.render.type="image" separator.render.image="menu_cutling.png" separator.render.image.drawtype="stretch" triangle.render.type="image" triangle.render.image="menu_arrow.png" triangle.render.image.drawtype="center" textrender.type="colorlist" textrender.color="black;white;white;gray" xradioicon.render.type="image" xradioicon.render.image="menu_check_icon.png" xradioicon.render.image.drawtype="center" xcheckicon.render.type="image" xcheckicon.render.image="menu_check.png" xcheckicon.render.image.drawtype="center" xradiocheckiconbk.render.type="image" xradiocheckiconbk.render.image="menu_check_bk.png" xradiocheckiconbk.render.image.drawtype="center" transparent.type="layered" transparent.maskalpha="250"/>
+		<Menu border="7" layered="1" itemheight="22" bkgnd.render.type="image" 
+          bkgnd.render.image="menu_bkg.png" bkgnd.render.image.9region="35,10,10,10"
+          bkgnd.render.image.drawtype="stretch" foregnd.render.type="imagelist"
+          foregnd.render.image="menu_highlight.png" foregnd.render.image.drawtype="stretch"
+          foregnd.render.image.9region="3" icongutterwidth="24" 
+          textleftindent="10" textrightindent="0" xseparatorheight="3"
+          submenugap="-8" separator.render.type="image"
+          separator.render.image="menu_cutling.png" 
+          separator.render.image.drawtype="stretch"
+          triangle.render.type="image" triangle.render.image="menu_arrow.png" 
+          triangle.render.image.drawtype="center"
+          textrender.type="colorlist" 
+          textrender.color="black;white;white;gray"
+          xradioicon.render.type="image"
+          xradioicon.render.image="menu_check_icon.png"
+          xradioicon.render.image.drawtype="center"
+          xcheckicon.render.type="image"
+          xcheckicon.render.image="menu_check.png"
+          xcheckicon.render.image.drawtype="center" 
+          xradiocheckiconbk.render.type="image" 
+          xradiocheckiconbk.render.image="menu_check_bk.png" 
+          xradiocheckiconbk.render.image.drawtype="center" 
+          popupwnd.graphics="gdiplus" 
+          popupwnd.transparent.type="layered"
+          popupwnd.transparent.maskalpha="250"/>
 		<class id="menu_item" icon.render.type="imagelistitem"/>
 		<class id="login_status_menu_item" inherit=".menu_item" icon.render.image="login_status" icon.render.image.drawtype="center"/>
 		<ContactList bkgnd.render.type="null" istransparent="1" foregnd.render.type="colorlist" foregnd.render.color=";contactlist_contact_hover_bkg;contactlist_contact_press_bkg;;contactlist_contact_press_bkg;contactlist_contact_press_bkg;contactlist_contact_press_bkg;;" expandicon.render.type="imagelist" expandicon.render.image="contactlistexpandicon" expandicon.render.image.drawtype="center"/>
-		<ComboBox istransparent="1" padding="8,0,20,0" bkgnd.render.type="imagelist" bkgnd.render.image="comboboxbk" bkgnd.render.image.drawtype="stretch" bkgnd.render.image.9region="10,5,30,20" bkgnd.render.imagelist.alphaanimate="1" listbox.bkgnd.render.type="image" listbox.bkgnd.render.image="combobox_listbox_bk" listbox.bkgnd.render.image.drawtype="stretch" listbox.bkgnd.render.image.9region="5" listbox.istransparent="1" listbox.maxheight="120" listbox.border="3" listbox.transparent.type="layered"/>
+		<ComboBox istransparent="1" padding="8,0,20,0" bkgnd.render.type="imagelist" bkgnd.render.image="comboboxbk" bkgnd.render.image.drawtype="stretch" bkgnd.render.image.9region="10,5,30,20" bkgnd.render.imagelist.alphaanimate="1" listbox.bkgnd.render.type="image" listbox.bkgnd.render.image="combobox_listbox_bk" listbox.bkgnd.render.image.drawtype="stretch" listbox.bkgnd.render.image.9region="5" listbox.istransparent="1" listbox.maxheight="120" listbox.border="3"/>
 		<SystemVScrollBar bkgnd.render.type="null" width="10" bkgnd.render.image="vscrollbar_bkgnd" bkgnd.render.image.drawtype="stretch" bkgnd.render.image.9region="2,5,2,5" istransparent="1" thumbbtn.bkgnd.render.type="imagelist" thumbbtn.bkgnd.render.image="vscrollbar_thumb" thumbbtn.bkgnd.render.image.drawtype="stretch" thumbbtn.bkgnd.render.image.9region="2,5,2,5" thumbbtn.istransparent="1" nolinebtn="true"/>
 	</style>
 </skin>

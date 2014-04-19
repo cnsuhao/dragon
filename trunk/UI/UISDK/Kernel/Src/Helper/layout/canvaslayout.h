@@ -17,6 +17,7 @@ public:
     virtual LAYOUTTYPE  GetLayoutType() { return LAYOUT_TYPE_CANVAS; }
     virtual SIZE  CalcDesiredSize();
     virtual void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
+    virtual bool  IsSizedByContent();
 
     static int  ParseAlignAttr(const TCHAR*);
 public:

@@ -55,9 +55,9 @@ void  ScrollPanel::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 //
 // 1. 指定了viewSize，直接传递viewSize给滚动条作为range
 // 2. 没有指定viewSize，则使用DesiredSize作为滚动条range
-void  ScrollPanel::OnSize(UINT nType, int cx, int cy)
+void  ScrollPanel::virtualOnSize(UINT nType, UINT cx, UINT cy)
 {
-    Panel::OnSize(nType, cx, cy);
+    Panel::virtualOnSize(nType, cx, cy);
 
     SIZE sizeContent = {0, 0};
     if (m_sizeView.cx != NDEF && m_sizeView.cy != NDEF)

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "UISDK\Kernel\Inc\Interface\iwindowmousemgr.h"
 #include "UISDK\Kernel\Src\Helper\mousekeyboard\mousemanager.h"
-#include "UISDK\Kernel\Src\Helper\mousekeyboard\keyboardmanager.h"
 #include "UISDK\Kernel\Src\Base\Object\object.h"
 #include "UISDK\Kernel\Inc\Interface\iwindow.h"
 

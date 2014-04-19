@@ -2,7 +2,19 @@
 
 namespace UI
 {
-	
+// 1. 控件设置一个class样式：
+//    styleclass="imagebtn" 
+// 
+// 2. Tag 样式
+//       <CustomWindow font="normal" transparentrgn.type="4corner" transparentrgn.9region="5"/>
+// 
+// 3. Id 样式 
+//       <id id="imagebtn" xxx="yyy"/>
+//
+// 4. class 样式
+//       <class id="imagebtn" xxx="yyy"/>
+//
+
 class StyleResItem
 {
 public:

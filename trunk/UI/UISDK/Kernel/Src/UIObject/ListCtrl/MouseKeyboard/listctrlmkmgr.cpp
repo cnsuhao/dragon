@@ -415,24 +415,36 @@ void ListCtrlMKMgrBase::OnRemoveAll()
 
 void  ListCtrlMKMgrBase::OnRemoveItem(ListItemBase* pItem)
 {
-    if (m_pItemHover == pItem)
+    if (m_pItemHover)
     {
-        m_pItemHover = NULL;
+        if (m_pItemHover == pItem || pItem->IsMyChildItem(m_pItemHover, true))
+        {
+            m_pItemHover = NULL;
+        }
     }
 
-    if (m_pItemPress == pItem)
+    if (m_pItemPress )
     {
-        m_pItemPress = NULL;
+        if (m_pItemPress == pItem || pItem->IsMyChildItem(m_pItemPress, true))
+        {
+            m_pItemPress = NULL;
+        }
     }
 
-    if (m_pItemFocus == pItem)
+    if (m_pItemFocus)
     {
-        ListItemBase*  pNextItem = pItem->GetNextVisibleItem();
-        if (NULL == pNextItem)
-            pNextItem = pItem->GetPrevVisibleItem();
-        
-        m_pItemFocus = NULL; // 避免SetFocusItem中去刷新pItem，造成崩溃
-        SetFocusItem(pNextItem);
+        if (m_pItemFocus == pItem || pItem->IsMyChildItem(m_pItemFocus, true))
+        {
+            ListItemBase*  pNextItem = NULL;
+            if (pItem->GetNextItem())
+                pNextItem = m_pListCtrlBase->FindVisibleItemFrom();
+
+            if (NULL == pNextItem)
+                pNextItem = pItem->GetPrevVisibleItem();
+            
+            m_pItemFocus = NULL; // 避免SetFocusItem中去刷新pItem，造成崩溃
+            SetFocusItem(pNextItem);
+        }
     }
 
     // 从selection列表中删除，放在最后通知sel changed
@@ -528,16 +540,11 @@ ListItemBase*  ListCtrlMKMgrBase::GetItemByPos(POINT ptWindow)
 
     // 1. 转换为内部坐标
     POINT pt = {0};
-    m_pListCtrlBase->WindowPoint2ObjectPoint(&ptWindow, &pt);
+    m_pListCtrlBase->WindowPoint2ObjectPoint(&ptWindow, &pt, true);
     if (FALSE == rcClient.PtInRect(pt))
         return NULL;
 
-    m_pListCtrlBase->ObjectPoint2ObjectClientPoint(&pt, &pt);
-
-    int nxOffset=0, nyOffset=0;
-    m_pListCtrlBase->GetScrollOffset(&nxOffset, &nyOffset);
-    pt.x += nxOffset;
-    pt.y += nyOffset;
+	Object::ObjectPoint2ObjectClientPoint(m_pListCtrlBase, &pt, &pt);
 
     UIMSG  msg;
     msg.message = UI_LCM_HITTEST;

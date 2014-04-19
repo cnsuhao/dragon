@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <skin>
   <layout>
-    <Window id="imageviewdlg">
+    <Window id="imageviewdlg" bkgnd.render.type="color" bkgnd.render.color="dlg_bkg">
       <Button id="btn_add"  text="add" layout.left="10" layout.top="10" width="100" height="24"/>
       <Button id="btn_del"  text="del" layout.left="110" layout.top="10" width="100" height="24"/>
       <ListView id="imagelistview" layout.left="10" layout.top="40" width="500" layout.bottom="10"/>

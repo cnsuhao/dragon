@@ -260,7 +260,7 @@ void ListView::UpdateHeaderCtrlPos()
 		m_pHeaderCtrl->SetObjectPos(
 			m_pHeaderCtrl->GetMarginL() + m_pIListView->GetBorderL(),
 			m_pHeaderCtrl->GetMarginT() + m_pIListView->GetBorderT(), 
-			m_pIListView->GetWidth()-m_pIListView->GetNonClientW(), nHeaderCtrlHeight, SWP_NOREDRAW);
+			m_pIListView->GetWidth()-m_pIListView->GetNonClientW(), nHeaderCtrlHeight, SWP_NOREDRAW|SWP_FORCESENDSIZEMSG);
 
         // TODO: 在这里设置一次是为了解决listview第一次显示时，headerctrl没有通知listview totalwidth的问题
         //       关键是headerctrl不知道第一次如何去通知。外部插入一列后，不一定就会updateitemrect

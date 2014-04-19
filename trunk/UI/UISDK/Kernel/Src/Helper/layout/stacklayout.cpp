@@ -307,7 +307,7 @@ void  StackLayout::ArrangeObject_Left(Object* pChildObj, int& nLeftCustom, int& 
         y + pChildObj->GetMarginT(), 
         size.cx - pChildObj->GetMarginW(), 
         h - pChildObj->GetMarginH(),
-        SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS);
+        SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS|SWP_FORCESENDSIZEMSG);
 
     nLeftCustom += size.cx + m_nGap;
 }
@@ -353,7 +353,7 @@ void  StackLayout::ArrangeObject_Right(Object* pChildObj, int& nLeftCustom, int&
         0 + pChildObj->GetMarginT(), 
         size.cx - pChildObj->GetMarginW(), 
         h - pChildObj->GetMarginH(),
-        SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS);
+        SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS|SWP_FORCESENDSIZEMSG);
 
     nRightCustom += size.cx + m_nGap;
 }
@@ -399,7 +399,7 @@ void  StackLayout::ArrangeObject_Top(Object* pChildObj, int& nTopCustom, int& nB
         nTopCustom + pChildObj->GetMarginT(), 
         w - pChildObj->GetMarginW(), 
         size.cy - pChildObj->GetMarginH(),
-        SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS);
+        SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS|SWP_FORCESENDSIZEMSG);
 
     nTopCustom += size.cy + m_nGap;
 }
@@ -444,7 +444,7 @@ void  StackLayout::ArrangeObject_Bottom(Object* pChildObj, int& nTopCustom, int&
         nPanelHeight - nBottomCustom - size.cy + pChildObj->GetMarginT(), 
         w - pChildObj->GetMarginW(), 
         size.cy - pChildObj->GetMarginH(),
-        SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS);
+        SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS|SWP_FORCESENDSIZEMSG);
 
     nBottomCustom += size.cy + m_nGap;
 }
@@ -573,5 +573,11 @@ SIZE  StackLayoutParam::CalcDesiredSize()
     return size;
 }
 
+bool  StackLayoutParam::IsSizedByContent()
+{
+    if (m_nConfigHeight != AUTO && m_nConfigWidth != AUTO)
+        return false;
 
+    return true;
+}
 }

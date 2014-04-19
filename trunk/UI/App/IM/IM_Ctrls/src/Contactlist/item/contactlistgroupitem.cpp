@@ -143,8 +143,8 @@ void  ContactListGroupItem::OnTimer(UINT_PTR nIDEvent, LPARAM lParam)
         {
             m_pTreeView->GetUIApplication()->KillTimer(nIDEvent);
         }
-        UI::IListItemBase* pArray[1] = {static_cast<UI::IListItemBase*>(m_pIContactListGroupItem)};
-        m_pTreeView->RedrawItem(pArray, 1);
+        m_pTreeView->InvalidateItem(static_cast<UI::IListItemBase*>(m_pIContactListGroupItem));
+        m_pTreeView->Refresh();
     }
     else if (1 == pItem->nId)
     {
@@ -155,7 +155,7 @@ void  ContactListGroupItem::OnTimer(UINT_PTR nIDEvent, LPARAM lParam)
             m_pTreeView->GetUIApplication()->KillTimer(nIDEvent);
             return;
         }
-        UI::IListItemBase* pArray[1] = {static_cast<UI::IListItemBase*>(m_pIContactListGroupItem)};
-        m_pTreeView->RedrawItem(pArray, 1);
+        m_pTreeView->InvalidateItem(static_cast<UI::IListItemBase*>(m_pIContactListGroupItem));
+        m_pTreeView->Refresh();
     }
 }

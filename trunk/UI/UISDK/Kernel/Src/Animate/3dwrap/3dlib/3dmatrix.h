@@ -17,4 +17,9 @@ namespace UI
 		float m10, float m11, float m12, float m13,
 		float m20, float m21, float m22, float m23,
 		float m30, float m31, float m32, float m33);
+
+	void  Mat_Move_4X4(MATRIX_4_4_PTR m, int x, int y, int z);
+	void  Mat_Rotate_4X4(MATRIX_4_4_PTR m, int x, int y, int z);
+	void  Mat_Scale_4X4(MATRIX_4_4_PTR m, int x, int y, int z);
+
 }

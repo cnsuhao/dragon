@@ -13,10 +13,25 @@ UI_IMPLEMENT_Ixxx_INTERFACE(INormalTreeItem, NormalTreeItem, TreeItem)
 UI_IMPLEMENT_Ixxx_INTERFACE(ICompoundTreeItem, CompoundTreeItem, TreeItem)
 UI_IMPLEMENT_Ixxx_INTERFACE2(INormalTreeItemShareData, NormalTreeItemShareData, IListItemTypeShareData);
 
-IRenderBase*  ITreeView::GetExpandIconRender()  { return m_pTreeViewImpl->GetExpandIconRender(); }
+IRenderBase*  ITreeView::GetExpandIconRender()  
+{
+    return m_pTreeViewImpl->GetExpandIconRender(); 
+}
 ITreeItem*  ITreeView::InsertNormalItem(UITVITEM* pItem, IListItemBase* pParent, IListItemBase* pInsertAfter, int nInsertFlags)
-{ return m_pTreeViewImpl->InsertNormalItem(pItem, pParent, pInsertAfter, nInsertFlags); }
+{
+    return m_pTreeViewImpl->InsertNormalItem(pItem, pParent, pInsertAfter, nInsertFlags); 
+}
 ITreeItem*  ITreeView::InsertNormalItem(const TCHAR* szText, IListItemBase* pParent, IListItemBase* pInsertAfter, int nInsertFlags)
-{ return m_pTreeViewImpl->InsertNormalItem(szText, pParent, pInsertAfter, nInsertFlags); }
+{ 
+    return m_pTreeViewImpl->InsertNormalItem(szText, pParent, pInsertAfter, nInsertFlags); 
+}
 
+int  INormalTreeItemShareData::GetImageWidth()
+{
+    return m_pNormalTreeItemShareDataImpl->GetImageWidth();
+}
+int  INormalTreeItemShareData::GetExpandIconWidth()
+{
+    return m_pNormalTreeItemShareDataImpl->GetExpandIconWidth();
+}
 }

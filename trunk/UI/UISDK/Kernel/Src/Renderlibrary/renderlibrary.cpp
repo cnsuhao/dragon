@@ -6,45 +6,9 @@
 #include "UISDK\Kernel\Src\Renderlibrary\gdiplus\gdiplusbitmap.h"
 #include "UISDK\Kernel\Src\Renderlibrary\gdiplus\gdiplusrender.h"
 #include "UISDK\Kernel\Src\Base\Object\object.h"
+#include "UISDK\Project\UI3D\inc\inc.h"
 
-//////////////////////////////////////////////////////////////////////////
-
-// 
-// IRenderFontListenerImpl::~IRenderFontListenerImpl()
-// {
-// 	m_listFontModifyListener.clear();
-// }
-// 
-// void IRenderFontListenerImpl::AddModifyListener(Object* p) 
-// {
-// 	if (NULL == p)
-// 		return;
-// 
-// 	list<Object*>::iterator iter = std::find(m_listFontModifyListener.begin(), m_listFontModifyListener.end(), p);
-// 	if (iter == m_listFontModifyListener.end())
-// 	{
-// 		m_listFontModifyListener.push_back(p);
-// 	}
-// }
-// void IRenderFontListenerImpl::RemoveModifyListener(Object* p) 
-// {
-// 	list<Object*>::iterator iter = std::find(m_listFontModifyListener.begin(), m_listFontModifyListener.end(), p);
-// 	if (iter != m_listFontModifyListener.end())
-// 	{
-// 		m_listFontModifyListener.erase(iter);
-// 	}
-// }
-// void IRenderFontListenerImpl::NotifyListener()
-// {
-// 	list<Object*>::iterator iter = m_listFontModifyListener.begin();
-// 	list<Object*>::iterator iterEnd = m_listFontModifyListener.end();
-// 	for (; iter != iterEnd; iter++)
-// 	{
-// 		UISendMessage(*iter, UI_WM_FONTMODIFIED, (WPARAM)static_cast<IRenderFont*>(this), 0);
-// 	}
-// }
-
-void RenderBitmapFactory::CreateInstance(GRAPHICS_RENDER_LIBRARY_TYPE eGraphicsRenderType, IMAGE_ITEM_TYPE eType, IRenderBitmap** ppOut)
+void RenderBitmapFactory::CreateInstance(IUIApplication* pUIApp, GRAPHICS_RENDER_LIBRARY_TYPE eGraphicsRenderType, IMAGE_ITEM_TYPE eType, IRenderBitmap** ppOut)
 {
 	if (NULL == ppOut)
 		return;
@@ -93,114 +57,36 @@ void RenderBitmapFactory::CreateInstance(GRAPHICS_RENDER_LIBRARY_TYPE eGraphicsR
 		}
 		break;
 
-#ifdef UI_D2D_RENDER
 	case GRAPHICS_RENDER_LIBRARY_TYPE_DIRECT2D:
 		{
-			Direct2DRenderBitmap::CreateInstance(ppOut);
+            if (!pUIApp)
+                return;
+
+            HMODULE  hModule = pUIApp->GetUI3DModule();
+            if (!hModule)
+                return;
+
+            funcUI3D_CreateD2DRenderBitmap func = (funcUI3D_CreateD2DRenderBitmap)GetProcAddress(hModule, "UI3D_CreateD2DRenderBitmap");
+            if (!func)
+            {
+                UIASSERT(0);
+                return;
+            }
+
+            func(eType, ppOut);
 		}
 		break;
-#endif
 	}
 
 }
  
-//////////////////////////////////////////////////////////////////////////
-
-
-//////////////////////////////////////////////////////////////////////////
-
-// IRenderTarget::IRenderTarget()
-// {
-// 	m_hWnd = NULL;
-// }
-// IRenderTarget::IRenderTarget(HDC hDC)
-// {
-// 	m_hWnd = NULL;
-// }	
-IRenderTarget::IRenderTarget(HWND hWnd)
-{
-	m_hWnd = hWnd;
-}
-
-void IRenderTarget::Release()
-{
-	delete this;
-}
-
-//////////////////////////////////////////////////////////////////////////
-
 
 //////////////////////////////////////////////////////////////////////////
 namespace UI
 {
 
-// 废弃，因为SendMessage不接受UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE这么大的消息ID
-// GRAPHICS_RENDER_LIBRARY_TYPE GetRenderLibraryType(HWND hWnd)
-// {
-// 	if (NULL == hWnd)
-// 		return GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
-// 
-// 	GRAPHICS_RENDER_LIBRARY_TYPE e = (GRAPHICS_RENDER_LIBRARY_TYPE)::SendMessage(hWnd, UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE, 0, 0);
-// 	if (GRAPHICS_RENDER_LIBRARY_TYPE_AUTO == e)
-// 	{
-// 		if (WS_EX_LAYERED & ::GetWindowLong(hWnd, GWL_EXSTYLE))
-// 		{
-// 		//	if (UI_IsUnderXpOS())
-// 				e = GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS;
-// // 			else
-// // 				e = GRAPHICS_RENDER_LIBRARY_TYPE_DIRECT2D;
-// 		}
-// 		else
-// 		{
-// 			e = GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
-// 		}
-// 	}
-// 
-// 	return e;
-// }
-
-
-GRAPHICS_RENDER_LIBRARY_TYPE GetRenderLibraryType(IObject* pObj)
-{
-	if (NULL  == pObj) 
-		return GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
-
-	GRAPHICS_RENDER_LIBRARY_TYPE e = GRAPHICS_RENDER_LIBRARY_TYPE_AUTO;
-	if (pObj->GetObjectType() != OBJ_WINDOW)
-	{
-		// 针对menu,listbox popup类型一开始没有窗口的控件，向控件本身发消息进行获取
-		e = (GRAPHICS_RENDER_LIBRARY_TYPE)UISendMessage(pObj, UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE);
-		if (GRAPHICS_RENDER_LIBRARY_TYPE_AUTO != e)
-		{
-			return e;
-		}
-	}
-
-    IWindowBase* pWindow = pObj->GetWindowObject();
-    if (pWindow)
-    {
-	    e = (GRAPHICS_RENDER_LIBRARY_TYPE)UISendMessage(pWindow, UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE);
-	    if (GRAPHICS_RENDER_LIBRARY_TYPE_AUTO == e)
-	    {
-		    if (WS_EX_LAYERED & ::GetWindowLong(pWindow->GetHWND(), GWL_EXSTYLE))
-		    {
-			    e = GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS;
-		    }
-		    else
-		    {
-			    e = GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
-		    }
-	    }
-    }
-    else
-    {
-        e = GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
-    }
-
-	return e;
-}
-
-IRenderTarget*  UICreateRenderTarget(GRAPHICS_RENDER_LIBRARY_TYPE eType, HWND hWnd)
+// IRenderTarget* 没有引用计数机制
+IRenderTarget*  UICreateRenderTarget(IUIApplication* pUIApp, GRAPHICS_RENDER_LIBRARY_TYPE eType)
 {
     IRenderTarget*  pRenderTarget = NULL;
 
@@ -208,12 +94,35 @@ IRenderTarget*  UICreateRenderTarget(GRAPHICS_RENDER_LIBRARY_TYPE eType, HWND hW
     {
     case GRAPHICS_RENDER_LIBRARY_TYPE_GDI:
         {
-            pRenderTarget = new GdiRenderTarget(hWnd);
+            pRenderTarget = new GdiRenderTarget();
         }
         break;
     case GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS:
         {
-            pRenderTarget = new GdiplusRenderTarget(hWnd);
+            pRenderTarget = new GdiplusRenderTarget();
+        }
+        break;
+    case GRAPHICS_RENDER_LIBRARY_TYPE_DIRECT2D:
+        {
+            if (!pUIApp)
+            {
+                UI_LOG_WARN(_T("%s CreateD2D RenderTarget Failed. pUIApp is NULL"), FUNC_NAME);
+                return UICreateRenderTarget(pUIApp, GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS);
+            }
+            HMODULE  hModule = pUIApp->GetUI3DModule();
+            if (!hModule)
+            {
+                UI_LOG_WARN(_T("%s CreateD2D RenderTarget Failed. GetUI3DModule Failed."), FUNC_NAME);
+                return UICreateRenderTarget(pUIApp, GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS);
+            }
+         
+            funcUI3D_CreateD2DRenderTarget func = (funcUI3D_CreateD2DRenderTarget)GetProcAddress(hModule, "UI3D_CreateD2DRenderTarget");
+            if (!func)
+            {
+                UIASSERT(0);
+                return UICreateRenderTarget(pUIApp, GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS);
+            }
+            func(&pRenderTarget);
         }
         break;
     default:
@@ -223,8 +132,30 @@ IRenderTarget*  UICreateRenderTarget(GRAPHICS_RENDER_LIBRARY_TYPE eType, HWND hW
     return pRenderTarget;
 }
 
-void  UICreateRenderBitmap(GRAPHICS_RENDER_LIBRARY_TYPE eGraphicsRenderType, IMAGE_ITEM_TYPE eType, IRenderBitmap** ppOut)
+void  UICreateRenderBitmap(IUIApplication*  pUIApp, GRAPHICS_RENDER_LIBRARY_TYPE eGraphicsRenderType, IMAGE_ITEM_TYPE eType, IRenderBitmap** ppOut)
 {
-    RenderBitmapFactory::CreateInstance(eGraphicsRenderType, eType, ppOut);
+    RenderBitmapFactory::CreateInstance(pUIApp, eGraphicsRenderType, eType, ppOut);
+}
+
+GRAPHICS_RENDER_LIBRARY_TYPE  UIParseGraphicsRenderLibraryType(const TCHAR* szText)
+{
+	if (szText)
+	{
+		if (0 == _tcscmp(szText, XML_WINDOW_GRAPHICS_RENDER_LIBRARY_GDIPLUS))
+		{
+			return GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS;
+		}
+		else if (0 == _tcscmp(szText, XML_WINDOW_GRAPHICS_RENDER_LIBRARY_D2D) ||
+			0 == _tcscmp(szText, XML_WINDOW_GRAPHICS_RENDER_LIBRARY_DIRECT2D))
+		{
+			return GRAPHICS_RENDER_LIBRARY_TYPE_DIRECT2D;
+		}
+		else
+		{
+			return GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
+		}
+	}
+
+	return GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
 }
 }

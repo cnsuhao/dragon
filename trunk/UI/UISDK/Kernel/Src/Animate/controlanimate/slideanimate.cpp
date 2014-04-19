@@ -2,7 +2,6 @@
 #include "slideanimate.h"
 #include "UISDK/Kernel/Src/Animate/animatemgr.h"
 #include "UISDK/Kernel/Inc/Interface/iobject.h"
-#include "UISDK/Kernel/Src/RenderLayer/renderchain.h"
 
 namespace UI
 {
@@ -88,6 +87,8 @@ void  SlideAnimateMessageHandler::OnAnimateTick(int nCount, IStoryboard** ppArra
 
 void  SlideAnimate::OnAnimateTick(int nValue)
 {
+    UIASSERT(0);// todo
+#if 0
     if (!m_pObjLeft)
         return;
 
@@ -123,7 +124,8 @@ void  SlideAnimate::OnAnimateTick(int nValue)
 
     m_pWindow->GetRenderChain()->CombineAllLayer(hRgn);
     DeleteObject(hRgn);
-    m_pWindow->CommitDoubleBuffet2Window(NULL, &m_rcCommit, 1);
+    m_pWindow->CommitDoubleBuffet2Window(NULL, NULL, &m_rcCommit, 1);
+#endif
 }
 void  SlideAnimate::OnAnimateOver()
 {

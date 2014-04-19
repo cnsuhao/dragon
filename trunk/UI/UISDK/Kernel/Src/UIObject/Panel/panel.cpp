@@ -12,10 +12,10 @@ namespace UI
 Panel::Panel()
 {
     m_pIPanel = NULL;
-	this->m_pLayout = NULL;
+	m_pLayout = NULL;
 
-    m_pMaterialRender = NULL;
-    m_rcMaterialRenderRegion.SetRectEmpty();
+    m_pTextureRender = NULL;
+    m_rcTextureRenderRegion.SetRectEmpty();
 
 //     m_pMaskRender = NULL;
 //     m_rcMaskRenderRegion.SetRectEmpty();
@@ -26,7 +26,7 @@ Panel::Panel()
 Panel::~Panel()
 {
 	SAFE_RELEASE(m_pLayout);
-    SAFE_RELEASE(m_pMaterialRender);
+    SAFE_RELEASE(m_pTextureRender);
 }
 
 ILayout* Panel::GetLayout()
@@ -48,9 +48,9 @@ LRESULT Panel::OnGetLayoutPtr(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return (LRESULT)m_pLayout;
 }
 
-void  Panel::OnSize(UINT nType, int cx, int cy)
+void  Panel::virtualOnSize(UINT nType, UINT cx, UINT cy)
 {
-    SetMsgHandled(FALSE);
+	Object::virtualOnSize(nType, cx, cy);
     if (this->GetObjectType() == OBJ_WINDOW)  // 窗口的大小改变由_OnSize处理过了
         return;
 
@@ -78,8 +78,8 @@ void  Panel::ResetAttribute()
 	SetRectEmpty(&m_rcBkgndRenderRegion);
 	SetRectEmpty(&m_rcForegndRenderRegion);
 
-    SAFE_RELEASE(m_pMaterialRender);
-    m_rcMaterialRenderRegion.SetRectEmpty();
+    SAFE_RELEASE(m_pTextureRender);
+    m_rcTextureRenderRegion.SetRectEmpty();
 //     SAFE_RELEASE(m_pMaskRender);
 //     m_rcMaskRenderRegion.SetRectEmpty();
 }
@@ -95,9 +95,9 @@ void  Panel::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
         m_pLayout->SetAttribute(pMapAttrib);
 
     // 加载皮肤属性
-    SAFE_RELEASE(m_pMaterialRender);
-    pMapAttrib->GetAttr_RenderBase(XML_MATERIAL_RENDER_PREFIX, XML_RENDER_TYPE, true, m_pUIApplication, m_pIObject, &m_pMaterialRender);
-    pMapAttrib->GetAttr_CRegion4(XML_MATERIAL_RENDER_PREFIX XML_PANEL_RENDER_REGION, true, &m_rcMaterialRenderRegion);
+    SAFE_RELEASE(m_pTextureRender);
+    pMapAttrib->GetAttr_RenderBase(XML_TEXTURE_RENDER_PREFIX, XML_RENDER_TYPE, true, m_pUIApplication, m_pIObject, &m_pTextureRender);
+    pMapAttrib->GetAttr_CRegion4(XML_TEXTURE_RENDER_PREFIX XML_PANEL_RENDER_REGION, true, &m_rcTextureRenderRegion);
 
 //     SAFE_RELEASE(m_pMaskRender);
 //     pMapAttrib->GetAttr_RenderBase(XML_MASK_RENDER_PREFIX, XML_RENDER_TYPE, true, m_pUIApplication, m_pIObject, &m_pMaskRender);
@@ -125,41 +125,26 @@ void  Panel::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
         m_pLayout->OnEditorGetAttrList(&data);
     }
 
-	pEditor->CreateTextAttribute(pPanelGroup, XML_MATERIAL_RENDER_PREFIX XML_RENDER_TYPE, pData->szPrefix);
-	pEditor->CreateTextAttribute(pPanelGroup, XML_MATERIAL_RENDER_PREFIX XML_PANEL_RENDER_REGION, pData->szPrefix);
+	pEditor->CreateTextAttribute(pPanelGroup, XML_TEXTURE_RENDER_PREFIX XML_RENDER_TYPE, pData->szPrefix);
+	pEditor->CreateTextAttribute(pPanelGroup, XML_TEXTURE_RENDER_PREFIX XML_PANEL_RENDER_REGION, pData->szPrefix);
 	pEditor->CreateTextAttribute(pPanelGroup, XML_BACKGND_RENDER_PREFIX XML_PANEL_RENDER_REGION, pData->szPrefix);
 	pEditor->CreateTextAttribute(pPanelGroup, XML_FOREGND_RENDER_PREFIX XML_PANEL_RENDER_REGION, pData->szPrefix);
 
-    IUIEditorGroupAttribute* pMaterialRenderGroup = pEditor->CreateGroupAttribute(pPanelGroup, XML_MATERIAL_RENDER_PREFIX, NULL);
-    pEditor->CreateTextAttribute(pMaterialRenderGroup, XML_RENDER_TYPE, pData->szPrefix, XML_MATERIAL_RENDER_PREFIX);
-    if (m_pMaterialRender)
+    IUIEditorGroupAttribute* pTextureRenderGroup = pEditor->CreateGroupAttribute(pPanelGroup, XML_TEXTURE_RENDER_PREFIX, NULL);
+    pEditor->CreateTextAttribute(pTextureRenderGroup, XML_RENDER_TYPE, pData->szPrefix, XML_TEXTURE_RENDER_PREFIX);
+    if (m_pTextureRender)
     {
         String strPrefix;
         if (pData->szPrefix)
             strPrefix.append(pData->szPrefix);
-        strPrefix.append(XML_MATERIAL_RENDER_PREFIX);
+        strPrefix.append(XML_TEXTURE_RENDER_PREFIX);
 
         EDITORGETOBJECTATTRLISTDATA data;
         data.pEditor = pData->pEditor;
-        data.pGroupAttr = pMaterialRenderGroup;
+        data.pGroupAttr = pTextureRenderGroup;
         data.szPrefix = strPrefix.c_str();
-        UISendMessage(m_pMaterialRender, UI_EDITOR_GETOBJECTATTRLIST, (WPARAM)&data);
+        UISendMessage(m_pTextureRender, UI_EDITOR_GETOBJECTATTRLIST, (WPARAM)&data);
     }
-}
-
-void  Panel::RealDrawObject(IRenderTarget* pRenderTarget, RenderContext roc)
-{
-    __super::RealDrawObject(pRenderTarget, roc);
-
-    // 放在最后绘制遮罩层  // TODO: 实现不了遮罩层。单个控件刷新时无法处理
-//     if (m_pMaskRender)
-//     {
-//         CRect rcMaskRegion(0,0, this->GetWidth(), this->GetHeight());
-//         rcMaskRegion.DeflateRect(&m_rcMaskRenderRegion);
-// 
-//         roc.Update(pRenderTarget);   // 还原属性
-//         m_pMaskRender->DrawState(pRenderTarget, &rcMaskRegion, 0);
-//     }
 }
 
 // Panel作为一个容器，不应该有自己的前景，否则上面的子对象无常获取到正确的背景了
@@ -178,11 +163,11 @@ void Panel::OnEraseBkgnd(IRenderTarget* pRenderTarget)
 		m_pBkgndRender->DrawState(pRenderTarget, &rcBkgnd, 0);
 	}
 	
-    if (m_pMaterialRender)
+    if (m_pTextureRender)
     {
         CRect rcTextureRegion(&rc);
-        rcTextureRegion.DeflateRect(&m_rcMaterialRenderRegion);
-        m_pMaterialRender->DrawState(pRenderTarget, &rcTextureRegion, 0);
+        rcTextureRegion.DeflateRect(&m_rcTextureRenderRegion);
+        m_pTextureRender->DrawState(pRenderTarget, &rcTextureRegion, 0);
     }
 
 	if (m_pForegndRender)
@@ -194,17 +179,17 @@ void Panel::OnEraseBkgnd(IRenderTarget* pRenderTarget)
 }
 
 
-void Panel::SetMaterialRender(IRenderBase* p)
+void Panel::SetTextureRender(IRenderBase* p)
 {
-    SAFE_RELEASE(m_pMaterialRender);
-    m_pMaterialRender = p;
+    SAFE_RELEASE(m_pTextureRender);
+    m_pTextureRender = p;
 
-    if (m_pMaterialRender)
-        m_pMaterialRender->AddRef();
+    if (m_pTextureRender)
+        m_pTextureRender->AddRef();
 }
-IRenderBase*  Panel::GetMaterialRender()
+IRenderBase*  Panel::GetTextureRender()
 {
-    return m_pMaterialRender;
+    return m_pTextureRender;
 }
 
 }

@@ -56,7 +56,7 @@ interface UISDKAPI ITextRenderBase : public IMessage
     void  DrawState(IRenderTarget* pRenderTarget, const CRect* prc, int nState, const TCHAR* szText, int nDrawTextFlag=-1);
     void  Init();
     
-    void  CheckSkinMaterialChanged();
+    void  CheckSkinTextureChanged();
 
 protected:
     long  m_lRef;

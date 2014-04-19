@@ -24,6 +24,9 @@ interface ILayoutParam : public IRootInterface
 
     // 接口类型判断
     virtual LAYOUTTYPE  GetLayoutType() = 0;
+
+    // 自己是自适应大小，还是固定大小，用于优化updatelayout
+    virtual bool  IsSizedByContent() = 0;
 };
 
 
@@ -36,9 +39,7 @@ interface ILayout : public IRootInterface
     virtual void  Arrange(IObject* pObjToArrage, bool bReDraw=false) = 0;
     virtual void  SetAttribute(IMapAttribute* pMapAttrib) = 0;
     virtual void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData) = 0;
-    virtual ILayoutParam*  CreateLayoutParam(IObject* pObj) = 0;
-
-    
+    virtual ILayoutParam*  CreateLayoutParam(IObject* pObj) = 0;  
 };
 
 }

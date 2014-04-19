@@ -185,6 +185,7 @@ public:
 		pImageData->m_nHeight = pBitmapData->Height;
 		pImageData->m_nStride = pBitmapData->Stride;
 		pImageData->m_nbpp = 32;
+		pImageData->m_bNeedDeletePtr = true;
 
 		// ´´½¨ÄÚ´æ
 		int nSize = bytesperline*pBitmapData->Height;

@@ -27,6 +27,8 @@ public:
 	// (s_UICreateInstancePtr)className::_CreatorClass::UICreateInstance
 	static HRESULT UICreateInstance(IUIApplication* pUIApp, T** pOut)
     {
+        UIASSERT(pUIApp);
+
         UIObjCreator<T>* p = NULL; 
         HRESULT hr = S_OK;
         bool bRet = false;

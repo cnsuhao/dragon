@@ -6,7 +6,6 @@
 #include "UISDK\Kernel\Src\Helper\tooltip\tooltipmanager.h"
 #include "UISDK\Kernel\Src\Helper\msg\msghelper.h"
 #include "UISDK\Kernel\Src\Resource\skinmanager.h"
-#include "UISDK\Kernel\Src\Helper\MouseKeyboard\keyboardmanager.h"
 #include "UISDK\Kernel\Src\Helper\MouseKeyboard\mousemanager.h"
 
 namespace UI
@@ -26,7 +25,7 @@ struct UIOBJ_CREATE_INFO
 
 struct UIRENDERBASE_CREATE_INFO
 {
-    String  m_strName;
+    String  m_strName;    // 存在很多种theme类型，但对应的控件类型不一样
     UINT    m_nControlType;
     UINT    m_nControlSubType;
     int     m_nRenderType;
@@ -51,7 +50,7 @@ struct UILAYOUT_CREATE_INFO
 };
 
 //
-//  PS: 20130110 考虑到在UIBuilder中会存在两份UIApplication实例，因此不能再将
+//  PS: 20130110 考虑到在UIEditor中会存在两份UIApplication实例，因此不能再将
 //      UIApplication作为全局对象来实现了。为了便于以后的COM化，在这里改造为
 //      接口类，外部只能访问到IUIApplication
 //  PS: 20130317 考虑到以后的扩展和升级，不将接口做成纯虚函数，而是采用Pimpl实现
@@ -64,93 +63,99 @@ public:
     void  x_Init();  // 内部初始化，避免在构造函数中调用太多东西
 
 	// ---------- 
-    HRESULT  SetSkinDirection(const TCHAR* szDir);
-    HRESULT  LoadSkin(const TCHAR* szSkinName);
+    HRESULT             SetSkinDirection(const TCHAR* szDir);
+    HRESULT             LoadSkin(const TCHAR* szSkinName);
 
-	HRESULT  SetLog(ILog* pLog, const TCHAR* szLogXmlPath);
-	HRESULT  GetLog(ILog** ppLog);
+	HRESULT             SetLog(ILog* pLog, const TCHAR* szLogXmlPath);
+	HRESULT             GetLog(ILog** ppLog);
+    HMODULE             GetUI3DModule();
 
-	HRESULT  SetDesignMode(VARIANT_BOOL b, IUIEditor* pUIBuilder);
-	bool     IsDesignMode() { return m_bDesignMode; }
-	IUIEditor*  GetUIEditorPtr();
+	HRESULT             SetDesignMode(VARIANT_BOOL b, IUIEditor* pUIBuilder);
+	bool                IsDesignMode() { return m_bDesignMode; }
+	IUIEditor*          GetUIEditorPtr();
 	
 	ISkinManager*       GetSkinMgr();
 	ITopWindowManager*  GetTopWindowMgr();
 	IAnimateManager*    GetAnimateMgr();
-	HRESULT  GetWaitForHandlesMgr(IWaitForHandlesMgr** ppMgr);
-	HRESULT  GetMessageFilterMgr(IMessageFilterMgr** ppMgr);
+	HRESULT             GetWaitForHandlesMgr(IWaitForHandlesMgr** ppMgr);
+	HRESULT             GetMessageFilterMgr(IMessageFilterMgr** ppMgr);
 
-	ISkinRes*       GetActiveSkinRes();
-	IImageManager*  GetActiveSkinImageMgr();
-	IImageRes*      GetActiveSkinImageRes();
-	ICursorRes*     GetActiveSkinCursorRes();
-	IGifRes*        GetActiveSkinGifRes();
-	IFontManager*   GetActiveSkinFontMgr();
-	IFontRes*       GetActiveSkinFontRes();
-	IColorManager*  GetActiveSkinColorMgr();
-	IColorRes*      GetActiveSkinColorRes();
-	IStyleManager*  GetActiveSkinStyleMgr();
-	IStyleRes*      GetActiveSkinStyleRes();
-	ILayoutManager* GetActiveSkinLayoutMgr();
-	ILayoutRes*     GetActiveSkinLayoutRes();
+	ISkinRes*          GetActiveSkinRes();
+	IImageManager*     GetActiveSkinImageMgr();
+	IImageRes*         GetActiveSkinImageRes();
+	ICursorRes*        GetActiveSkinCursorRes();
+	IGifRes*           GetActiveSkinGifRes();
+	IFontManager*      GetActiveSkinFontMgr();
+	IFontRes*          GetActiveSkinFontRes();
+	IColorManager*     GetActiveSkinColorMgr();
+	IColorRes*         GetActiveSkinColorRes();
+	IStyleManager*     GetActiveSkinStyleMgr();
+	IStyleRes*         GetActiveSkinStyleRes();
+	ILayoutManager*    GetActiveSkinLayoutMgr();
+	ILayoutRes*        GetActiveSkinLayoutRes();
 	
-	HRESULT  SetTooltipsUI(IToolTipUI* pUI);
-	HRESULT  UseInnerTooltipsUI(const TCHAR* szWndID);
-	HRESULT  ShowToolTip(TOOLTIPITEM* pItem);
-	HRESULT  HideToolTip();
+	HRESULT           SetTooltipsUI(IToolTipUI* pUI);
+	HRESULT           UseInnerTooltipsUI(const TCHAR* szWndID);
+	HRESULT           ShowToolTip(TOOLTIPITEM* pItem);
+	HRESULT           HideToolTip();
 
-    void     RestoreRegisterUIObject();
-    HRESULT  RegisterLayoutTagParseFunc(const TCHAR* szTag, funcUIParseLayoutElement func);
-    HRESULT  GetSkinTagParseFunc(const TCHAR* szTag, funcUIParseSkinElement* pFunc);
-    HRESULT  GetLayoutTagParseFunc(const TCHAR* szTag, funcUIParseLayoutElement* pFunc);
+    void              RestoreRegisterUIObject();
+    HRESULT           RegisterLayoutTagParseFunc(const TCHAR* szTag, funcUIParseLayoutElement func);
+    HRESULT           GetSkinTagParseFunc(const TCHAR* szTag, funcUIParseSkinElement* pFunc);
+    HRESULT           GetLayoutTagParseFunc(const TCHAR* szTag, funcUIParseLayoutElement* pFunc);
 
-    HRESULT  RegisterUIObjectCreateData(const TCHAR* szXmlName, const TCHAR* szCategory, UINT nObjType, REFGUID guid, funcUICreateInstancePtr pfun);
-	HRESULT  CreateInstanceByName(const TCHAR* szXmlName, IObject** pOut);
-    HRESULT  CreateInstanceByClsid(REFCLSID clsid, void** pOut);
-    void     LoadUIObjectListToToolBox();
+    HRESULT           RegisterUIObjectCreateData(const TCHAR* szXmlName, const TCHAR* szCategory, UINT nObjType, REFGUID guid, funcUICreateInstancePtr pfun);
+	HRESULT           CreateInstanceByName(const TCHAR* szXmlName, IObject** pOut);
+    HRESULT           CreateInstanceByClsid(REFCLSID clsid, void** pOut);
+    void              LoadUIObjectListToToolBox();
 
-    HRESULT  RegisterUIRenderBaseCreateData(const TCHAR* szName, int nType, int nControlType, int nControlSubType, funcUICreateRenderBasePtr pfunc);
-    HRESULT  CreateRenderBaseByName(const TCHAR* szName, IObject* pObject, IRenderBase** ppOut);
-    HRESULT  CreateRenderBase(int nType, IObject* pObject, IRenderBase** ppOut);
+    HRESULT           RegisterUIRenderBaseCreateData(const TCHAR* szName, int nType, int nControlType, int nControlSubType, funcUICreateRenderBasePtr pfunc);
+    HRESULT           CreateRenderBaseByName(const TCHAR* szName, IObject* pObject, IRenderBase** ppOut);
+    HRESULT           CreateRenderBase(int nType, IObject* pObject, IRenderBase** ppOut);
+    void              UIEditor_FillRenderBaseType2Combobox(IUIEditorComboBoxAttribute*  pCombo);
 
-    HRESULT  RegisterUITextRenderBaseCreateData(const TCHAR* szName, int nType, int nControlType, int nControlSubType, funcUICreateTextRenderBasePtr pfunc);
-    HRESULT  CreateTextRenderBaseByName(const TCHAR* szName, IObject* pObject, ITextRenderBase** ppOut);
-    HRESULT  CreateTextRenderBase(int nType, IObject* pObject, ITextRenderBase** ppOut);
+    HRESULT           RegisterUITextRenderBaseCreateData(const TCHAR* szName, int nType, int nControlType, int nControlSubType, funcUICreateTextRenderBasePtr pfunc);
+    HRESULT           CreateTextRenderBaseByName(const TCHAR* szName, IObject* pObject, ITextRenderBase** ppOut);
+    HRESULT           CreateTextRenderBase(int nType, IObject* pObject, ITextRenderBase** ppOut);
     
-    HRESULT  RegisterLayoutCreateData(const TCHAR* szName, int nType, funcUICreateLayoutPtr);
-    HRESULT  CreateLayout(int nType, IObject* pObject, ILayout** ppOut);
-    HRESULT  CreateLayoutByName(const TCHAR* szName, IObject* pObject, bool bCreateDefault, ILayout** ppOut);
+    HRESULT           RegisterLayoutCreateData(const TCHAR* szName, int nType, funcUICreateLayoutPtr);
+    HRESULT           CreateLayout(int nType, IObject* pObject, ILayout** ppOut);
+    HRESULT           CreateLayoutByName(const TCHAR* szName, IObject* pObject, bool bCreateDefault, ILayout** ppOut);
 
-	BOOL     IsDialogMessage(MSG* pMsg);
-	HRESULT  MsgHandleLoop(bool* pbQuitLoopRef);
+	BOOL              IsDialogMessage(MSG* pMsg);
+	HRESULT           MsgHandleLoop(bool* pbQuitLoopRef);
 
-	HRESULT  RedrawTopWindows();
+	HRESULT           RedrawTopWindows();
 
-	bool     IsUnderXpOS();
-	bool     IsVistaOrWin7etc();
+	bool              IsUnderXpOS();
+	bool              IsVistaOrWin7etc();
 
-	bool     IsUIObjectAvailable(IMessage* p);
-	HRESULT  AddUIObject(IMessage* p);
-	HRESULT  RemoveUIObject(IMessage* p);
+	bool              IsUIObjectAvailable(IMessage* p);
+	HRESULT           AddUIObject(IMessage* p);
+	HRESULT           RemoveUIObject(IMessage* p);
 
-	HWND     GetForwardPostMessageWnd();
+	HWND              GetForwardPostMessageWnd();
 
 public:
-	bool     GetUICreateInstanceFuncPtr(const TCHAR* szXmlName, funcUICreateInstancePtr* pOut);
-    bool     GetUICreateInstanceFuncPtr(REFCLSID guid, funcUICreateInstancePtr* pOut);
+	bool              GetUICreateInstanceFuncPtr(const TCHAR* szXmlName, funcUICreateInstancePtr* pOut);
+    bool              GetUICreateInstanceFuncPtr(REFCLSID guid, funcUICreateInstancePtr* pOut);
 
-    IUIApplication*  GetIUIApplication() { return m_pUIApplication; }
+    IUIApplication*   GetIUIApplication() { return m_pUIApplication; }
 
 private:
-    void     RegisterWndClass();
-    HRESULT  InitLog(const TCHAR* szLogConfigFilePath);
-    void     RegisterDefaultUIObject();
-    void     ClearRegisterUIObject();
+    void              RegisterWndClass();
+    HRESULT           InitLog(const TCHAR* szLogConfigFilePath);
+    void              LoadUI3D();
+    void              ReleaseUI3D();
+    void              RegisterDefaultUIObject();
+    void              ClearRegisterUIObject();
 
 public:
-    static ILog*     s_pLog;  // 所有的app共享一个log. log必须作成全局对象，否则不好实现在任意代码中写log
-    static long      s_lUiLogCookie;       // UI模块日志的标识
-    static long      s_lAppCount;  // 当appcount减为0时，释放log
+    static ILog*     s_pLog;         // 所有的app共享一个log. log必须作成全局对象，否则不好实现在任意代码中写log
+    static long      s_lUiLogCookie; // UI模块日志的标识
+    static long      s_lAppCount;    // 当appcount减为0时，释放log
+
+    static HMODULE   s_hUI3D;        // ui3d.dll
 
 protected:
     typedef vector<UIOBJ_CREATE_INFO*>               UIOBJ_CREATE_DATA;
@@ -160,13 +165,13 @@ protected:
     typedef map<String, funcUIParseSkinElement>      UISKINTAGPARSE_DATA;
     typedef map<String, funcUIParseLayoutElement>    UILAYOUTTAGPARSE_DATA;
 
-    IUIApplication*     m_pUIApplication;     // 对外提供的接口
-    OSVERSIONINFOEX     m_osvi;               // 操作系统版本
-	bool                m_bDesignMode;        // 是否是设计模式
-	IUIEditor*          m_pUIEditor;          // 外部的编辑器指针，用于消息通知和数据获取
+    IUIApplication*     m_pUIApplication;              // 对外提供的接口
+    OSVERSIONINFOEX     m_osvi;                        // 操作系统版本
+	bool                m_bDesignMode;                 // 是否是设计模式
+	IUIEditor*          m_pUIEditor;                   // 外部的编辑器指针，用于消息通知和数据获取
 
-    list<IMessage*>           m_aliveUIObject;      // 所有UI对象列表，用于在发送消息前判断一个指针对象是否有效
-	UIOBJ_CREATE_DATA         m_vecUICreateData;    // 保存UI对象的XML字符串，用于从字符串创建UI对象
+    list<IMessage*>           m_aliveUIObject;         // 所有UI对象列表，用于在发送消息前判断一个指针对象是否有效
+	UIOBJ_CREATE_DATA         m_vecUICreateData;       // 保存UI对象的XML字符串，用于从字符串创建UI对象
     UIRENDERBASE_CREATE_DATA  m_vecUIRenderBaseCreateData;  // 用于创建RenderBase
     UITEXTRENDERBASE_CREATE_DATA  m_vecUITextRenderBaseCreateData;  // 用于从字符串创建TextRenderBase
     UILAYOUT_CREATE_DATA      m_vecUILayoutCreateData;

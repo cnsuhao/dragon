@@ -38,14 +38,15 @@ protected:
     WindowBase*            m_pWindow;
     LayeredAnimateWindow*  m_pLayeredWindow;
 
-    Image   m_SrcImage;  //  原窗口快照。但宽和高加了1
+	CRect   m_rcWindowInBuffer;    //  窗口数据在image中的位置（因为四周有边界哨兵）
+    Image   m_SrcImage;            //  原窗口快照。但宽和高加了2
     BYTE*   m_pSrcBits;
     int     m_nSrcPitch;
 
     int     m_nSrcWndWidth;
     int     m_nSrcWndHeight;
 
-    int     m_nWndTranslateType; // 窗口透明类型（正常，layered，aero）
+    int     m_nWndTranslateType;   // 窗口透明类型（正常，layered，aero）
 
     Storyboard*  m_pStroyboard;
 };

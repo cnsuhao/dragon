@@ -38,25 +38,26 @@ void  TabCtrlButton::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 {
     __super::SetAttribute(pMapAttrib, bReload);
 
-    IUIApplication*  pUIApp = m_pITabCtrlButton->GetUIApplication();
+//    IUIApplication*  pUIApp = m_pITabCtrlButton->GetUIApplication();
 
-    if (NULL == m_pITabCtrlButton->GetBkRender())
-    {
-        IRenderBase*  pRenderBase = NULL;
-        pUIApp->CreateRenderBase(RENDER_TYPE_THEME_TABCTRL_BUTTON_BKGND, m_pITabCtrlButton, &pRenderBase);
-        if (pRenderBase)
-        {
-            TabCtrlButtonBkThemeRender* pTabCtrlBtn = (TabCtrlButtonBkThemeRender*)
-                pRenderBase->QueryInterface(IID_UI_TabCtrlButtonBkThemeRender);
-            if (pTabCtrlBtn)
-            {
-                pTabCtrlBtn->SetDirection(1);
-            }
-
-            m_pITabCtrlButton->SetBkgndRender(pRenderBase);
-            SAFE_RELEASE(pRenderBase);
-        }
-    }
+    // 放弃使用Theme，与content面板的结合太废劲，直接外部传图片吧
+//     if (NULL == m_pITabCtrlButton->GetBkRender())
+//     {
+//         IRenderBase*  pRenderBase = NULL;
+//         pUIApp->CreateRenderBase(RENDER_TYPE_THEME_TABCTRL_BUTTON_BKGND, m_pITabCtrlButton, &pRenderBase);
+//         if (pRenderBase)
+//         {
+//             TabCtrlButtonBkThemeRender* pTabCtrlBtn = (TabCtrlButtonBkThemeRender*)
+//                 pRenderBase->QueryInterface(IID_UI_TabCtrlButtonBkThemeRender);
+//             if (pTabCtrlBtn)
+//             {
+//                 pTabCtrlBtn->SetDirection(1);
+//             }
+// 
+//             m_pITabCtrlButton->SetBkgndRender(pRenderBase);
+//             SAFE_RELEASE(pRenderBase);
+//         }
+//     }
 }
 
 void  TabCtrlButton::OnEraseBkgnd(IRenderTarget* pRenderTarget)

@@ -50,7 +50,7 @@ void QQLoginAccountListItem::SetFaceImgFilePath(const TCHAR*  szFace)
 	m_strFaceImgFilePath = szFace;
 	
     UI::IListCtrlBase*  pListCtrl = m_pIQQLoginAccountListItem->GetIListCtrlBase();
-    UI::UICreateRenderBitmap(UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS, UI::IMAGE_ITEM_TYPE_IMAGE, &m_pFaceBitmap);
+    UI::UICreateRenderBitmap(NULL, UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS, UI::IMAGE_ITEM_TYPE_IMAGE, &m_pFaceBitmap);
 	if (m_pFaceBitmap)
 	{
 		m_pFaceBitmap->LoadFromFile(szFace, true);

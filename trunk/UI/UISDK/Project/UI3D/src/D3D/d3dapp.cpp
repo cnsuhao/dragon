@@ -150,6 +150,7 @@ bool D3D10App::Init()
 	swapDesc.BufferCount = 1;
 	swapDesc.OutputWindow = m_hWnd;
 	swapDesc.Windowed = TRUE;
+     
 
 	hr = pDXGIFactory->CreateSwapChain(m_pDevice, &swapDesc, &m_pSwapChain);
 
@@ -162,6 +163,7 @@ bool D3D10App::Init()
 	hr = m_pSwapChain->GetBuffer(0, __uuidof(ID3D10Texture2D), (VOID**)&pBuffer);
 	if (FAILED(hr))
 		return false;
+
 #if 0
 
     D3D10_TEXTURE2D_DESC descText2D;

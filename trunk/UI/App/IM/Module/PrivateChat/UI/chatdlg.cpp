@@ -153,9 +153,9 @@ void CChatDlg::OnInitWindow()
 
 void  CChatDlg::SetSkin(UI::IRenderBase* p)
 {
-    if (NULL == m_pLeftPanel->GetMaterialRender())
+    if (NULL == m_pLeftPanel->GetTextureRender())
     {
-        m_pLeftPanel->SetMaterialRender(p);
+        m_pLeftPanel->SetTextureRender(p);
     }
 }
 

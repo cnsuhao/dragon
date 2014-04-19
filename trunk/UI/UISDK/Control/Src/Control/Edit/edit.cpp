@@ -1171,7 +1171,7 @@ void Edit::DrawNormal(IRenderTarget* pRenderTarget)
     {
  	    HFONT  hFont = pFont->GetHFONT();
 
- 	    HDC    hDC = pRenderTarget->GetBindHDC();
+ 	    HDC    hDC = pRenderTarget->GetHDC();
  	    HFONT  hOldFont = (HFONT)SelectObject(hDC, hFont);
 
  	    COLORREF oldTextCol = ::SetTextColor(hDC, 0x00000000);
@@ -1256,7 +1256,7 @@ void Edit::DrawFocus(IRenderTarget* pRenderTarget)
         else
         {
             HFONT  hFont = pFont->GetHFONT();
-            HDC    hDC = pRenderTarget->GetBindHDC();
+            HDC    hDC = pRenderTarget->GetHDC();
             HFONT  hOldFont = (HFONT)SelectObject(hDC, hFont);
 
             COLORREF oldTextCol = ::SetTextColor(hDC, 0x00FFFFFF);
@@ -1433,7 +1433,13 @@ void Edit::OnPaint(IRenderTarget* pRenderTarget, RenderContext* pContext)
     if (m_bNeedUpdateCaretPos)
     {
         m_bNeedUpdateCaretPos = false;
-        this->UpdateCaretByPos();
+
+        // 避免UpdateCaretByPos内部再次刷新
+        m_pIEdit->SetCanRedraw(false);
+        {
+            this->UpdateCaretByPos();
+        }
+        m_pIEdit->SetCanRedraw(true);
     }
 
 	this->DrawNormal(pRenderTarget);
@@ -1441,14 +1447,14 @@ void Edit::OnPaint(IRenderTarget* pRenderTarget, RenderContext* pContext)
 	if (m_pIEdit->IsFocus())
 		this->DrawFocus(pRenderTarget);
 
-    if (pContext->m_bRequireAlphaChannel)
+    if (pRenderTarget->GetGraphicsRenderLibraryType() != GRAPHICS_RENDER_LIBRARY_TYPE_GDI)
     {
-        CRect  rc;
-        m_pIEdit->GetObjectVisibleClientRect(&rc, false);
-
 		Util::FixAlphaData data = {0};
-		data.hDC = pRenderTarget->GetBindHDC();
+		data.hDC = pRenderTarget->GetHDC();
+        RECT  rc = pContext->m_rcCurrentClip;
+        OffsetRect(&rc, pContext->m_ptBufferOffset.x, pContext->m_ptBufferOffset.y);  // 缓存还有偏移
 		data.lprc = &rc;
+		data.bTopDownDib = TRUE;
 		data.eMode = Util::SET_ALPHA_255_IF_ALPHA_IS_0;
         Util::FixBitmapAlpha(&data);
     }
@@ -1602,7 +1608,7 @@ void Edit::OnLButtonDown(UINT nFlags, POINT point)
 {
 	// 将鼠标位置转换为相对字符串的位置
 	POINT ptClient;
-	m_pIEdit->WindowPoint2ObjectClientPoint(&point, &ptClient);
+	m_pIEdit->WindowPoint2ObjectClientPoint(&point, &ptClient, true);
 	int x = ptClient.x + m_nXScroll;
 	//int x = point.x - m_rcWindow.left - m_rcPadding.left + m_nXScroll;
 	
@@ -1639,15 +1645,6 @@ void Edit::OnLButtonUp(UINT nFlags, POINT point)
 void Edit::OnRButtonDown(UINT nFlags, CPoint point)
 {
 	SetMsgHandled(FALSE);
-
-// 	if (!m_pIEdit->IsFocus())
-// 	{
-// 		IWindowBase* pWindow = m_pIEdit->GetWindowObject();
-// 		if (pWindow)
-// 		{
-// 			pWindow->GetKeyboardMgr()->SetFocusObject(m_pIEdit->GetObjectImpl());
-// 		}
-// 	}
 }
 
 void Edit::OnRButtonUp(UINT nFlags, CPoint point)
@@ -1738,9 +1735,10 @@ void Edit::OnMouseMove(UINT nFlags, POINT point)
 {
 	if (m_bMouseDrag)
 	{
-		// 将鼠标位置转换为相对字符串的位置
-		POINT ptWindow = m_pIEdit->GetRealPosInWindow();
-		int x = point.x - ptWindow.x - m_pIEdit->GetPaddingL() + m_nXScroll;
+        // 将鼠标位置转换为相对字符串的位置
+        POINT ptClient = {0};
+        m_pIEdit->WindowPoint2ObjectClientPoint(&point, &ptClient, true);
+        int x = ptClient.x + m_nXScroll;
 
 		int nCP = 0, bTrailOrLead = 0;
 		m_EditData.X2CP( x, &nCP, &bTrailOrLead);
@@ -2277,7 +2275,7 @@ LRESULT  Edit::OnStartComposition(UINT uMsg, WPARAM wParam, LPARAM lParam)
             COMPOSITIONFORM form = {0};
             form.dwStyle = 1;
 
-            POINT ptCtrl = m_pIEdit->GetRealPosInWindow();
+            POINT ptCtrl = m_pIEdit->GetRealPosInWindow();  // TODO: 当Edit在旋转时，这个位置取的不正确，但应该取哪个位置才合适呢
             form.ptCurrentPos.x = m_caret.m_ptLast.x + ptCtrl.x;
             form.ptCurrentPos.y = m_caret.m_ptLast.y + ptCtrl.y;
 

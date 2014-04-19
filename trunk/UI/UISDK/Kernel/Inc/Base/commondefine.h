@@ -28,6 +28,21 @@ typedef CRect CRegion4;
 
 #define RGBA(r,g,b,a)  (((BYTE)(r))|((WORD)(((BYTE)(g))<<8))|(DWORD(((BYTE)(b))<<16))|((DWORD)(((BYTE)(a))<<24)))
 
+inline int round(const float& f)
+{
+    if (f < 0.0f)
+        return int (f - 0.5f);
+    else
+        return int (f + 0.5f);
+}
+inline int round(const double& f)
+{
+    if (f < 0.0f)
+        return int (f - 0.5);
+    else
+        return int (f + 0.5);
+}
+
 inline  int LPRECTW(RECT* prc) { return prc->right - prc->left; }
 inline  int LPRECTH(RECT* prc) { return prc->bottom - prc->top; }
 inline  int RECTW(RECT rc)     { return rc.right - rc.left; }

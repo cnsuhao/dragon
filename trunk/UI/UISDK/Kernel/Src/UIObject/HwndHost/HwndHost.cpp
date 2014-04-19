@@ -81,7 +81,7 @@ void HwndHost::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 		HWND hWnd = ::GetDlgItem(hParentWnd, nControlID);
 		if (NULL == hWnd)
 		{
-			UI_LOG_WARN(_T("HwndHost::SetAttribute Failed. id=%s, GetDlgItem(%d)"), m_strID.c_str(), nControlID);
+			UI_LOG_WARN(_T("HwndHost::SetAttribute Failed. id=%s, GetDlgItem(%d)"), m_strId.c_str(), nControlID);
 			return ;
 		}
 
@@ -225,7 +225,7 @@ LRESULT	HwndHost::WndProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
 	return DefWindowProc(uMsg,wParam,lParam);
 }
 
-UINT HwndHost::OnHitTest( POINT* pt )
+UINT HwndHost::OnHitTest(POINT* pt, POINT*  ptInChild)
 {
 	POINT point = *pt;
 	MapWindowPoints(GetHWND(), NULL, &point, 1);

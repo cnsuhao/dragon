@@ -7,30 +7,40 @@
 
   <include>clock.xml</include>
   <include>reshadow.xml</include>
-  <include>stage3d.xml</include>
+  <include>direct2d.xml</include>
   <include>stageleave.xml</include>
   <include>animate.xml</include>
+  <include>renderlayer.xml</include>
   <layout>
-    <Window id="mainwindow" minwidth="200" minheight="200">
-      <Button id="btnStart" layout.left="30" layout.top="10" width="100" height="28" text="Start"
+    <Window id="mainwindow" graphics="gdiplus" minwidth="200" minheight="200">
+      <Button id="btnStart" layout.left="130" layout.top="10" width="100" height="28" text="Start Rotate"
               bkgnd.render.type="imagelist" bkgnd.render.image="btn" bkgnd.render.image.9region="10"
               bkgnd.render.image.drawtype="stretch" istransparent="1" drawfocus="0"/>
 
-      <Button id="btnEnd" layout.left="150" layout.top="10" width="100" height="28" text="End"
-              bkgnd.render.type="imagelist" bkgnd.render.image="btn" bkgnd.render.image.9region="10"
-              bkgnd.render.image.drawtype="stretch" istransparent="1" drawfocus="0"/>
-
-      <PictureCtrl id="pic" layout.left="50" layout.top="70" width="300" height="300" istransparent="1"
+      <Panel layout.left="50" layout.top="70" width="300" height="300" bkgnd.render.type="color" bkgnd.render.border="1" bkgnd.render.border.color="0xff00ff00">
+        <PictureCtrl id="pic" layer="1" layout.left="0" layout.top="0" width="300" height="300" istransparent="1"
               bkgnd.render.type="image" bkgnd.render.image="test" bkgnd.render.image.drawtype="stretch"
               xbkgnd.render.type="color" bkgnd.render.color="black"
               bkgnd.render.border="1" bkgnd.render.border.color="border"/>
+      </Panel>
 
-      <PictureCtrl id="pic2" layout.left="400" layout.top="70" width="300" height="300" istransparent="1"
-              bkgnd.render.type="image" bkgnd.render.image="test" bkgnd.render.image.drawtype="stretch"
-              xbkgnd.render.type="color" bkgnd.render.color="black"
-              bkgnd.render.border="1" bkgnd.render.border.color="border"/>
+      <Panel id="RotatePanel" zorder="1" layer="1" layout.left="400" layout.top="100" width="300" height="250"
+            bkgnd.render.type="color" bkgnd.render.color="0xffb53812">
+        <Label layout.left="10" layout.top="60" text="Accout:"/>
+        <Edit layout.left="100" layout.top="50" width="180" height="30"/>
+        <Label layout.left="10" layout.top="100" text="Password:"/>
+        <Edit layout.left="100" layout.top="90" width="180" height="30"/>
+        
+        <Button text="转转转" layout.left="30" layout.top="180" width="100" height="30"
+                bkgnd.render.type="imagelist" bkgnd.render.image="btn" bkgnd.render.image.9region="10"
+                bkgnd.render.image.drawtype="stretch" istransparent="1" drawfocus="0"/>
+        <Button text="转转转" layout.left="160" layout.top="180" width="100" height="30"
+                bkgnd.render.type="imagelist" bkgnd.render.image="btn" bkgnd.render.image.9region="10"
+                bkgnd.render.image.drawtype="stretch" istransparent="1" drawfocus="0"/>
+        
+      </Panel>
 
-      <PictureCtrl id="pic3" layout.left="800" layout.top="70" width="300" height="300" istransparent="1"
+      <PictureCtrl id="pic3" layer="1" layout.left="750" layout.top="100" width="300" height="150" istransparent="1"
               xbkgnd.render.type="image" bkgnd.render.image="test" bkgnd.render.image.drawtype="stretch"
               bkgnd.render.type="color" bkgnd.render.color="black"
               bkgnd.render.border="1" bkgnd.render.border.color="border"/>
@@ -48,11 +58,20 @@
     <image id="clock_sec"  path="clock\sechand.png"/>
     
     <!-- 落叶 -->
-    <image id="leave_text" path="leaves\textBackground.png"></image>
+    <image id="leave_text" path="leaves\textBackground.png"/>
+    <image id="leave_bkg"  path="leaves\backgroundLeaves.jpg"/>
+    <image id="leaf1"      path="leaves\realLeaf1.png"/>
+    <image id="leaf2"      path="leaves\realLeaf2.png"/>
+    <image id="leaf3"      path="leaves\realLeaf3.png"/>
+    <image id="leaf4"      path="leaves\realLeaf4.png"/>
+    
+    <!-- 分层 -->
+    <image id="layer_mask" path="renderlayer\mask.png"/>
+    <image id="playlist_skin.bmp"  path="renderlayer\playlist_skin.bmp"/>
   </image>
 
   <font>
-    <item id="normal" facename="微软雅黑" size="9" bold="0"/>
+    <item id="normal" facename="微软雅黑" size="11" bold="0"/>
     <item id="normal2" facename="宋体" size="9"/>
     <item id="fall_leaves_text" facename="Georgia" size="24"/>
   </font>
@@ -64,5 +83,7 @@
     <item id="black">0,0,0,255</item>"
   </color>
 
-  <style/>
+  <style>
+    <class id="leaves_img" layer="1" istransparent="1" width="110" height="110" bkgnd.render.type="image"/>
+  </style>
 </skin>

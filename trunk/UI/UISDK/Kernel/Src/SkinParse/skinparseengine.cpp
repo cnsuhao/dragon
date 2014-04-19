@@ -41,7 +41,7 @@ bool  SkinParseEngine::ProcessFile(const TCHAR* szXmlFile)
 
     do 
     {
-        pRootElem = pUIDocument->FindElem(XML_SKIN);
+        pUIDocument->FindElem(XML_SKIN, &pRootElem);
         if (NULL == pRootElem)
         {
             UI_LOG_ERROR(_T("%s Cannot find root element: %s"), FUNC_NAME, XML_SKIN);

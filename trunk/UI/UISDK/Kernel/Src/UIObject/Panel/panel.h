@@ -17,7 +17,6 @@ public:
 
 	UI_BEGIN_MSG_MAP
 		UIMSG_WM_ERASEBKGND(OnEraseBkgnd)
-        UIMSG_WM_SIZE(OnSize)
         UIMSG_WM_GETDESIREDSIZE(OnGetDesiredSize)
 		UIMESSAGE_HANDLER_EX(UI_WM_GETLAYOUT, OnGetLayoutPtr)
         UIMSG_WM_QUERYINTERFACE(QueryInterface)
@@ -34,13 +33,11 @@ public:
     ILayout*  GetLayout();
     void  SetLayoutType(LAYOUTTYPE eLayoutType);
 
-    void  SetMaterialRender(IRenderBase* p);
-    IRenderBase*  GetMaterialRender();
-
-    virtual void  RealDrawObject(IRenderTarget* pRenderTarget, RenderContext roc);
+    void  SetTextureRender(IRenderBase* p);
+    IRenderBase*  GetTextureRender();
 
 protected:
-    void  OnSize(UINT nType, int cx, int cy);
+	virtual void  virtualOnSize(UINT nType, UINT nWidth, UINT nHeight);
 	void  OnEraseBkgnd(IRenderTarget*);
 	LRESULT  OnGetLayoutPtr(UINT uMsg, WPARAM wParam, LPARAM lParam);
     void  ResetAttribute();
@@ -54,9 +51,9 @@ protected:
 	CRegion4   m_rcBkgndRenderRegion;
 	CRegion4   m_rcForegndRenderRegion;
 
-    // 用于支持换肤功能的皮肤图片  Texture(纹理-用foregnd实现) + Material(材质) = Surface(表面) ?
-    IRenderBase*   m_pMaterialRender;
-    CRegion4       m_rcMaterialRenderRegion;
+    // 用于支持换肤功能的皮肤图片
+    IRenderBase*   m_pTextureRender;
+    CRegion4       m_rcTextureRenderRegion;
 
     // 最上面的遮罩层
 //     IRenderBase*   m_pMaskRender;  

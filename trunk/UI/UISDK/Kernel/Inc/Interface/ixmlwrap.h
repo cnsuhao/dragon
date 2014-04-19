@@ -17,15 +17,18 @@ interface IUIElement
     virtual long  Release() = 0;
 
     virtual void  GetTagName(BSTR* pbstr) = 0;
-    virtual HRESULT  GetDocument(IUIDocument** pp) = 0;     // 注：需要Release
+    virtual HRESULT  GetDocument(IUIDocument** pp) = 0; 
 
     virtual bool  GetData(BSTR* pbstr) = 0;
     virtual bool  SetData(const TCHAR* szText) = 0;
 
     virtual bool  AddChild(const TCHAR* szNodeName, IUIElement** pp) = 0;
+	virtual bool  AddChild(IUIElement*  pElem) = 0;
+    virtual bool  AddChildBefore(IUIElement*  pElem, IUIElement* pInsertBefore) = 0;
+    virtual bool  AddChildAfter(IUIElement*  pElem, IUIElement* pInsertAfter) = 0;
     virtual void  RemoveChild(IUIElement*) = 0;
-    virtual IUIElement*  FindChild(BSTR bstrChildName) = 0;
-    virtual IUIElement*  FirstChild() = 0;
+	virtual bool  FirstChild(IUIElement** ppElem) = 0;
+	virtual bool  FindChild(BSTR bstrChildName, IUIElement** ppElem) = 0;
     virtual IUIChildNodeEnum*  EnumChild() = 0;  // 注：需要Release
 
     virtual void  GetAttribList(IMapAttribute** ppMapAttrib) = 0;
@@ -45,7 +48,7 @@ interface IUIDocument
 
     virtual bool  LoadFile(const TCHAR* szFile) = 0;
     virtual bool  LoadContent(BSTR bstrContent) = 0;
-    virtual IUIElement*  FindElem(const TCHAR* szText) = 0;
+    virtual bool  FindElem(const TCHAR* szText, IUIElement** ppElem) = 0;
     virtual bool  Save() = 0;
     virtual bool  SaveAs(const TCHAR* szPath) = 0;
     virtual const TCHAR*  GetPath() = 0;

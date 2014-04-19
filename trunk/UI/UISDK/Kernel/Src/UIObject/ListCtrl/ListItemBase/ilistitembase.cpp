@@ -160,6 +160,11 @@ void  IListItemBase::AddChildFront(IListItemBase* p)
 
 	m_pListItemBaseImpl->AddChildFront(pListItem);
 }
+void  IListItemBase::RemoveMeInTheTree()
+{
+    m_pListItemBaseImpl->RemoveMeInTheTree();
+}
+
 void  IListItemBase::SetNextSelection(IListItemBase* p)
 {
     ListItemBase* pListItem = NULL;
@@ -211,6 +216,7 @@ IRenderBase*  IListItemBase::GetIconRender()                                  { 
 void  IListItemBase::SetIconRender(IRenderBase* p)                            { m_pListItemBaseImpl->SetIconRender(p); }
 void  IListItemBase::SetIconRenderType(RENDER_TYPE eType)                     { m_pListItemBaseImpl->SetIconRenderType(eType); }
 void  IListItemBase::SetIconFromFile(const TCHAR* szIconPath)                 { m_pListItemBaseImpl->SetIconFromFile(szIconPath); }
+void  IListItemBase::SetIconFromImageId(const TCHAR* szImageId)               { m_pListItemBaseImpl->SetIconFromImageId(szImageId); }
 
 UINT  IListItemBase::GetItemState()                                           { return m_pListItemBaseImpl->GetItemState(); }
 bool  IListItemBase::IsMySelfVisible()                                        { return m_pListItemBaseImpl->IsMySelfVisible(); }

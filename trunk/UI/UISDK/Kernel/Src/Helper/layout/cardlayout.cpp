@@ -48,7 +48,7 @@ void  CardLayout::Arrange(IObject* pIObjToArrage, bool bUpdate)
         int nChildH = nHeight - pChild->GetMarginH();
         rcChildObj.SetRect(0, 0, nChildW, nChildH );
 
-        pChild->SetObjectPos(&rcChildObj, SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS);
+        pChild->SetObjectPos(&rcChildObj, SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS|SWP_FORCESENDSIZEMSG);
 
         if (pObjToArrage && pObjToArrage == pChild)
             break;

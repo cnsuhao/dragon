@@ -21,7 +21,6 @@ public:
         UIMSG_WM_NOTIFY(UI_LCN_DRAWITEM, OnDrawItem)
         UIMSG_WM_INITPOPUPCONTROLWINDOW(OnInitPopupControlWindow)
         UIMSG_WM_UNINITPOPUPCONTROLWINDOW(OnUnInitPopupControlWindow)
-        UIMSG_WM_GETGRAPHICSRENDERLIBRARYTYPE(OnGetGraphicsRenderType)
         UIMSG_WM_RESETATTRIBUTE(ResetAttribute)
         UIMSG_WM_SETATTRIBUTE(SetAttribute)
 	UI_END_MSG_MAP_CHAIN_PARENT_Ixxx(ListBoxBase, IListCtrlBase)
@@ -37,7 +36,6 @@ public:
 
 protected:
 	LRESULT  OnDrawItem(WPARAM, LPARAM);
-    LRESULT  OnGetGraphicsRenderType();
 
     HRESULT  FinalConstruct(IUIApplication* p);
     void  ResetAttribute();

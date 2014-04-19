@@ -3,74 +3,185 @@
   
   <!--加载的播放文件列表-->
   <playlist>
-<item>F:\music\1981.mp3</item>
-<item>F:\music\458_茉莉花.mp3</item>
-<item>F:\music\Childhoood Memory（儿时记忆）.mp3</item>
-<item>F:\music\Dreaming In The Moonlight 梦于月光中.mp3</item>
-<item>F:\music\D大调嬉游曲.mp3</item>
-<item>F:\music\Greek Meditation 希腊冥想曲.mp3</item>
-<item>F:\music\Heaven On Earth 人间天上.mp3</item>
-<item>F:\music\Only_Time.mp3</item>
-<item>F:\music\Snow 静静的雪.mp3</item>
-<item>F:\music\Sunset_At_Noon_午后落日.mp3</item>
-<item>F:\music\The Way Of The Wind 微风吹拂的方式.mp3</item>
-<item>F:\music\Your Smile.mp3</item>
-<item>F:\music\一帘幽梦.mp3</item>
-<item>F:\music\下雨时你会想起谁.mp3</item>
-<item>F:\music\交响童话.mp3</item>
-<item>F:\music\人鬼情未了.mp3</item>
-<item>F:\music\何日君再来.mp3</item>
-<item>F:\music\出水莲.mp3</item>
-<item>F:\music\初雪.mp3</item>
-<item>F:\music\化蝶.mp3</item>
-<item>F:\music\卡农D大调.mp3</item>
-<item>F:\music\可惜不是双鱼座(新曲).mp3</item>
-<item>F:\music\回家(萨克斯风).mp3</item>
-<item>F:\music\夜的钢琴曲(五).mp3</item>
-<item>F:\music\夜的钢琴曲.mp3</item>
-<item>F:\music\天上星星下凡来.mp3</item>
-<item>F:\music\天使宝贝.mp3</item>
-<item>F:\music\天空之城.mp3</item>
-<item>F:\music\好甜好甜的梦.mp3</item>
-<item>F:\music\妈咪的怀抱里.mp3</item>
-<item>F:\music\安妮的仙境.mp3</item>
-<item>F:\music\小夜曲.mp3</item>
-<item>F:\music\小星星变奏曲.mp3</item>
-<item>F:\music\小河淌水_Flowing_Creek.mp3</item>
-<item>F:\music\少女的祈祷.mp3</item>
-<item>F:\music\帮助蝌蚪找妈妈（选自A大调小提琴第五协奏曲）.mp3</item>
-<item>F:\music\幸福时光.mp3</item>
-<item>F:\music\恍若如梦(新曲).mp3</item>
-<item>F:\music\惜别.mp3</item>
-<item>F:\music\摇篮曲.mp3</item>
-<item>F:\music\日光海岸.mp3</item>
-<item>F:\music\星空.mp3</item>
-<item>F:\music\春江花月夜.mp3</item>
-<item>F:\music\春野.mp3</item>
-<item>F:\music\月光.mp3</item>
-<item>F:\music\月光下的凤尾竹.mp3</item>
-<item>F:\music\月光奏鸣曲.mp3</item>
-<item>F:\music\月光水岸.mp3</item>
-<item>F:\music\月光边境.mp3</item>
-<item>F:\music\枉凝眉         For The Perfect.mp3</item>
-<item>F:\music\梦中的婚礼(MARIAGE D' AMOUR).mp3</item>
-<item>F:\music\梦的婚礼.mp3</item>
-<item>F:\music\永恒.mp3</item>
-<item>F:\music\海边的星空.mp3</item>
-<item>F:\music\清晨.mp3</item>
-<item>F:\music\澶╃湡鏃犻偑.mp3</item>
-<item>F:\music\爱的纪念.mp3</item>
-<item>F:\music\牧羊曲.mp3</item>
-<item>F:\music\神话.mp3</item>
-<item>F:\music\秋日私语.mp3</item>
-<item>F:\music\秦淮河畔.mp3</item>
-<item>F:\music\英雄的黎明.mp3</item>
-<item>F:\music\蓝色的爱.mp3</item>
-<item>F:\music\跳伞.mp3</item>
-<item>F:\music\送别.mp3</item>
-<item>F:\music\隐形的思念(新曲).mp3</item>
-<item>F:\music\雨葵.mp3</item>
-<item>F:\music\雪之梦.mp3</item>
-<item>F:\music\音乐瞬间.mp3</item>
+<item>G:\Misuc\Baby.mp3</item>
+<item>G:\Misuc\Barbie_Girl.mp3</item>
+<item>G:\Misuc\Blowin’_In_The_Wind.mp3</item>
+<item>G:\Misuc\Brown_Eyes.mp3</item>
+<item>G:\Misuc\I_Could_Be_The_One_(_Lp_Version_).mp3</item>
+<item>G:\Misuc\pal3.wma</item>
+<item>G:\Misuc\Take me away.mp3</item>
+<item>G:\Misuc\wine-of-bincos-lunba - 副本.mp3</item>
+<item>G:\Misuc\Without_You.mp3</item>
+<item>G:\Misuc\さくらんぼ_(original).mp3</item>
+<item>G:\Misuc\一点点喜欢.mp3</item>
+<item>G:\Misuc\一见钟情.mp3</item>
+<item>G:\Misuc\又见炊烟.mp3</item>
+<item>G:\Misuc\宁夏.mp3</item>
+<item>G:\Misuc\宁夏128kb.mp3</item>
+<item>G:\Misuc\我只在乎你.mp3</item>
+<item>G:\Misuc\新建文件夹\Baby.mp3</item>
+<item>G:\Misuc\新建文件夹\Barbie_Girl.mp3</item>
+<item>G:\Misuc\新建文件夹\Blowin’_In_The_Wind.mp3</item>
+<item>G:\Misuc\新建文件夹\Brown_Eyes.mp3</item>
+<item>G:\Misuc\新建文件夹\I_Could_Be_The_One_(_Lp_Version_).mp3</item>
+<item>G:\Misuc\新建文件夹\pal3.wma</item>
+<item>G:\Misuc\新建文件夹\Take me away.mp3</item>
+<item>G:\Misuc\新建文件夹\wine-of-bincos-lunba - 副本.mp3</item>
+<item>G:\Misuc\新建文件夹\Without_You.mp3</item>
+<item>G:\Misuc\新建文件夹\さくらんぼ_(original).mp3</item>
+<item>G:\Misuc\新建文件夹\一点点喜欢.mp3</item>
+<item>G:\Misuc\新建文件夹\一见钟情.mp3</item>
+<item>G:\Misuc\新建文件夹\又见炊烟.mp3</item>
+<item>G:\Misuc\新建文件夹\宁夏.mp3</item>
+<item>G:\Misuc\新建文件夹\宁夏128kb.mp3</item>
+<item>G:\Misuc\新建文件夹\我只在乎你.mp3</item>
+<item>G:\Misuc\新建文件夹\桃花源.mp3</item>
+<item>G:\Misuc\新建文件夹\滴答.mp3</item>
+<item>G:\Misuc\新建文件夹\笑忘书.mp3</item>
+<item>G:\Misuc\新建文件夹\萧人凤 - 仙剑问情（仙剑奇侠传）.mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\Baby.mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\Barbie_Girl.mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\Blowin’_In_The_Wind.mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\Brown_Eyes.mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\I_Could_Be_The_One_(_Lp_Version_).mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\pal3.wma</item>
+<item>G:\Misuc\新建文件夹 (2)\Take me away.mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\wine-of-bincos-lunba - 副本.mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\Without_You.mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\さくらんぼ_(original).mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\一点点喜欢.mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\一见钟情.mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\又见炊烟.mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\宁夏.mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\宁夏128kb.mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\我只在乎你.mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\桃花源.mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\滴答.mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\笑忘书.mp3</item>
+<item>G:\Misuc\新建文件夹 (2)\萧人凤 - 仙剑问情（仙剑奇侠传）.mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\Baby.mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\Barbie_Girl.mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\Blowin’_In_The_Wind.mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\Brown_Eyes.mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\I_Could_Be_The_One_(_Lp_Version_).mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\pal3.wma</item>
+<item>G:\Misuc\新建文件夹 (3)\Take me away.mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\wine-of-bincos-lunba - 副本.mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\Without_You.mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\さくらんぼ_(original).mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\一点点喜欢.mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\一见钟情.mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\又见炊烟.mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\宁夏.mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\宁夏128kb.mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\我只在乎你.mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\桃花源.mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\滴答.mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\笑忘书.mp3</item>
+<item>G:\Misuc\新建文件夹 (3)\萧人凤 - 仙剑问情（仙剑奇侠传）.mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\Baby.mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\Barbie_Girl.mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\Blowin’_In_The_Wind.mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\Brown_Eyes.mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\I_Could_Be_The_One_(_Lp_Version_).mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\pal3.wma</item>
+<item>G:\Misuc\新建文件夹 (4)\Take me away.mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\wine-of-bincos-lunba - 副本.mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\Without_You.mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\さくらんぼ_(original).mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\一点点喜欢.mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\一见钟情.mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\又见炊烟.mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\宁夏.mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\宁夏128kb.mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\我只在乎你.mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\桃花源.mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\滴答.mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\笑忘书.mp3</item>
+<item>G:\Misuc\新建文件夹 (4)\萧人凤 - 仙剑问情（仙剑奇侠传）.mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\Baby.mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\Barbie_Girl.mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\Blowin’_In_The_Wind.mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\Brown_Eyes.mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\I_Could_Be_The_One_(_Lp_Version_).mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\pal3.wma</item>
+<item>G:\Misuc\新建文件夹 (5)\Take me away.mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\wine-of-bincos-lunba - 副本.mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\Without_You.mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\さくらんぼ_(original).mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\一点点喜欢.mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\一见钟情.mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\又见炊烟.mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\宁夏.mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\宁夏128kb.mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\我只在乎你.mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\桃花源.mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\滴答.mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\笑忘书.mp3</item>
+<item>G:\Misuc\新建文件夹 (5)\萧人凤 - 仙剑问情（仙剑奇侠传）.mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\Baby.mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\Barbie_Girl.mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\Blowin’_In_The_Wind.mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\Brown_Eyes.mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\I_Could_Be_The_One_(_Lp_Version_).mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\pal3.wma</item>
+<item>G:\Misuc\新建文件夹 (6)\Take me away.mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\wine-of-bincos-lunba - 副本.mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\Without_You.mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\さくらんぼ_(original).mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\一点点喜欢.mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\一见钟情.mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\又见炊烟.mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\宁夏.mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\宁夏128kb.mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\我只在乎你.mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\桃花源.mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\滴答.mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\笑忘书.mp3</item>
+<item>G:\Misuc\新建文件夹 (6)\萧人凤 - 仙剑问情（仙剑奇侠传）.mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\Baby.mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\Barbie_Girl.mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\Blowin’_In_The_Wind.mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\Brown_Eyes.mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\I_Could_Be_The_One_(_Lp_Version_).mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\pal3.wma</item>
+<item>G:\Misuc\新建文件夹 (7)\Take me away.mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\wine-of-bincos-lunba - 副本.mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\Without_You.mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\さくらんぼ_(original).mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\一点点喜欢.mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\一见钟情.mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\又见炊烟.mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\宁夏.mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\宁夏128kb.mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\我只在乎你.mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\桃花源.mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\滴答.mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\笑忘书.mp3</item>
+<item>G:\Misuc\新建文件夹 (7)\萧人凤 - 仙剑问情（仙剑奇侠传）.mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\Baby.mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\Barbie_Girl.mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\Blowin’_In_The_Wind.mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\Brown_Eyes.mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\I_Could_Be_The_One_(_Lp_Version_).mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\pal3.wma</item>
+<item>G:\Misuc\新建文件夹 (8)\Take me away.mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\wine-of-bincos-lunba - 副本.mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\Without_You.mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\さくらんぼ_(original).mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\一点点喜欢.mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\一见钟情.mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\又见炊烟.mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\宁夏.mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\宁夏128kb.mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\我只在乎你.mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\桃花源.mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\滴答.mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\笑忘书.mp3</item>
+<item>G:\Misuc\新建文件夹 (8)\萧人凤 - 仙剑问情（仙剑奇侠传）.mp3</item>
+<item>G:\Misuc\桃花源.mp3</item>
+<item>G:\Misuc\滴答.mp3</item>
+<item>G:\Misuc\笑忘书.mp3</item>
+<item>G:\Misuc\萧人凤 - 仙剑问情（仙剑奇侠传）.mp3</item>
 </playlist>
 </config>

@@ -25,6 +25,7 @@ HRESULT  IUIApplication::SetSkinDirection(const TCHAR* szDir) { return m_pImpl->
 HRESULT  IUIApplication::LoadSkin(const TCHAR* szSkinName) { return m_pImpl->LoadSkin(szSkinName); }
 HRESULT  IUIApplication::SetLog(ILog* pLog, const TCHAR* szLogXmlPath) { return m_pImpl->SetLog(pLog, szLogXmlPath); }
 HRESULT  IUIApplication::GetLog(ILog** ppLog) { return m_pImpl->GetLog(ppLog); }
+HMODULE  IUIApplication::GetUI3DModule() { return m_pImpl->GetUI3DModule(); }
 
 HRESULT  IUIApplication::SetDesignMode(VARIANT_BOOL b, IUIEditor* pUIBuilder) { return m_pImpl->SetDesignMode(b, pUIBuilder); }
 bool     IUIApplication::IsDesignMode() { return m_pImpl->IsDesignMode(); }

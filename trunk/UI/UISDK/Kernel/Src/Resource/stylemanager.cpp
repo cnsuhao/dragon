@@ -356,7 +356,7 @@ bool  StyleManager::MakeInheritString(const STYLE_SELECTOR_TYPE& eStyletype, con
 //
 //	Parameter
 //		pTreeItem
-//			[in]	要解析的CPojo_StyleItem，pTreeItem代表它的继承依赖树，是树的叶子结点。
+//			[in]	要解析的CStyleItem，pTreeItem代表它的继承依赖树，是树的叶子结点。
 //					如果自己重复出现在这个树中，表示出现了死锁继承，无法解析。
 //
 //		pStyleRes
@@ -402,7 +402,10 @@ bool  StyleManager::parse_inherit(tree<StyleResItem*>* pTreeItem, StyleRes* pSty
 
         StyleResItem* pInheritItem = pStyleRes->GetStyleItem(type, szStyleName);
         if (NULL == pInheritItem )
+        {
+            UI_LOG_WARN(_T("%s get parent style item failed. type=%d, name=%s"), FUNC_NAME, type, szStyleName);
             continue;
+        }
 
         tree<StyleResItem*> t;
         t.parent = pTreeItem;
@@ -453,6 +456,8 @@ HRESULT  StyleManager::ParseNewElement(IUIElement* pElem)
     }
 
     // 在所有的ITEM加载完后，开始解析inherit关系
+    // TODO: 2014.4.16,在初始化中就解析继承列表，会造成运行时修改父样式属性，子样式无法更新吧。以后想想怎么修改
+
     int nSize = m_resStyle.GetStyleCount();
     for (int i = 0; i < nSize; i++)
     {

@@ -2,11 +2,14 @@
 #include "stage3d.h"
 #include "UISDK\Project\UI3D\src\D3D\element\element.h"
 #include "UISDK\Project\UI3D\src\D3D\d3dapp.h"
+#include "UISDK\Kernel\Inc\Interface\irenderlayer.h"
+#include "UISDK\Project\UI3D\src\D2D\d2drendertarget.h"
 
 #if 0
 #include "UISDK\Project\UI3D\src\Element\mesh\meshelem.h"
 #include "UISDK\Project\UI3D\src\Element\particle\particle.h"
 #include "UISDK\Project\UI3D\src\D3D\Wrap\sprite.h"
+
 #endif
 
 namespace UI
@@ -71,6 +74,7 @@ void  Stage3D::ClearElement()
 void  Stage3D::OnObjectLoaded()
 {
 	m_camera.Init(m_pIStage3D->GetHWND());
+    m_pIStage3D->CreateRenderLayer();  // 默认要求Stage3D有自己的缓存用于与3D进行协作
 }
 
 void Stage3D::ResetAttribute()
@@ -162,6 +166,35 @@ void  Stage3D::OnPaint(IRenderTarget* pRenderTarget)
 
     // Present the information rendered to the back buffer to the front buffer (the screen)
     g_pD3DApp->m_pSwapChain->Present( 0, 0 );
+    IRenderLayer2*  pRenderLayer = m_pIStage3D->GetRenderLayer2();
+    IRenderTarget*  pRT = pRenderLayer->GetRenderTarget();
+    if (pRT->GetGraphicsRenderLibraryType() != GRAPHICS_RENDER_LIBRARY_TYPE_DIRECT2D)
+        return;
+
+    Direct2DRenderTarget* pD2DRT = static_cast<Direct2DRenderTarget*>(pRT);
+    ID2D1Bitmap*  pSharedBitmap = NULL;
+
+    //
+    // By using CreateSharedBitmap to create an ID2D1Bitmap from an IDXGISurface, 
+    // you can write a Direct3D scene to a bitmap and render it with Direct2D.
+    //
+    // CreateSharedBitmap, For example, an IWICBitmap can be shared with a software target, or a DXGI
+    // surface can be shared with a DXGI render target.
+    //
+
+    // 貌似只能使用dxgiRT来创建DXGISurface的sharebitmap
+//     IDXGISurface*  pSurface = NULL;
+//     g_pD3DApp->m_pSwapChain->GetBuffer(0, __uuidof(IDXGISurface), (void**)&pSurface);
+//     HRESULT hr = pD2DRT->m_pRenderTarget->CreateSharedBitmap(__uuidof(IDXGISurface), (void*)pSurface, NULL, &pSharedBitmap);
+//     if (pSharedBitmap)
+//     {
+//         D2D1_SIZE_F  fSize = pSharedBitmap->GetSize();
+//         pD2DRT->BitBlt(0, 0, (int)fSize.width, (int)fSize.height, pSharedBitmap, 0, 0);
+//         SAFE_RELEASE(pSharedBitmap);
+//     }
+//     SAFE_RELEASE(pSurface);
+
+    
 
 //     IDXGISurface1* g_pSurface1 = NULL;
 //     g_pD3DApp->m_pSwapChain->GetBuffer(0, __uuidof(IDXGISurface1), (void**)&g_pSurface1);
@@ -169,9 +202,9 @@ void  Stage3D::OnPaint(IRenderTarget* pRenderTarget)
 //     g_pSurface1->GetDC(FALSE, &hDC);
     
 //     BLENDFUNCTION bf = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
-//     //if (!AlphaBlend(pRenderTarget->GetBindHDC(), 0, 0, nWidth, nHeight, hDC, 0, 0, nWidth, nHeight, bf))
+//     //if (!AlphaBlend(pRenderTarget->GetHDC(), 0, 0, nWidth, nHeight, hDC, 0, 0, nWidth, nHeight, bf))
 //     {
-//         BitBlt(pRenderTarget->GetBindHDC(), 0, 0, 500, 500, hDC, 0, 0, SRCCOPY);
+//         BitBlt(pRenderTarget->GetHDC(), 0, 0, 500, 500, hDC, 0, 0, SRCCOPY);
 //     }
 
 

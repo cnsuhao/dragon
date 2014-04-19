@@ -2,8 +2,7 @@
 #include "UISDK\Kernel\Inc\Interface\iobject.h"
 #include "UISDK\Kernel\Src\Base\Object\object.h"
 #include "UISDK\Kernel\Src\UIObject\Window\windowbase.h"
-#include "UISDK\Kernel\Src\RenderLayer\renderchain.h"
-#include "UISDK\Kernel\Src\Animate\3dwrap\ui3dwrap.h"
+#include "UISDK\Kernel\Src\RenderLayer2\layer\renderlayer2.h"
 
 namespace UI
 {
@@ -26,22 +25,16 @@ IWindowBase*  IObject::GetWindowObject()
     else
         return NULL;
 }
-IRenderLayer*  IObject::GetRenderLayer()
+
+IRenderLayer2*   IObject::GetRenderLayer2()
 {
-    RenderLayer* p = m_pObjectImpl->GetRenderLayer();
-    if (p)
-        return p->GetIRenderLayer();
-    else
-        return NULL;
+	RenderLayer2* p = m_pObjectImpl->GetRenderLayer2();
+	if (p)
+		return p->GetIRenderLayer2();
+	else
+		return NULL;
 }
-IRenderChain*  IObject::GetRenderChain()
-{
-    RenderChain*  p = m_pObjectImpl->GetRenderChain();
-    if (p)
-        return p->GetIRenderChain();
-    else
-        return NULL;
-}
+
 HWND  IObject::GetHWND()                                    { return m_pObjectImpl->GetHWND(); }
 IUIApplication* IObject::GetUIApplication()                 { return m_pObjectImpl->GetUIApplication(); }
 void  IObject::SetUIApplication(IUIApplication* p)          { m_pObjectImpl->SetUIApplication(p); }
@@ -66,6 +59,7 @@ void  IObject::clearStateBit(UINT bit)                      { m_pObjectImpl->cle
 void  IObject::SetCanRedraw(bool bReDraw)                   { m_pObjectImpl->SetCanRedraw(bReDraw); }
 bool  IObject::CanRedraw()                                  { return m_pObjectImpl->CanRedraw(); }
 IRenderFont*  IObject::GetRenderFont()                      { return m_pObjectImpl->GetRenderFont(); }
+bool  IObject::CreateRenderLayer()                          { return m_pObjectImpl->CreateRenderLayer(); }
 
 int   IObject::GetStateBit()                                { return m_pObjectImpl->GetStateBit(); }
 bool  IObject::IsFocus()                                    { return m_pObjectImpl->IsFocus(); }
@@ -102,6 +96,8 @@ bool  IObject::IsNcObject()                                 { return m_pObjectIm
 void  IObject::SetAsNcObject(bool b)                        { m_pObjectImpl->SetAsNcObject(b); }
 bool  IObject::IsRejectMouseMsgAll()                        { return m_pObjectImpl->IsRejectMouseMsgAll(); }
 bool  IObject::IsRejectMouseMsgSelf()                       { return m_pObjectImpl->IsRejectMouseMsgSelf(); }
+void  IObject::SetZorderDirect(int lz)                            { return m_pObjectImpl->SetZorderDirect(lz); }
+int   IObject::GetZOrder()                                  { return m_pObjectImpl->GetZOrder(); }
 
 IObject*  IObject::FindChildObject(const TCHAR* szObjId) 
 {
@@ -287,32 +283,55 @@ void  IObject::SetParentObjectDirect(IObject* p)
 { 
     if (p)
         m_pObjectImpl->SetParentObjectDirect(p->GetImpl()); 
+    else
+        m_pObjectImpl->SetParentObjectDirect(NULL); 
+
 }
 void  IObject::SetChildObjectDirect(IObject* p)
 {
     if (p)
         m_pObjectImpl->SetChildObjectDirect(p->GetImpl()); 
+    else
+        m_pObjectImpl->SetChildObjectDirect(NULL); 
+
 }
 void  IObject::SetNcChildObjectDirect(IObject* p)
 {
     if (p)
         m_pObjectImpl->SetNcChildObjectDirect(p->GetImpl()); 
+    else
+        m_pObjectImpl->SetNcChildObjectDirect(NULL); 
+
 }
 void  IObject::SetNextObjectDirect(IObject* p) 
 {
     if (p)
         m_pObjectImpl->SetNextObjectDirect(p->GetImpl()); 
+    else
+        m_pObjectImpl->SetNextObjectDirect(NULL); 
+
 }
 void  IObject::SetPrevObjectDirect(IObject* p) 
 {
     if (p)
         m_pObjectImpl->SetPrevObjectDirect(p->GetImpl()); 
+    else
+        m_pObjectImpl->SetPrevObjectDirect(NULL); 
 }
 
 void  IObject::AddChild(IObject* p)
 { 
     if (p)
         m_pObjectImpl->AddChild(p->GetImpl()); 
+}
+void  IObject::InsertChild(IObject* pObj, IObject* pInsertAfter)
+{
+    Object*  pInsertAfterImpl = NULL;
+    if (pInsertAfter)
+        pInsertAfterImpl = pInsertAfter->GetImpl();
+
+    if (pObj)
+        m_pObjectImpl->InsertChild(pObj->GetImpl(), pInsertAfterImpl);
 }
 void  IObject::AddNcChild(IObject*p) 
 {
@@ -379,6 +398,7 @@ bool  IObject::SwapObject(IObject* pObj1, IObject* pObj2)
 void  IObject::UpdateObject(bool bUpdateNow) { m_pObjectImpl->UpdateObject(bUpdateNow); }
 void  IObject::UpdateObjectBkgnd(bool bUpdateNow) { m_pObjectImpl->UpdateObjectBkgnd(bUpdateNow); }
 void  IObject::UpdateLayout(bool bUpdate) { m_pObjectImpl->UpdateLayout(bUpdate); }
+void  IObject::UpdateMyLayout(bool bUpdate) { m_pObjectImpl->UpdateMyLayout(bUpdate); }
 
 void  IObject::GetNonClientRegion(CRegion4* prc) { m_pObjectImpl->GetNonClientRegion(prc); }
 void  IObject::SetNonClientRegionExcludePaddingBorder(CRegion4* prc)  { m_pObjectImpl->SetNonClientRegionExcludePaddingBorder(prc); }
@@ -423,24 +443,25 @@ int  IObject::GetParentRectT() { return m_pObjectImpl->GetParentRectT(); }
 int  IObject::GetParentRectR() { return m_pObjectImpl->GetParentRectR(); }
 int  IObject::GetParentRectB() { return m_pObjectImpl->GetParentRectB(); }
 
-POINT  IObject::GetRealPosInWindow()                                              { return m_pObjectImpl->GetRealPosInWindow(); }
+POINT  IObject::GetRealPosInWindow()                                              { return m_pObjectImpl->GetWindowPoint(); }
 void  IObject::GetWindowRect(CRect* prc)                                          { m_pObjectImpl->GetWindowRect(prc); }
-void  IObject::WindowPoint2ObjectPoint(const POINT* ptWindow, POINT* ptObj)       { m_pObjectImpl->WindowPoint2ObjectPoint(ptWindow, ptObj); }
-void  IObject::WindowPoint2ObjectClientPoint(const POINT* ptWindow, POINT* ptObj) { m_pObjectImpl->WindowPoint2ObjectClientPoint(ptWindow, ptObj); }
-void  IObject::WindowPoint2ObjectClientPoint_CalcScroll(const POINT* ptWindow, POINT* ptObj) { m_pObjectImpl->WindowPoint2ObjectClientPoint_CalcScroll(ptWindow, ptObj); }
-void  IObject::ObjectPoint2ObjectClientPoint(const POINT* ptWindow, POINT* ptObj) { m_pObjectImpl->ObjectPoint2ObjectClientPoint(ptWindow, ptObj); }
-void  IObject::ClientRect2ObjectRect(const RECT* rcClient, RECT* rcObj)           { m_pObjectImpl->ClientRect2ObjectRect(rcClient, rcObj); }
+void  IObject::WindowPoint2ObjectPoint(const POINT* ptWindow, POINT* ptObj, bool bCalcTransform)       { m_pObjectImpl->WindowPoint2ObjectPoint(ptWindow, ptObj, bCalcTransform); }
+void  IObject::WindowPoint2ObjectClientPoint(const POINT* ptWindow, POINT* ptObj, bool bCalcTransform) { m_pObjectImpl->WindowPoint2ObjectClientPoint(ptWindow, ptObj, bCalcTransform); }
+void  IObject::ObjectPoint2ObjectClientPoint(const POINT* ptWindow, POINT* ptObj) { Object::ObjectPoint2ObjectClientPoint(m_pObjectImpl, ptWindow, ptObj); }
+void  IObject::ClientRect2ObjectRect(const RECT* rcClient, RECT* rcObj)           { Object::ObjectClientRect2ObjectRect(m_pObjectImpl, rcClient, rcObj); }
 
 bool  IObject::GetScrollOffset(int* pxOffset, int* pyOffset) { return m_pObjectImpl->GetScrollOffset(pxOffset, pyOffset); }
 bool  IObject::GetScrollRange(int* pxRange, int* pyRange)    { return m_pObjectImpl->GetScrollRange(pxRange, pyRange); }
-bool  IObject::GetObjectVisibleRect(RECT* prc, bool bInWindowOrLayer)       { return m_pObjectImpl->GetObjectVisibleRect(prc, bInWindowOrLayer); }
-bool  IObject::GetObjectVisibleClientRect(RECT* prc, bool bInWindowOrLayer) { return m_pObjectImpl->GetObjectVisibleClientRect(prc, bInWindowOrLayer); }
+bool  IObject::GetVisibleRectInWindow(RECT* prc)       { return m_pObjectImpl->GetVisibleRectInWindow(prc); }
+bool  IObject::GetVisibleRectInLayer(RECT* prc)        { return m_pObjectImpl->GetVisibleRectInLayer(prc); }
+bool  IObject::GetVisibleClientRectInLayer(RECT* prc)  { return m_pObjectImpl->GetVisibleClientRectInLayer(prc); }
 
 int  IObject::GetWidth()             { return m_pObjectImpl->GetWidth(); }
 int  IObject::GetHeight()            { return m_pObjectImpl->GetHeight(); }
 int  IObject::GetWidthWithMargins()  { return m_pObjectImpl->GetWidthWithMargins(); }
 int  IObject::GetHeightWithMargins() { return m_pObjectImpl->GetHeightWithMargins(); }
 
+ILayoutParam*  IObject::GetLayoutParam()  { return m_pObjectImpl->GetLayoutParam(); }
 int   IObject::GetConfigWidth()        { return m_pObjectImpl->GetConfigWidth(); }
 int   IObject::GetConfigHeight()       { return m_pObjectImpl->GetConfigHeight(); }
 int   IObject::GetConfigLayoutFlags()  { return m_pObjectImpl->GetConfigLayoutFlags(); }
@@ -472,29 +493,30 @@ SIZE  IObject::GetDesiredSize() { return m_pObjectImpl->GetDesiredSize(); }
 
 HBITMAP  IObject::TakeSnapshot() { return m_pObjectImpl->TakeSnapshot(); }
 HBITMAP  IObject::TakeBkgndSnapshot() { return m_pObjectImpl->TakeBkgndSnapshot();  }
+GRAPHICS_RENDER_LIBRARY_TYPE  IObject::GetGraphicsRenderLibraryType() { return m_pObjectImpl->GetGraphicsRenderLibraryType(); }
 bool  IObject::SetCursor(const TCHAR* szCursorID) { return m_pObjectImpl->SetCursor(szCursorID); }
 bool  IObject::SetMouseCapture(int nNotifyMsgId){ return m_pObjectImpl->SetMouseCapture(nNotifyMsgId); }
 bool  IObject::ReleaseMouseCapture(){ return m_pObjectImpl->ReleaseMouseCapture(); }
 bool  IObject::SetKeyboardCapture(int nNotifyMsgId){ return m_pObjectImpl->SetKeyboardCapture(nNotifyMsgId); }
 bool  IObject::ReleaseKeyboardCapture() { return m_pObjectImpl->ReleaseKeyboardCapture(); }
 
-IObject3DWrap*  IObject::Begin3D()
-{
-    Object3DWrap* p = m_pObjectImpl->Begin3D(); 
-    if (p)
-        return p->GetIObject3DWrap();
-    return NULL;
-}
-void  IObject::End3D()
-{
-    m_pObjectImpl->End3D();
-}
-IObject3DWrap*  IObject::Get3DWrap()
-{
-    Object3DWrap* p = m_pObjectImpl->Get3DWrap(); 
-    if (p)
-        return p->GetIObject3DWrap();
-    return NULL;
-}
+// IObject3DWrap*  IObject::Begin3D()
+// {
+//     Object3DWrap* p = m_pObjectImpl->Begin3D(); 
+//     if (p)
+//         return p->GetIObject3DWrap();
+//     return NULL;
+// }
+// void  IObject::End3D()
+// {
+//     m_pObjectImpl->End3D();
+// }
+// IObject3DWrap*  IObject::Get3DWrap()
+// {
+//     Object3DWrap* p = m_pObjectImpl->Get3DWrap(); 
+//     if (p)
+//         return p->GetIObject3DWrap();
+//     return NULL;
+// }
 
 }

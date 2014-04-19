@@ -18,6 +18,7 @@ public:
     virtual void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
     virtual LAYOUTTYPE  GetLayoutType() { return LAYOUT_TYPE_GRID; }
     virtual SIZE  CalcDesiredSize();
+    virtual bool  IsSizedByContent();
 
 public:
     DECLARE_INT_SETGET(ConfigWidth)
@@ -72,8 +73,11 @@ public:
     virtual SIZE  Measure();
     virtual void  Arrange(IObject* pObjToArrage=NULL, bool bUpdate=false);
 
-	int     getColPos(int nCol);    
-	int     getRowPos(int nRow);
+	int  getColPos(unsigned int nCol);    
+	int  getRowPos(unsigned int nRow);
+
+    GridWH*  GetWidth(unsigned int nIndex);
+    GridWH*  GetHeight(unsigned int nIndex);
 
 private:
 	vector<GridWH>   widths;

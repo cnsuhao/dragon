@@ -18,6 +18,7 @@ public:
     virtual void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
     virtual LAYOUTTYPE  GetLayoutType() { return LAYOUT_TYPE_STACK; }
     virtual SIZE  CalcDesiredSize();
+    virtual bool  IsSizedByContent();
 
 public:
     DECLARE_INT_SETGET(ConfigWidth)

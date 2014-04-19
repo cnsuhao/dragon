@@ -163,10 +163,10 @@ void ButtonBase::OnLButtonUp(UINT nFlags, POINT point)
         return;
 
 	POINT ptObj = {0,0};
-	pParent->WindowPoint2ObjectClientPoint(&point, &ptObj);
+	pParent->WindowPoint2ObjectClientPoint(&point, &ptObj, true);
 
     // UI_WM_HITTEST是判断与自己的m_rcParent的交集，因此要将窗口坐标转换成parent的client坐标
-    UINT nHitTest = UISendMessage(m_pIButtonBase, UI_WM_HITTEST, ptObj.x, ptObj.y);
+    UINT nHitTest = UISendMessage(m_pIButtonBase, UI_WM_HITTEST, (WPARAM)&ptObj);
     if (HTNOWHERE != nHitTest)
 	{
 		this->OnClicked(&point);   // 备注：由于DoNotify可能导致当前press hover对象发生改变，使得本控件丢失刷新
@@ -373,8 +373,41 @@ void  Button::SetIconFromFile(const TCHAR* szIconPath)
     IImageRender*  pImageForeRender = (IImageRender*)pForeRender->QueryInterface(UI::uiiidof(IImageRender));
 
     UI::IRenderBitmap*  pRenderBitmap = NULL;
-    UI::UICreateRenderBitmap(GetRenderLibraryType(m_pIButton), IMAGE_ITEM_TYPE_IMAGE, &pRenderBitmap);
+    UI::UICreateRenderBitmap(pUIApplication, m_pIButton->GetGraphicsRenderLibraryType(), IMAGE_ITEM_TYPE_IMAGE, &pRenderBitmap);
     pRenderBitmap->LoadFromFile(szIconPath, true);
+    pImageForeRender->SetRenderBitmap(pRenderBitmap);
+    pImageForeRender->SetImageDrawType(UI::DRAW_BITMAP_CENTER);
+    SAFE_RELEASE(pRenderBitmap);
+
+    m_pIButton->SetForegndRender(pForeRender);
+    SAFE_RELEASE(pForeRender);
+}
+
+void  Button::SetIconFromImageId(const TCHAR* szImageId)
+{
+    m_pIButton->SetForegndRender(NULL);
+    if (NULL == szImageId)
+        return;
+
+    IUIApplication*  pUIApplication = m_pIButton->GetUIApplication();
+    if (NULL == pUIApplication)
+    {
+        UIASSERT(0);
+        return;
+    }
+
+    UI::IRenderBitmap*  pRenderBitmap = NULL;
+    pUIApplication->GetActiveSkinImageRes()->GetBitmap(
+        szImageId, 
+        m_pIButton->GetGraphicsRenderLibraryType(), 
+        &pRenderBitmap);
+    if (!pRenderBitmap)
+        return;
+
+    IRenderBase*   pForeRender = NULL;
+    pUIApplication->CreateRenderBase(RENDER_TYPE_IMAGE, m_pIButton, &pForeRender);
+    IImageRender*  pImageForeRender = (IImageRender*)pForeRender->QueryInterface(UI::uiiidof(IImageRender));
+
     pImageForeRender->SetRenderBitmap(pRenderBitmap);
     pImageForeRender->SetImageDrawType(UI::DRAW_BITMAP_CENTER);
     SAFE_RELEASE(pRenderBitmap);
@@ -402,7 +435,7 @@ void  Button::SetIconFromHBITMAP(HBITMAP hBitmap)
     IImageRender*  pImageForeRender = (IImageRender*)pForeRender->QueryInterface(UI::uiiidof(IImageRender));
 
     UI::IRenderBitmap*  pRenderBitmap = NULL;
-    UI::UICreateRenderBitmap(UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDI, IMAGE_ITEM_TYPE_IMAGE, &pRenderBitmap);
+    UI::UICreateRenderBitmap(pUIApplication, UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDI, IMAGE_ITEM_TYPE_IMAGE, &pRenderBitmap);
     pRenderBitmap->Attach(hBitmap, true);
     pImageForeRender->SetRenderBitmap(pRenderBitmap);
     pImageForeRender->SetImageDrawType(UI::DRAW_BITMAP_CENTER);
@@ -624,7 +657,7 @@ void Button::SetAttribute(IMapAttribute* pMapAttrib, bool bReload )
     if (nButtonStyle >= BUTTON_STYLE_HAVE_TEXT_FIRST && nButtonStyle <= BUTTON_STYLE_HAVE_TEXT_LAST)
     {
         ITextRenderBase* pTextRender = NULL;
-        pMapAttrib->GetAttr_TextRenderBase(XML_TEXTRENDER_TYPE, true, m_pIButton->GetUIApplication(), static_cast<IObject*>(m_pIButton), &pTextRender);
+        pMapAttrib->GetAttr_TextRenderBase(NULL, XML_TEXTRENDER_TYPE, true, m_pIButton->GetUIApplication(), static_cast<IObject*>(m_pIButton), &pTextRender);
         if (pTextRender)
         {
             m_pIButton->SetTextRender(pTextRender);

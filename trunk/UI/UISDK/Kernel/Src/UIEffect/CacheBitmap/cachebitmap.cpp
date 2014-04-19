@@ -111,12 +111,12 @@ void  CacheBitmap::Clear(DWORD dwColor, RECT* prc)
 
 void  CacheBitmap::AdjustWH(int nWidth, int nHeight, int& nLastWidth, int& nLastHeight)
 {
-#if 0
+#if 1
     nLastWidth = nWidth;
     nLastHeight = nHeight;
 #else
-    nLastWidth = CalcMin2(nWidth);  // 将pitch作成2的n次方，加快定位
-    nLastHeight = nHeight;
+//     nLastWidth = CalcMin2(nWidth);  // 将pitch作成2的n次方，加快定位
+//     nLastHeight = nHeight;
 #endif
 }
 

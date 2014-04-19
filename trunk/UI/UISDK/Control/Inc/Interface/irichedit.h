@@ -19,7 +19,7 @@ interface UICTRLAPI IRichEdit : public IControl
 
     bool  SetText(const TCHAR* szText);
     int   GetText(TCHAR* szBuf, int nLen);
-    bool  AppendText(const TCHAR* szText, int nSize);
+    bool  AppendText(const TCHAR* szText, int nLength=-1);
     bool  GetEncodeTextW(IBuffer** ppBuffer);
     bool  AppendEncodeTextW(const TCHAR* szText, int nSize);
 
@@ -34,6 +34,8 @@ interface UICTRLAPI IRichEdit : public IControl
     bool  SetCharFormatByLogFont(LOGFONT* plf);
     bool  SetCharFormat(CHARFORMAT2* pcf);
     void  GetCharFormat(CHARFORMAT2* pcf);
+	LRESULT  SetCharFormatEx(UINT nPart, CHARFORMAT2* pcf);
+	void  SetSel(int nPos, int nLen);
     
     bool  InsertGif(const TCHAR* szGifFile);
     bool  InsertSkinGif(const TCHAR* szGifId);

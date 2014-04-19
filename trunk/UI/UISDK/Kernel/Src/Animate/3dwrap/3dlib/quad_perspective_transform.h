@@ -143,7 +143,7 @@ typedef float _pttype;
 		{
 			_pttype dx = (_pttype)(pQuad->Ax - pQuad->Bx + pQuad->Cx - pQuad->Dx);
 			_pttype dy = (_pttype)(pQuad->Ay - pQuad->By + pQuad->Cy - pQuad->Dy);
-			if(dx == 0.0 && dy == 0.0)
+			if(dx == 0.0 && dy == 0.0) 
 			{   
 				// Affine case (parallelogram)
 				//---------------

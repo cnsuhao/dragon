@@ -30,8 +30,6 @@ public:
 	PerspectiveTextureMapping();
     ~PerspectiveTextureMapping();
 
-    virtual void  Do();
-
     struct MappingParam
     {
         int    yStart;

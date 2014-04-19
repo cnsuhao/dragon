@@ -31,7 +31,7 @@ void  MultiLabel::SetAttribute(UI::IMapAttribute* pMapAttrib, bool bReload)
 
     szText = pMapAttrib->GetAttr(XML_TEXTRENDER_FONT, true);
     if (szText)
-        pFontRes->GetFont((BSTR)szText, this->OnGetGraphicsRenderType(), &m_pRenderFont);
+        pFontRes->GetFont((BSTR)szText, m_pIMultiLabel->GetGraphicsRenderLibraryType(), &m_pRenderFont);
 }
 
 void  MultiLabel::ResetAttribute()
@@ -74,10 +74,10 @@ void MultiLabel::OnLButtonUp(UINT nFlags, POINT point)
         return;
 
     POINT ptObj = {0,0};
-    pParent->WindowPoint2ObjectClientPoint(&point, &ptObj);
+    pParent->WindowPoint2ObjectClientPoint(&point, &ptObj, true);
 
     // UI_WM_HITTEST是判断与自己的m_rcParent的交集，因此要将窗口坐标转换成parent的client坐标
-    UINT nHitTest = UISendMessage(m_pIMultiLabel, UI_WM_HITTEST, ptObj.x, ptObj.y);
+    UINT nHitTest = UISendMessage(m_pIMultiLabel, UI_WM_HITTEST, (WPARAM)&ptObj, NULL);
     if (HTNOWHERE != nHitTest)
     {
         this->OnClicked(&point);   // 备注：由于DoNotify可能导致当前press hover对象发生改变，使得本控件丢失刷新

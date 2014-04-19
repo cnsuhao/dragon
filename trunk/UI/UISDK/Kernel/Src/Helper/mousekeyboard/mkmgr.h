@@ -6,34 +6,6 @@ namespace UI
 class Object;
 class UIApplication;
 class WindowBase;
-// 
-// class MKMgrBase 
-// {
-// public:
-//     BOOL  ProcessMessage(UIMSG* pMsg);
-// 
-// private:
-//     virtual BOOL  virtualProcessMessage(UIMSG* pMsg) = 0;
-// 
-// protected:
-//     Object*   m_pObjHover;
-//     Object*   m_pObjPress;
-//     Object*   m_pObjFocus;
-// 
-//     UIApplication*  m_pUIApplication;
-//     WindowBase*     m_pWindowBase;
-// };
-// 
-// class WindowMKMgr : public MKMgrBase
-// {
-// 
-// };
-// 
-// class UIEditorWindowMKMgr : public MKMgrBase
-// {
-// 
-// };
-
 
     template <class T>
     void _SetHoverObject(Object* pNewHoverObj, T* pThis)

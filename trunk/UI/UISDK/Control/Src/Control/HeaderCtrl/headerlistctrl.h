@@ -82,7 +82,7 @@ public:
     void  SetHScrollOffset(int nhScrollOffset); 
     int   GetHScrollOffset();
     int   GetColumnTotalWidth();
-    ColumnsInfoImpl*  GetColumnsInfo() { return &m_pColumnsInfo; }
+    ColumnsInfoImpl*  GetColumnsInfo();
 
     IListItemBase*  HitTest(POINT ptWindow, HEADERLISTCTRL_HITTEST* peHitTest);
 

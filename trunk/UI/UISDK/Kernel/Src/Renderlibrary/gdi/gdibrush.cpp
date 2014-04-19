@@ -10,14 +10,14 @@ GdiBrush::~GdiBrush()
 	DeleteObject();
 }
 
-void  GdiBrush::CreateInstance(IRenderBrush** ppOutRef)
+void  GdiBrush::CreateInstance(IRenderBrush** ppOut)
 {
-	UIASSERT(NULL != ppOutRef);
-	if (NULL == ppOutRef)
+	if (NULL == ppOut)
 		return;
 
 	GdiBrush* p = new GdiBrush();
-	*ppOutRef = static_cast<IRenderBrush*>(p);
+    p->AddRef();
+	*ppOut = static_cast<IRenderBrush*>(p);
 }
 
 void GdiBrush::DeleteObject()

@@ -29,7 +29,10 @@ int   IMenu::TrackPopupMenu(UINT nFlag, int x, int y, IMessage* pNotifyObj, HWND
 { 
 	return m_pMenuImpl->TrackPopupMenu(nFlag, x, y, pNotifyObj, hWndClickFrom, prcClickFrom); 
 }
-
+IWindow*  IMenu::CreateMenuWindow()
+{
+    return m_pMenuImpl->CreateMenuWindow();
+}
 IWindow*  IMenu::GetPopupWindow()
 {
 	return m_pMenuImpl->GetPopupWindow();

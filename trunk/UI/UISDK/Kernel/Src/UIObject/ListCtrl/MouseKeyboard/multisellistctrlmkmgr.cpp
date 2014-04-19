@@ -324,7 +324,7 @@ bool  DotLine_SelectRegionRender::Init(Object* pObj, POINT pt)
     // 计算裁剪区域
     CRect rcVisible;
     CRect rcClient;
-    if (false == m_pObject->GetObjectVisibleRect(&rcVisible, true))   // 该对象在窗口上不可见，不绘制
+    if (false == m_pObject->GetVisibleRectInWindow(&rcVisible))   // 该对象在窗口上不可见，不绘制
         return false;
 
     m_hWndDC = GetDC(m_hWnd);
@@ -347,7 +347,7 @@ bool  DotLine_SelectRegionRender::Init(Object* pObj, POINT pt)
 
     // 初始位置
     POINT ptClient = {0,0};
-    m_pObject->WindowPoint2ObjectClientPoint_CalcScroll(&pt, &ptClient);
+    m_pObject->WindowPoint2ObjectClientPoint(&pt, &ptClient, true);
     m_rcSelectRegion.SetRect(ptClient.x, ptClient.y, ptClient.x, ptClient.y);
 
     CRect rcTempNew = NormalizeRect(&m_rcSelectRegion);
@@ -358,7 +358,7 @@ bool  DotLine_SelectRegionRender::Init(Object* pObj, POINT pt)
 void  DotLine_SelectRegionRender::MouseMove(POINT point)
 {
     POINT ptClient = {0,0};
-    m_pObject->WindowPoint2ObjectClientPoint_CalcScroll(&point, &ptClient);
+    m_pObject->WindowPoint2ObjectClientPoint(&point, &ptClient, true);
 
     if (ptClient.x < m_rcView.left)
         ptClient.x = m_rcView.left;
@@ -392,10 +392,12 @@ void  DotLine_SelectRegionRender::LButtonUp()
 
 void  DotLine_SelectRegionRender::Draw(RECT* prc)
 {
-    WindowBase* pWindow = m_pObject->GetWindowObject();
-    HDC hDC = pWindow->GetRenderChainMemDC();
-    ::DrawFocusRect(hDC, prc);
-    pWindow->CommitDoubleBuffet2Window(NULL, prc);
+    UIASSERT(0);
+    // TODO:
+//     WindowBase* pWindow = m_pObject->GetWindowObject();
+//     HDC hDC = pWindow->GetRenderChainMemDC();
+//     ::DrawFocusRect(hDC, prc);
+//     pWindow->CommitDoubleBuffet2Window(NULL, NULL, prc);
 }
 // 
 // void  DotLine_SelectRegionRender::PrePaint()

@@ -59,9 +59,25 @@ HRESULT  ComboBoxBase::FinalConstruct(IUIApplication* p)
     m_pEdit->ClearNotify();
     m_pEdit->AddHook(m_pIComboBoxBase, 0, COMBOBOX_EDIT_MSG_HOOK_MSG_ID);
 
+	PopupListBoxWindow::CreateInstance(p, &m_pPopupWrapWnd);
+
     // Object将调用 ResetAttribute ，但是Combobox中的ResetAttribute是基于子控件已创建基础上的，因此将该语句调后
     DO_PARENT_PROCESS(IComboBoxBase, IControl);
     return GetCurMsg()->lRet;
+}
+
+void  ComboBoxBase::FinalRelease()
+{
+    SetMsgHandled(FALSE);
+
+    if (m_pEdit)
+    {
+        m_pEdit->RemoveHook(m_pIComboBoxBase);
+    }
+    if (m_pButton)
+    {
+        m_pButton->RemoveHook(m_pIComboBoxBase);
+    }
 }
 
 void ComboBoxBase::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
@@ -76,7 +92,7 @@ void ComboBoxBase::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
         m_pButton->SetAttributeByPrefix(XML_COMBOBOX_BUTTON_PRIFIX, pMapAttrib, bReload, true);
 
     ITextRenderBase*  pTextRenderBase = NULL;
-    pMapAttrib->GetAttr_TextRenderBase(XML_TEXTRENDER_TYPE, true, pUIApplication, m_pIComboBoxBase, &pTextRenderBase);
+    pMapAttrib->GetAttr_TextRenderBase(NULL, XML_TEXTRENDER_TYPE, true, pUIApplication, m_pIComboBoxBase, &pTextRenderBase);
     if (pTextRenderBase)
     {
         m_pIComboBoxBase->SetTextRender(pTextRenderBase);
@@ -122,6 +138,13 @@ void ComboBoxBase::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
             m_pButton->ModifyStyle(OBJECT_STYLE_TRANSPARENT, 0, false);
             SAFE_RELEASE(pRenderBase);
         }
+	}
+
+	// 尽可能的早设置graphics render type
+	if (m_pPopupWrapWnd)
+	{
+		const TCHAR*  szText = pMapAttrib->GetAttr(XML_POPUPWINDOW_PREFIX XML_WINDOW_GRAPHICS_RENDER_LIBRARY, false);
+		m_pPopupWrapWnd->GetIWindowRender()->SetGraphicsRenderType(UIParseGraphicsRenderLibraryType(szText));
 	}
 }
 
@@ -212,6 +235,8 @@ void  ComboBoxBase::GetAutoSize(SIZE* pSize)
 
 void ComboBoxBase::OnSize(UINT nType, int cx, int cy)
 {
+    SetMsgHandled(FALSE);
+
 	CRect  rcClient;
 	m_pIComboBoxBase->GetClientRectAsWin32(&rcClient);
 
@@ -466,15 +491,11 @@ void ComboBoxBase::OnUnInitPopupControlWindow()
 
 bool ComboBoxBase::_DefaultDropDown()
 {
-    if (NULL == m_pPopupWrapWnd)
+	UIASSERT(m_pPopupWrapWnd);
+    if (NULL == m_pPopupWrapWnd->GetHWND())
     {
-        IUIApplication*  pUIApplication = m_pIComboBoxBase->GetUIApplication();
-        PopupListBoxWindow::CreateInstance(pUIApplication, &m_pPopupWrapWnd);
-        if (NULL == m_pPopupWrapWnd)
-            return false;
-
         // 指定一个父窗口，而不是采用置顶的方式。避免在EDIT输入中文时，listbox遮挡了输入法窗口
-        m_pPopupWrapWnd->Create(m_pDropDownObject, _T("PopupListBox"), m_pIComboBoxBase->GetHWND());
+        m_pPopupWrapWnd->Create(m_pIComboBoxBase, m_pDropDownObject, _T("PopupListBox"), m_pIComboBoxBase->GetHWND());
     }
 
 	HWND hWnd = m_pIComboBoxBase->GetHWND();
@@ -496,6 +517,13 @@ bool ComboBoxBase::_DefaultDropDown()
     m_pPopupWrapWnd->Show(pt, FALSE);  // <-- 这里不要用模态的，否则直接点击窗口关闭按钮时会导致崩溃
 
     return true;
+}
+
+void  ComboBoxBase::SetDropDownObjectPtr(IObject* p)
+{
+    m_pDropDownObject = p; 
+	UIASSERT(m_pPopupWrapWnd);
+    m_pPopupWrapWnd->AddChild(m_pDropDownObject);
 }
 
 void ComboBoxBase::CloseUp()
@@ -548,6 +576,10 @@ void  ComboBox::FinalRelease()
 {
     SetMsgHandled(FALSE);
 
+    if (m_pDropDownCtrl)
+    {
+        m_pDropDownCtrl->RemoveHook(m_pIComboBox);
+    }
     SAFE_DELETE_Ixxx(m_pDropDownCtrl);
 }
 
@@ -633,9 +665,8 @@ void  ComboBox::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 		}
 	}
 
-	m_pDropDownCtrl->SetAttributeByPrefix(XML_COMBOBOX_LISTBOX_PRIFIX, pMapAttrib, bReload, true);
-    
     __super::SetAttribute(pMapAttrib, bReload);
+	m_pDropDownCtrl->SetAttributeByPrefix(XML_COMBOBOX_LISTBOX_PRIFIX, pMapAttrib, bReload, true);
 
     if (!bReload)
     {

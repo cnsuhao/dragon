@@ -10,7 +10,6 @@ public:
 
 	UI_BEGIN_MSG_MAP_Ixxx(CLyricDlg)
 		UIMSG_WM_PAINT(OnPaint)
-		UIMSG_WM_GETGRAPHICSRENDERLIBRARYTYPE(OnGetGraphicsRenderType)
 		UIMSG_WM_CLOSE(OnClose)
 		UIMSG_BN_CLICKED(_T("switch_layered"), OnSwitchLayered)
         UIMSG_WM_SKINCHANGED(OnSkinChanged)
@@ -34,7 +33,6 @@ protected:
     void  OnPaint(UI::IRenderTarget* pRenderTarget);
     void  OnClose();
     void  OnSwitchLayered();
-    LRESULT  OnGetGraphicsRenderType() { return UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS; }
     void  OnSkinChanged();
     void  OnDestroy();
 

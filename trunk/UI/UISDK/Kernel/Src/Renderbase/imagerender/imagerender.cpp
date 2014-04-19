@@ -73,7 +73,7 @@ void ImageRender::SetAttribute(SetAttrPrefixData* pData)
 	if (szText)
     {
         if (m_pObject)
-		    pImageRes->GetBitmap((BSTR)szText, ::GetRenderLibraryType(m_pObject->GetIObject()), &m_pBitmap);
+		    pImageRes->GetBitmap((BSTR)szText, m_pObject->GetIObject()->GetGraphicsRenderLibraryType(), &m_pBitmap);
         else
             pImageRes->GetBitmap((BSTR)szText, UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS, &m_pBitmap);  // TODO: 
     }
@@ -392,14 +392,7 @@ ImageListRender::~ImageListRender( )
 	SAFE_RELEASE(m_pImageList);
 	SAFE_DELETE(m_p9Region);
 
-	// 删除动画通知，避免崩溃
-	if (m_bUseAlphaAnimate && m_bIsAnimate)
-	{
-		IUIApplication* pUIApp = m_pObject->GetUIApplication();
-		IAnimateManager* pAnimateMgr = pUIApp->GetAnimateMgr();
-		pAnimateMgr->ClearStoryboardOfNotify(static_cast<IMessage*>(m_pIImageListRender));
-		m_bIsAnimate = false;
-	}
+	DestroyAnimate();
 }
 
 void ImageListRender::SetAttribute(SetAttrPrefixData* pData)
@@ -440,7 +433,7 @@ void ImageListRender::SetAttribute(SetAttrPrefixData* pData)
 		SAFE_RELEASE(m_pImageList);
 		IRenderBitmap* pBitmap = NULL;
 		pImageRes->GetBitmap((BSTR)szText, 
-			m_pObject?::GetRenderLibraryType(m_pObject->GetIObject()):GRAPHICS_RENDER_LIBRARY_TYPE_GDI,
+			m_pObject?(m_pObject->GetIObject()->GetGraphicsRenderLibraryType()):GRAPHICS_RENDER_LIBRARY_TYPE_GDI,
 			&pBitmap);
 		if (NULL == pBitmap)
 			return;
@@ -587,37 +580,16 @@ void  ImageListRender::DrawState(RENDERBASE_DRAWSTATE* pDrawStruct)
 	// 从Normal->Hover或者Hover->Normal时，开启动画计时
 	if ((m_nPrevState&(RENDER_STATE_NORMAL|RENDER_STATE_DEFAULT)) && (nRenderState&RENDER_STATE_HOVER))
 	{
-		IUIApplication* pUIApp = m_pObject->GetUIApplication();
-		IAnimateManager* pAnimateMgr = pUIApp->GetAnimateMgr();
-        pAnimateMgr->ClearStoryboardOfNotify(static_cast<IMessage*>(m_pIImageListRender));
-
-        IStoryboard*  pStoryboard = pAnimateMgr->CreateStoryboard(static_cast<IMessage*>(m_pIImageListRender));
-
-		IIntLinearMove* pMoveAlgo = NULL;
-        IIntTimeline* pTimeline = (IIntTimeline*)pStoryboard->CreateTimeline(TV_INT, 0, TMA_Linear, (IMoveAlgorithm**)&pMoveAlgo);
-        pMoveAlgo->SetParam1(0, 255, 200);
-
-		m_nCurrentAlpha = 0;  // 避免在第一次Tick响应之前被控件强制刷新了，结果此时的m_nCurrentAlpha不是计算得到的值。
-		pStoryboard->Begin();
+        m_nCurrentAlpha = 0;  // 避免在第一次Tick响应之前被控件强制刷新了，结果此时的m_nCurrentAlpha不是计算得到的值。
+        CreateAnimate(0, 255);
 
 		m_bIsAnimate = true;
 		DrawIndexWidthAlpha(pRenderTarget, prc, LOWORD(m_nPrevState), 255);
 	}
 	else if ((nRenderState&(RENDER_STATE_NORMAL|RENDER_STATE_DEFAULT)) && (m_nPrevState&RENDER_STATE_HOVER))
 	{
-		IUIApplication* pUIApp = m_pObject->GetUIApplication();
-		IAnimateManager* pAnimateMgr = pUIApp->GetAnimateMgr();
-        pAnimateMgr->ClearStoryboardOfNotify(static_cast<IMessage*>(m_pIImageListRender));
-
-        IStoryboard*  pStoryboard = pAnimateMgr->CreateStoryboard(static_cast<IMessage*>(m_pIImageListRender));
-
-        IIntLinearMove* pMoveAlgo = NULL;
-		IIntTimeline* pTimeline = (IIntTimeline*)pStoryboard->CreateTimeline(
-            TV_INT, 0, TMA_Linear, (IMoveAlgorithm**)&pMoveAlgo);
-        pMoveAlgo->SetParam1(255, 0, 200);
-	
         m_nCurrentAlpha = 255;
-        pStoryboard->Begin();
+        CreateAnimate(255, 0);
 
 		m_bIsAnimate = true;
 		DrawIndexWidthAlpha(pRenderTarget, prc, LOWORD(m_nPrevState), 255);
@@ -629,11 +601,7 @@ void  ImageListRender::DrawState(RENDERBASE_DRAWSTATE* pDrawStruct)
 			if (0==(nRenderState & (RENDER_STATE_NORMAL|RENDER_STATE_DEFAULT|RENDER_STATE_HOVER)))
 			{
 				// 在动画过程中按下了，应该立即停止动画
-				IUIApplication* pUIApp = m_pObject->GetUIApplication();
-				IAnimateManager* pAnimateMgr = pUIApp->GetAnimateMgr();
-				pAnimateMgr->ClearStoryboardOfNotify(static_cast<IMessage*>(m_pIImageListRender));
-				m_bIsAnimate = false;
-
+				DestroyAnimate();
 				DrawIndexWidthAlpha(pRenderTarget, prc, nRealIndex, 255);
 			}
 			else
@@ -659,6 +627,32 @@ void  ImageListRender::DrawState(RENDERBASE_DRAWSTATE* pDrawStruct)
 		}
 	}
 	m_nPrevState = nState;
+}
+
+void  ImageListRender::DestroyAnimate()
+{
+    if (m_bUseAlphaAnimate && m_bIsAnimate)
+    {
+        IUIApplication* pUIApp = m_pObject->GetUIApplication();
+        IAnimateManager* pAnimateMgr = pUIApp->GetAnimateMgr();
+        pAnimateMgr->ClearStoryboardOfNotify(static_cast<IMessage*>(m_pIImageListRender));
+        m_bIsAnimate = false;
+    }
+}
+
+void  ImageListRender::CreateAnimate(int nFrom, int nTo)
+{
+    IUIApplication* pUIApp = m_pObject->GetUIApplication();
+    IAnimateManager* pAnimateMgr = pUIApp->GetAnimateMgr();
+    pAnimateMgr->ClearStoryboardOfNotify(static_cast<IMessage*>(m_pIImageListRender));
+
+    IStoryboard*  pStoryboard = pAnimateMgr->CreateStoryboard(static_cast<IMessage*>(m_pIImageListRender));
+
+    IIntLinearMove* pMoveAlgo = NULL;
+    IIntTimeline* pTimeline = (IIntTimeline*)pStoryboard->CreateTimeline(
+        TV_INT, 0, TMA_Linear, (IMoveAlgorithm**)&pMoveAlgo);
+    pMoveAlgo->SetParam1(nFrom, nTo, 200);
+    pStoryboard->Begin();
 }
 
 void  ImageListRender::DrawIndexWidthAlpha(IRenderTarget* pRenderTarget, const CRect* prc, int nIndex, byte bAlpha)

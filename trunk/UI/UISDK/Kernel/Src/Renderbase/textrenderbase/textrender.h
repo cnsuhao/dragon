@@ -57,7 +57,7 @@ public:
 	IFontRes*  GetActiveSkinFontRes();
 
 	bool  IsThemeRender();
-    void  CheckSkinMaterialChanged();
+    void  CheckSkinTextureChanged();
 
 protected:
     IUIApplication*   m_pUIApplication;
@@ -117,7 +117,7 @@ public:
         UIMSG_WM_TEXTRENDERBASE_DRAWSTATE(DrawState)
         UIMSG_WM_GETRENDERFONT(GetRenderFont)
         UIMSG_WM_QUERYINTERFACE(QueryInterface)
-        UIMESSAGE_HANDLER_EX(UI_WM_SKINMATERIALCHANGED, OnSkinMaterialChanged)
+        UIMESSAGE_HANDLER_EX(UI_WM_SKINTEXTURECHANGED, OnSkinTextureChanged)
         UIMSG_WM_SETATTRIBUTE_PREFIX(SetAttribute)
     UI_END_MSG_MAP_CHAIN_PARENT(TextRenderBase)
 
@@ -130,7 +130,7 @@ protected:
     void  SetAttribute(SetAttrPrefixData* pData);
     void  DrawState(TEXTRENDERBASE_DRAWSTATE* pDrawStruct);
     IRenderFont*  GetRenderFont() { return m_hFont; }
-    LRESULT  OnSkinMaterialChanged(UINT, WPARAM, LPARAM);
+    LRESULT  OnSkinTextureChanged(UINT, WPARAM, LPARAM);
 
 private:
     IContrastColorTextRender*  m_pIContrastColorTextRender;
@@ -153,7 +153,7 @@ public:
     UI_BEGIN_MSG_MAP
         UIMSG_WM_TEXTRENDERBASE_DRAWSTATE(DrawState)
         UIMSG_WM_GETRENDERFONT(GetRenderFont)
-        UIMESSAGE_HANDLER_EX(UI_WM_SKINMATERIALCHANGED, OnSkinMaterialChanged)
+        UIMESSAGE_HANDLER_EX(UI_WM_SKINTEXTURECHANGED, OnSkinTextureChanged)
         UIMSG_WM_QUERYINTERFACE(QueryInterface)
         UIMSG_WM_SETATTRIBUTE_PREFIX(SetAttribute)
     UI_END_MSG_MAP_CHAIN_PARENT(TextRenderBase)
@@ -162,7 +162,7 @@ public:
 
     void  SetAttribute(SetAttrPrefixData* pData);
     void  DrawState(TEXTRENDERBASE_DRAWSTATE* pDrawStruct);
-    LRESULT  OnSkinMaterialChanged(UINT, WPARAM, LPARAM);
+    LRESULT  OnSkinTextureChanged(UINT, WPARAM, LPARAM);
 
     IRenderFont*  GetRenderFont();
     void  SetRenderFont(IRenderFont*);

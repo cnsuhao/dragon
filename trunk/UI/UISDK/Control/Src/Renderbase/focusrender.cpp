@@ -27,6 +27,5 @@ void  ListViewFocusRender::OnDrawState(RENDERBASE_DRAWSTATE* pDrawStruct)
 
         ::DrawFocusRect(hDC, &rc);
     }
-    pRenderTarget->ReleaseHDC(hDC);
 }
 

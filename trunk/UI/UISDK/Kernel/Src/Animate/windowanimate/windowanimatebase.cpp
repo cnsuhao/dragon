@@ -16,6 +16,7 @@ WindowAnimateBase::WindowAnimateBase()
     m_nSrcWndHeight = 0;
     m_pWindow = NULL;
     m_pAnimateMgr = NULL;
+	m_rcWindowInBuffer.SetRectEmpty();
 
     m_pLayeredWindow = NULL;
     m_pIWindowAnimateBase = NULL;
@@ -88,17 +89,22 @@ void WindowAnimateBase::GetSrcBitmap_Layered()
     // TODO: 未考虑动画过程中窗口变大的情况
     if (m_SrcImage.IsNull())
     {
-        // +1 是用于解决在二次线性插值中溢出的问题
-        int nSrcImageW = m_nSrcWndWidth + 1;
-        int nSrcImageH = m_nSrcWndHeight + 1;
-        m_SrcImage.Create(nSrcImageW, nSrcImageH, 32, Image::createAlphaChannel);
+        // +1 是用于解决在二次线性插值中溢出的问题，增加边界哨兵
+        int nSrcImageW = m_nSrcWndWidth + 2;
+        int nSrcImageH = m_nSrcWndHeight + 2;
+        m_SrcImage.Create(nSrcImageW, -nSrcImageH, 32, Image::createAlphaChannel);
 
         m_pSrcBits  = (BYTE*)m_SrcImage.GetBits();
         m_nSrcPitch = m_SrcImage.GetPitch();
+
+		m_rcWindowInBuffer.SetRect(0, 0, m_nSrcWndWidth, m_nSrcWndHeight);
+		::OffsetRect(&m_rcWindowInBuffer, 1, 1);
     }
 	
 	HDC hMemDC = m_SrcImage.BeginDrawToMyself();
-	BitBlt(hMemDC,0,0, m_nSrcWndWidth, m_nSrcWndHeight, m_pWindow->GetRenderChainMemDC(), 0, 0, SRCCOPY);
+    RECT rc = {0,0, m_nSrcWndWidth, m_nSrcWndHeight};
+	::OffsetRect(&rc, 1, 1);
+    m_pWindow->DrawMemBitmap(hMemDC, &rc, false);
 	m_SrcImage.EndDrawToMyself();
 }
 void WindowAnimateBase::GetSrcBitmap_Normal()
@@ -106,25 +112,29 @@ void WindowAnimateBase::GetSrcBitmap_Normal()
 	if (NULL == m_pWindow)
 		return;
 
-    int nSrcImageW = m_nSrcWndWidth + 1;
-    int nSrcImageH = m_nSrcWndHeight + 1;
+	int nSrcImageW = m_nSrcWndWidth + 2;
+	int nSrcImageH = m_nSrcWndHeight + 2;
 
     // TODO: 未考虑动画过程中窗口变大的情况
     if (m_SrcImage.IsNull())
     {
 	    // +1 是用于解决在二次线性插值中溢出的问题
-	    m_SrcImage.Create(nSrcImageW, nSrcImageH, 32, Image::createAlphaChannel);
+	    m_SrcImage.Create(nSrcImageW, -nSrcImageH, 32, Image::createAlphaChannel);
     
         m_pSrcBits  = (BYTE*)m_SrcImage.GetBits();
         m_nSrcPitch = m_SrcImage.GetPitch();
+
+		m_rcWindowInBuffer.SetRect(0, 0, nSrcImageW, nSrcImageH);
+		::OffsetRect(&m_rcWindowInBuffer, 1, 1);
     }
 
 	HDC hMemDC = m_SrcImage.BeginDrawToMyself();
 #if 0 // (_WIN32_WINNT >= 0x0501)
 	::PrintWindow(m_pWindow->GetHWND(), hMemDC, 0); // 对于普通窗口，该语句会导致要用于显示动画的窗口显示出来
 #else
+    RECT rc = {0,0, m_nSrcWndWidth, m_nSrcWndHeight};
+    m_pWindow->DrawMemBitmap(hMemDC, &rc, false);
 	//::BitBlt( hMemDC, 0,0, rc.right-rc.left,rc.bottom-rc.top, hWindowDC, 0,0, SRCCOPY ); // <-- 当窗口被遮盖时无法截图
-    BitBlt(hMemDC,0,0, m_nSrcWndWidth, m_nSrcWndHeight, m_pWindow->GetRenderChainMemDC(), 0, 0, SRCCOPY);
 #endif
 	m_SrcImage.EndDrawToMyself();
 

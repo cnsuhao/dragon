@@ -10,13 +10,14 @@ interface UISDKAPI IObject3DWrap
 {
     IObject3DWrap(Object3DWrap*);
     Object3DWrap*  GetImpl();
-
+#if 0
     void  Begin();
     void  End();
 
     void  SetOriginPoint(POINT pt);
     void  Rotate(int x, int y, int z);
     void  Move(int x, int y, int z);
+#endif
 private:
     Object3DWrap*  m_pImpl;
 };

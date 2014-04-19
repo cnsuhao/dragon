@@ -32,7 +32,6 @@ CLoginDlg::CLoginDlg(void)
 	m_pBtnLoginState = NULL;
 	m_pTrayIcon = NULL;
     m_pFlashCtrl = NULL;
-    m_pFlashLayer = NULL;
 	m_pAccoutCombobox = NULL;
 	m_pBtnNetSetCancel = NULL;
 	m_pPanelLogin = NULL;
@@ -48,7 +47,7 @@ CLoginDlg::CLoginDlg(void)
 
 CLoginDlg::~CLoginDlg(void)
 {
-	GetUIApplication()->GetAnimateMgr()->SetFps(50);  // 恢复帧率
+	GetUIApplication()->GetAnimateMgr()->ClearStoryboardOfNotify(this);
     GetUIApplication()->KillTimerById(TIMER_ID_LOGING_TEXT_TRAIL_POINT,  static_cast<UI::IMessage*>(this));
 	SAFE_RELEASE(m_pTrayIcon);
 }
@@ -117,21 +116,12 @@ void CLoginDlg::OnInitWindow()
     this->InitFlash();
 
 	UI::IAnimateManager* pAnimateMgr = GetUIApplication()->GetAnimateMgr();
-	pAnimateMgr->SetFps(100);  // 加大帧率，保证流畅性
 }
 
 void  CLoginDlg::InitFlash()
 {
     // 设置背景flash
-    UI::IRenderChain*  pRenderChain = GetIRenderChain();
-    if (!pRenderChain)
-        return;
-
-    m_pFlashLayer = (UI::IBufferRenderLayer*)pRenderChain->FindLayer(_T("flash_bk"));
-    if (!m_pFlashLayer)
-        return;
-
-    m_pFlashCtrl = (UI::IFlashWrap*)m_pFlashLayer->FindChildObject(_T("flash"));
+    m_pFlashCtrl = (UI::IFlashWrap*)this->FindChildObject(_T("flash"));
     if (!m_pFlashCtrl)
         return;
 
@@ -278,15 +268,13 @@ void CLoginDlg::OnBtnNetSetCancel()
 	pTimelineZ->SetOutRef(p->GetOffsetZPtr());
     p->Begin();
 
-    m_pBtnSet->SetEnable(true, false);
+    m_pBtnSet->SetEnable(false, false);
     m_pBtnNetSetCancel->SetEnable(false, false);
 	return;
 }
 
 void CLoginDlg::OnBtnSet()
 {
-	if (m_pFlashLayer)
-		m_pFlashLayer->SetCanRedraw(false);
 
     UI::IAnimateManager* pAnimateMgr = GetUIApplication()->GetAnimateMgr();
 	UI::IWindow3DAnimate* p = static_cast<UI::IWindow3DAnimate*>(
@@ -308,7 +296,7 @@ void CLoginDlg::OnBtnSet()
     p->Begin();
 
     m_pBtnSet->SetEnable(false, false);
-    m_pBtnNetSetCancel->SetEnable(true, false);
+    m_pBtnNetSetCancel->SetEnable(false, false);
 }
 void CLoginDlg::OnBtnLogin()
 {
@@ -468,6 +456,15 @@ void CLoginDlg::OnAnimateTick(int nCount, UI::IStoryboard** ppArray)
 			this->OnAnimateTick_GoStep1(pStoryboard); 
             break;  // break是为了防止将Window3DAnimate删除了，但下一个循环中又去访问导致崩溃
 		}
+		else if (nStoryboardId == TIMELINE_ID_GO_STEP2)
+		{
+			if (pStoryboard->IsFinish())
+			{
+				m_pBtnSet->SetEnable(true, false);
+				m_pBtnNetSetCancel->SetEnable(true, false);
+			}
+			break;
+		}
 		else if (nStoryboardId == TIMELINE_ID_BACK_STEP1)
 		{
 			this->OnAnimateTick_BackStep1(pStoryboard);
@@ -476,6 +473,11 @@ void CLoginDlg::OnAnimateTick(int nCount, UI::IStoryboard** ppArray)
         else if (nStoryboardId == TIMELINE_ID_BACK_STEP2)
         {
             this->OnAnimateTick_BackStep2(pStoryboard);
+			if (pStoryboard->IsFinish())
+			{
+				m_pBtnSet->SetEnable(true, false);
+				m_pBtnNetSetCancel->SetEnable(true, false);
+			}
             break;
         }
         else if (nStoryboardId == TIMELINE_ID_HIDE_DESTROY || 
@@ -496,18 +498,14 @@ void  CLoginDlg::OnAnimateTick_GoStep1(UI::IStoryboard* pStoryboard)
     if (!pStoryboard->IsFinish())
         return;
 
-    // 关闭Flash刷新
-    if (m_pFlashLayer)
-        m_pFlashLayer->SetLayerEnable(false);
-
     // 切换面板，切换中会涉及到焦点变化，导致窗口刷新，因此将窗口刷新禁掉
-    GetRenderChain()->SetCanCommit(false);
+    GetIWindowRender()->SetCanCommit(false);
     if (m_pPanelNetSet)
-        m_pPanelNetSet->SetVisible(true, false);
+        m_pPanelNetSet->SetVisible(true, false, true);
 
     if (m_pPanelLogin)
-        m_pPanelLogin->SetVisible(false, false);
-    GetRenderChain()->SetCanCommit(true);
+        m_pPanelLogin->SetVisible(false, false, false);
+    GetIWindowRender()->SetCanCommit(true);
 
     // 只绘制，但不提交到窗口上面
     this->UpdateObject(false);
@@ -537,18 +535,13 @@ void  CLoginDlg::OnAnimateTick_BackStep1(UI::IStoryboard* pStoryboard)
     if (!pStoryboard->IsFinish())
         return;
 
-    GetRenderChain()->SetCanCommit(false);
+    GetIWindowRender()->SetCanCommit(false);
     if (m_pPanelNetSet)
         m_pPanelLogin->SetVisible(true, false);
     if (m_pPanelLogin)
         m_pPanelNetSet->SetVisible(false, false);
-    GetRenderChain()->SetCanCommit(true);
+    GetIWindowRender()->SetCanCommit(true);
 
-    if (m_pFlashLayer)
-    {
-        m_pFlashLayer->SetCanRedraw(true);
-        m_pFlashLayer->SetLayerEnable(true);
-    }
 
     // 只绘制，但不提交到窗口上面
     this->UpdateObject(false);
@@ -611,7 +604,7 @@ void  CLoginDlg::OnAnimateTick_Show(UI::IStoryboard* p)
 
 void CLoginDlg::OnAnimateOver()
 {
-	 this->UpdateObject();
+	this->UpdateObject();
 }
 // #include "3rd/gdiplus/gdiplusfix.h"
 // #pragma comment(lib, "gdiplus.lib")

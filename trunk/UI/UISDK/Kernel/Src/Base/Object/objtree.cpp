@@ -69,9 +69,6 @@ void ObjTree::DestroyChildObject()
 		this->m_pNcChild->m_pPrev = NULL;
 	}
 	this->m_pNcChild = NULL;
-
-	//	3. 清理自己的邻居关系
-	RemoveMeInTheTree();
 }
 
 
@@ -89,14 +86,39 @@ void ObjTree::AddChild(Object* pObj)
 	}
 	else
 	{
+        long  lZorder = pObj->GetZOrder();
+
 		Object* pObjEnum = NULL;
 		while (pObjEnum = EnumChildObject(pObjEnum))
 		{
 			if (pObjEnum == pObj)
 				return;
 
+            if (pObjEnum->GetZOrder() > lZorder)
+            {
+                // 插入在pObjEnum前面
+                Object*  pObjPrev = pObjEnum->m_pPrev;
+                if (pObjPrev)
+                {
+                    pObjPrev->m_pNext = pObj;
+                    pObj->m_pNext = pObjEnum;
+                    pObjEnum->m_pPrev = pObj;
+                    pObj->m_pPrev = pObjPrev;
+                }
+                else
+                {
+                    this->m_pChild = pObj;
+                    pObj->m_pNext = pObjEnum;
+                    pObjEnum->m_pPrev = pObj;
+                }
+
+                pObj->m_pParent = static_cast<Object*>(this);
+                break;
+            }
+
 			if (NULL == pObjEnum->m_pNext)
 			{
+                // 插在最后面
 				pObjEnum->m_pNext = pObj;
 				pObj->m_pPrev = pObjEnum;
 				pObj->m_pParent = static_cast<Object*>(this);
@@ -107,6 +129,41 @@ void ObjTree::AddChild(Object* pObj)
     pObj->SetAsNcObject(false);
 }
 
+void  ObjTree::InsertChild(Object* pObj, Object* pInsertAfter)
+{
+#ifdef _DEBUG
+    if (pInsertAfter)
+    {
+        UIASSERT (IsMyChild(pInsertAfter, false));
+    }
+    UIASSERT (!pObj->m_pParent);
+#endif
+
+    if (NULL == this->m_pChild)
+    {
+        this->m_pChild = pObj;
+        pObj->m_pParent = static_cast<Object*>(this);
+    }
+    else if (NULL == pInsertAfter)
+    {
+        m_pChild->m_pPrev = pObj;
+        pObj->m_pNext = m_pChild;
+        this->m_pChild = pObj;
+        pObj->m_pParent = static_cast<Object*>(this);
+    }
+    else
+    {
+        if (pInsertAfter->m_pNext)
+        {
+            pInsertAfter->m_pNext->m_pPrev = pObj;
+            pObj->m_pNext = pInsertAfter->m_pNext;
+        }
+        pInsertAfter->m_pNext = pObj;
+        pObj->m_pPrev = pInsertAfter;
+        pObj->m_pParent = static_cast<Object*>(this);
+    }
+    pObj->SetAsNcObject(false);
+}
 
 void ObjTree::AddNcChild(Object* pObj)  
 {

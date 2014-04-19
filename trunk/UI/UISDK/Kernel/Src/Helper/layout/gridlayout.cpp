@@ -473,7 +473,7 @@ void  GridLayout::Arrange(IObject* pObjToArrage, bool bUpdate)
         if (nConfigH >= 0)
             rc.bottom = rc.top + nConfigH;
 	
-		pChild->SetObjectPos(&rc, SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS);
+		pChild->SetObjectPos(&rc, SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS|SWP_FORCESENDSIZEMSG);
 	}
 
     if (bUpdate)
@@ -482,9 +482,9 @@ void  GridLayout::Arrange(IObject* pObjToArrage, bool bUpdate)
 
 // 获取第nCol列离GRID最左侧的距离
 // 注意：这里的参数可以是对象的col+colspan，因此该值可能会超出grid的最大列
-int GridLayout::getColPos(int nCol)
+int GridLayout::getColPos(unsigned int nCol)
 {
-	int nGridCols = widths.size();
+	unsigned int nGridCols = widths.size();
 	if (nCol >= nGridCols)
 	{
 	//	UI_LOG_WARN( _T("GridLayout::getColPos, nCol[%d] > widths.size[%d]"), nCol, nGridCols );
@@ -492,16 +492,16 @@ int GridLayout::getColPos(int nCol)
 	}
 
 	int nRet = 0;
-	for (int i = 0; i < nCol; i++)
+	for (unsigned int i = 0; i < nCol; i++)
 	{
 		nRet += widths[i].last;
 	}
 	return nRet;
 }
 // 获取第nRow行离GRID最上面的距离
-int GridLayout::getRowPos( int nRow )
+int GridLayout::getRowPos(unsigned int nRow )
 {
-	int nGridRows = heights.size();
+	unsigned int nGridRows = heights.size();
 	if (nRow >= nGridRows)
 	{
 	//	UI_LOG_WARN( _T("GridLayout::getRowPos, nCol[%d] > heights.size[%d]"), nRow, nGridRows );
@@ -509,11 +509,26 @@ int GridLayout::getRowPos( int nRow )
 	}
 
 	int nRet = 0;
-	for (int i = 0; i < nRow; i++)
+	for (unsigned int i = 0; i < nRow; i++)
 	{
 		nRet += heights[i].last;
 	}
 	return nRet;
+}
+
+GridWH*  GridLayout::GetWidth(unsigned int nIndex)
+{
+    if (nIndex >= widths.size())
+        return NULL;
+
+    return &widths[nIndex];
+}
+GridWH*  GridLayout::GetHeight(unsigned int nIndex)
+{
+    if (nIndex >= heights.size())
+        return NULL;
+
+    return &heights[nIndex];
 }
 
 
@@ -652,5 +667,41 @@ SIZE  GridLayoutParam::CalcDesiredSize()
     return size;
 }
 
+bool  GridLayoutParam::IsSizedByContent()
+{
+    if (m_nConfigHeight != AUTO && m_nConfigWidth != AUTO)
+        return false;
+
+    // 判断该行的高是否配置了，该列的宽是否配置了
+    if (!m_pObj || !m_pObj->GetParentObject())
+        return true;
+
+    ILayout* pLayout = (ILayout*)UISendMessage(m_pObj->GetParentObject(), UI_WM_GETLAYOUT);
+    if (!pLayout)
+        return true;
+
+    GridLayout*  pGridLayout = static_cast<GridLayout*>(pLayout);
+    
+    for (int i = 0; i < m_nRowSpan; i++)
+    {
+        GridWH* p = pGridLayout->GetHeight(i);
+        if (!p)
+            return true;
+
+        if (p->type == GWHT_AUTO)
+            return true;
+    }
+    for (int i = 0; i < m_nColSpan; i++)
+    {
+        GridWH* p = pGridLayout->GetWidth(i);
+        if (!p)
+            return true;
+
+        if (p->type == GWHT_AUTO)
+            return true;
+    }
+
+    return false;
+}
 
 }

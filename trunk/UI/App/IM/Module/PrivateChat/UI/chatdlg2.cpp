@@ -111,9 +111,9 @@ void CChatDlg2::OnInitWindow()
 
 void  CChatDlg2::SetSkin(UI::IRenderBase* p)
 {
-    if (NULL == this->GetMaterialRender())
+    if (NULL == this->GetTextureRender())
     {
-        this->SetMaterialRender(p);
+        this->SetTextureRender(p);
     }
 }
 

@@ -8,7 +8,7 @@ namespace UI
 ListBoxItemShareData::ListBoxItemShareData()
 {
     m_pIListBoxItemShareData = NULL;
-    m_nTextIndent = 0;
+    m_nTextIndent = 2;
 }
 void  ListBoxItemShareData::SetAttribute(IMapAttribute* pMapAttr, bool bReload)
 {

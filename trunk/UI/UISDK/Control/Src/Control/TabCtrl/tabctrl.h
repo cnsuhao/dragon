@@ -30,6 +30,7 @@ public:
     UI_DECLARE_OBJECT3(TabCtrlBase, OBJ_PANEL|CONTROL_TABCTRL, _T("UICtrl/Control"))
 
     UI_BEGIN_MSG_MAP
+		UIMSG_WM_ERASEBKGND(OnEraseBkgnd)
         UIMSG_WM_SIZE(OnSize)
         UIMSG_WM_GETOBJECTINFO(OnGetObjectInfo)
         UIMSG_WM_QUERYINTERFACE(QueryInterface)
@@ -50,6 +51,7 @@ public:
     IPanel*  GetContentPanel() { return m_pPanelContent; }
 
 protected:
+	void  OnEraseBkgnd(UI::IRenderTarget* pRenderTarget);
     void  OnSize(UINT nType, int cx, int cy);
     void  OnBnClicked(IMessage*  pMsgFrom);
     HRESULT  FinalConstruct(IUIApplication* p);

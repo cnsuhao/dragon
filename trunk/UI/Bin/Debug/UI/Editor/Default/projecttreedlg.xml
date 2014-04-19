@@ -2,30 +2,30 @@
 
 <skin>
   <layout>
-    
-    <Window id="ProjectTreeDialog">
-      <TabCtrl id="tabctrl" padding="10" layout.left="0" layout.top="0" layout.right="0" layout.bottom="0" head.layout="average">
+    <Window id="ProjectTreeDialog" padding="10" bkgnd.render.type="color" bkgnd.render.color="dlg_bkg">
+      <TabCtrl id="tabctrl" layout.left="0" layout.top="0" layout.right="0" layout.bottom="0" styleclass="tabctrl_win32"
+               xbkgnd.render.type="color" bkgnd.render.border="1" bkgnd.render.border.color="0xff898C95" bkgnd.render.color="0xffffffff">
         <item>
           <head>
-            <TabCtrlButton text="layout"/>
+            <TabCtrlButton text="layout" styleclass="tabctrlbtn_bottom"/>
           </head>
           <content>
-            <TreeView id="treelayout"/>
+            <ProjectTreeView id="treelayout" istransparent="1" bkgnd.render.type="null" skinitem.textrender.type="theme" skinitem.textrender.font="default_bold"/>
           </content>
         </item>
 
         <xitem>
           <head>
-            <TabCtrlButton text="xml doc"/>
+            <TabCtrlButton text="xml doc" styleclass="tabctrlbtn_bottom"/>
           </head>
         </xitem>
 
         <item>
           <head>
-            <TabCtrlButton text="resource"/>
+            <TabCtrlButton text="resource" styleclass="tabctrlbtn_bottom"/>
           </head>
           <content>
-            <TreeView id="treeresource"/>
+            <ProjectTreeView id="treeresource" istransparent="1" bkgnd.render.type="null" skinitem.textrender.type="theme" skinitem.textrender.font="default_bold"/>
           </content>
         </item>
 

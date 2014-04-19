@@ -267,7 +267,7 @@ void  ContactListContactItem::Update(CONTACTLIST_CONTACTITEM_INFO* pInfo)
         if (UI::Util::IsFullPath(pInfo->pszPortraitPath))
         {
             UI::IRenderBitmap* pBitmap = NULL;
-            UI::UICreateRenderBitmap(UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS, UI::IMAGE_ITEM_TYPE_IMAGE, &pBitmap);
+            UI::UICreateRenderBitmap(NULL, UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS, UI::IMAGE_ITEM_TYPE_IMAGE, &pBitmap);
             if (pBitmap)
             {
                 pBitmap->LoadFromFile(pInfo->pszPortraitPath, true);
@@ -302,6 +302,10 @@ void  ContactListContactItem::OnMouseMove(UINT nFlags, POINT point)
             point.y != m_ptLastLButtonDown.y)
         {
             DoDrag(point);
+
+            // DoDrag会将WM_LBUTOTNUP消息吃掉，这里手动发一个
+            PostMessage(m_pIContactListContactItem->GetIListCtrlBase()->GetHWND(),
+                WM_LBUTTONUP, 0, MAKELPARAM(point.x, point.y));
         }
     }
     SetMsgHandled(FALSE);
@@ -436,15 +440,17 @@ HBITMAP  ContactListContactItem::CreateDragBitmap(int* pWidth, int* pHeight)
     HDC hDC = image.BeginDrawToMyself();
     
     // 创建rendertarget
-	UI::IRenderTarget*  pRenderTarget = UI::UICreateRenderTarget(GetRenderLibraryType(m_pIContactListContactItem->GetIListCtrlBase()));
+	UI::IRenderTarget*  pRenderTarget = UI::UICreateRenderTarget(
+        m_pIContactListContactItem->GetIListCtrlBase()->GetUIApplication(),
+        m_pIContactListContactItem->GetIListCtrlBase()->GetGraphicsRenderLibraryType());
     pRenderTarget->BindHDC(hDC);
 
     // 绘制
-    pRenderTarget->BeginDraw(NULL, 0);
-	UI::RenderContext renderContent(NULL, true, true);
+    pRenderTarget->BeginDraw();
+    CRect  rc(0, 0, nWidth, nHeight);
+	UI::RenderContext renderContent(&rc, &rc, true);
 	renderContent.m_ptOffset.x = -rcParent.left+g_rcDragImgPadding.left;
 	renderContent.m_ptOffset.y = -rcParent.top+g_rcDragImgPadding.top;
-    ::SetRect(&renderContent.m_rcDrawRegion, 0, 0, nWidth, nHeight);
 	renderContent.Update(pRenderTarget);
 //     pRenderTarget->SetViewportOrgEx(
 //         -rcParent.left+g_rcDragImgPadding.left, 

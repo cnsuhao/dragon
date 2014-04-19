@@ -47,7 +47,7 @@ void HyperLink::SetAttribute(IMapAttribute* pMapAttrib, bool bReload )
 			    p->SetColor(3, RGBA(192,192,192, 255));
 
 			    IRenderFont* pUnderLineFont = NULL;
-			    pFontRes->GetFontEx(pFont, FONTITEM_FLAG_UNDERLINE, 0, GetRenderLibraryType(m_pIHyperLink), &pUnderLineFont);
+			    pFontRes->GetFontEx(pFont, FONTITEM_FLAG_UNDERLINE, 0, m_pIHyperLink->GetGraphicsRenderLibraryType(), &pUnderLineFont);
 
 			    p->SetFont(0, pFont);
 			    p->SetFont(1, pUnderLineFont);

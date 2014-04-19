@@ -12,16 +12,22 @@
 namespace UI
 {
 	interface IUIApplication;
+    interface IRenderTarget;
+
+    typedef bool (*funcUI3D_Init)(IUIApplication* p, bool);
+    typedef bool (*funcUI3D_Release)();
+    typedef bool (*funcUI3D_CreateD2DRenderBitmap)(IMAGE_ITEM_TYPE eType, IRenderBitmap**  ppOut);
+    typedef bool (*funcUI3D_CreateD2DRenderTarget)(IRenderTarget**  ppOut);
 
     extern "C"
-    UI3D_API  bool  UI3D_RegisterUIObject(IUIApplication* p);
-
-	extern "C"
-	UI3D_API bool  UI3D_Init(IUIApplication* p);
-
-	extern "C"
-	UI3D_API bool  UI3D_Release();
-
+    {
+        UI3D_API bool  UI3D_RegisterUIObject(IUIApplication* p);
+	    UI3D_API bool  UI3D_Init(IUIApplication* p, bool bInitD3D);
+	    UI3D_API bool  UI3D_Release();
+        UI3D_API bool  UI3D_CreateD2DRenderTarget(IRenderTarget**  ppOut);
+        UI3D_API bool  UI3D_CreateD2DRenderBitmap(IMAGE_ITEM_TYPE eType, IRenderBitmap**  ppOut);
+        UI3D_API bool  UI3D_CreateD2DRenderFont(IRenderFont**  ppOut);
+    }
 
     // {F7315FC9-D720-4410-ABFF-BA6BF7CA08BD}
     static const GUID IID_UI_IStage3D = 

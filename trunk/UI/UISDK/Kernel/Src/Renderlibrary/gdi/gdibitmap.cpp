@@ -1,15 +1,15 @@
 #include "stdafx.h"
 #include "gdibitmap.h"
 
-void GDIRenderBitmap::CreateInstance(IRenderBitmap** ppOutRef)
+void GDIRenderBitmap::CreateInstance(IRenderBitmap** ppOut)
 {
-	UIASSERT(NULL != ppOutRef);
-	if (NULL == ppOutRef)
+	UIASSERT(NULL != ppOut);
+	if (NULL == ppOut)
 		return;
 
 	GDIRenderBitmap* p = new GDIRenderBitmap();
     p->AddRef();
-	*ppOutRef = p;
+	*ppOut = p;
 }
 
 GDIImageListRenderBitmap::GDIImageListRenderBitmap()
@@ -17,14 +17,14 @@ GDIImageListRenderBitmap::GDIImageListRenderBitmap()
 	m_nCount = 0;
 	m_eLayout = IMAGELIST_LAYOUT_TYPE_H;
 }
-void GDIImageListRenderBitmap::CreateInstance(IRenderBitmap** ppOutRef)
+void GDIImageListRenderBitmap::CreateInstance(IRenderBitmap** ppOut)
 {
-	if (NULL == ppOutRef)
+	if (NULL == ppOut)
 		return;
 
 	GDIImageListRenderBitmap* p = new GDIImageListRenderBitmap();
     p->AddRef();
-	*ppOutRef = p;
+	*ppOut = p;
 }
 
 int GDIImageListRenderBitmap::GetItemWidth()
@@ -99,15 +99,15 @@ GDIIconRenderBitmap::GDIIconRenderBitmap()
 {
 	m_nIconWidth = m_nIconHeight = 16;
 }
-void GDIIconRenderBitmap::CreateInstance(IRenderBitmap** ppOutRef)
+void GDIIconRenderBitmap::CreateInstance(IRenderBitmap** ppOut)
 {
-	UIASSERT(NULL != ppOutRef);
-	if( NULL == ppOutRef )
+	UIASSERT(NULL != ppOut);
+	if( NULL == ppOut )
 		return;
 
 	GDIIconRenderBitmap* p = new GDIIconRenderBitmap();
     p->AddRef();
-	*ppOutRef = p;
+	*ppOut = p;
 }
 
 //

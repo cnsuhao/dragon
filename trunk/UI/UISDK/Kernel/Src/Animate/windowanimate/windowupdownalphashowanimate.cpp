@@ -3,7 +3,7 @@
 #include "UISDK\Kernel\Src\Animate\windowanimate\layeredanimatewindow.h"
 #include "UISDK\Kernel\Src\UIObject\Window\windowbase.h"
 #include "UISDK\Kernel\Src\Animate\animatemgr.h"
-#include "UISDK\Kernel\Src\RenderLayer\renderchain.h"
+#include "UISDK\Kernel\Src\RenderLayer2\layer\windowrender.h"
 #include "UISDK\Kernel\Src\Util\dwm\dwmhelper.h"
 #include "UISDK\Kernel\Src\UIObject\Window\customwindow.h"
 #include "UISDK\Kernel\Inc\Interface\iwndtransmode.h"
@@ -43,10 +43,10 @@ WindowUpDownAlphaShowAnimate::~WindowUpDownAlphaShowAnimate()
 
 void  WindowUpDownAlphaShowAnimate::Initialize()
 {
-    m_pWindow->GetRenderChain()->SetCanCommit(false);
+    m_pWindow->GetWindowRender()->SetCanCommit(false);
     ::ShowWindow(m_pWindow->m_hWnd, SW_SHOW);
     m_pWindow->PaintWindow(NULL);
-    m_pWindow->GetRenderChain()->SetCanCommit(true);
+    m_pWindow->GetWindowRender()->SetCanCommit(true);
 
     if (m_nWndTranslateType & WINDOW_TRANSPARENT_MODE_AERO)
     {
@@ -82,6 +82,9 @@ void  WindowUpDownAlphaShowAnimate::OnTick(int nCount, IStoryboard** ppTimerArra
     byte* pSrc = (byte*)m_SrcImage.GetBits();
     byte* p = m_pLayeredWindow->m_pBits;
     int nBytesPerLine = m_pLayeredWindow->m_nWidth<<2;
+
+	pSrc += m_rcWindowInBuffer.top * m_nSrcPitch;
+	pSrc += m_rcWindowInBuffer.left * 4;
 
     // 1. 不需要处理的部分
     if (nCurY > 0)
@@ -188,14 +191,14 @@ bool  WindowUpDownAlphaShowAnimate::DoAction(int nId, int nDuration, bool bShow)
     {
         pMoveAlgo->SetParam1(nHeight-128, -255, nDuration);
     }
-    
-    this->SetId(nId);
-    this->SetNotifyObj(m_pWindow->GetIMessage());
-    this->Begin();
 
     m_nStartLine = m_pLayeredWindow->m_nHeight-1;
     m_SrcImage.BitBlt(m_pLayeredWindow->m_hLayeredMemDC,0,0, m_pLayeredWindow->m_nWidth, m_pLayeredWindow->m_nHeight, 0 , 0);
 
+
+    this->SetId(nId);
+    this->SetNotifyObj(m_pWindow->GetIMessage());
+    this->BeginBlock();
     return true;
 }
 

@@ -25,10 +25,13 @@ public:
 		UIMSG_WM_STYLECHANGED(OnStyleChanged)
 		UIMSG_WM_LBUTTONDOWN(OnLButtonDown)
         UIMSG_WM_LBUTTONDBLCLK(OnLButtonDown)
+		UIMSG_WM_INITPOPUPCONTROLWINDOW(OnInitPopupControlWindow)
+		UIMSG_WM_UNINITPOPUPCONTROLWINDOW(OnUnInitPopupControlWindow)
 		UIMSG_WM_SETATTRIBUTE(SetAttribute)
 		UIMSG_WM_EDITORGETATTRLIST(OnEditorGetAttrList)
         UIMSG_WM_RESETATTRIBUTE(ResetAttribute)
         UIMSG_WM_FINALCONSTRUCT(FinalConstruct)
+        UIMSG_WM_FINALRELEASE(FinalRelease)
 
 	UIALT_MSG_MAP(COMBOBOX_BUTTON_MSG_HOOK_MSG_ID)  // Button hook
 		UIMSG_WM_LBUTTONDOWN(OnBtnLButtonDown)
@@ -37,10 +40,7 @@ public:
 	UIALT_MSG_MAP(COMBOBOX_EDIT_MSG_HOOK_MSG_ID)
 		UIMSG_WM_STATECHANGED2(OnChildObjStateChanged)
 
-    UIALT_MSG_MAP(COMBOBOX_LISTBOX_MSG_HOOK_MSG_ID)
-        UIMSG_WM_INITPOPUPCONTROLWINDOW(OnInitPopupControlWindow)
-        UIMSG_WM_UNINITPOPUPCONTROLWINDOW(OnUnInitPopupControlWindow)
-
+        
 	UI_END_MSG_MAP_CHAIN_PARENT_Ixxx(ComboBoxBase, IControl)
 
     void  SetIComboBoxBase(IComboBoxBase* p) { m_pIComboBoxBase = p; SetIMessageProxy(static_cast<IMessage*>(p)); }
@@ -48,7 +48,7 @@ public:
 
 public:
     void  CloseUp();
-    void  SetDropDownObjectPtr(IObject* p) { m_pDropDownObject = p; }
+    void  SetDropDownObjectPtr(IObject* p);
     IEdit*  GetEdit() { return m_pEdit; }
     const TCHAR*  GetText();
 	void  SetText(const TCHAR* szText);
@@ -57,6 +57,7 @@ public:
 
 protected:
     HRESULT  FinalConstruct(IUIApplication* p);
+    void  FinalRelease();
 	void  SetAttribute(IMapAttribute* pMapAttrib, bool bReload);
 	void  ResetAttribute();
 	void  GetAutoSize(SIZE* pSize);

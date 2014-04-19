@@ -282,9 +282,9 @@ void  SystemScrollBar::OnTimer(UINT_PTR idEvent, LPARAM lParam)
 			POINT pt, ptObj;
 			::GetCursorPos(&pt);
 			::MapWindowPoints(NULL, m_pISystemScrollBar->GetHWND(), &pt, 1);
-			m_pISystemScrollBar->WindowPoint2ObjectPoint(&pt, &ptObj);
+			m_pISystemScrollBar->WindowPoint2ObjectPoint(&pt, &ptObj, true);
 		
-			if(HTNOWHERE != UISendMessage(m_pBtnLineUpLeft, UI_WM_HITTEST, ptObj.x, ptObj.y))
+			if(HTNOWHERE != UISendMessage(m_pBtnLineUpLeft, UI_WM_HITTEST, (WPARAM)&ptObj))
 			{
 				m_pMgrScrollBar->FireScrollMessage(GetDirType(), SB_LINEUP);
 			}
@@ -298,9 +298,9 @@ void  SystemScrollBar::OnTimer(UINT_PTR idEvent, LPARAM lParam)
 			POINT pt, ptObj;
 			::GetCursorPos(&pt);
 			::MapWindowPoints(NULL, m_pISystemScrollBar->GetHWND(), &pt, 1);
-			m_pISystemScrollBar->WindowPoint2ObjectPoint(&pt, &ptObj);
+			m_pISystemScrollBar->WindowPoint2ObjectPoint(&pt, &ptObj, true);
 
-			if(HTNOWHERE != UISendMessage(m_pBtnLineDownRight, UI_WM_HITTEST, ptObj.x, ptObj.y))
+			if(HTNOWHERE != UISendMessage(m_pBtnLineDownRight, UI_WM_HITTEST, (WPARAM)&ptObj))
 			{
 				m_pMgrScrollBar->FireScrollMessage(GetDirType(), SB_LINEDOWN);  // ScrollbarMgr::ProcessMessage中会负责刷新
 			}
@@ -539,12 +539,12 @@ int   SystemScrollBar::CalcThumbButtonSize()
 
 	if (GetDirType() == VSCROLLBAR)
 	{
-		int nBtnH = (int)((float)rcChannel.Height()*nPage/nRange + 0.5);
+		int nBtnH = round((float)rcChannel.Height()*nPage/nRange);
 		return nBtnH;
 	}
 	else
 	{
-		int nBtnW = (int)((float)rcChannel.Width()*nPage/nRange + 0.5);
+		int nBtnW = round((float)rcChannel.Width()*nPage/nRange);
 		return nBtnW;
 	}
 }
@@ -633,7 +633,7 @@ void  SystemVScrollBar::OnLButtonDown(UINT nFlags, POINT point)
 		return;
 
 	POINT ptObj;
-	m_pBtnThumb->WindowPoint2ObjectPoint(&point, &ptObj);
+	m_pBtnThumb->WindowPoint2ObjectPoint(&point, &ptObj, true);
 	
 	if (ptObj.y < 0)
 		m_pMgrScrollBar->FireScrollMessage(GetDirType(), SB_PAGEUP);
@@ -675,7 +675,7 @@ void  SystemVScrollBar::OnThumbBtnLButtonDown(UINT nFlags, POINT point)
 
 	// 将窗口坐标转换为相对于控件的坐标
 	POINT  ptObj;
-	m_pBtnThumb->WindowPoint2ObjectPoint(&point, &ptObj);
+	m_pBtnThumb->WindowPoint2ObjectPoint(&point, &ptObj, true);
 	m_nClickDiff = ptObj.y;
 }
 void  SystemVScrollBar::OnThumbBtnLButtonUp(UINT nFlags, POINT point)
@@ -697,7 +697,7 @@ void  SystemVScrollBar::OnThumbBtnMousemove(UINT nFlags, POINT point)
 		return;
 
 	POINT ptObj;
-	m_pISystemScrollBar->WindowPoint2ObjectPoint(&point, &ptObj);
+	m_pISystemScrollBar->WindowPoint2ObjectPoint(&point, &ptObj, true);
 	int nNewPos = this->WindowPoint2TrackPos(ptObj.y - m_nClickDiff);
 
 	m_pMgrScrollBar->FireScrollMessage(VSCROLLBAR, SB_THUMBTRACK, nNewPos);
@@ -783,7 +783,7 @@ void  SystemHScrollBar::OnLButtonDown(UINT nFlags, POINT point)
 		return;
 
 	POINT ptObj;
-	m_pBtnThumb->WindowPoint2ObjectPoint(&point, &ptObj);
+	m_pBtnThumb->WindowPoint2ObjectPoint(&point, &ptObj, true);
 
 	if (ptObj.x < 0)
 		m_pMgrScrollBar->FireScrollMessage(GetDirType(), SB_PAGELEFT);
@@ -822,7 +822,7 @@ void  SystemHScrollBar::OnThumbBtnLButtonDown(UINT nFlags, POINT point)
 
 	// 将窗口坐标转换为相对于控件的坐标
 	POINT  ptObj;
-	m_pBtnThumb->WindowPoint2ObjectPoint(&point, &ptObj);
+	m_pBtnThumb->WindowPoint2ObjectPoint(&point, &ptObj, true);
 	m_nClickDiff = ptObj.x;
 }
 void  SystemHScrollBar::OnThumbBtnLButtonUp(UINT nFlags, POINT point)
@@ -844,7 +844,7 @@ void  SystemHScrollBar::OnThumbBtnMousemove(UINT nFlags, POINT point)
 		return;
 
 	POINT ptObj;
-	m_pISystemScrollBar->WindowPoint2ObjectPoint(&point, &ptObj);
+	m_pISystemScrollBar->WindowPoint2ObjectPoint(&point, &ptObj, true);
 	int nNewPos = this->WindowPoint2TrackPos(ptObj.x - m_nClickDiff);
 
 	m_pMgrScrollBar->FireScrollMessage(HSCROLLBAR, SB_THUMBTRACK, nNewPos);
@@ -899,6 +899,8 @@ LRESULT  SystemHScrollBar::OnBindObjSize(UINT uMsg, WPARAM wParam, LPARAM lParam
 
 void  SystemHScrollBar::OnSize(UINT nType, int cx, int cy)
 {
+    SetMsgHandled(FALSE);
+
 	CRect rcClient;
 	m_pISystemScrollBar->GetClientRect(&rcClient);
 
@@ -945,6 +947,8 @@ void  SystemHScrollBar::OnSize(UINT nType, int cx, int cy)
 
 void  SystemVScrollBar::OnSize(UINT nType, int cx, int cy)
 {
+    SetMsgHandled(FALSE);
+
 	CRect rcClient;
 	m_pISystemScrollBar->GetClientRect(&rcClient);
 

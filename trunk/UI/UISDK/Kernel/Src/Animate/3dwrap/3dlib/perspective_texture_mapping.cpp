@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "perspective_texture_mapping.h"
+#include "fpu_rounding.h"
 
 namespace UI
 {
@@ -11,88 +12,6 @@ PerspectiveTextureMapping::PerspectiveTextureMapping()
 
 PerspectiveTextureMapping::~PerspectiveTextureMapping()
 {
-
-}
-
-void  PerspectiveTextureMapping::Do()
-{
-    // 分解为两个三角形: ∥ABCD --> △ABD + △BCD
-    DoTriangle(&m_point[0], &m_point[1], &m_point[3]);
-    DoTriangle(&m_point[1], &m_point[2], &m_point[3]);
-}
-
-void  PerspectiveTextureMapping::DoTriangle(TexturePoint* V0, TexturePoint* V1, TexturePoint* V2)
-{
-    // 检查三角形合法性
-    if (V0->xt == V1->xt && V1->xt == V2->xt)
-        return;
-    if (V0->yt == V1->yt && V1->yt == V2->yt)
-        return;
-
-    // 三角形顶点索引
-    TexturePoint* A = V0;
-    TexturePoint* B = V1;
-    TexturePoint* C = V2; 
-
-#pragma region // 判断三角形类型，将y值小的排在前面
-
-    TexturePoint* temp = NULL;
-
-    if (B->yt < A->yt)
-    {
-        temp = B; B = A; A = temp;
-    }
-    if (C->yt < A->yt)
-    {
-        temp = C; C = A; A = temp;
-    }
-    if (C->yt < B->yt)
-    {
-        temp = C; C = B; B = temp;
-    }
-
-
-    TRIANGLE_TYPE  eTriangleType = TRIANGLE_GENERAL;
-    if (A->yt == B->yt)
-    {
-        eTriangleType = TRIANGLE_FLAT_TOP;
-
-        if (B->xt < A->xt)
-        {
-            temp = B; B = A; A = temp;
-        }
-    }
-    else if (B->yt == C->yt)
-    {
-        eTriangleType = TRIANGLE_FLAT_BOTTOM;
-
-        if (C->xt < B->xt)
-        {
-            temp = C; C = B; B = temp;
-        }
-    }
-
-#pragma endregion
-    switch (eTriangleType)
-    {
-    case TRIANGLE_FLAT_TOP:
-        {
-            DoFlatTopTriangle(A, B, C);
-        }
-        break;
-
-    case TRIANGLE_FLAT_BOTTOM:
-        {
-            DoFlatBottomTriangle(A, B, C);
-        }
-        break;
-
-    case TRIANGLE_GENERAL:
-        {
-            DoGeneralTriangle(A, B, C);
-        }
-        break;
-    }
 
 }
 
@@ -108,15 +27,15 @@ void  PerspectiveTextureMapping::DoFlatTopTriangle(TexturePoint* A, TexturePoint
 
     MappingParam  param = {0};
 
-    param.yStart = A->yt;
-    param.yEnd = C->yt;
+    param.yStart = A->yDest;
+    param.yEnd = C->yDest;
 
-    param.xStart = A->xt << FIXP16_SHIFT;
-    param.xEnd = B->xt << FIXP16_SHIFT;
+    param.xStart = A->xDest << FIXP16_SHIFT;
+    param.xEnd = B->xDest << FIXP16_SHIFT;
 
-    int  nAz = (int)(A->z + 0.5);
-    int  nBz = (int)(B->z + 0.5);
-    int  nCz = (int)(C->z + 0.5);
+    int  nAz = round(A->z);
+    int  nBz = round(B->z);
+    int  nCz = round(C->z);
     int  Az = (1<<FIXP28_SHIFT) / nAz;
     int  Bz = (1<<FIXP28_SHIFT) / nBz;
     int  Cz = (1<<FIXP28_SHIFT) / nCz;
@@ -129,12 +48,12 @@ void  PerspectiveTextureMapping::DoFlatTopTriangle(TexturePoint* A, TexturePoint
     int   Cv = (C->v << FIXP20_SHIFT) / nCz; 
 
     // 避免图片太大导致溢出。FIXP20_SHIFT只能保证2048的大小
-    assert(Au > 0 && Av > 0 && Bu > 0 && Bv > 0 && Cu > 0 && Cv > 0);  
+    assert(Au >= 0 && Av >= 0 && Bu >= 0 && Bv >= 0 && Cu >= 0 && Cv >= 0);  
 
-    int  nHeight = (C->yt - A->yt);  // A-B等高
+    int  nHeight = (C->yDest - A->yDest);  // A-B等高
 
-    param.kxLeft  = ((C->xt - A->xt) << FIXP16_SHIFT) / nHeight; 
-    param.kxRight = ((C->xt - B->xt) << FIXP16_SHIFT) / nHeight; 
+    param.kxLeft  = ((C->xDest - A->xDest) << FIXP16_SHIFT) / nHeight; 
+    param.kxRight = ((C->xDest - B->xDest) << FIXP16_SHIFT) / nHeight; 
 
     param.uStart = Au;
     param.vStart = Av;
@@ -167,15 +86,15 @@ void  PerspectiveTextureMapping::DoFlatBottomTriangle(TexturePoint* A, TexturePo
 
     MappingParam  param = {0};
 
-    param.yStart = A->yt;
-    param.yEnd = C->yt;
+    param.yStart = A->yDest;
+    param.yEnd = C->yDest;
 
-    param.xStart = A->xt << FIXP16_SHIFT;
+    param.xStart = A->xDest << FIXP16_SHIFT;
     param.xEnd = param.xStart;
 
-    int  nAz = (int)(A->z + 0.5);
-    int  nBz = (int)(B->z + 0.5);
-    int  nCz = (int)(C->z + 0.5);
+    int  nAz = round(A->z);
+    int  nBz = round(B->z);
+    int  nCz = round(C->z);
     int  Az = (1<<FIXP28_SHIFT) / nAz;
     int  Bz = (1<<FIXP28_SHIFT) / nBz;
     int  Cz = (1<<FIXP28_SHIFT) / nCz;
@@ -188,12 +107,12 @@ void  PerspectiveTextureMapping::DoFlatBottomTriangle(TexturePoint* A, TexturePo
     int  Cv = (C->v << FIXP20_SHIFT) / nCz; 
 
     // 避免图片太大导致溢出。FIXP20_SHIFT只能保证2048的大小
-    assert(Au > 0 && Av > 0 && Bu > 0 && Bv > 0 && Cu > 0 && Cv > 0);  
+    assert(Au >= 0 && Av >= 0 && Bu >= 0 && Bv >= 0 && Cu >= 0 && Cv >= 0);  
 
-    int  nHeight = (C->yt - A->yt);  // B-C等高
+    int  nHeight = (C->yDest - A->yDest);  // B-C等高
 
-    param.kxLeft = ((B->xt - A->xt) << FIXP16_SHIFT) / nHeight;
-    param.kxRight = ((C->xt - A->xt) << FIXP16_SHIFT) / nHeight;
+    param.kxLeft = ((B->xDest - A->xDest) << FIXP16_SHIFT) / nHeight;
+    param.kxRight = ((C->xDest - A->xDest) << FIXP16_SHIFT) / nHeight;
 
     param.uStart = Au;
     param.vStart = Av;
@@ -234,15 +153,15 @@ void  PerspectiveTextureMapping::DoGeneralTriangle(TexturePoint* A, TexturePoint
     param.kxLeft = 0;  // 两条直线的斜率的倒数
     param.kxRight = 0;   
 
-    param.xStart = A->xt << FIXP16_SHIFT;  // 扫描线x坐标范围
+    param.xStart = A->xDest << FIXP16_SHIFT;  // 扫描线x坐标范围
     param.xEnd = param.xStart;
 
     // a. 1/z 和 x、y 是成线性关系的
     // b. u/z 和 x、y 是成线性关系的
 
-    int  nAz = (int)(A->z + 0.5);
-    int  nBz = (int)(B->z + 0.5);
-    int  nCz = (int)(C->z + 0.5);
+    int  nAz = round(A->z);
+    int  nBz = round(B->z);
+    int  nCz = round(C->z);
     int  Az = (1<<FIXP28_SHIFT) / nAz;
     int  Bz = (1<<FIXP28_SHIFT) / nBz;
     int  Cz = (1<<FIXP28_SHIFT) / nCz;
@@ -265,13 +184,13 @@ void  PerspectiveTextureMapping::DoGeneralTriangle(TexturePoint* A, TexturePoint
     param.zStart = Az;  
     param.zEnd = param.zStart;
 
-    int  nHeightAB = (B->yt - A->yt);
-    int  nHeightAC = (C->yt - A->yt);
-    int  nHeightBC = (C->yt - B->yt);
+    int  nHeightAB = (B->yDest - A->yDest);
+    int  nHeightAC = (C->yDest - A->yDest);
+    int  nHeightBC = (C->yDest - B->yDest);
 
-    int  kxAB = ((B->xt - A->xt) << FIXP16_SHIFT) / nHeightAB; 
-    int  kxAC = ((C->xt - A->xt) << FIXP16_SHIFT) / nHeightAC;  // 2. 相对于A,值越小越靠左。相对于C，值越大越靠左
-    int  kxBC = ((C->xt - B->xt) << FIXP16_SHIFT) / nHeightBC;  
+    int  kxAB = ((B->xDest - A->xDest) << FIXP16_SHIFT) / nHeightAB; 
+    int  kxAC = ((C->xDest - A->xDest) << FIXP16_SHIFT) / nHeightAC;  // 2. 相对于A,值越小越靠左。相对于C，值越大越靠左
+    int  kxBC = ((C->xDest - B->xDest) << FIXP16_SHIFT) / nHeightBC;  
 
     int   kuAB = (Bu - Au) / nHeightAB;   // 使用u/z，而不是u
     int   kvAB = (Bv - Av) / nHeightAB;
@@ -286,8 +205,8 @@ void  PerspectiveTextureMapping::DoGeneralTriangle(TexturePoint* A, TexturePoint
 
     // 分为两个三角形
     {
-        param.yStart = A->yt;
-        param.yEnd = B->yt;
+        param.yStart = A->yDest;
+        param.yEnd = B->yDest;
 
         if (kxAC > kxAB)
         {
@@ -321,7 +240,7 @@ void  PerspectiveTextureMapping::DoGeneralTriangle(TexturePoint* A, TexturePoint
     //---------------------------------------------\\ 
     {
         param.yStart = param.yEnd;
-        param.yEnd = C->yt;
+        param.yEnd = C->yDest;
 
         if (kxAC > kxBC)
         {
@@ -366,43 +285,22 @@ void  PerspectiveTextureMapping::_do_triangle(MappingParam* pParam)
 	_do_triangle_subdivided_affine(pParam);
 	return;
 
-    byte* pSrcBit = (byte*)m_pTexture->GetBits();
-    byte* pDstBit = (byte*)m_pDestBuffer->GetBits();
+    byte* pSrcBit = (byte*)m_texture.m_pScan0;
+    byte* pDstBit = (byte*)m_destBuffer.m_pScan0;
     
-    int nSrcPitch = m_pTexture->GetPitch();
-    int nDstPitch = m_pDestBuffer->GetPitch();
+    int nSrcPitch = m_texture.m_nStride;
+    int nDstPitch = m_destBuffer.m_nStride;
 
-    int  nDstWidth = (m_pDestBuffer->GetWidth() - 1);
-    int  nDstHeight = (m_pDestBuffer->GetHeight() - 1);
+    int  nDstWidth = (m_destBuffer.m_nWidth - 1);
+    int  nDstHeight = (m_destBuffer.m_nHeight - 1);
 
-    // 规定：纹理pitch必须是2的n次方，以加快定位 -- 貌似没有什么用了，乘法也很快
-    int nPitchOffset = 0;
-    int nTemp = nSrcPitch;
-    while (nTemp) { nTemp >>= 1; nPitchOffset++; }
-    nPitchOffset--;
-    UIASSERT( (1 << (nPitchOffset)) == nSrcPitch);
+
+	Color Color0, Color1, Color2, Color3, ColorResult;  // 二次线性插值数据
 
 	// 临时变量
 	int nx = 0;
 	int ny = 0;
 
-#if 0
-    // 建立一个表快速索引纹理地址
-    int nHeight = m_pTexture->GetHeight();
-    LPDWORD* pdwTextureYIndex = new LPDWORD[nHeight];
-    {
-        byte* pBits = (byte*)m_pTexture->GetBits(); 
-
-        pdwTextureYIndex[0] = (LPDWORD)pBits;
-        for (int i = 1; i < nHeight; i++)
-        {
-            pBits += nSrcPitch;
-            pdwTextureYIndex[i] = (LPDWORD)pBits;
-        }
-    }
-    //    SAFE_ARRAY_DELETE(pdwTextureYIndex);
-#endif
-    
     int yStart = max(0, pParam->yStart);
     int yEnd = min(nDstHeight, pParam->yEnd);
     int xStart = 0;
@@ -461,46 +359,25 @@ void  PerspectiveTextureMapping::_do_triangle(MappingParam* pParam)
 
 			// v/z要还原为v，需要再乘回z. 在这里 nz = 1/z，因此 ny = nv/nz
 
-#if 1
-			__asm
-			{
-				// ny = (nv << FIXP8_SHIFT) / nz;
-				mov    eax, nv
-				shl    eax, 8 
-				cdq         
-				idiv   nz
-				mov    edi, eax  ;  // ny <- edi
-
-				// nx = (nu << FIXP8_SHIFT) / nz;
-				mov    eax, nu     
-				shl    eax, 8 
-				cdq         
-				idiv   nz 
-				mov    edx, eax  ;  // nx <- edx 
-
-				mov    ecx, nPitchOffset
-				shl    edi, cl 
-				add    edi, pSrcBit
-				mov    eax, dword ptr [edi+edx*4] 
-				mov    ecx, dword ptr [pDestBuf]
-				mov    dword ptr[ecx], eax
-			}
-
-#else
 			nx = (nu << FIXP8_SHIFT) / nz;
 			ny = (nv << FIXP8_SHIFT) / nz;
 
-//             if (nx < 0 || ny < 0/* || nx >= uvRange.right || ny >= uvRange.bottom*/)
-//             {
-// 
-//             }
-//             else
-            {
-                // *pDestBuf =  GetPixelValue(pSrcBit, nSrcPitch, nx, ny);
-                // *pDestBuf =  *((pdwTextureYIndex[ny])+nx);
-                *pDestBuf = GetPixelValue2(pSrcBit, nPitchOffset, nx, ny);
-            }
+
+			Color  colorSrc = GetPixelValue(pSrcBit, nSrcPitch, nx, ny);
+
+			Color  colorDst;
+			colorDst.m_col = *pDestBuf;
+#if 1 // ALPHABELND
+			int nAlphaSub = 255 - colorSrc.a;
+			colorDst.r = colorSrc.r + (nAlphaSub * colorDst.r >> 8);  // 注:这里仍然用r而不是b，因为获取的时候就是反过来的
+			colorDst.g = colorSrc.g + (nAlphaSub * colorDst.g >> 8);
+			colorDst.b = colorSrc.b + (nAlphaSub * colorDst.b >> 8);
+			colorDst.a = colorSrc.a + (nAlphaSub * colorDst.a >> 8);
+			*pDestBuf = colorDst.m_col;
+#else
+			*pDestBuf = GetPixelValue2(pSrcBit, nPitchOffset, nx, ny);
 #endif
+
             nu += kuScanline;
             nv += kvScanline;
             nz += kzScanline;
@@ -526,21 +403,14 @@ void  PerspectiveTextureMapping::_do_triangle(MappingParam* pParam)
 // 执行这些除尘运行，然后通过线性插值计算这些像素之间的纹理坐标。
 void  PerspectiveTextureMapping::_do_triangle_subdivided_affine(MappingParam* pParam)
 {
-	byte* pSrcBit = (byte*)m_pTexture->GetBits();
-	byte* pDstBit = (byte*)m_pDestBuffer->GetBits();
+	byte* pSrcBit = (byte*)m_texture.m_pScan0;
+	byte* pDstBit = (byte*)m_destBuffer.m_pScan0;
 
-	int nSrcPitch = m_pTexture->GetPitch();
-	int nDstPitch = m_pDestBuffer->GetPitch();
+	int nSrcPitch = m_texture.m_nStride;
+	int nDstPitch = m_destBuffer.m_nStride;
 
-	int  nDstWidth = (m_pDestBuffer->GetWidth() - 1);
-	int  nDstHeight = (m_pDestBuffer->GetHeight() - 1);
-
-	// 规定：纹理pitch必须是2的n次方，以加快定位 -- 貌似没有什么用了，乘法也很快
-	int nPitchOffset = 0;
-	int nTemp = nSrcPitch;
-	while (nTemp) { nTemp >>= 1; nPitchOffset++; }
-	nPitchOffset--;
-	UIASSERT( (1 << (nPitchOffset)) == nSrcPitch);
+	int  nDstWidth = (m_destBuffer.m_nWidth - 1);
+	int  nDstHeight = (m_destBuffer.m_nHeight - 1);
 
 	// 临时变量
 	int nx = 0;
@@ -555,6 +425,8 @@ void  PerspectiveTextureMapping::_do_triangle_subdivided_affine(MappingParam* pP
 	int uEnd = 0;
 	int vStart = 0;
 	int vEnd = 0;
+
+	Color Color0, Color1, Color2, Color3, ColorResult;  // 二次线性插值数据
 
 	for (int y = yStart; y < yEnd; y++)
 	{
@@ -605,8 +477,37 @@ void  PerspectiveTextureMapping::_do_triangle_subdivided_affine(MappingParam* pP
 
 		for (int x = xStart; x <= xEnd; x++)
 		{
-    	    *pDestBuf = GetPixelValue2(pSrcBit, nPitchOffset, (nu>>FIXP20_SHIFT), (nv>>FIXP20_SHIFT));
+			// 双线性插值
+#if 1
+			int u = nu >> FIXP20_SHIFT;
+			int v = nv >> FIXP20_SHIFT;
 
+			int nuInteger = nu>>12;//FIXP20_SHIFT;
+			int nvInteger = nv>>12;//FIXP20_SHIFT;
+			int nuDecimal = (nu&0xfff)>>4;
+			int nvDecimal = (nv&0xfff)>>4;  // 都作成8的 
+	
+			byte*  pbSrcBits = (byte*)GetPixelAddr(pSrcBit, nSrcPitch, u, v);
+			Color0.m_col = *((DWORD*)(pbSrcBits));  // 注：这里的顺序是bgra
+			Color2.m_col = (((DWORD*)(pbSrcBits))[1]);
+			pbSrcBits += nSrcPitch;
+			Color1.m_col = *((DWORD*)(pbSrcBits));
+			Color3.m_col = (((DWORD*)(pbSrcBits))[1]);
+
+			int pm3 = nuDecimal*nvDecimal;
+			int pm2 = nuDecimal*((1<<8) - nvDecimal);
+			int pm1 = nvDecimal*((1<<8) - nuDecimal);
+			int pm0 = ((1<<8) - nuDecimal)*((1<<8) - nvDecimal);
+
+			ColorResult.a = (byte)((pm0*Color0.a + pm1*Color1.a + pm2*Color2.a + pm3*Color3.a) >> FIXP16_SHIFT);
+			ColorResult.r = (byte)((pm0*Color0.r + pm1*Color1.r + pm2*Color2.r + pm3*Color3.r) >> FIXP16_SHIFT);
+			ColorResult.g = (byte)((pm0*Color0.g + pm1*Color1.g + pm2*Color2.g + pm3*Color3.g) >> FIXP16_SHIFT);
+			ColorResult.b = (byte)((pm0*Color0.b + pm1*Color1.b + pm2*Color2.b + pm3*Color3.b) >> FIXP16_SHIFT);
+
+			*pDestBuf = ColorResult.m_col;
+#else
+    	    *pDestBuf = GetPixelValue(pSrcBit, nSrcPitch, (nu>>FIXP20_SHIFT), (nv>>FIXP20_SHIFT));
+#endif
 			nu += kuScanline;
 			nv += kvScanline;
 			pDestBuf++;

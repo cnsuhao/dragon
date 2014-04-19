@@ -35,7 +35,7 @@ void  LyricCtrl::SetAttribute(UI::IMapAttribute* pMapAttrib, bool bReload)
 
     szText = pMapAttrib->GetAttr(XML_TEXTRENDER_FONT, true);
     if (szText)
-        pFontRes->GetFont((BSTR)szText, GetRenderLibraryType(m_pILyricCtrl), &m_pRenderFont);
+        pFontRes->GetFont((BSTR)szText, m_pILyricCtrl->GetGraphicsRenderLibraryType(), &m_pRenderFont);
 
     if (NULL == m_pRenderFont)
     {
@@ -48,7 +48,7 @@ void  LyricCtrl::SetAttribute(UI::IMapAttribute* pMapAttrib, bool bReload)
         else
         {
             // 可能是没有窗口对象，比如是一个 popup listbox或者menu，窗口还没有创建。获取默认字体
-            pFontRes->GetDefaultFont(GetRenderLibraryType(m_pILyricCtrl), &m_pRenderFont);
+            pFontRes->GetDefaultFont(m_pILyricCtrl->GetGraphicsRenderLibraryType(), &m_pRenderFont);
         }
     }
 }

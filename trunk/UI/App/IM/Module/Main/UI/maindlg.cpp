@@ -646,11 +646,11 @@ void  CMainDlg::ShowList(MainDlgListPluginInfo* pListInfo)
     pAnimate2->SetVisible(true, false, false);
 
     UI::IStoryboard* pStoryboard = GetUIApplication()->GetAnimateMgr()->CreateStoryboard(this, 0, (WPARAM)pAnimate1, (LPARAM)pAnimate2);
-    UI::IIntAccelerateMove* pMoveAlgo = NULL;
+    UI::IIntEasingMove* pMoveAlgo = NULL;
     UI::IIntTimeline* pTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(
-        UI::TV_INT, 0, UI::TMA_Accelerate, (UI::IMoveAlgorithm**)&pMoveAlgo);
+        UI::TV_INT, 0, UI::TMA_Easing, (UI::IMoveAlgorithm**)&pMoveAlgo);
 
-    pMoveAlgo->SetParam1(0, m_pPanelList->GetWidth(), 100, m_pPanelList->GetWidth()*20/1000.0f);
+    pMoveAlgo->SetParam(0, m_pPanelList->GetWidth(), 100, UI::ease_out);
     
     if (nIndex2 > nIndex1)
         pStoryboard->SetId(STORYBOARD_ID_SWITCH_LIST_LEFT2RIGHT);

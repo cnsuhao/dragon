@@ -113,6 +113,9 @@ namespace UI
                 nTimeElapse = (GetTickCount() - m_nBeginTime)/1000;
             }
 
+//             TCHAR szText[8];
+//             _stprintf(szText, _T("%d\n"), nTimeElapse);
+//             OutputDebugString(szText);
             bool bTimelineFinish = OnTick(nTimeElapse);
             if (bTimelineFinish)
             {

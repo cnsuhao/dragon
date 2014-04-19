@@ -116,7 +116,7 @@ namespace UI
 			}
 #endif
 
-#if 1 // 创建d3d->d2d的d2d1bitmap
+#if 0 // 创建d3d->d2d的d2d1bitmap
             // Get a surface in the swap chain
             hr = g_pD3DApp->m_pSwapChain->GetBuffer(
                 0,

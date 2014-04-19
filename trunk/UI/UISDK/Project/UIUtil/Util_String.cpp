@@ -370,6 +370,8 @@ COLORREF  TranslateColor(const TCHAR* szColor)
 
     if (szColor[0] == _T('#')) // 16½øÖÆ
         return TranslateHexColor(szColor+1);
+    else if (szColor[0] == _T('0') && szColor[1] == _T('x'))
+        return TranslateHexColor(szColor+2);
     else
         return TranslateColor(szColor);
 }

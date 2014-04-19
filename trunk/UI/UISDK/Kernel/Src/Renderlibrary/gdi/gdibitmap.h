@@ -136,6 +136,7 @@ public:
 		SAFE_ARRAY_DELETE(pImageData->m_ptr);
 		m_image.SaveBits(pImageData, &nSize);
 		pImageData->m_ptr = new BYTE[nSize];
+		pImageData->m_bNeedDeletePtr = true;
 
 		return m_image.SaveBits(pImageData, &nSize);
 	}
@@ -177,7 +178,7 @@ protected:
 class GDIRenderBitmap : public GDIRenderBitmapImpl<IRenderResourceImpl<IRenderBitmap> >
 {
 public:
-	static  void CreateInstance( IRenderBitmap** ppOutRef );
+	static  void CreateInstance(IRenderBitmap** ppOut);
     virtual IMAGE_ITEM_TYPE  GetImageType() { return IMAGE_ITEM_TYPE_IMAGE; }
 };
 class GDIIconRenderBitmap : public GDIRenderBitmapImpl<IRenderResourceImpl<IImageIconRenderBitmap > >// : public GDIRenderBitmap
@@ -185,7 +186,7 @@ class GDIIconRenderBitmap : public GDIRenderBitmapImpl<IRenderResourceImpl<IImag
 public:
 	GDIIconRenderBitmap();
 
-	static  void  CreateInstance(IRenderBitmap** pOutRef);
+	static  void  CreateInstance(IRenderBitmap** pOut);
 	virtual bool  LoadFromFile(const TCHAR* szPath, bool bCreateAlphaChannel);
     virtual bool  LoadFromData(byte* pData, int nSize, bool bCreateAlphaChannel);
     
@@ -204,7 +205,7 @@ protected:
 	GDIImageListRenderBitmap();
 
 public:
-	static  void CreateInstance(IRenderBitmap** pOutRef);
+	static  void CreateInstance(IRenderBitmap** pOut);
 
 	virtual int  GetItemWidth();
 	virtual int  GetItemHeight();

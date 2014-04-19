@@ -110,8 +110,8 @@ enum
     //
     //		message: UI_WM_HITTEST
     //		code:
-    //		wparam:  x (in window)
-    //		lparam:  y (in window)
+    //		wparam:  [in]  POINT*  ptInParent
+    //		lparam:  [out,optional] POINT*  ptInChild (例如减去自己的左上角偏移)
     //		pMsgFrom: 
     //
     //	Return
@@ -272,7 +272,7 @@ enum
 //    UI_WM_FONTMODIFIED, -- 机制做的不好，废弃
 
     // 图片换肤
-    UI_WM_SKINMATERIALCHANGED,
+    UI_WM_SKINTEXTURECHANGED,
 #pragma endregion
 
    
@@ -429,6 +429,7 @@ enum
 #define  UI_WM_RESETATTRIBUTE  139281920
 
 
+#if 0
 //
 //	获取一个窗口的绘制类型
 //
@@ -452,6 +453,7 @@ enum
         if (IsMsgHandled())                               \
             return TRUE;                                  \
     } 
+#endif
 
 //  获取窗口的透明类型，用于判断当前窗口是分层的，还是aero
 //  wparam: 
@@ -787,13 +789,13 @@ struct EDITORGETOBJECTATTRLISTDATA
             return TRUE;                              \
     }
 
-// UINT OnHitTest( POINT* p )
+// UINT OnHitTest(POINT* ptInParent, __out POINT* ptInChild)
 #define UIMSG_WM_HITTEST(func)                        \
     if (uMsg == UI_WM_HITTEST)                        \
     {                                                 \
-        POINT pt = { (LONG)wParam, (LONG)lParam };    \
+        POINT ptInParent = *(POINT*)wParam;           \
         SetMsgHandled(TRUE);                          \
-        pMsg->lRet = (long)func( &pt );               \
+        pMsg->lRet = (long)func(&ptInParent, (POINT*)lParam); \
         if (IsMsgHandled())                           \
             return TRUE;                              \
     }
@@ -830,6 +832,9 @@ struct EDITORGETOBJECTATTRLISTDATA
 #define UIMSG_WM_WINDOWPOSCHANGING  MSG_WM_WINDOWPOSCHANGING
 #define SWP_LAYEREDWINDOW_SIZEMOVE  0x80000000   // 表示这是个分层窗口模拟的窗口大小改变
 #define SWP_NOUPDATELAYOUTPOS       0x40000000   // 调用SetObjectPos时不更新布局属性
+#define SWP_FORCESENDSIZEMSG        0x20000000   // 即使大小没有改变，也强制发送一个WM_SIZE消息，用于走通逻辑
+// TODO: 在布局Arrage中强制设置了SWP_FORCESENDSIZEMSG标志，用于解决修改了一个子子控件布局参数后，调用窗口
+//       的UpdateMyLayout函数，但子控件大小没有发生改变，导致子子控件布局失败。
 
 // void OnWindowPosChanged(LPWINDOWPOS lpWndPos)
 #define UIMSG_WM_WINDOWPOSCHANGED  MSG_WM_WINDOWPOSCHANGED

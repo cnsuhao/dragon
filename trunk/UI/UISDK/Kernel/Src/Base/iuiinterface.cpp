@@ -79,8 +79,8 @@ bool  ISkinRes::LoadAllWindowNodeInfo(LayoutWindowNodeInfo* pInfoArray, int* pAr
 
 ISkinDataSource*  ISkinRes::GetDataSource()    { return m_pImpl->GetDataSource(); }
 UINT  ISkinRes::GetXmlDocCount()               { return m_pImpl->GetXmlDocCount(); }
-const TCHAR*  ISkinRes::GetXmlDoc(UINT nIndex, IUIDocument** pp)  { return m_pImpl->GetXmlDoc(nIndex, pp); }
-
+const TCHAR*  ISkinRes::GetXmlDoc(UINT nIndex, IUIDocument** pp)         { return m_pImpl->GetXmlDoc(nIndex, pp); }
+bool  ISkinRes::GetXmlDocByName(const TCHAR* szName, IUIDocument** pp)   { return m_pImpl->GetXmlDocByName(szName, pp); }
 //////////////////////////////////////////////////////////////////////////
 
 ITopWindowManager::ITopWindowManager(TopWindowManager* p) 

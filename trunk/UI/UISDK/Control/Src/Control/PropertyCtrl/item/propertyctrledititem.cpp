@@ -323,10 +323,10 @@ void  PropertyCtrlEditItem::BeginEdit()
     GetValueColumnRect(&rc);
     rc.DeflateRect(2,1,1,1);
 
-    m_pShareData->pEditCtrl->SetText(m_strValue.c_str());
-
     IPanel* pPanel = m_pIPropertyCtrlEditItem->GetRootPanel();
     pPanel->AddChild(m_pShareData->pEditCtrl);
+
+    m_pShareData->pEditCtrl->SetText(m_strValue.c_str());
 
 //    m_pShareData->pEditCtrl->SetObjectPos(&rc, 0);
     m_pShareData->pEditCtrl->SetConfigLeft(rc.left);

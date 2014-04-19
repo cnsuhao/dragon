@@ -10,7 +10,6 @@
 #include "UISDK\Kernel\Src\UIObject\ListCtrl\MouseKeyboard\popuplistctrlmkmgr.h"
 #include "UISDK\Kernel\Src\UIObject\ListCtrl\MouseKeyboard\multisellistctrlmkmgr.h"
 #include "UISDK\Kernel\Src\UIObject\ListCtrl\MouseKeyboard\menumkmgr.h"
-#include "UISDK\Kernel\Src\Animate\3dwrap\ui3dwrap.h"
 
 namespace UI
 {
@@ -28,7 +27,7 @@ namespace UI
 //	   . RootPanel::DrawObject
 //
 //  2. 正向ITEM REDRAW
-//     . ListCtrl::RedrawItem
+//     . ListCtrl::_redrawItem
 //     . ListCtrl::OnDrawItem, ListItem::OnDrawItem, ListItem::DrawItemInnerControl ->
 //	   . RootPanel::DrawObject
 //
@@ -36,7 +35,7 @@ namespace UI
 //     . Button.UpdateObject
 //     . WindowBase._InnerRedraw(由于这里的begindraw，使用ListCtrl::RedrawItem中调用begindrawpart返回isdrawing为true)
 //     . RootPanel.OnEraseBkgnd(rootpanel的背景不透明，不会再往向遍历了)
-//     . ListCtrl::RedrawItem
+//     . ListCtrl::_redrawItem
 //     . ListCtrl::OnDrawItem, ListItem::OnDrawItem (这里不再调用ListItem::OnDrawItemInnerControl了，因为这一部分在第2步已绘制)
 //     . Button.ParentPanel.OnEraseBkgnd
 //     . Button.DrawObject                                                                                                                                                                                                                                                                                                          
@@ -92,6 +91,7 @@ ListCtrlBase::ListCtrlBase()
 	m_sizeMin.cy = NDEF;
 
 	m_bNeedCalcFirstLastVisibleItem = false;
+    m_bRedrawInvalidItems = false;
 	m_eInvalidateFlag = LISTCTRL_NEED_UPDATE_FLAG_NONE;
 	for (int i = 0; i < LISTCTRL_MAX_INVALIDATE_ITEM_COUNT; i++)
 		m_pInvalidateItems[i] = NULL;
@@ -138,12 +138,10 @@ HRESULT  ListCtrlBase::FinalConstruct(IUIApplication* p)
 
 void  ListCtrlBase::FinalRelease()
 {
-	DO_PARENT_PROCESS(IListCtrlBase, IControl);
-    
+    this->_RemoveAllItem();   // 因为_RemoveAllItem会调用虚函数，因此这个操作没有放在析构函数中执行
+
     m_pMgrScrollBar->SetHScrollBar(NULL); // 滚动条被销毁了（_RemoveAllItem中会调用滚动函数）
     m_pMgrScrollBar->SetVScrollBar(NULL);  
-
-	this->_RemoveAllItem();   // 因为_RemoveAllItem会调用虚函数，因此这个操作没有放在析构函数中执行
 
     // 销毁共享数据
     map<int, IListItemTypeShareData*>::iterator iter = m_mapItemTypeShareData.begin();
@@ -152,6 +150,8 @@ void  ListCtrlBase::FinalRelease()
         iter->second->delete_this();
     }
     m_mapItemTypeShareData.clear();
+
+    DO_PARENT_PROCESS(IListCtrlBase, IControl);
 }
 
 void ListCtrlBase::ResetAttribute()
@@ -198,7 +198,7 @@ void ListCtrlBase::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 	if (NULL == m_pIListCtrlBase->GetTextRender())
 	{
         ITextRenderBase* pTextRender = NULL;
-        pMapAttrib->GetAttr_TextRenderBase(XML_TEXTRENDER_TYPE, true, pUIApp, m_pIListCtrlBase, &pTextRender);
+        pMapAttrib->GetAttr_TextRenderBase(NULL, XML_TEXTRENDER_TYPE, true, pUIApp, m_pIListCtrlBase, &pTextRender);
         if (pTextRender)
         {
             m_pIListCtrlBase->SetTextRender(pTextRender);
@@ -377,6 +377,9 @@ bool  ListCtrlBase::_RemoveAllChildItems(ListItemBase* pParent)
             }
         }
 
+        // 从无效列表中移除
+        RemoveInvavlidateItem(pItem);
+
         ListItemBase* pNext = pItem->GetNextItem();
         pItem->GetIListItemBase()->delete_this();;
         pItem = pNext;
@@ -445,6 +448,9 @@ bool ListCtrlBase::_RemoveItem(ListItemBase* pItem)
     if (m_pMKMgr)
         m_pMKMgr->OnRemoveItem(pItem);
 
+    // 从无效列表中移除
+    RemoveInvavlidateItem(pItem);
+
 	pItem->GetIListItemBase()->delete_this();;
 
     {
@@ -500,6 +506,8 @@ bool ListCtrlBase::_RemoveAllItem()
         m_pMKMgr->OnRemoveAll();
 
 	m_pMgrScrollBar->SetScrollRange(0,0);
+
+    SetInvalidateAllItems();
 
     {
         UIMSG  msg;
@@ -679,10 +687,9 @@ void ListCtrlBase::SetItemHeight(int nHeight, bool bUpdate)
 
 	m_nItemHeight = nHeight;
 //	this->MeasureAllItem();
-	this->UpdateItemRect(m_pFirstItem, false);
 
-	if (bUpdate)
-		m_pIListCtrlBase->UpdateObject();
+    if (bUpdate)
+    	this->UpdateItemRect(m_pFirstItem, true);
 }
 
 ListItemBase* ListCtrlBase::GetItemByPos(UINT nIndex, bool bVisibleOnly)
@@ -953,6 +960,8 @@ void ListCtrlBase::UpdateItemRect(ListItemBase* pStart, bool bRedraw)
 
 void ListCtrlBase::OnSize(UINT nType, int cx, int cy)
 {
+    SetMsgHandled(FALSE);
+
 	this->SetCalcFirstLastVisibleItemFlag();
 
 	SIZE sizeContent = {0,0};
@@ -1247,23 +1256,26 @@ ListItemBase* ListCtrlBase::GetFocusItem()
 }
 void  ListCtrlBase::SetFocusItem(ListItemBase* pItem)
 {
-	UIASSERT(0 && _T("focus已放到mkmgr中实现 "));
-	if (m_pFocusItem == pItem)
-		return;
-
-	if (m_pFocusItem)
-		this->InvalidateItem(m_pFocusItem);
-
-    if (m_pFocusItem)
-        m_pFocusItem->SetFocus(false);
-
-	m_pFocusItem = pItem;
-
-    if (m_pFocusItem)
-        m_pFocusItem->SetFocus(true);
-
-	if (m_pFocusItem)
-		this->InvalidateItem(m_pFocusItem);
+    m_pMKMgr->SetFocusItem(pItem);
+    return;
+// 
+// 	UIASSERT(0 && _T("focus已放到mkmgr中实现 "));
+// 	if (m_pFocusItem == pItem)
+// 		return;
+// 
+// 	if (m_pFocusItem)
+// 		this->InvalidateItem(m_pFocusItem);
+// 
+//     if (m_pFocusItem)
+//         m_pFocusItem->SetFocus(false);
+// 
+// 	m_pFocusItem = pItem;
+// 
+//     if (m_pFocusItem)
+//         m_pFocusItem->SetFocus(true);
+// 
+// 	if (m_pFocusItem)
+// 		this->InvalidateItem(m_pFocusItem);
 }
 
 Object*  ListCtrlBase::GetHoverObject()
@@ -1660,7 +1672,7 @@ void ListCtrlBase::WindowPoint2ItemPoint(ListItemBase* pItem, const POINT* pt, P
     CRect rcItem;
     pItem->GetParentRect(&rcItem);
 
-    m_pIListCtrlBase->WindowPoint2ObjectClientPoint_CalcScroll(pt, ptRet);
+    m_pIListCtrlBase->WindowPoint2ObjectClientPoint(pt, ptRet, true);
     ptRet->x -= rcItem.left;
     ptRet->y -= rcItem.top;
 }
@@ -1941,7 +1953,12 @@ LRESULT  ListCtrlBase::OnInertiaVScroll(UINT uMsg, WPARAM wParam, LPARAM lParam)
     this->UpdateObject();
     return 0;
 }
-void ListCtrlBase::OnPaint(IRenderTarget* pRenderTarget, RenderContext* proc)
+
+//
+// 注：每一个ITEM的绘制并不会去更新Context，而是直接使用m_rcParent，并不像控件一样切换到控件的左上角使用（0，0）坐标
+//     因此在绘制ITEM内部控件时需要去更新context
+//
+void ListCtrlBase::OnPaint(IRenderTarget* pRenderTarget, RenderContext* pContext)
 { 
 	if (m_bNeedCalcFirstLastVisibleItem)
 	{
@@ -1949,30 +1966,46 @@ void ListCtrlBase::OnPaint(IRenderTarget* pRenderTarget, RenderContext* proc)
 		this->CalcFirstLastVisibleItem();
 	}
 
-	this->ClearInvalidateItems();   // 因为OnPaint是全部重画，因此在这里将所有的invalidate items清除
-
 #if 0
-	ISelectRegionRender* pSelectRegionRender = m_pMouseMgr->GetSelectRegionRender();
-	if (pSelectRegionRender)
-	{
-		pSelectRegionRender->PrePaint();
-	}
+    ISelectRegionRender* pSelectRegionRender = m_pMouseMgr->GetSelectRegionRender();
+    if (pSelectRegionRender)
+    {
+        pSelectRegionRender->PrePaint();
+    }
 #endif
 
-//	OnPrePaint(pRenderTarget);
-	ListItemBase* pItem = m_pFirstDrawItem;
-	while (pItem)
-	{
-		this->OnDrawItem(pRenderTarget,pItem);                  // 绘制背景
-        pItem->Draw(pRenderTarget, proc);                             // 子对象绘制
-		pItem->DrawItemInnerControl(pRenderTarget, proc);             // 绘制内部控件
+    // 刷新无效项
+    if (m_bRedrawInvalidItems)
+    {
+        for (int i = 0; i < LISTCTRL_MAX_INVALIDATE_ITEM_COUNT; i++)
+        {
+            if (!m_pInvalidateItems[i])
+                continue;
 
-		if (pItem == m_pLastDrawItem)
-			break;
+            this->OnDrawItem(pRenderTarget, m_pInvalidateItems[i]);
+            m_pInvalidateItems[i]->Draw(pRenderTarget, pContext);
+            m_pInvalidateItems[i]->DrawItemInnerControl(pRenderTarget, pContext);
+        }
 
-		pItem = pItem->GetNextVisibleItem();
-	}
-//	OnPostPaint(pRenderTarget);
+	    this->ClearInvalidateItems();   // 因为OnPaint是全部重画，因此在这里将所有的invalidate items清除
+        return;
+    }
+    // 刷新所有项
+    else
+    {
+	    ListItemBase* pItem = m_pFirstDrawItem;
+	    while (pItem)
+	    {
+		    this->OnDrawItem(pRenderTarget,pItem);                  // 绘制背景
+            pItem->Draw(pRenderTarget, pContext);                             // 子对象绘制
+		    pItem->DrawItemInnerControl(pRenderTarget, pContext);             // 绘制内部控件
+
+		    if (pItem == m_pLastDrawItem)
+			    break;
+
+		    pItem = pItem->GetNextVisibleItem();
+	    }
+    }
 }
 
 void  ListCtrlBase::OnDrawItem(IRenderTarget* pRenderTarget, ListItemBase* p)
@@ -2094,6 +2127,38 @@ void  ListCtrlBase::InvalidateItem(ListItemBase* pItem)
 		m_pInvalidateItems[i] = NULL;
 }
 
+// pItem被删除时，将其(包括子结点)从无效列表中移除
+void  ListCtrlBase::RemoveInvavlidateItem(ListItemBase* pItem)
+{
+    if (NULL == pItem)
+        return;
+
+    if (m_eInvalidateFlag == LISTCTRL_NEED_UPDATE_FLAG_ALL ||
+        m_eInvalidateFlag == LISTCTRL_NEED_UPDATE_FLAG_NONE)
+        return;
+
+    for (int i = 0; i < LISTCTRL_MAX_INVALIDATE_ITEM_COUNT; i++)
+    {
+        if (!m_pInvalidateItems[i])
+            continue;
+
+        if (m_pInvalidateItems[i] == pItem)
+        {
+            m_pInvalidateItems[i] = NULL;
+        }
+        else if (pItem->IsMyChildItem(m_pInvalidateItems[i], true))
+        {
+            m_pInvalidateItems[i] = NULL;
+        }
+    }
+
+    // 空了
+    if (0 == GetInvalidateItemCount())
+    {
+        m_eInvalidateFlag = LISTCTRL_NEED_UPDATE_FLAG_NONE;
+    }
+}
+
 void ListCtrlBase::SetInvalidateAllItems()
 {
 	this->ClearInvalidateItems();
@@ -2137,8 +2202,7 @@ void  ListCtrlBase::Refresh()
 	}
 	else
 	{
-		this->RedrawItem(m_pInvalidateItems, LISTCTRL_MAX_INVALIDATE_ITEM_COUNT);
-		this->ClearInvalidateItems();
+		this->_redrawItem(m_pInvalidateItems, LISTCTRL_MAX_INVALIDATE_ITEM_COUNT);
 	}
 }
 
@@ -2148,166 +2212,41 @@ void  ListCtrlBase::Refresh()
 // 3. 不需要再绘制innerctrl，只需要listitem内容
 void ListCtrlBase::RedrawItemByInnerCtrl(IRenderTarget* pRenderTarget, RenderContext* pContext, ListItemBase* pItem)
 {
-	if (NULL == pRenderTarget || NULL == pItem)
-		return;
-
-	IRenderChain* pRenderChain = m_pIListCtrlBase->GetRenderChain();
-	if (NULL == pRenderChain)
-	{
-		m_pIListCtrlBase->UpdateObject();
-		return;
-	}
-
 	if (!IsItemVisibleInScreen(pItem))
 		return;
 
-	bool bIsDrawing = false;  // 如果为true，表示当前有其它对象已经调用了begindraw，一般是列表控件内部的控件刷新导致
-	RenderContext renderContext(NULL, false, false);
-	IRenderTarget* pRenderTargetRet = pRenderChain->BeginRedrawObjectPart(m_pIListCtrlBase, NULL, 0, &bIsDrawing, &renderContext);
-	UIASSERT(bIsDrawing);   // 因为知道这里必定为true，所以不需要再调用EndRedrawObjectPart
-
-	this->OnDrawItem(pRenderTargetRet, pItem);
-    pItem->Draw(pRenderTarget, &renderContext); 
-
-// 	ISelectRegionRender* pSelectRegionRender = m_pMouseMgr->GetSelectRegionRender();
-// 	if (pSelectRegionRender)
-// 		pSelectRegionRender->PrePaint();
+    this->OnDrawItem(pRenderTarget, pItem);
+    pItem->Draw(pRenderTarget, pContext); 
 }
-void  ListCtrlBase::RedrawItem(ListItemBase** ppItemArray, int nCount)
+
+
+void  ListCtrlBase::_redrawItem(ListItemBase** ppItemArray, int nCount)
 {
 	if (NULL == ppItemArray && 0 == nCount)
 		return;
 
-    // 先这么处理吧，要再单个处理好麻烦呀……
-    if (m_pObject3DWrap && m_pObject3DWrap->IsRunning())
-    {
-        this->UpdateObject();  
-        return;
-    }
-
-	for (int i = 0; i < nCount; i++)  // 检测一下是否全是NULL
-	{
-		if (ppItemArray[i] == NULL)
-		{
-			nCount = i;
-			break;
-		}
-	}
-	if (0 == nCount)
-		return;
-
-	IRenderChain* pRenderChain = m_pIListCtrlBase->GetRenderChain();
-	if (NULL == pRenderChain)
-	{
-		m_pIListCtrlBase->UpdateObject();
-		return;
-	}
-
-    if (!this->IsVisible())
-        return;
-
-	CRect* pRectArray = new CRect[nCount];
     int nRealCount = 0;
-	for (int i = 0; i < nCount; i++)
-	{
-		if (ppItemArray[i])
-		{
-            if (!IsItemVisibleInScreen(ppItemArray[i]))
-                continue;
-
-			this->ItemRect2WindowRect(ppItemArray[i]->GetParentRect(), &(pRectArray[nRealCount]));
-            nRealCount++;
-		}
-	}
-    if (0 == nRealCount)
+    CRect* prcObjArray = new CRect[nCount];
+    for (int i = 0; i < nCount; i++)
     {
-        SAFE_ARRAY_DELETE(pRectArray);
-        return;
+        if (ppItemArray[i])
+        {
+            ObjectClientRect2ObjectRect(this, ppItemArray[i]->GetParentRect(), &prcObjArray[nRealCount]);
+            nRealCount++;
+        }
     }
-
-	bool bIsDrawing = false;  // 如果为true，表示当前有其它对象已经调用了begindraw，一般是列表控件内部的控件刷新导致
-	RenderContext  roc(NULL, false, false);
-	IRenderTarget* pRenderTarget = pRenderChain->BeginRedrawObjectPart(m_pIListCtrlBase, pRectArray, nRealCount, &bIsDrawing, &roc);
-	if (NULL == pRenderTarget)
-	{
-		SAFE_ARRAY_DELETE(pRectArray);
-		return;
-	}
-
-	for (int i = 0; i < nCount; i++)
-	{
-		ListItemBase* pItem = ppItemArray[i];
-		if (NULL == pItem)
-			continue;
-
-		this->OnDrawItem(pRenderTarget, pItem);
-        pItem->Draw(pRenderTarget, &roc);
-
-		if (!bIsDrawing)
-			pItem->DrawItemInnerControl(pRenderTarget, &roc);
-	}
-
-// 	ISelectRegionRender* pSelectRegionRender = m_pMouseMgr->GetSelectRegionRender();
-// 	if (pSelectRegionRender)
-// 		pSelectRegionRender->PrePaint();
-
-	if (!bIsDrawing)
-		pRenderChain->EndRedrawObjectPart(pRenderTarget, pRectArray, nRealCount);
-
-	SAFE_ARRAY_DELETE(pRectArray);
+    if (nRealCount)
+    {
+        m_bRedrawInvalidItems = true;
+        UpdateObjectEx(prcObjArray, nRealCount, true);  // 最后会触发OnPaint
+        m_bRedrawInvalidItems = false;
+    }
+    SAFE_ARRAY_DELETE(prcObjArray);
 }
 #pragma endregion
 
+
 //////////////////////////////////////////////////////////////////////////
-// 编辑控件
-#if 0 // -- 架构改造
-Edit*     ListCtrlBase::GetEditControl()
-{
-	if (m_pEdit)
-		return m_pEdit;
-
-	UICreateInstance(&m_pEdit, m_pUIApplication);
-	if (NULL == m_pEdit)
-		return NULL;
-
-	m_pEdit->SetOutRef((Object**)&m_pEdit);
-	m_pEdit->SetNotify(this, LISTCTRLBASE_EDIT_CONTROL_MSG_ID);
-
-	this->SetChildObjectAttribute(m_pEdit, XML_LISTCTRL_EDIT_PRIFIX, m_mapAttribute, false);
-	return NULL;
-}
-Combobox* ListCtrlBase::GetComboboxControl()
-{
-	if (m_pCombobox)
-		return m_pCombobox;
-
-	UICreateInstance(&m_pCombobox, m_pUIApplication);
-	if (NULL == m_pCombobox)
-		return NULL;
-
-	m_pCombobox->SetOutRef((Object**)&m_pCombobox);
-	m_pCombobox->SetNotify(this, LISTCTRLBASE_EDIT_CONTROL_MSG_ID);
-
-	this->SetChildObjectAttribute(m_pCombobox, XML_LISTCTRL_COMBOBOX_PRIFIX, m_mapAttribute, false);
-
-	return NULL;
-}
-Button*   ListCtrlBase::GetButtonControl()
-{
-	if (m_pButton)
-		return m_pButton;
-
-	UICreateInstance(&m_pButton, m_pUIApplication);
-	if (NULL == m_pButton)
-		return NULL;
-	m_pButton->SetOutRef((Object**)&m_pButton);
-
-	m_pButton->SetNotify(this, LISTCTRLBASE_EDIT_CONTROL_MSG_ID);
-
-	this->SetChildObjectAttribute(m_pButton, XML_LISTCTRL_BUTTON_PRIFIX, m_mapAttribute, false);
-    return NULL;
-}
-#endif
 
 const TCHAR* ListCtrlBase::GetItemText(ListItemBase* pItem)
 {
@@ -2366,7 +2305,7 @@ void  ListCtrlBase::RemoveItemTypeShareData(int lType)
 }
 
 // pt为窗口坐标
-ListItemBase* ListCtrlBase::HitTest(POINT ptWindow)
+ListItemBase* ListCtrlBase::HitTest(POINT ptWindow, __out POINT*  ptItem)
 {
     CRect rcClient;
     m_pIListCtrlBase->GetClientRect(&rcClient);
@@ -2374,7 +2313,7 @@ ListItemBase* ListCtrlBase::HitTest(POINT ptWindow)
     // 1. 转换为内部坐标
 
     POINT pt;
-    m_pIListCtrlBase->WindowPoint2ObjectPoint(&ptWindow, &pt);
+    m_pIListCtrlBase->WindowPoint2ObjectPoint(&ptWindow, &pt, true);
     if (FALSE == rcClient.PtInRect(pt))
         return NULL;
 
@@ -2390,8 +2329,17 @@ ListItemBase* ListCtrlBase::HitTest(POINT ptWindow)
     ListItemBase* p = m_pFirstDrawItem;
     while (p)
     {
-        if (PtInRect(p->GetParentRect(), pt))
+        CRect rcParent;
+        p->GetParentRect(&rcParent);
+        if (PtInRect(&rcParent, pt))
+        {
+            if (ptItem)
+            {
+                ptItem->x = pt.x - rcParent.left;
+                ptItem->y = pt.y - rcParent.top;
+            }
             return p;
+        }
 
         if (p == m_pLastDrawItem)
             break;
@@ -2439,8 +2387,6 @@ void  ListCtrlBase::SetFocusRender(IRenderBase* p)
         m_pFocusRender->AddRef();
 }
 
-
-#pragma region // tree 
 
 bool  ListCtrlBase::InsertItem(ListItemBase* pNewItem, IListItemBase* pParent, IListItemBase* pAfter, int nInsertFlags)
 {
@@ -2514,7 +2460,7 @@ bool  ListCtrlBase::InsertItem(ListItemBase* pNewItem, IListItemBase* pParent, I
     }
     
     UpdateItemIndex(pNewItem);
-    UISendMessage(pNewItem->GetIListItemBase(), UI_WM_INITIALIZE);
+    UISendMessage(pNewItem->GetIListItemBase(), UI_WM_INITIALIZE); // TODO: 该item可能已经初始化过了，只是在调整位置，再插入一次
 
     if (0 == (nInsertFlags & LISTITEM_OPFLAG_NOUPDATEITEMRECT))
     {
@@ -2560,6 +2506,7 @@ bool ListCtrlBase::_InsertAfter(ListItemBase* pNewItem, ListItemBase* pInsertAft
     ListItemBase* pOldNext = pInsertAfter->GetNextItem();
     pInsertAfter->SetNextItem(pNewItem);
     pNewItem->SetPrevItem(pInsertAfter);
+    pNewItem->SetParentItem(pInsertAfter->GetParentItem());
 
     if (NULL != pOldNext)
     {
@@ -2574,25 +2521,26 @@ bool ListCtrlBase::_InsertAfter(ListItemBase* pNewItem, ListItemBase* pInsertAft
     return true;
 }
 
-bool ListCtrlBase::_InsertFront(ListItemBase* pNewItem, ListItemBase* pInsertFront)
+bool ListCtrlBase::_InsertBefore(ListItemBase* pNewItem, ListItemBase* pInsertBefore)
 {
-    if (NULL == pInsertFront)
+    if (NULL == pInsertBefore)
         return false;
 
-    ListItemBase* pOldPrev = pInsertFront->GetPrevItem();
-    pInsertFront->SetPrevItem(pNewItem);
-    pNewItem->SetNextItem(pInsertFront);
+    ListItemBase* pOldPrev = pInsertBefore->GetPrevItem();
+    pInsertBefore->SetPrevItem(pNewItem);
+    pNewItem->SetNextItem(pInsertBefore);
+    pNewItem->SetParentItem(pInsertBefore->GetParentItem());
 
     if (NULL != pOldPrev)
     {
         pOldPrev->SetNextItem(pNewItem);
         pNewItem->SetPrevItem(pOldPrev);
     }
-    if (m_pLastItem == pInsertFront)
+    if (m_pLastItem == pInsertBefore)
     {
         m_pLastItem = pNewItem;
     }
-    if (m_pFirstItem == pInsertFront)
+    if (m_pFirstItem == pInsertBefore)
     {
         m_pFirstItem = pNewItem;
     }
@@ -2696,7 +2644,34 @@ void ListCtrlBase::ExpandItem(ListItemBase* pItem, bool bUpdate)
     }
 }
 
-#pragma endregion
+void  ListCtrlBase::CollapseAll(bool bUpdate)
+{
+    ListItemBase*  pItem = m_pFirstItem;
+    while (pItem)
+    {
+        pItem->SetExpand(false, true);
+        pItem = pItem->GetNextTreeItem();
+    }
+
+    if (bUpdate)
+    {
+        this->UpdateItemRect(NULL, true);
+    }
+}
+void  ListCtrlBase::ExpandAll(bool bUpdate)
+{
+    ListItemBase*  pItem = m_pFirstItem;
+    while (pItem)
+    {
+        pItem->SetExpand(true, true);
+        pItem = pItem->GetNextTreeItem();
+    }
+
+    if (bUpdate)
+    {
+        this->UpdateItemRect(NULL, true);
+    }
+}
 
 LRESULT  ListCtrlBase::OnGetMouseKeyboardMgr(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {

@@ -225,7 +225,7 @@ void  SplitterBar::OnLButtonDown(UINT nFlags, POINT point)
 
     // 计算误差
     POINT pt;
-    m_pISplitterBar->WindowPoint2ObjectPoint(&point, &pt);
+    m_pISplitterBar->WindowPoint2ObjectPoint(&point, &pt, true);
     if (IsVert())
     {
         m_nDeviation = m_pISplitterBar->GetMarginL() + pt.x;
@@ -277,7 +277,7 @@ void  SplitterBar::OnMouseMove(UINT nFlags, POINT point)
 
     // 将point转换成相对于自己的parent，因为自己的位置也是相对于parent的
     POINT ptParent;
-    m_pISplitterBar->GetParentObject()->WindowPoint2ObjectPoint(&point, &ptParent);
+    m_pISplitterBar->GetParentObject()->WindowPoint2ObjectPoint(&point, &ptParent, true);
     this->OnDraging(ptParent);   
 }
 

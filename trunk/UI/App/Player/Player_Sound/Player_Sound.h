@@ -27,7 +27,7 @@ enum E_VISUALIZATION_TYPE
 	VISUALIZATION_NONE,       // ≤ªœ‘ æ
 	VISUALIZATION_SPECTRUM,   // ∆µ∆◊Õº
 	VISUALIZATION_WAVE,       // ≤®–ŒÕº
-	VISUALIZATION_XXX,        
+	VISUALIZATION_GOOM,       // √Œª√Õº
 };
 #define VI_MASK_HWND   0x0001
 #define VI_MASK_RECT   0x0002

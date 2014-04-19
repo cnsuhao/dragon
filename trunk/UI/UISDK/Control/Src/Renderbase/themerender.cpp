@@ -595,7 +595,7 @@ void SliderTrackButtonThemeRender::OnInit()
     IObject* pParent = GetObject()->GetParentObject();
     if (pParent)
     {
-        m_pISliderCtrl = (ISliderCtrl*)GetObject()->QueryInterface(uiiidof(ISliderCtrl));
+        m_pISliderCtrl = (ISliderCtrl*)pParent->QueryInterface(uiiidof(ISliderCtrl));
     }
 }
 
@@ -763,8 +763,8 @@ void SliderTrackButtonThemeRender::DrawThemeState(IRenderTarget* pRenderTarget, 
         if (m_pISliderCtrl)
         {
             eType = m_pISliderCtrl->GetDirectionType();
-            bPointLeftTop = m_pISliderCtrl->TestStyle(SLIDER_STYLE_POINT_LEFT);
-            bPointRightBottom = m_pISliderCtrl->TestStyle(SLIDER_STYLE_POINT_RIGHT);
+            bPointLeftTop = m_pISliderCtrl->TestStyleEx(SLIDER_STYLE_POINT_LEFT);
+            bPointRightBottom = m_pISliderCtrl->TestStyleEx(SLIDER_STYLE_POINT_RIGHT);
         }
 
         switch(eType)
@@ -2105,7 +2105,7 @@ void  MenuTextThemeRender::SetAttribute(SetAttrPrefixData* pData)
     const TCHAR* szText = pMapAttrib->GetAttr(strAttr.c_str(), pData->bErase);
     if (szText)
     {
-        pFontRes->GetFont((BSTR)szText, ::GetRenderLibraryType(GetObject()), &m_pRenderFont);
+        pFontRes->GetFont((BSTR)szText, GetObject()->GetGraphicsRenderLibraryType(), &m_pRenderFont);
     }
     if (NULL == m_pRenderFont)
     {
@@ -2118,7 +2118,7 @@ void  MenuTextThemeRender::SetAttribute(SetAttrPrefixData* pData)
         else
         {
             // 可能是没有窗口对象，比如是一个 popup listbox或者menu，窗口还没有创建。获取默认字体
-            pFontRes->GetDefaultFont(GetRenderLibraryType(GetObject()), &m_pRenderFont);
+            pFontRes->GetDefaultFont(GetObject()->GetGraphicsRenderLibraryType(), &m_pRenderFont);
         }
     }
 }
@@ -2134,7 +2134,8 @@ void  MenuTextThemeRender::DrawState(TEXTRENDERBASE_DRAWSTATE* pDrawStruct)
     {
         if (nState & RENDER_STATE_DISABLE)
             col = RGB(109, 109, 109);
-        if (pDrawStruct->ds_renderbase.nState & RENDER_STATE_HOVER)
+        if (pDrawStruct->ds_renderbase.nState & RENDER_STATE_HOVER ||
+            pDrawStruct->ds_renderbase.nState & RENDER_STATE_PRESS )
             col = RGB(255,255,255);
     }
     else
@@ -2160,15 +2161,27 @@ TabCtrlButtonBkThemeRender::TabCtrlButtonBkThemeRender()
 {
     m_nDir = 0;
 }
+
+// TODO: 为什么没法使用TABP_TABITEMBOTHEDGE之类的样式，绘制出来的还是top样式
 void  TabCtrlButtonBkThemeRender::DrawState(RENDERBASE_DRAWSTATE* pDrawStruct)
 {
+	IObject*  pObj = GetObject();
+	if (!pObj)
+		return;
+
     HDC  hDC = pDrawStruct->pRenderTarget->GetHDC();
     HTHEME  hTheme = GetTHEME();
     if (hTheme)
     {
+		UINT nPart = 0;
+		if (!pObj->GetPrevObject())
+			nPart = TABP_TABITEMLEFTEDGE;
+		else if (!pObj->GetNextObject())
+			nPart = TABP_TABITEMRIGHTEDGE;
+		else
+			nPart = TABP_TABITEM;
         HRESULT hr = DrawThemeBackground(hTheme, hDC, 
-            //m_nDir?TABP_TABITEMBOTHEDGE:TABP_TABITEM, 
-            TABP_TOPTABITEMBOTHEDGE,
+            nPart,
             GetStateId(pDrawStruct->nState), &pDrawStruct->rc, 0);
         if (S_OK != hr)
         {
@@ -2273,7 +2286,7 @@ void  ListViewThemeTextRender::SetAttribute(SetAttrPrefixData* pData)
     const TCHAR* szText = pMapAttrib->GetAttr(strAttr.c_str(), pData->bErase);
     if (szText)
     {
-        pFontRes->GetFont((BSTR)szText, ::GetRenderLibraryType(GetObject()), &m_pRenderFont);
+        pFontRes->GetFont((BSTR)szText, GetObject()->GetGraphicsRenderLibraryType(), &m_pRenderFont);
     }
     if (NULL == m_pRenderFont)
     {
@@ -2286,7 +2299,7 @@ void  ListViewThemeTextRender::SetAttribute(SetAttrPrefixData* pData)
         else
         {
             // 可能是没有窗口对象，比如是一个 popup listbox或者menu，窗口还没有创建。获取默认字体
-            pFontRes->GetDefaultFont(GetRenderLibraryType(GetObject()), &m_pRenderFont);
+            pFontRes->GetDefaultFont(GetObject()->GetGraphicsRenderLibraryType(), &m_pRenderFont);
         }
     }
 }
@@ -2445,8 +2458,8 @@ void TreeViewCtrlExpandCollapseIconThemeRender::DrawTheme(IRenderTarget* pRender
     SIZE s = {0,0};
     GetThemePartSize(hTheme, hDC, ePart, eState, NULL, TS_DRAW, &s);
     CRect rcDraw(prc);
-    rcDraw.left = rcDraw.left + (int)((rcDraw.Width()-s.cx)/2.0+0.5);  // +0.5 使得树控件虚线位于图标中间
-    rcDraw.top  = rcDraw.top  + (int)((rcDraw.Height()-s.cy)/2.0+0.5);
+    rcDraw.left = rcDraw.left + round((rcDraw.Width()-s.cx)/2.0);  // +0.5 使得树控件虚线位于图标中间
+    rcDraw.top  = rcDraw.top  + round((rcDraw.Height()-s.cy)/2.0);
     rcDraw.right = rcDraw.left + s.cx;
     rcDraw.bottom = rcDraw.top + s.cy;
 

@@ -46,16 +46,8 @@
 157.gif优化。1.大图片解码速度问题  2. 每个GIF占用的GDI还是偏多，IE中即使增加N个显示，GDI数量也不变
     richedit中的gif，不显示后仍然在刷新。而且一个GIF的刷新，也得重新绘制整个区域，导致效率下降
 	
-158. 延迟创建双缓存，会导致分层窗口在改变大小时，窗口形状也延迟更新
-     分层窗口的限制帧数机制未完善，导致窗口刷新不正确    
-     	     
 162. 灰度图的绘制效率需要再研究下 2012.11.29
      每次绘制时都会去创建一次灰度图
-
-164. 滚动条代码优化！太绕了 2012.11.30  
-     2012.12.19: 23:32 滚动条代码已作少许清理，将一个CPP分成3个CPP处理。
-     
-     另外PopupWindow的 Destroy 流程也很绕，需要再看看能不能优化。
 
 165. 可以考虑为modify alpha的image增加一个属性，modifyalpharect，只对该区域中的alpha进行调整 2012.12.01
 
@@ -84,11 +76,6 @@
 
 187. 20130118 15:38 uiapplication 中的log 对象应该是每一个UI有自己的log对象，而不是共用。看看怎么改进吧。
 
-192. 20130216 20:20 动画，阴影的相关知识：3D游戏编程大师技巧.pdf
-
-194. 20130220 20:14 PopupListBoxMouseMgr::OnMouseMove,整理这两个onmousemove，最好是合并为一个
-     20130221 10:17 重新整理listctrl类的消息流程，控件太多，流程处理太混乱了
-     
 196. 20130301 9:05 mp3扩展id3v2  mp3时间读取 mp3图片读取
 
 198. 20130305 15:03 mp3播放时突然停止，然后播放下一曲的问题没有解决，又出现了
@@ -186,19 +173,10 @@ void DrawDragRect(LPCRECT lpRect, SIZE size, LPCRECT lpRectLast, SIZE sizeLast, 
 		SelectClipRgn(NULL);
 	}
 
-200. 2013.4.28 listctrl中的内部按钮如何通知mousemgr,keyboardmgr自己销毁了     
-
-201. 2013.5.8 20:52 如何实现TabCtrl的系统类型绘制？
-	  1. 保持当前选项置顶。2. 其它项刷新时不影响当前项置顶
-	 2013.6.8 这种类型的还是采用完全自绘，而不是控件模拟的方式
-	 TODO: 目前增加了zindexoverlap属性，再试试
-
 204. 2013.6.10 16：43 listctrl中的item如何支持动态换肤？
      如果对item也调用reset/set attr的话将导致效率太低。目前的考虑是对ITEM不支持换肤，ITEM尽量去引用
      listctrlbase或者itemtypesharedata中的数据，这两个支持换肤
      
-205. 2013.6.10 17:02 将button中的bchecked使用 OSB_CHECKED 代替     
-
 206. 2013.6.12 1:13 出现一次提示条崩溃的问题。应该是menu item已经销毁了，但定时器还是给它发消息，导致野指针崩溃。未能复现
 
 207. 2013.6.12 9:57 listitembase可以调用setattribute，那么如何实现它的换肤？
@@ -207,8 +185,6 @@ void DrawDragRect(LPCRECT lpRect, SIZE size, LPCRECT lpRectLast, SIZE sizeLast, 
      todo: 改成使用UI_WM_STATECHANGING2，然后在setpress/sethover时发送，这样代码逻辑更清晰。如果需要发送多个状态变化，则调用sethover(xx, false)，然后
            手动调用一次UISendMessage
      
-210. 2013.6.19 1150 绘制流程还是很烂，尤其是列表控件的绘制流程，看看能不能再优化                
-
 211. 2013.7.10 22:52 将一个只会触发一次的消息的msgmapid改为-10，这样应该就能加快消息响应的速度了,
      如UI_WM_INITIALIZE, UI_WM_PRECREATEWINDOW, UI_WM_FINALCREATE等等
 
@@ -219,3 +195,8 @@ void DrawDragRect(LPCRECT lpRect, SIZE size, LPCRECT lpRectLast, SIZE sizeLast, 
 220. 2013.11.13 10:39 目前没有办法在创建窗口时就指定好RECT
 221. 2013.11.13 17:59 xml加载引擎优化，不能在启动时就加载所有的xml，会导致启动速度大大降低
 222. 2013.12.27 9:30 hourglass mainwnd，快速多次右击，有机率出现两个菜单
+
+223. 2014.4.2 renderlayer effect filter设计
+    -- 目前还想不出一个好的设计方案，暂时搁置
+    
+224. 2014.4.2 菜单弹出时显示黑色背景问题依然存在 -- qq account login combobox，以后再看吧

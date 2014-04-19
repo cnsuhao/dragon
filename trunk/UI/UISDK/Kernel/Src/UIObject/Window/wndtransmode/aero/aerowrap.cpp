@@ -52,6 +52,7 @@ void  AeroWindowWrap::Init(ICustomWindow* pWnd)
             szText = pMapAttrib->GetAttr(XML_WINDOW_TRANSPARENT_AERO_TRANS_MARGINS, false);
             if (szText)
             {
+				// 注： 如果这个值过小，会导致窗口四个圆角变形！建议至少为5? 7?
                 RECT rc;
                 if (Util::TranslateRECT(szText, &rc, XML_SEPARATOR))
                 {
@@ -59,6 +60,12 @@ void  AeroWindowWrap::Init(ICustomWindow* pWnd)
                     trans.m_margins.cxRightWidth = rc.right;
                     trans.m_margins.cyTopHeight = rc.top;
                     trans.m_margins.cyBottomHeight = rc.bottom;
+#ifdef _DEBUG
+					UIASSERT(rc.left == -1 || rc.left >= 5);
+					UIASSERT(rc.right == -1 || rc.right >= 5);
+					UIASSERT(rc.top == -1 || rc.top >= 5);
+					UIASSERT(rc.bottom == -1 || rc.bottom >= 5);
+#endif
                 }
             }
         }
@@ -147,6 +154,14 @@ void  AeroWindowWrap::Enable(bool b)
 				long lStyle = GetWindowLong(m_hWnd, GWL_STYLE);
 				SetWindowLong(m_hWnd, GWL_STYLE, lStyle|WS_THICKFRAME);
 				SetWindowPos(m_hWnd, 0,0,0,0,0, SWP_NOZORDER|SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE|SWP_FRAMECHANGED);
+
+				DwmHelper* pDwm = DwmHelper::GetInstance();
+				if (pDwm->pDwmSetWindowAttribute)
+				{
+					// 不要绘制系统的边框，但要阴影 
+					BOOL b = FALSE;
+					pDwm->pDwmSetWindowAttribute(m_pWindow->m_hWnd, DWMWA_ALLOW_NCPAINT, &b, sizeof(b));
+				}
 			}
             return;
             // 由外部调用UpdateRgn即可

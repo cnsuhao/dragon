@@ -198,10 +198,10 @@ bool  Storyboard::IsFinish()
 bool  Storyboard::OnTick()
 {
     bool bAllFinish = true;
-    TimelineIter iter = m_listTimeline.begin();
-    for (; iter != m_listTimeline.end(); iter++)
+    unsigned int nSize = m_listTimeline.size();
+    for (unsigned int i = 0; i < nSize; i++)
     {
-        if (!(*iter)->x_OnTick())
+        if (!m_listTimeline[i]->x_OnTick())
         {
             bAllFinish = false;
         }

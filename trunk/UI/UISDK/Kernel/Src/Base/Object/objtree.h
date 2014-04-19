@@ -23,6 +23,7 @@ public:
 	virtual bool CanTabstop() { return false; }
 
 	void AddChild(Object* pObj);
+    void InsertChild(Object* pObj, Object* pInsertAfter);
 	void AddNcChild(Object* pObj);
     void InsertAfter(Object* pInsertAfter);
     void InsertBefore(Object* pInsertBefore);
@@ -37,29 +38,51 @@ public:
 	Object* REnumParentObject(Object* pObj);
 
 	Object* GetParentObject()
-		{ return this->m_pParent; }
+    {
+        return this->m_pParent; 
+    }
 	Object* GetChildObject()
-		{ return this->m_pChild; }
+	{
+        return this->m_pChild; 
+    }
 	Object* GetNcChildObject()
-		{ return this->m_pNcChild; }
+	{
+        return this->m_pNcChild; 
+    }
 	Object* GetLastChildObject()
-		{ return this->REnumChildObject(NULL); }
+	{
+            return this->REnumChildObject(NULL); 
+    }
 	Object* GetNextObject()
-		{ return this->m_pNext;	}
+    {
+        return this->m_pNext;	
+    }
 	Object* GetPrevObject()
-		{ return this->m_pPrev; }
+    {
+        return this->m_pPrev; 
+    }
 	Object* GetRootObject();
 
     void SetParentObjectDirect(Object* p)
-        { this->m_pParent = p; }
+    {
+        this->m_pParent = p; 
+    }
     void SetChildObjectDirect(Object* p)
-        { this->m_pChild = p; }
+    {
+        this->m_pChild = p; 
+    }
     void SetNcChildObjectDirect(Object* p)
-        { this->m_pNcChild = p; }
+    {
+        this->m_pNcChild = p; 
+    }
     void SetNextObjectDirect(Object* p)
-        { this->m_pNext = p; }
+    {
+        this->m_pNext = p; 
+    }
     void SetPrevObjectDirect(Object* p)
-        { this->m_pPrev = p; }
+    {
+        this->m_pPrev = p; 
+    }
 
 	Object* GetNextTreeItemObject();
 	Object* GetPrevTreeItemObject();
@@ -67,9 +90,13 @@ public:
 	Object* GetPrevTreeTabstopItemObject();
 
 	Object* GetNextTabObject()
-		{ return GetNextTreeTabstopItemObject(); }
+    {
+        return GetNextTreeTabstopItemObject(); 
+    }
 	Object* GetPrevTabObject()
-		{ return GetPrevTreeTabstopItemObject(); }
+    {
+        return GetPrevTreeTabstopItemObject(); 
+    }
 
 	void RemoveMeInTheTree();
 

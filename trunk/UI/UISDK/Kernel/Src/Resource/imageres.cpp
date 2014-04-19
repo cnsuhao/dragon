@@ -14,7 +14,7 @@ ImageResItem::ImageResItem()
 	m_pMapAttrib = NULL;
 	m_pGdiBitmap = NULL;
 	m_pGdiplusBitmap = NULL;
-	// 	m_pDirect2DBitmap = NULL;
+	m_pDirect2DBitmap = NULL;
 	m_pOriginImageData = NULL;
 	m_pIImageResItem = NULL;
 
@@ -37,10 +37,11 @@ ImageResItem::~ImageResItem()
         m_pGdiplusBitmap->Destroy();
 		m_pGdiplusBitmap->SetOutRef(NULL);
     }
-
-// 	SAFE_DELETE(m_pGdiBitmap);
-// 	SAFE_DELETE(m_pGdiplusBitmap);
-	// 	SAFE_DELETE(m_pDirect2DBitmap);
+    if (m_pDirect2DBitmap)
+    {
+        m_pDirect2DBitmap->Destroy();
+        m_pDirect2DBitmap->SetOutRef(NULL);
+    }
 	SAFE_DELETE(m_pOriginImageData);
 	SAFE_RELEASE(m_pMapAttrib);
 	SAFE_DELETE(m_pIImageResItem);
@@ -78,6 +79,9 @@ IRenderBitmap* ImageResItem::GetImage(SkinRes* pSkinRes, GRAPHICS_RENDER_LIBRARY
 
 	case GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS:
         return GetImage_gdiplus(pSkinRes, pbFirstTimeCreate);	
+
+    case GRAPHICS_RENDER_LIBRARY_TYPE_DIRECT2D:
+        return GetImage_d2d(pSkinRes, pbFirstTimeCreate);
 	}
 
 	return NULL;
@@ -99,6 +103,7 @@ IRenderBitmap*  ImageResItem::GetImage_gdi(SkinRes* pSkinRes, bool* pbFirstTimeC
     }    
 
     RenderBitmapFactory::CreateInstance(
+        pSkinRes->GetUIApplication(),
         GRAPHICS_RENDER_LIBRARY_TYPE_GDI,
         m_eType, 
         (IRenderBitmap**)&m_pGdiBitmap);
@@ -140,7 +145,11 @@ IRenderBitmap*  ImageResItem::GetImage_gdiplus(SkinRes* pSkinRes, bool* pbFirstT
             return (IRenderBitmap*)m_pGdiplusBitmap;
         }
 
-        RenderBitmapFactory::CreateInstance(GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS, m_eType, (IRenderBitmap**)&m_pGdiplusBitmap);
+        RenderBitmapFactory::CreateInstance(
+            pSkinRes->GetUIApplication(),
+            GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS, 
+            m_eType, 
+            (IRenderBitmap**)&m_pGdiplusBitmap);
         if (!m_pGdiplusBitmap )
             return NULL;
 
@@ -188,15 +197,49 @@ IRenderBitmap*  ImageResItem::GetImage_gdiplus(SkinRes* pSkinRes, bool* pbFirstT
     return NULL;
 }
 
-bool ImageResItem::ModifyHLS(short h, short l, short s, int nFlag)
+IRenderBitmap*  ImageResItem::GetImage_d2d(SkinRes* pSkinRes, bool*  pbFirstTimeCreate)
+{
+    ISkinDataSource* pDataSource = pSkinRes->GetDataSource();
+    if (!pDataSource)
+        return NULL;
+
+    if (m_pDirect2DBitmap)
+    {
+        m_pDirect2DBitmap->AddRef();
+        return m_pDirect2DBitmap;
+    }
+
+    RenderBitmapFactory::CreateInstance(
+        pSkinRes->GetUIApplication(),
+        GRAPHICS_RENDER_LIBRARY_TYPE_DIRECT2D, 
+        m_eType, 
+        (IRenderBitmap**)&m_pDirect2DBitmap);
+    if (!m_pDirect2DBitmap )
+        return NULL;
+
+    m_pDirect2DBitmap->SetOutRef((IRenderResource **)&m_pDirect2DBitmap);
+    SetRenderBitmapAttribute(m_pDirect2DBitmap);
+
+    if (false == pDataSource->Load_RenderBitmap(m_pDirect2DBitmap, m_strPath.c_str(), true))
+    {
+        SAFE_RELEASE(m_pDirect2DBitmap);
+        UI_LOG_ERROR(_T("%s Load d2d bitmap from file failed. path=%s"), FUNC_NAME, m_strPath.c_str());
+        return NULL;
+    }
+
+    if (pbFirstTimeCreate)
+        *pbFirstTimeCreate = true;
+    return m_pDirect2DBitmap;
+}
+
+bool  ImageResItem::ModifyHLS(short h, short l, short s, int nFlag)
 {
 	if (false == m_bUseSkinHLS)
 		return true;
 
 	ModifyHLS(m_pGdiBitmap, h,l,s,nFlag);
 	ModifyHLS(m_pGdiplusBitmap, h,l,s,nFlag);
-
-	// 	ModifyHLS(m_pDirect2DBitmap, h,l,s,nFlag);
+	ModifyHLS(m_pDirect2DBitmap, h,l,s,nFlag);
 
 	// 	if (m_pGdiBitmap)
 	// 		m_pGdiBitmap->GetBitmap()->Save(_T("c:\\aaa.png"),Gdiplus::ImageFormatPNG);
@@ -273,10 +316,10 @@ bool ImageResItem::ModifyImage(const TCHAR* szPath)
 			UI_LOG_ERROR(_T("%s load from file failed 2:%s"), FUNC_NAME, m_strPath.c_str());
 		}
 	}
-	// 	if (m_pDirect2DBitmap)
-	// 	{
-	// 		m_pDirect2DBitmap->Modify(strPath);
-	// 	}
+	if (m_pDirect2DBitmap)
+	{
+		m_pDirect2DBitmap->LoadFromFile(m_strPath.c_str(), true);
+	}
 
 	return true;
 }

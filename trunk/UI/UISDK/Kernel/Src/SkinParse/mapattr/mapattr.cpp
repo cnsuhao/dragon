@@ -212,12 +212,17 @@ long CMapAttribute::GetAttr_RenderBase(const TCHAR* szPrefix, const TCHAR* szKey
     return lRet;
 }
 
-long CMapAttribute::GetAttr_TextRenderBase(const TCHAR* szKey, bool bErase, IUIApplication* pUIApp, IObject* pBindObj, ITextRenderBase** ppGet)
+long CMapAttribute::GetAttr_TextRenderBase(const TCHAR* szPrefix, const TCHAR* szKey, bool bErase, IUIApplication* pUIApp, IObject* pBindObj, ITextRenderBase** ppGet)
 {
     if (NULL == szKey || NULL == ppGet)
         return MAPATTR_RET_ERROR;
 
-    ATTRMAP::iterator iter = m_mapAttr.find(szKey);
+    String strKey;
+    if (szPrefix)
+        strKey = szPrefix;
+    strKey.append(szKey);
+
+    ATTRMAP::iterator iter = m_mapAttr.find(strKey.c_str());
     if (iter == m_mapAttr.end())
         return MAPATTR_RET_NOT_EXIST;
 
@@ -227,7 +232,7 @@ long CMapAttribute::GetAttr_TextRenderBase(const TCHAR* szKey, bool bErase, IUIA
     pUIApp->CreateTextRenderBaseByName((BSTR)iter->second.c_str(), pBindObj, ppGet);
     if (*ppGet)
     {
-        (*ppGet)->SetAttribute(static_cast<IMapAttribute*>(this), NULL, bErase);
+        (*ppGet)->SetAttribute(static_cast<IMapAttribute*>(this), szPrefix, bErase);
     }
     else
     {

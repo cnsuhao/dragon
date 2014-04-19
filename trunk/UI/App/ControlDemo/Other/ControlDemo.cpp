@@ -3,12 +3,13 @@
 
 #include "stdafx.h"
 #include "ControlDemo.h"
-#include "../Soft3DRotate/ControlDemoWindow.h"
+#include "../Soft3DRotate/RotateSoft3DWindow.h"
 #include "../Clock/clockwindow.h"
 #include "../REShadow/reshadow.h"
-#include "../Stage3D/Stage3DWindow.h"
+#include "../Direct2D/Direct2DWindow.h"
 #include "../Stage3D_Leaves/StageLeavesWindow.h"
-#include "../Animate/AnimateWindow.h"
+#include "../Animate/AnimateWindow.h" 
+#include "../RenderLayer/RenderLayer.h"
 
 #define MAX_LOADSTRING 100
 
@@ -83,8 +84,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 #elif defined DEMO_STAGE3D
         UI::UI3D_RegisterUIObject(g_pUIApp);
 
-        CStage3DWindow* pWnd = NULL;
-        CStage3DWindow::CreateInstance(g_pUIApp, &pWnd);
+        CDirect2DWindow* pWnd = NULL;
+        CDirect2DWindow::CreateInstance(g_pUIApp, &pWnd);
         SetWindowPos(g_hWnd, 0, 50, 50, 500, 500, SWP_NOZORDER);
 
         pWnd->Attach(g_pUIApp, g_hWnd, _T("stage3d"));
@@ -103,12 +104,30 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
         CAnimateWindow::CreateInstance(g_pUIApp, &pWnd);
 
         pWnd->Attach(g_pUIApp, g_hWnd, _T("animate"));
+        
+#elif defined DEMO_RENDERLAYER
+// 		Cxxx * pWnd = NULL;
+// 		Cxxx::CreateInstance(g_pUIApp, &pWnd);
+// 		pWnd->Create(g_pUIApp, _T("playlistdlg"));
+// 		pWnd->ShowWindow();
+// 		g_pUIApp->MsgHandleLoop();
+// 		pWnd->delete_this();
+// 		g_pUIApp->Release();
+// 		return  0;
+
+        CRenderLayerWindow* pWnd = NULL;
+        CRenderLayerWindow::CreateInstance(g_pUIApp, &pWnd);
+
+		SetWindowPos(g_hWnd, 0, 0, 0, 700, 600, SWP_NOMOVE|SWP_NOZORDER);
+        pWnd->Attach(g_pUIApp, g_hWnd, _T("renderlayer"));
 #else
 
         CSoft3DRotateWindow* pWnd = NULL;
         CSoft3DRotateWindow::CreateInstance(g_pUIApp, &pWnd);
         
+        //SetWindowPos(g_hWnd, 0, 50, 50, 300, 300, SWP_NOZORDER);
   		pWnd->Attach(g_pUIApp, g_hWnd, _T("mainwindow"));
+        
 #endif
 
         ShowWindow(g_hWnd, nCmdShow);

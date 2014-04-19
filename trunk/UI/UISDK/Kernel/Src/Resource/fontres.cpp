@@ -148,9 +148,7 @@ FontResItem::FontResItem()
     m_pIFontResItem = NULL;
 	m_pGdiFont = NULL;
 	m_pGdiplusFont = NULL;
-#ifdef UI_D2D_RENDER
 	m_pD2DFont = NULL;
-#endif
 	m_wParam = 0;
 	m_lParam = 0;
 }
@@ -158,9 +156,7 @@ FontResItem::~FontResItem()
 { 
 	SAFE_DELETE(m_pGdiFont);
 	SAFE_DELETE(m_pGdiplusFont);
-#ifdef UI_D2D_RENDER
-	SAFE_DELETE(m_pD2DFont);
-#endif
+	SAFE_RELEASE(m_pD2DFont);
     SAFE_DELETE(m_pIFontResItem);
 }
 
@@ -196,15 +192,13 @@ void FontResItem::ModifyFont(LOGFONT* pLogFont)
 	{
 		m_pGdiplusFont->ModifyFont(pLogFont);
 	}
-#ifdef UI_D2D_RENDER
 	if (m_pD2DFont)
 	{
 		m_pD2DFont->ModifyFont(pLogFont);
 	}
-#endif
 }
 
-IRenderFont* FontResItem::GetFont( GRAPHICS_RENDER_LIBRARY_TYPE eRenderType )
+IRenderFont* FontResItem::GetFont(SkinRes* pSkinRes, GRAPHICS_RENDER_LIBRARY_TYPE eRenderType )
 {
 	switch(eRenderType)
 	{
@@ -251,17 +245,32 @@ IRenderFont* FontResItem::GetFont( GRAPHICS_RENDER_LIBRARY_TYPE eRenderType )
 		}
 		break;
 
-#ifdef UI_D2D_RENDER
 	case GRAPHICS_RENDER_LIBRARY_TYPE_DIRECT2D:
 		{
 			if (NULL == m_pD2DFont)
 			{
-				Direct2DRenderFont::CreateInstance((IRenderFont**)&m_pD2DFont);
+                typedef bool  (*funcUI3D_CreateD2DRenderFont)(IRenderFont**  ppOut);
+                IUIApplication*  pUIApp = pSkinRes->GetUIApplication();
+                if (!pUIApp)
+                    return NULL;
+
+                HMODULE  hModule = pUIApp->GetUI3DModule();
+                if (!hModule)
+                    return  NULL;
+
+                funcUI3D_CreateD2DRenderFont func = (funcUI3D_CreateD2DRenderFont)GetProcAddress(hModule, "UI3D_CreateD2DRenderFont");
+                if (!func)
+                {
+                    UIASSERT(0);
+                    return  NULL;
+                }
+
+                func(&m_pD2DFont);
 				if (m_pD2DFont )
 				{
 					m_pD2DFont->SetOutRef((IRenderResource**)&m_pD2DFont);
 					m_pD2DFont->Load(&m_lf);
-					UI_LOG_DEBUG(_T("%s direct2d font create: %s \tPtr=0x%08X"), FUNC_NAME, m_strID.c_str(), m_pGdiplusFont );
+					UI_LOG_DEBUG(_T("%s direct2d font create: %s \tPtr=0x%08X"), FUNC_NAME, m_strID.c_str(), m_pD2DFont );
 				}
                 return (IRenderFont*)m_pD2DFont;
 			}
@@ -272,7 +281,6 @@ IRenderFont* FontResItem::GetFont( GRAPHICS_RENDER_LIBRARY_TYPE eRenderType )
 			return (IRenderFont*)m_pD2DFont;
 		}
 		break;;
-#endif
 
 	default:
 		return NULL;
@@ -291,8 +299,9 @@ bool FontResItem::IsMyRenderFont(IRenderFont* pRenderFont)
     return false;
 }
 
-FontRes::FontRes()
+FontRes::FontRes(SkinRes* pSkinRes)
 {
+    m_pSkinRes = pSkinRes;
     m_pIFontRes = NULL;
 }
 FontRes::~FontRes()
@@ -361,7 +370,7 @@ HRESULT FontRes::GetFont(BSTR bstrFontID, GRAPHICS_RENDER_LIBRARY_TYPE eRenderTy
 		{
 			if (p->GetWParam() == 0 && p->GetLParam() == 0 )
 			{
-				*ppOut = p->GetFont(eRenderType);
+				*ppOut = p->GetFont(m_pSkinRes, eRenderType);
 				return S_OK;
 			}
 		}
@@ -380,9 +389,10 @@ HRESULT  FontRes::GetDefaultFont(GRAPHICS_RENDER_LIBRARY_TYPE eRenderType, __out
 	if (NULL == m_vFonts[0])
 		return E_FAIL;
 
-	 *ppFont = m_vFonts[0]->GetFont(eRenderType);
+	 *ppFont = m_vFonts[0]->GetFont(m_pSkinRes, eRenderType);
 	return S_OK;
 }
+
 bool  FontRes::GetRenderFontID(IRenderFont* pFont, String& strID)
 {
 	vector<FontResItem*>::iterator iter = m_vFonts.begin();
@@ -421,7 +431,7 @@ HRESULT  FontRes::GetFontEx(IRenderFont* pFont, WPARAM wParam, LPARAM lParam, GR
 		{
 			if (p->GetWParam() == wParam && p->GetLParam() == lParam)
 			{
-				*ppFont = p->GetFont(eRenderType);
+				*ppFont = p->GetFont(m_pSkinRes, eRenderType);
 				return S_OK;
 			}
 			else
@@ -461,7 +471,7 @@ HRESULT  FontRes::GetFontEx(IRenderFont* pFont, WPARAM wParam, LPARAM lParam, GR
 			return E_FAIL;
 		}
 
-		*ppFont = pNewFontItem->GetFont(eRenderType);
+		*ppFont = pNewFontItem->GetFont(m_pSkinRes, eRenderType);
 		return S_OK;
 	}
 

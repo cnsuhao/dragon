@@ -54,8 +54,6 @@ public:
 	~ListCtrlBase();
 
 	UI_BEGIN_MSG_MAP
-// 		UICHAIN_MSG_MAP_POINT_MEMBER(m_pMouseMgr)
-// 		UICHAIN_MSG_MAP_POINT_MEMBER(m_pKeyboardMgr)
         if (m_pMKMgr)
         {
             if (m_pMKMgr->ProcessMessage(pMsg))
@@ -70,7 +68,6 @@ public:
 		UIMESSAGE_HANDLER_EX(UI_WM_GET_TOOLTIPINFO, OnGetToolTipInfo)
 		UIMSG_WM_KEYDOWN(OnKeyDown)
 		UIMSG_WM_SIZE(OnSize) 
-		UIMSG_WM_GETGRAPHICSRENDERLIBRARYTYPE(OnGetGraphicsRenderType)
         UIMESSAGE_HANDLER_EX(UI_WM_GET_MOUSEKEYBOARD_MANAGER, OnGetMouseKeyboardMgr)
 		UIMSG_WM_VSCROLL(OnVScroll)
         UIMSG_WM_MOUSEWHEEL(OnMouseWheel)
@@ -94,7 +91,6 @@ protected:
 	void     OnPaint(IRenderTarget* pRenderTarget, RenderContext* proc);
 	void     OnKeyDown( UINT nChar, UINT nRepCnt, UINT nFlags );
 	void     OnSize( UINT nType, int cx, int cy );
-	LRESULT  OnGetGraphicsRenderType(){return GRAPHICS_RENDER_LIBRARY_TYPE_GDI;}  // 用于popup listbox获取字体
 	LRESULT  OnGetToolTipInfo(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void     OnStateChanged(UINT nMask);
 	void     OnVScroll(int nSBCode, int nPos, IMessage* pMsgFrom);
@@ -109,31 +105,31 @@ protected:
     LRESULT  OnGetMouseKeyboardMgr(UINT uMsg, WPARAM wParam, LPARAM lParam);
     LRESULT  OnDelayRemoveItem(WPARAM w, LPARAM l);
 
-    void  OnKeyDown_Prev();
-    void  OnKeyDown_Next();
-    void  OnKeyDown_Home();
-    void  OnKeyDown_End();
-    void  OnKeyDown_Up();
-    void  OnKeyDown_Down();
+    void     OnKeyDown_Prev();
+    void     OnKeyDown_Next();
+    void     OnKeyDown_Home();
+    void     OnKeyDown_End();
+    void     OnKeyDown_Up();
+    void     OnKeyDown_Down();
 
 public:
 	// 公用接口
-    bool  AddItem(ListItemBase* pItem, int nAddItemFlags=0);
-    bool  InsertItem(ListItemBase* pItem, UINT nPos, int nAddItemFlags=0);
-    bool  InsertItem(ListItemBase* pItem, ListItemBase* pInsertAfter, int nAddItemFlags=0);
-    bool  InsertItem(ListItemBase* pItem, IListItemBase* pParent = UITVI_ROOT, IListItemBase* InsertAfter = UITVI_LAST, int nInsertFlags=0);
-    void  RemoveItem(ListItemBase* pItem, int nRemoveFlag=0);
-	void  RemoveItem(int nIndex, int nRemoveFlag);
-    void  RemoveAllChildItems(ListItemBase* pParent, int nRemoveFlag);
-	void  RemoveAllItem(int nRemoveFlag);
-    void  DelayRemoveItem(ListItemBase* pItem, int nRemoveFlag = 0);
+    bool     AddItem(ListItemBase* pItem, int nAddItemFlags=0);
+    bool     InsertItem(ListItemBase* pItem, UINT nPos, int nAddItemFlags=0);
+    bool     InsertItem(ListItemBase* pItem, ListItemBase* pInsertAfter, int nAddItemFlags=0);
+    bool     InsertItem(ListItemBase* pItem, IListItemBase* pParent = UITVI_ROOT, IListItemBase* InsertAfter = UITVI_LAST, int nInsertFlags=0);
+    void     RemoveItem(ListItemBase* pItem, int nRemoveFlag=0);
+	void     RemoveItem(int nIndex, int nRemoveFlag);
+    void     RemoveAllChildItems(ListItemBase* pParent, int nRemoveFlag);
+	void     RemoveAllItem(int nRemoveFlag);
+    void     DelayRemoveItem(ListItemBase* pItem, int nRemoveFlag = 0);
 
-	void  SetSortCompareProc(ListItemCompareProc p);
-    void  Sort();
-    void  SwapItemPos(ListItemBase*  p1, ListItemBase* p2);
+	void     SetSortCompareProc(ListItemCompareProc p);
+    void     Sort();
+    void     SwapItemPos(ListItemBase*  p1, ListItemBase* p2);
 
-	int   GetItemCount() { return m_nItemCount; }
-    int   GetVisibleItemCount();
+	int      GetItemCount() { return m_nItemCount; }
+    int      GetVisibleItemCount();
 	const TCHAR*  GetItemText(ListItemBase* pItem);
 	
 	ListItemBase*  GetItemByPos(UINT i, bool bVisibleOnly=true);
@@ -147,7 +143,7 @@ public:
     ListItemBase*  FindVisibleItemFrom(ListItemBase* pFindFrom=NULL);
     ListItemBase*  EnumItemByProc(ListItemEnumProc pProc, ListItemBase* pEnumFrom = NULL, WPARAM w = 0, LPARAM l = 0);
 
-	ListItemBase*  HitTest(POINT ptWindow);
+	ListItemBase*  HitTest(POINT ptWindow, __out POINT*  ptItem = NULL);
 	void  SetLayout(IListCtrlLayout* pLayout);
     void  SetLayoutDefaultV();
     void  SetLayoutDefaultHV();
@@ -182,14 +178,16 @@ public:
     void  ToggleItemExpand(ListItemBase* pItem, bool bUpdate);
     void  CollapseItem(ListItemBase* pItem, bool bUpdate);
     void  ExpandItem(ListItemBase* pItem, bool bUpdate);
+    void  CollapseAll(bool bUpdate);
+    void  ExpandAll(bool bUpdate);
 
 	// InvalidateItem 操作
 	void  InvalidateItem(ListItemBase* pItem);
+    void  RemoveInvavlidateItem(ListItemBase* pItem);
 	void  SetInvalidateAllItems();
 	void  ClearInvalidateItems();
 	int   GetInvalidateItemCount();
 	void  Refresh();
-	void  RedrawItem(ListItemBase** ppItemArray, int nCount);
 	void  RedrawItemByInnerCtrl(IRenderTarget* pRenderTarget, RenderContext* pContext, ListItemBase* pItem);
     void  MakeItemVisible(ListItemBase* pItem, bool* pbNeedUpdate);
 
@@ -239,7 +237,7 @@ protected:
 	bool  _InsertItem(ListItemBase* pItem, ListItemBase* pInsertAfter);
     bool  _InsertLastChild(ListItemBase* pNewItem, ListItemBase* pParent);
     bool  _InsertFirstChild(ListItemBase* pNewItem, ListItemBase* pParent);
-    bool  _InsertFront(ListItemBase* pNewItem, ListItemBase* pInsertFront);
+    bool  _InsertBefore(ListItemBase* pNewItem, ListItemBase* pInsertFront);
     bool  _InsertAfter(ListItemBase* pNewItem, ListItemBase* pInsertAfter);
     bool  _InsertRoot(ListItemBase* pNewItem);
 
@@ -249,6 +247,10 @@ protected:
 
     bool  IsItemVisibleInScreen(ListItemBase* pItem);
     bool  IsItemVisibleInScreenEx(ListItemBase* pItem, LISTITEM_VISIBLE_POS_TYPE& ePos);
+
+    // 不提供给外部调用，要刷新一个ITEM只能调用InvalidateItem+Refresh
+    // 因为必然将无效item保存起来，用于在OnPaint中调用。（新流程）
+    void  _redrawItem(ListItemBase** ppItemArray, int nCount);
 
 	void  MeasureItem(ListItemBase* pItem);
 	void  MeasureAllItem();
@@ -281,6 +283,7 @@ protected:
     SIZE   m_sizeMax;                        // auto size列表框的最大尺寸。但是在配置了 width/height属性时，m_sizeMin/m_sizeMax可能无效了
 
     bool   m_bNeedCalcFirstLastVisibleItem;  // 标识重新计算需要绘制的对象
+    bool   m_bRedrawInvalidItems;            // 正在刷新无效项。用于在OnPaint中判断刷新哪些
 
     ListItemCompareProc   m_pCompareProc;    // 排序函数
     map<int, IListItemTypeShareData*>  m_mapItemTypeShareData;  // item扩展，为每一个类型的item提供一个保存共享数据的方法

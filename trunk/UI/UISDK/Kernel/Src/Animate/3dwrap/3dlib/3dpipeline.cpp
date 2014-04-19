@@ -6,129 +6,57 @@ namespace UI
 
 _3dPipeline::_3dPipeline()
 {
-    m_nRotateX = 0;
-    m_nRotateY = 0;
-    m_nRotateZ = 0;
-    m_nOffsetX = 0;
-    m_nOffsetY = 0;
-    m_nOffsetZ = 0;
-    m_ptOrigin.x = m_ptOrigin.y = 0;
-    memset(&m_quad, 0, sizeof(Quad));
-    memset(m_ptLocale, 0, sizeof(m_ptLocale));
+    Init_Sin_Cos_Tables();
 }
 
-
-void  _3dPipeline::update_locale_pos(RECT* prc)
+void  _3dPipeline::calc_locale_pos(RECT* prc, POINT2D ptOrigin, __out POINT3D* ptLocale)
 {
     // 注：这里的坐标轴，y轴是从下到上，与屏幕的相反
     // A
-    m_ptLocale[0].x = (float)prc->left - m_ptOrigin.x;
-    m_ptLocale[0].y = (float)m_ptOrigin.y - prc->top;
-    m_ptLocale[0].z = 0.0f;
+    ptLocale[0].x = (float)prc->left - ptOrigin.x;
+    ptLocale[0].y = (float)ptOrigin.y - prc->top;
+    ptLocale[0].z = 0.0f;
     // B
-    m_ptLocale[1].x = (float)(prc->right - m_ptOrigin.x);
-    m_ptLocale[1].y = m_ptLocale[0].y;
-    m_ptLocale[1].z = 0.0f;
+    ptLocale[1].x = (float)(prc->right - ptOrigin.x);
+    ptLocale[1].y = ptLocale[0].y;
+    ptLocale[1].z = 0.0f;
     // C
-    m_ptLocale[2].x = m_ptLocale[1].x;
-    m_ptLocale[2].y = (float)-(prc->bottom - m_ptOrigin.y);
-    m_ptLocale[2].z = 0.0f;
+    ptLocale[2].x = ptLocale[1].x;
+    ptLocale[2].y = (float)-(prc->bottom - ptOrigin.y);
+    ptLocale[2].z = 0.0f;
     // D
-    m_ptLocale[3].x = m_ptLocale[0].x;
-    m_ptLocale[3].y = m_ptLocale[2].y;
-    m_ptLocale[3].z = 0.0f;
+    ptLocale[3].x = ptLocale[0].x;
+    ptLocale[3].y = ptLocale[2].y;
+    ptLocale[3].z = 0.0f;
 }
 
-void _3dPipeline::Do()
+//
+// prc
+//      [in] 需要进行变换的矩形区域， 不包括最右边和最下边（索引范围），否则计算出来的quad值多了一个边界
+//
+// ptOrgin
+//      [in] 坐标原点，相对于位图的坐标（左上角0，0）
+//
+//  返回3D变化之后的坐标pOutQuad
+//
+void _3dPipeline::Do(RECT* prc, POINT2D ptOrigin, MATRIX_4_4_PTR pMatWorld, __out Quad* pOutQuad)
 {
     POINT3D pt3DWorld[4] = {0};
     POINT3D pt3DCamera[4] = {0};
 
+	// 局部坐标
+	POINT3D  m_ptLocale[4];  
+	calc_locale_pos(prc, ptOrigin, m_ptLocale);
+
 #pragma region // .局部坐标->世界坐标
     {
         // .以当前值作为角度进行旋转
-        float fDegreeX = (float)m_nRotateX;
-        float fDegreeY = (float)m_nRotateY;
-        float fDegreeZ = (float)m_nRotateZ;
-
-        MATRIX_4_4  matTemp1, matTemp2;
-        MATRIX_4_4  matRotateY, matRotateX, matRotateZ;
-
-        MATRIX_4_4_PTR pLeftArg = NULL;
-        if (0 != fDegreeY)
-        {
-            // 			matRotateY = {
-            // 				Fast_Cos(fDegreeY),  0, -Fast_Sin(fDegreeY), 0,
-            // 				0, 1, 0, 0,
-            // 				Fast_Sin(fDegreeY),  0,  Fast_Cos(fDegreeY), 0,
-            // 				0, 0, 0, 1
-            //			};
-            MAT_IDENTITY_4_4(&matRotateY);
-            matRotateY.M00 = Fast_Cos(fDegreeY);
-            matRotateY.M02 = -Fast_Sin(fDegreeY);
-            matRotateY.M20 = Fast_Sin(fDegreeY);
-            matRotateY.M22 = Fast_Cos(fDegreeY);
-
-            pLeftArg = &matRotateY;
-        }
-
-        if (0 != fDegreeX)
-        {
-            // 			MATRIX_4_4 matRotateX= {
-            // 				1, 0, 0, 0,
-            // 				0,  Fast_Cos(fDegreeX), Fast_Sin(fDegreeX), 0,
-            // 				0, -Fast_Sin(fDegreeX), Fast_Cos(fDegreeX), 0,
-            // 				0, 0, 0, 1
-            // 			};
-
-            MAT_IDENTITY_4_4(&matRotateX);
-            matRotateX.M11 = Fast_Cos(fDegreeX);
-            matRotateX.M12 = Fast_Sin(fDegreeX);
-            matRotateX.M21 = -Fast_Sin(fDegreeX);
-            matRotateX.M22 = Fast_Cos(fDegreeX);
-
-            if (NULL == pLeftArg)
-            {
-                pLeftArg = &matRotateX;
-            }
-            else
-            {
-                Mat_Mul_4X4(pLeftArg, &matRotateX, &matTemp1);
-                pLeftArg = &matTemp1;
-            }
-        }
-
-        if (0 != fDegreeZ)
-        {
-            // 			MATRIX_4_4 matRotateZ= {
-            //  			Fast_Cos(fDegreeZ), Fast_Sin(fDegreeZ), 0, 0
-            // 				-Fast_Sin(fDegreeZ), Fast_Cos(fDegreeZ), 1, 0,
-            // 				0, 0, 1, 0,
-            // 				0, 0, 0, 1
-            // 			};
-
-            MAT_IDENTITY_4_4(&matRotateZ);
-            matRotateZ.M00 = Fast_Cos(fDegreeZ);
-            matRotateZ.M01 = Fast_Sin(fDegreeZ);
-            matRotateZ.M10 = -Fast_Sin(fDegreeZ);
-            matRotateZ.M11 = Fast_Cos(fDegreeZ);
-
-            if (NULL == pLeftArg)
-            {
-                pLeftArg = &matRotateZ;
-            }
-            else
-            {
-                Mat_Mul_4X4(pLeftArg, &matRotateZ, &matTemp2);
-                pLeftArg = &matTemp2;
-            }
-        }
 
         // 旋转
-        if (pLeftArg)
+        if (pMatWorld)
         {
             for (int i = 0; i < 4; i++)
-                Mat_Mul_VECTOR3D_4X4(&m_ptLocale[i], pLeftArg, &pt3DWorld[i]);
+                Mat_Mul_VECTOR3D_4X4(&m_ptLocale[i], pMatWorld, &pt3DWorld[i]);
         }
         else
         {
@@ -137,14 +65,6 @@ void _3dPipeline::Do()
                 pt3DWorld[i].x = m_ptLocale[i].x;
                 pt3DWorld[i].y = m_ptLocale[i].y;
             }
-        }
-
-        // 平移
-        for (int i = 0; i < 4; i++)
-        {
-            pt3DWorld[i].x += m_nOffsetX;
-            pt3DWorld[i].y += m_nOffsetY;
-            pt3DWorld[i].z += m_nOffsetZ;
         }
     }
 #pragma endregion
@@ -196,21 +116,22 @@ void _3dPipeline::Do()
     // 转换到屏幕坐标系上（屏幕坐标的y轴是从上自下，与世界坐标相反）
     for (int i = 0; i < 4; ++i)
     {
-        pt3DPerspectivePos[i].x += m_ptOrigin.x;
+        pt3DPerspectivePos[i].x += ptOrigin.x;
         pt3DPerspectivePos[i].y = -pt3DPerspectivePos[i].y;
-        pt3DPerspectivePos[i].y += m_ptOrigin.y;
+        pt3DPerspectivePos[i].y += ptOrigin.y;
     }
 
     // 赋值给返回值
     for (int i = 0; i < 4; i++)
     {
-        m_quad.pos[2*i]   = (int)(pt3DPerspectivePos[i].x + 0.5);
-        m_quad.pos[2*i+1] = (int)(pt3DPerspectivePos[i].y + 0.5);
+        pOutQuad->pos[2*i]   = round(pt3DPerspectivePos[i].x);  // 注：不能直接用+0.5，有可能是负数
+        pOutQuad->pos[2*i+1] = round(pt3DPerspectivePos[i].y);
     }
-    m_quad.Az = pt3DCamera[0].z;
-    m_quad.Bz = pt3DCamera[1].z;
-    m_quad.Cz = pt3DCamera[2].z;
-    m_quad.Dz = pt3DCamera[3].z;
+    pOutQuad->Az = pt3DCamera[0].z;
+    pOutQuad->Bz = pt3DCamera[1].z;
+    pOutQuad->Cz = pt3DCamera[2].z;
+    pOutQuad->Dz = pt3DCamera[3].z;
 }
+
 
 }

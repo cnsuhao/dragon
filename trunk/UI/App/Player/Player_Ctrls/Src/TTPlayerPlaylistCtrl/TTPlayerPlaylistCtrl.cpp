@@ -235,10 +235,10 @@ LRESULT TTPlayerPlaylistCtrl::OnDrawItem(WPARAM wParam, LPARAM lParam)
 		pRenderTarget->DrawString(pRenderFont, &param2);
 
         UI::DRAWTEXTPARAM  param3;
-        param2.szText = pItem->m_pItemInfo->GetFileTime();
-        param2.prc = &rcTime;
-        param2.color.ReplaceRGB(rgbText);
-        param2.nFormatFlag = DT_SINGLELINE|DT_RIGHT|DT_VCENTER;
+        param3.szText = pItem->m_pItemInfo->GetFileTime();
+        param3.prc = &rcTime;
+        param3.color.ReplaceRGB(rgbText);
+        param3.nFormatFlag = DT_SINGLELINE|DT_RIGHT|DT_VCENTER;
 		pRenderTarget->DrawString(pRenderFont, &param3);
 	}
 

@@ -12,6 +12,7 @@ class AverageLayoutParam : public LayoutParamBase
 {
 public:
     virtual LAYOUTTYPE  GetLayoutType() { return LAYOUT_TYPE_AVERAGE; }
+    virtual bool  IsSizedByContent() { return false; }
 };
 
 

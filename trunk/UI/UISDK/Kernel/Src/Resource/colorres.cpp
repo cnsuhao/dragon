@@ -163,7 +163,7 @@ void ColorRes::GetColor(const TCHAR* szColorId, Color** pp)
 	ColorResItem* pItem = this->GetColorItem(szColorId);
 	if (NULL == pItem)
 	{
-		UI_LOG_ERROR( _T("%s failed, id=%s"), FUNC_NAME, szColorId);
+		UI_LOG_WARN( _T("%s failed, id=%s"), FUNC_NAME, szColorId);
 		return;
 	}
 

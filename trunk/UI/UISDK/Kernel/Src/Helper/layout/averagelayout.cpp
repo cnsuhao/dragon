@@ -183,7 +183,7 @@ void  AverageLayout::ArrangeObject_H(Object* pChildObj, CRect* prc)
         prc->top + m_pPanel->GetPaddingT(), 
         prc->Width() - pChildObj->GetMarginW(), 
         prc->Height() - pChildObj->GetMarginH(),
-        SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS);
+        SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS|SWP_FORCESENDSIZEMSG);
 }
 
 
@@ -194,7 +194,7 @@ void  AverageLayout::ArrangeObject_V(Object* pChildObj, CRect* prc)
         prc->top + m_pPanel->GetPaddingT(), 
         prc->Width() - pChildObj->GetMarginW(), 
         prc->Height() - pChildObj->GetMarginH(),
-        SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS);
+        SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS|SWP_FORCESENDSIZEMSG);
 }
 
 }

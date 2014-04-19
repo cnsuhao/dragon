@@ -117,7 +117,7 @@ inline bool C9Region::IsAll_1()
     return true;
 }
 
-class IRenderTarget;
+interface IRenderTarget;
 struct RENDERBASE_DRAWSTATE
 {
     IRenderTarget*  pRenderTarget;

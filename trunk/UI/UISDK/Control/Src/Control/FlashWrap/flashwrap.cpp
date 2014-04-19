@@ -351,7 +351,7 @@ void FlashWrap::OnPaint(IRenderTarget* pRenderTarget)
 	if (NULL == m_pFlash)
 		return;
 
-	HDC hDC = pRenderTarget->GetBindHDC();  // Flash直接支持原始GDI句柄，并不需要通过Gdiplus来实现
+	HDC hDC = pRenderTarget->GetHDC();  // Flash直接支持原始GDI句柄，并不需要通过Gdiplus来实现
 	DrawFlash(hDC);
 }
 void FlashWrap::DrawFlash(HDC hDC)
@@ -371,8 +371,7 @@ void FlashWrap::OnRedrawObject()
 	if (NULL == m_pSite->m_hInvalidateRgn)
 		return;
 
-    IRenderLayer*  pRenderLayer = m_pIFlashWrap->GetRenderLayer();
-	HDC hDC = pRenderLayer->GetMemoryLayerDC();
+	HDC hDC = m_pIFlashWrap->GetRenderLayer2()->GetHDC();
     if (NULL == hDC)
         return;
 
@@ -397,13 +396,15 @@ void FlashWrap::OnSize( UINT nType, int cx, int cy )
 	if (NULL == m_pFlash)
 		return;
 
+    SetMsgHandled(FALSE);
+
     CRect rc;
     m_pIFlashWrap->GetParentRect(&rc);
 	SetFlashPos(&rc);
 }
 
 void FlashWrap::SetFlashUri(BSTR bstr)
-{
+{ 
 	if (m_pFlash && NULL != bstr)
 	{
 		String strUri = bstr;
@@ -421,6 +422,7 @@ void FlashWrap::SetFlashUri(BSTR bstr)
 			m_strFlashUri.assign(szRealPath);
 		}
 
+		m_pFlash->StopPlay();
 		if (SUCCEEDED(m_pFlash->put_Movie((BSTR)m_strFlashUri.c_str())))
 		{
 			m_nFlashWidth  = FlashPropertyUtil::GetFlashWidth(m_pFlash);

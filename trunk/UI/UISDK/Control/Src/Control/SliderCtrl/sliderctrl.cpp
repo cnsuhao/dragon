@@ -44,7 +44,7 @@ void SliderCtrl::ResetAttribute()
 
 	m_nFreq = 10;
 	SAFE_RELEASE(m_pTickRender);
-	m_pISliderCtrl->ModifyStyle(0, SLIDER_STYLE_POINT_LEFT|SLIDER_STYLE_POINT_TOP, false);  // 默认无指向
+	m_pISliderCtrl->ModifyStyleEx(0, SLIDER_STYLE_POINT_LEFT|SLIDER_STYLE_POINT_TOP, false);  // 默认无指向
 }	
 void SliderCtrl::SetAttribute(IMapAttribute* pMapAttr, bool bReload)
 {
@@ -80,23 +80,23 @@ void SliderCtrl::SetAttribute(IMapAttribute* pMapAttr, bool bReload)
 	{
 		if (0 == _tcscmp(XML_SLIDERCTRL_THUMB_POINT_DIRECTION_LEFT, szText))
 		{
-			m_pISliderCtrl->ModifyStyle(SLIDER_STYLE_POINT_LEFT, SLIDER_STYLE_POINT_RIGHT, false);
+			m_pISliderCtrl->ModifyStyleEx(SLIDER_STYLE_POINT_LEFT, SLIDER_STYLE_POINT_RIGHT, false);
 		}
 		else if (0 == _tcscmp(XML_SLIDERCTRL_THUMB_POINT_DIRECTION_RIGHT, szText))
 		{
-			m_pISliderCtrl->ModifyStyle(SLIDER_STYLE_POINT_RIGHT, SLIDER_STYLE_POINT_LEFT, false);
+			m_pISliderCtrl->ModifyStyleEx(SLIDER_STYLE_POINT_RIGHT, SLIDER_STYLE_POINT_LEFT, false);
 		}
 		else if (0 == _tcscmp(XML_SLIDERCTRL_THUMB_POINT_DIRECTION_TOP, szText))
 		{
-			m_pISliderCtrl->ModifyStyle(SLIDER_STYLE_POINT_TOP, SLIDER_STYLE_POINT_BOTTOM, false);
+			m_pISliderCtrl->ModifyStyleEx(SLIDER_STYLE_POINT_TOP, SLIDER_STYLE_POINT_BOTTOM, false);
 		}
 		else if (0 == _tcscmp(XML_SLIDERCTRL_THUMB_POINT_DIRECTION_BOTTOM, szText))
 		{
-			m_pISliderCtrl->ModifyStyle(SLIDER_STYLE_POINT_BOTTOM, SLIDER_STYLE_POINT_TOP, false);
+			m_pISliderCtrl->ModifyStyleEx(SLIDER_STYLE_POINT_BOTTOM, SLIDER_STYLE_POINT_TOP, false);
 		}
 		else if (0 == _tcscmp(XML_SLIDERCTRL_THUMB_POINT_DIRECTION_BOTH, szText))
 		{
-			m_pISliderCtrl->ModifyStyle(0, SLIDER_STYLE_POINT_LEFT|SLIDER_STYLE_POINT_RIGHT, false);
+			m_pISliderCtrl->ModifyStyleEx(0, SLIDER_STYLE_POINT_LEFT|SLIDER_STYLE_POINT_RIGHT, false);
 		}
 		else
 		{
@@ -270,7 +270,7 @@ int SliderCtrl::WindowPoint2UITrackPos(const POINT* ptWindow)
 	int nTrackPos = 0;
 
 	POINT ptObj = {0,0};
-	m_pISliderCtrl->WindowPoint2ObjectPoint(ptWindow, &ptObj); 
+	m_pISliderCtrl->WindowPoint2ObjectPoint(ptWindow, &ptObj, true); 
 
 	switch(m_eDirectionType)
 	{
@@ -322,7 +322,7 @@ void SliderCtrl::CalcCurPosByUITrackPos( int nTrackPos)
 			if (0 == nLong || 0 == nRange)
 				m_nCur = m_nMin;
             else
-			    m_nCur = (int)( (double)(nTrackPos)/(double)nLong * (double)nRange + 0.5) + m_nMin;
+			    m_nCur = round( (double)(nTrackPos)/(double)nLong * (double)nRange) + m_nMin;
 		}
 		break;
 
@@ -333,7 +333,7 @@ void SliderCtrl::CalcCurPosByUITrackPos( int nTrackPos)
             if (0 == nLong || 0 == nRange)
                 m_nCur = m_nMin;
             else
-			    m_nCur = (int)((double)(nTrackPos)/(double)nLong * (double)nRange + 0.5) + m_nMin;
+			    m_nCur = round((double)(nTrackPos)/(double)nLong * (double)nRange) + m_nMin;
 		}
 		break;
 	}
@@ -345,6 +345,8 @@ void SliderCtrl::CalcCurPosByUITrackPos( int nTrackPos)
 //
 void SliderCtrl::OnSize(UINT nType, int cx, int cy)
 {
+    SetMsgHandled(FALSE);
+
 	this->UpdateUIData(true,true);
 	this->UpdateTicksData();
 }
@@ -856,15 +858,17 @@ void SliderCtrl::OnStyleChanged(int nStyleType, LPSTYLESTRUCT lpStyleStruct)
 {
 	SetMsgHandled(FALSE);
 
-	bool bOldAutoTicks = (lpStyleStruct->styleOld & SLIDER_STYLE_AUTOTICKS)?true:false;
-	bool bOldShowTicks = (lpStyleStruct->styleOld & SLIDER_STYLE_SHOWTICKS)?true:false;
-	bool bNewAutoTicks = (lpStyleStruct->styleNew & SLIDER_STYLE_AUTOTICKS)?true:false;
-	bool bNewShowTicks = (lpStyleStruct->styleNew & SLIDER_STYLE_SHOWTICKS)?true:false;
-
-	if (bNewAutoTicks && !bOldAutoTicks)  // 自动显示刻度
+	if (nStyleType == GWL_EXSTYLE)
 	{
-		this->UpdateTicksData();
-	}
+		bool bOldAutoTicks = (lpStyleStruct->styleOld & SLIDER_STYLE_AUTOTICKS)?true:false;
+		bool bOldShowTicks = (lpStyleStruct->styleOld & SLIDER_STYLE_SHOWTICKS)?true:false;
+		bool bNewAutoTicks = (lpStyleStruct->styleNew & SLIDER_STYLE_AUTOTICKS)?true:false;
+		bool bNewShowTicks = (lpStyleStruct->styleNew & SLIDER_STYLE_SHOWTICKS)?true:false;
+
+		if (bNewAutoTicks && !bOldAutoTicks)  // 自动显示刻度
+		{
+			this->UpdateTicksData();
+		}
 // 	else if (bNewShowTicks && (bOldAutoTicks&&!bNewAutoTicks))  // 去除了自动显示刻度，使用自定义刻度
 // 	{
 // 
@@ -877,6 +881,7 @@ void SliderCtrl::OnStyleChanged(int nStyleType, LPSTYLESTRUCT lpStyleStruct)
 // 	else
 // 	{
 // 	}
+	}
 
 }
 
@@ -893,7 +898,7 @@ int SliderCtrl::SetTickFreq(int nFreq)
 // 重新计算每个刻度的位置
 void SliderCtrl::UpdateTicksData()
 {
-    int nStyle = m_pISliderCtrl->GetStyle();
+    int nStyle = m_pISliderCtrl->GetStyleEx();
 	if (!(nStyle & SLIDER_STYLE_AUTOTICKS))
 	{
 		return ;
@@ -1099,7 +1104,7 @@ void SliderCtrl::OnPaint(IRenderTarget* pRenderTarget)
 	// 绘制刻度 TODO:
 //	if (m_pTickRender)
 	{
-        int nStyle = m_pISliderCtrl->GetStyle();
+        int nStyle = m_pISliderCtrl->GetStyleEx();
 		if (nStyle & SLIDER_STYLE_AUTOTICKS || nStyle & SLIDER_STYLE_SHOWTICKS)
 		{
 			for (int i = 0; i < (int)m_vTickInfo.size(); i++)

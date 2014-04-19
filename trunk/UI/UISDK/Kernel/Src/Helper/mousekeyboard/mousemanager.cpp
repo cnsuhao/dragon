@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "mousemanager.h"
 #include "UISDK\Kernel\Src\Helper\tooltip\tooltipmanager.h"
-#include "UISDK\Kernel\Src\Helper\MouseKeyboard\keyboardmanager.h"
 #include "UISDK\Kernel\Inc\Interface\iwindow.h"
 #include "UISDK\Kernel\Src\Base\Object\object.h"
 #include "UISDK\Kernel\Src\UIObject\Window\window.h"
@@ -166,7 +165,7 @@ void WindowMouseMgr::ObjectDeleteInd(Object* pObj)
 //		pObjParent
 //			[in]
 //				递归遍历时，使用的parent object.调用该函数时赋值为窗口对象(Window/)pObj即可。
-//		pt
+//		ptParent
 //			[in]
 //				在父对象中的鼠标位置，初始值为在窗口中的位置
 // 
@@ -178,10 +177,11 @@ void WindowMouseMgr::ObjectDeleteInd(Object* pObj)
 //	Return
 //		该位置下的对象，没有则返回空
 //
-Object* WindowMouseMgr::GetObjectByPos(Object* pObjParent, POINT* pt)
+Object* WindowMouseMgr::GetObjectByPos(Object* pObjParent, POINT* ptParent, __out POINT* ptOutInObj)
 {
 	Object* pHitObj = NULL;
-	POINT   ptHit = *pt;
+	POINT   ptHitTest = *ptParent;
+    POINT   ptInChild = {0};
 
 	Object* pChild = NULL;
 	while (pChild = pObjParent->EnumNcChildObject(pChild))
@@ -193,7 +193,7 @@ Object* WindowMouseMgr::GetObjectByPos(Object* pObjParent, POINT* pt)
 		if (pChild->IsRejectMouseMsgAll())
 			continue;
 
-		UINT nHitTest = UISendMessage(pChild, UI_WM_HITTEST, ptHit.x, ptHit.y);
+		UINT nHitTest = UISendMessage(pChild, UI_WM_HITTEST, (WPARAM)&ptHitTest, (LPARAM)&ptInChild);
 		if (HTNOWHERE != nHitTest)
 		{
 			pHitObj = pChild;
@@ -203,14 +203,14 @@ Object* WindowMouseMgr::GetObjectByPos(Object* pObjParent, POINT* pt)
 
 	if (NULL == pHitObj)  // 继续搜索客户区的子对象
 	{
-		ptHit.x -= pObjParent->GetNonClientL();
-		ptHit.y -= pObjParent->GetNonClientT();
+		ptHitTest.x -= pObjParent->GetNonClientL();
+		ptHitTest.y -= pObjParent->GetNonClientT();
 
 		POINT ptOffset = {0,0};
 		if (pObjParent->GetScrollOffset((int*)&ptOffset.x, (int*)&ptOffset.y))
 		{
-			ptHit.x += ptOffset.x;
-			ptHit.y += ptOffset.y;
+			ptHitTest.x += ptOffset.x;
+			ptHitTest.y += ptOffset.y;
 		}
 
 		pChild = NULL;
@@ -223,7 +223,7 @@ Object* WindowMouseMgr::GetObjectByPos(Object* pObjParent, POINT* pt)
 			if (pChild->IsRejectMouseMsgAll())
 				continue;
 
-			UINT nHitTest = UISendMessage(pChild, UI_WM_HITTEST, ptHit.x, ptHit.y);
+			UINT nHitTest = UISendMessage(pChild, UI_WM_HITTEST, (WPARAM)&ptHitTest, (LPARAM)&ptInChild);
 			if (HTNOWHERE != nHitTest)
 			{
 				pHitObj = pChild;
@@ -236,10 +236,9 @@ Object* WindowMouseMgr::GetObjectByPos(Object* pObjParent, POINT* pt)
 		return NULL;
 
 	// 将坐标转换为相对于pHitObj的坐标
-	ptHit.x -= pHitObj->GetParentRectL();
-	ptHit.y -= pHitObj->GetParentRectT();
-
-	Object* pRetObj = GetObjectByPos(pHitObj, &ptHit);
+	ptHitTest = ptInChild;;
+    POINT  ptInHitChild = {0};
+	Object* pRetObj = GetObjectByPos(pHitObj, &ptHitTest, &ptInHitChild);
 
 	// Panel不接收鼠标消息（但Panel中的子对象需要接收）
 	if (pRetObj && (pRetObj->IsRejectMouseMsgSelf() || pRetObj->IsRejectMouseMsgAll()))
@@ -247,19 +246,26 @@ Object* WindowMouseMgr::GetObjectByPos(Object* pObjParent, POINT* pt)
 
 	// 若子控件中没有处于该位置的，直接返回本对象
 	if (pRetObj)
+    {
+        if (ptOutInObj)
+            *ptOutInObj = ptInHitChild;
 		return pRetObj;
+    }
 
     if (pHitObj && (pHitObj->IsRejectMouseMsgSelf() || pHitObj->IsRejectMouseMsgAll()))
         pHitObj = NULL;
 
+    if (pHitObj && ptOutInObj)
+        *ptOutInObj = ptInChild;
 	return pHitObj;
 }
 
 //  将这个不放在GetObjectByPos中，避免影响GetObjectByPos的效率
-Object* WindowMouseMgr::GetObjectByPos_UIEditor(Object* pObjParent, POINT* pt)
+Object* WindowMouseMgr::GetObjectByPos_UIEditor(Object* pObjParent, POINT* ptParent, __out POINT* ptOutInObj)
 {
     Object* pHitObj = NULL;
-    POINT   ptHit = *pt;
+    POINT   ptHitTest = *ptParent;
+    POINT   ptInChild = {0};
 
     Object* pChild = NULL;
     while (pChild = pObjParent->EnumNcChildObject(pChild))
@@ -267,7 +273,7 @@ Object* WindowMouseMgr::GetObjectByPos_UIEditor(Object* pObjParent, POINT* pt)
         if (!pChild->IsVisible())
             continue;
 
-        UINT nHitTest = UISendMessage(pChild, UI_WM_HITTEST, ptHit.x, ptHit.y);
+        UINT nHitTest = UISendMessage(pChild, UI_WM_HITTEST, (WPARAM)&ptHitTest, (LPARAM)&ptInChild);
         if (HTNOWHERE != nHitTest)
         {
             pHitObj = pChild;
@@ -277,14 +283,14 @@ Object* WindowMouseMgr::GetObjectByPos_UIEditor(Object* pObjParent, POINT* pt)
 
     if (NULL == pHitObj)  // 继续搜索客户区的子对象
     {
-        ptHit.x -= pObjParent->GetNonClientL();
-        ptHit.y -= pObjParent->GetNonClientT();
+        ptHitTest.x -= pObjParent->GetNonClientL();
+        ptHitTest.y -= pObjParent->GetNonClientT();
 
         POINT ptOffset = {0,0};
         if (pObjParent->GetScrollOffset((int*)&ptOffset.x, (int*)&ptOffset.y))
         {
-            ptHit.x += ptOffset.x;
-            ptHit.y += ptOffset.y;
+            ptHitTest.x += ptOffset.x;
+            ptHitTest.y += ptOffset.y;
         }
 
         pChild = NULL;
@@ -293,7 +299,7 @@ Object* WindowMouseMgr::GetObjectByPos_UIEditor(Object* pObjParent, POINT* pt)
             if (!pChild->IsVisible())
                 continue;
 
-            UINT nHitTest = UISendMessage(pChild, UI_WM_HITTEST, ptHit.x, ptHit.y);
+            UINT nHitTest = UISendMessage(pChild, UI_WM_HITTEST, (WPARAM)&ptHitTest, (LPARAM)&ptInChild);
             if (HTNOWHERE != nHitTest)
             {
                 pHitObj = pChild;
@@ -306,17 +312,20 @@ Object* WindowMouseMgr::GetObjectByPos_UIEditor(Object* pObjParent, POINT* pt)
         return NULL;
 
     // 将坐标转换为相对于pHitObj的坐标
-    ptHit.x -= pHitObj->GetParentRectL();
-    ptHit.y -= pHitObj->GetParentRectT();
+    ptHitTest = ptInChild;;
+    POINT  ptInHitChild = {0};
+    Object* pRetObj = GetObjectByPos_UIEditor(pHitObj, &ptHitTest, &ptInHitChild);
 
-    Object* pRetObj = NULL;
-    if (pHitObj->GetObjectType() != OBJ_CONTROL)
+    // 若子控件中没有处于该位置的，直接返回本对象
+    if (pRetObj)
     {
-        pRetObj = GetObjectByPos_UIEditor(pHitObj, &ptHit);
+        if (ptOutInObj)
+            *ptOutInObj = ptInHitChild;
+        return pRetObj;
     }
 
-    if (pRetObj)
-        return pRetObj;
+    if (pHitObj && ptOutInObj)
+        *ptOutInObj = ptInChild;
     return pHitObj;
 }
 
@@ -515,8 +524,9 @@ LRESULT WindowMouseMgr::OnMouseMove( int vkFlag, int xPos, int yPos )
 
 	// 1. 判断当前鼠标位置
 	POINT pt = { xPos, yPos };
+    POINT ptInObj = {0};
 
-	Object* pObj = this->GetObjectByPos(m_pWindow, &pt);
+	Object* pObj = this->GetObjectByPos(m_pWindow, &pt, &ptInObj);
 
 	_OnMouseMove(pObj, vkFlag, MAKELPARAM(pt.x, pt.y), this);
 	return 0L;
@@ -581,7 +591,7 @@ LRESULT WindowMouseMgr::OnLButtonUp( WPARAM w, LPARAM l)
         GetCursorPos(&ptCursorNow);
         ::MapWindowPoints(NULL, m_pWindow->GetHWND(), &ptCursorNow, 1);
 
-        Object* pNowHover = this->GetObjectByPos(m_pWindow, &ptCursorNow);
+        Object* pNowHover = this->GetObjectByPos(m_pWindow, &ptCursorNow, NULL);
         this->SetHoverObject(pNowHover);
         if (pNowHover != pSaveObjPress && NULL != pSaveObjPress)
             ::UISendMessage(pSaveObjPress, WM_MOUSELEAVE);

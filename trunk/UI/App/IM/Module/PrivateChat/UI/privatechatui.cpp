@@ -188,7 +188,7 @@ long  CPrivateChatUI::OnOpenPrivateChatDlg(IM::OpenPrivateChatDlgReqTask* pTask)
     }
     if (m_pSkinUI)
     {
-        if (NULL == pInfo->m_pChatDlg->GetMaterialRender())
+        if (NULL == pInfo->m_pChatDlg->GetTextureRender())
         {
             pInfo->m_pChatDlg->SetSkin(m_pSkinUI->GetShareSkinRender());
         }

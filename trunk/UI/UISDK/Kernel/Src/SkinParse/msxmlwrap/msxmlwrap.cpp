@@ -295,25 +295,35 @@ IUIChildNodeEnum*  UIMarkupElement::EnumChild()
 
     return UIMarkupChildNodeEnum::New(pNodeList.p, m_pDocument);
 }
-IUIElement*  UIMarkupElement::FindChild(BSTR bstrChildName)
+
+bool  UIMarkupElement::FindChild(BSTR bstrChildName, IUIElement** ppElem)
 {
+	if (!ppElem)
+		return false;
+
     IXMLDOMNode*  pChildNode = NULL;
     if (FAILED(m_pElement->selectSingleNode(bstrChildName, &pChildNode) || NULL == pChildNode))
         return NULL;
 
     IUIElement* p = UIMarkupElement::New(pChildNode, m_pDocument);
 	SAFE_RELEASE(pChildNode);
-	return p;
+	*ppElem = p;
+	return true;
 }
-IUIElement*  UIMarkupElement::FirstChild()
+
+bool  UIMarkupElement::FirstChild(IUIElement** ppElem)
 {
+	if (!ppElem)
+		return false;
+
     IXMLDOMNode*  pChildNode = NULL;
     if (FAILED(m_pElement->get_firstChild(&pChildNode) || NULL == pChildNode))
-        return NULL;
+        return false;
 
     IUIElement* p = UIMarkupElement::New(pChildNode, m_pDocument);
 	SAFE_RELEASE(pChildNode);
-	return p;
+	*ppElem = p;
+	return true;
 }
 
 HRESULT  UIMarkupElement::GetDocument(IUIDocument** pp)
@@ -380,6 +390,77 @@ bool  UIMarkupElement::AddChild(const TCHAR* szNodeName, IUIElement** pp)
     }
 
     return true;
+}
+
+bool  UIMarkupElement::AddChild(IUIElement*  pElem)
+{
+	if (!pElem)
+		return false;
+
+	UIMarkupElement* pElement = static_cast<UIMarkupElement*>(pElem);
+
+	CComPtr<IXMLDOMNode> pOutNewElem = NULL;
+	HRESULT hr = m_pElement->appendChild(pElement->m_pElement, &pOutNewElem);
+	return SUCCEEDED(hr)? true:false;
+}
+
+// 如果为空，则表示插在最后面
+bool  UIMarkupElement::AddChildBefore(IUIElement*  pElem, IUIElement* pInsertBefore)
+{
+    if (NULL == pInsertBefore)
+    {
+        return AddChild(pElem);
+    }
+
+    UIMarkupElement* pElement = static_cast<UIMarkupElement*>(pElem);
+    UIMarkupElement* pElementBefore = static_cast<UIMarkupElement*>(pInsertBefore);
+
+    CComPtr<IXMLDOMNode> pOutNewElem = NULL;
+    IDispatch* pDispath = NULL;
+    pElementBefore->m_pElement.QueryInterface(&pDispath);
+
+    CComVariant  var(pDispath);
+    HRESULT hr = m_pElement->insertBefore(pElement->m_pElement, var, &pOutNewElem);
+
+    SAFE_RELEASE(pDispath);
+    return SUCCEEDED(hr)? true:false;
+}
+
+// ms 没有提供insertAfter的
+bool  UIMarkupElement::AddChildAfter(IUIElement*  pElem, IUIElement* pInsertAfter)
+{
+    // 插在最前面
+    if (!pInsertAfter)
+    {
+        IUIElement*  pFirstChild = NULL;
+        FirstChild(&pFirstChild);
+        bool bRet = this->AddChildBefore(pElem, pFirstChild);
+        SAFE_RELEASE(pFirstChild);
+
+        return bRet;
+    }
+
+    // 查看after的下一个，插在其前面
+    UIMarkupElement* pElem2 = static_cast<UIMarkupElement*>(pElem);
+    UIMarkupElement* pInsertAfter2 = static_cast<UIMarkupElement*>(pInsertAfter);
+
+    CComPtr<IXMLDOMNode>  pNext;
+    pInsertAfter2->m_pElement->get_nextSibling(&pNext);
+
+    if (!pNext)
+    {
+        return this->AddChild(pElem);
+    }
+
+    CComPtr<IXMLDOMNode> pOutNewElem = NULL;
+    IDispatch* pDispath = NULL;
+    pNext.QueryInterface(&pDispath);
+
+    CComVariant  var(pDispath);
+    HRESULT hr = m_pElement->insertBefore(pElem2->m_pElement, var, &pOutNewElem);
+    SAFE_RELEASE(pDispath);
+
+    return SUCCEEDED(hr)? true:false;
 }
 
 bool  UIMarkupElement::ClearAttrib()
@@ -514,15 +595,19 @@ bool  UIMarkup::SaveAs(const TCHAR* szPath)
 }
 
 // 多个路径之间用 / 进行分隔
-IUIElement*  UIMarkup::FindElem(const TCHAR* szText)
+bool  UIMarkup::FindElem(const TCHAR* szText, IUIElement** ppElem)
 {
+	if (!ppElem)
+		return false;
+		 
     CComBSTR bstr(szText);
     CComPtr<IXMLDOMNode>  pNode = NULL;
     HRESULT hr = m_pDoc->selectSingleNode(bstr, &pNode);
     if (FAILED(hr))
-        return NULL;
+        return false;
 
-    return UIMarkupElement::New(pNode.p, this);
+    *ppElem = UIMarkupElement::New(pNode.p, this);
+	return true;
 }
 
 UIMarkup*  UIMarkup::New()

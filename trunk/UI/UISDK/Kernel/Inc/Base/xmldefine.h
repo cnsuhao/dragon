@@ -295,16 +295,32 @@ enum WINDOW_TRANSPARENT_MODE
                                            // PS: 也有可能为16|1或其它，在不支持Aero的时候使用其它类型
 };
 
-#define XML_MATERIAL_RENDER_PREFIX           _T("material.")         // customwindow用于支持换肤的皮肤render前缀
-#define XML_MASK_RENDER_PREFIX               _T("mask.")             // panel用于支持遮罩的render前缀
+#define XML_WINDOW_GRAPHICS_RENDER_LIBRARY          _T("graphics")         // 图形引擎类型
+#define XML_WINDOW_GRAPHICS_RENDER_LIBRARY_GDI      _T("gdi")
+#define XML_WINDOW_GRAPHICS_RENDER_LIBRARY_GDIPLUS  _T("gdiplus")
+#define XML_WINDOW_GRAPHICS_RENDER_LIBRARY_D2D      _T("d2d")
+#define XML_WINDOW_GRAPHICS_RENDER_LIBRARY_DIRECT2D  _T("direct2d")
+#define XML_WINDOW_GRAPHICS_RENDER_LIBRARY_D3D      _T("d3d")
+
+typedef enum 
+{
+	//	GRAPHICS_RENDER_LIBRARY_TYPE_AUTO = 0,   // <- 依据窗口类型决定。分层窗口使用GDIPLUS,普通窗口使用GDI，废弃，逻辑太复杂
+	GRAPHICS_RENDER_LIBRARY_TYPE_GDI = 1,
+	GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS,
+	GRAPHICS_RENDER_LIBRARY_TYPE_DIRECT2D,
+	GRAPHICS_RENDER_LIBRARY_TYPE_DIRECT3D
+}
+GRAPHICS_RENDER_LIBRARY_TYPE;
+
+#define XML_TEXTURE_RENDER_PREFIX            _T("texture.")         // customwindow用于支持换肤的皮肤render前缀
 
 // #define XML_WINDOW_SKIN_IMAGE_RENDER_PREFIX  _T("skinimg.")       // 窗口背景图皮肤前缀
 #define XML_PANEL_RENDER_REGION              _T("render.region") // 皮肤图片在窗口上显示的区域，类型于padding的配置
 
-// RenderChain
-#define XML_RENDERCHAIN                      _T("RenderChain")
-#define XML_RENDERCHAIN_LAYER                _T("layer")
-#define XML_RENDERCHAIN_Z_ORDER              _T("zorder")
+// RenderChain -- 废弃
+// #define XML_RENDERCHAIN                      _T("RenderChain")
+// #define XML_RENDERCHAIN_LAYER                _T("layer")
+// #define XML_RENDERCHAIN_Z_ORDER              _T("zorder")
 
 // 其它通用属性
 #define XML_CURSOR                           _T("cursor")       // 对象的鼠标样式
@@ -335,6 +351,9 @@ enum WINDOW_TRANSPARENT_MODE
 #define XML_CONTROL_STYLE_TABABLE            _T("tabstop")
 #define XML_REJEST_MOUSE_MSG                 _T("rejectmousemsg")  // 不接受鼠标消息
 #define XML_ZINDEX_OVERLAP                   _T("zindexoverlap")   // z序重叠了标识
+#define XML_ZORDER                           _T("zorder")          // 在本层中的z序，当不为0时，将为该对象创建一个layer
+
+#define XML_LAYER                            _T("layer")           // 为该对象建立一个renderlayer（带缓存）
 
 // window
 // #define  XML_WINDOW_BK_TYPE                    _T("bktype")     // 窗口背景绘制类型
@@ -740,10 +759,10 @@ enum FLASH_WMODE
     FLASH_WMODE_TRANSPARENT,
 };
 
-// Layer
-#define  XML_LAYER_TYPE             _T("type")    // render chain中的layer类型
-#define  XML_LAYER_TYPE_DIRECT      _T("direct")  // 直接渲染，无需缓存。renderbase类型
-#define  XML_LAYER_TYPE_CONTROL     _T("control") // 内嵌一个控件，例如flash
+// Layer -- 过期
+// #define  XML_LAYER_TYPE             _T("type")    // render chain中的layer类型
+// #define  XML_LAYER_TYPE_DIRECT      _T("direct")  // 直接渲染，无需缓存。renderbase类型
+// #define  XML_LAYER_TYPE_CONTROL     _T("control") // 内嵌一个控件，例如flash
 
 //#define  XML_LAYER_TYPE_FLASH       _T("flash")   // flash层
 

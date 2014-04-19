@@ -571,7 +571,6 @@ typedef struct tagCAMERA
 	double  AngelX, AngelY, AngleZ; // 相机的朝向，使用绕X,Y,Z轴分别转多少度来表示
 } CAMERA, *CAMERA_PTR;
 
-
 // 定点数宏
 // pi defines
 #define PI         ((float)3.141592654f)
@@ -597,25 +596,17 @@ typedef struct tagCAMERA
 
 // 将整数和浮点数转换为16.16格式的数
 #define INT_TO_FIXP16(i) ((i) <<  FIXP16_SHIFT)
-#define FLOAT_TO_FIXP16(fv) (((float)(fv) * (float)FIXP16_MAG+0.5f))
+#define FLOAT_TO_FIXP16(fv) (((float)(fv) * (float)FIXP16_MAG))
 
 // 将定点数转换为浮点数
 #define FIXP16_TO_FLOAT(fp) ( ((float)fp)/FIXP16_MAG)
-
-// 浮点数转整数。 注意：默认的fistp是四舍五入模式。需要通过调用_control87(_MCW_RC, _RC_DOWN);进行调整
-// 注：将汇编定义成宏每行后面不能加；而且每一行都得加一个__asm
-#define FLOAT_TO_INT(f,i) __asm \
-{ \
-    __asm fld   f \
-    __asm fistp i \
-}
 
 // storage for our lookup tables
 extern float cos_look[361]; // 1 extra so we can store 0-360 inclusive
 extern float sin_look[361]; // 1 extra so we can store 0-360 inclusive
 
-extern bool  g_bInitSinCosTable; 
 void  Build_Sin_Cos_Tables(void);
+void  Init_Sin_Cos_Tables();
 
 // trig functions
 float Fast_Sin(float theta);
@@ -633,12 +624,20 @@ float Fast_Distance_3D(float x, float y, float z);
 //     |               |
 //   D └---------------┘ C
 //
-// 四边形
+// 四边形 (注：这些值都是下标索引范围，因此不包括最右侧和最底侧）
 struct Quad
 {
     union
     {
         int pos[8];
+
+        struct
+        {
+            POINT  ptA;
+            POINT  ptB;
+            POINT  ptC;
+            POINT  ptD;
+        };
 
         struct
         {
@@ -691,21 +690,36 @@ struct Quad
         Dx += x;
         Dy += y;
     }
+    void  GetBoundRect(RECT* prc)
+    {
+        // 返回的区域不需要是下标范围
+        prc->left   = min(min(min(Ax,Bx),Cx),Dx);
+        prc->top    = min(min(min(Ay,By),Cy),Dy);
+        prc->right  = max(max(max(Ax,Bx),Cx),Dx); 
+        prc->bottom = max(max(max(Ay,By),Cy),Dy);
+	
+		prc->right++;
+		prc->bottom++;
+    }
 };
 
 // 带纹理位置数据的顶点结构
 struct TexturePoint
 {
-    int x;  // 源坐标
-    int y;
-    
-    int u;  // 纹理坐标
+	// 纹理坐标
+    int u;     
     int v;
 
-	int xt; // 转换后的坐标
-	int yt;
+	// 3D变换后转换后的坐标，等价于quad.xy
+	int xTransform;
+	int yTransform;
 
-    float z;  // 在相机中的z坐标，用于z缓存计算
+	// 在相机中的z坐标，用于z缓存计算
+	float z;   
+
+	// 3D变换后在目标缓存中的坐标，用于渲染
+	int xDest;    
+	int yDest;
 };
 }
 #include "3dmatrix.h"

@@ -43,6 +43,8 @@ enum SPLITTERBAR_ALIGN
 #define XML_SPLITTERBAR_OBJ_MINSIZE  _T("minsize")  // 分隔条操纵的控件最小宽、高
 #define XML_SPLITTERBAR_OBJ_MAXSIZE  _T("maxsize")  // 分隔条操纵的控件最大宽、高
 
+// popup windwo
+#define XML_POPUPWINDOW_PREFIX      _T("popupwnd.") // 弹出式窗口属性前缀，菜单、combobox控件中使用
 
 // ie wrap
 #define XML_IE_URL   _T("url")   // 需要打开的url地址

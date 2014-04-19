@@ -99,7 +99,7 @@ void  PluginBtnListBoxItem::OnPaint(UI::IRenderTarget* pRenderTarget)
     {
         int  nHeight = m_icon.GetHeight();
         int y = rcItem.top + (rcItem.Height()-nHeight)/2;
-        m_icon.Draw(pRenderTarget->GetBindHDC(), 75, y);
+        m_icon.Draw(pRenderTarget->GetHDC(), 75, y);
     }
 
     CRect rcText = rcItem;

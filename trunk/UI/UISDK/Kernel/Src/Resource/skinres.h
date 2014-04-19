@@ -55,6 +55,7 @@ public:
 
     UINT  GetXmlDocCount();
     const TCHAR*  GetXmlDoc(UINT nIndex, IUIDocument** pp);
+	bool  GetXmlDocByName(const TCHAR* szName, IUIDocument** pp);
 
     const TCHAR*  GetName();
     const TCHAR*  GetPath();

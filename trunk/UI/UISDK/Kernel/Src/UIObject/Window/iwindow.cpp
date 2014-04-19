@@ -2,10 +2,12 @@
 #include "UISDK\Kernel\Inc\Interface\iwindow.h"
 #include "UISDK\Kernel\Src\UIObject\Window\windowbase.h"
 #include "UISDK\Kernel\Src\UIObject\Window\window.h"
+#include "UISDK\Kernel\Src\RenderLayer2\layer\windowrender.h"
+#include "UISDK\Kernel\Src\Resource\skinres.h"
 
 namespace UI
 {
-UI_IMPLEMENT_Ixxx_INTERFACE(IWindowBase, WindowBase, WindowRenderLayer)
+UI_IMPLEMENT_Ixxx_INTERFACE(IWindowBase, WindowBase, Panel)
 UI_IMPLEMENT_Ixxx_INTERFACE(IWindow, Window, WindowBase)
 
 HWND  IWindowBase::GetHWND()                                               { return m_pWindowBaseImpl->GetHWND(); }
@@ -14,9 +16,9 @@ void  IWindowBase::ShowWindow()                                            { m_p
 void  IWindowBase::HideWindow()                                            { m_pWindowBaseImpl->HideWindow(); }
 void  IWindowBase::CenterWindow(HWND hWndCenter)                           { m_pWindowBaseImpl->CenterWindow(hWndCenter); }
 void  IWindowBase::UpdateDesktopLayout()                                   { m_pWindowBaseImpl->UpdateDesktopLayout(); }
-HDC   IWindowBase::GetRenderChainMemDC()                                   { return m_pWindowBaseImpl->GetRenderChainMemDC(); }
 bool  IWindowBase::IsDoModal()                                             { return m_pWindowBaseImpl->IsDoModal(); }
-IRenderChain*  IWindowBase::GetIRenderChain()                              { return m_pWindowBaseImpl->GetIRenderChain(); }
+IWindowRender*  IWindowBase::GetIWindowRender()                            { return m_pWindowBaseImpl->GetWindowRender()->GetIWindowRender(); }
+ISkinRes*  IWindowBase::GetSkinRes()                                       { return m_pWindowBaseImpl->GetSkinRes()->GetISkinRes(); }
 
 void    IWindowBase::OnObjectDeleteInd(IObject* p) 
 { 
@@ -66,9 +68,9 @@ IObject*  IWindowBase::GetObjectByPos(IObject* pObjParent, POINT* pt, bool bSkin
 bool  IWindowBase::Create(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent, RECT* prc) {return m_pWindowBaseImpl->Create(pUIApp, szID, hWndParent, prc);}
 void  IWindowBase::Attach(IUIApplication* pUIApp, HWND hWnd, const TCHAR* szID) { m_pWindowBaseImpl->Attach(pUIApp, hWnd, szID); }
 void  IWindowBase::Detach() { m_pWindowBaseImpl->Detach(); }
-long  IWindowBase::DoModal(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent ) { return m_pWindowBaseImpl->DoModal(pUIApp, szID, hWndParent); }
+long  IWindowBase::DoModal(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent, bool canResize ) { return m_pWindowBaseImpl->DoModal(pUIApp, szID, hWndParent, canResize); }
 long  IWindowBase::DoModal(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndParent) { return m_pWindowBaseImpl->DoModal(pUIApp, hResInst, nResID, szID, hWndParent); }
-HWND  IWindowBase::DoModeless(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent ) { return m_pWindowBaseImpl->DoModeless(pUIApp, szID, hWndParent); }
+HWND  IWindowBase::DoModeless(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent, bool canResize ) { return m_pWindowBaseImpl->DoModeless(pUIApp, szID, hWndParent, canResize); }
 HWND  IWindowBase::DoModeless(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndParent) { return m_pWindowBaseImpl->DoModeless(pUIApp, hResInst, nResID, szID, hWndParent); }
 void  IWindowBase::EndDialog(INT_PTR n) { return m_pWindowBaseImpl->EndDialog(n); }
 
@@ -76,9 +78,9 @@ void  IWindowBase::CommitDoubleBuffet2Window(HDC hDCWnd, RECT* prcCommit, int nR
 void  IWindowBase::CalcWindowSizeByClientSize( SIZE sizeClient, SIZE* pSizeWindow ) { m_pWindowBaseImpl->CalcWindowSizeByClientSize(sizeClient, pSizeWindow); }
 void  IWindowBase::CalcClientRectByWindowRect( RECT* rcWindow, RECT* rcClient ) { m_pWindowBaseImpl->CalcClientRectByWindowRect(rcWindow, rcClient); }
 void  IWindowBase::SaveMemBitmap(TCHAR* szFile) { m_pWindowBaseImpl->SaveMemBitmap(szFile); }
-void  IWindowBase::DrawMemBitmap(HDC hDC, RECT* prc) { m_pWindowBaseImpl->DrawMemBitmap(hDC, prc); }
-void  IWindowBase::AddCommitWindowBufferListener(ICommitWindowBufferListener* p) { m_pWindowBaseImpl->AddCommitWindowBufferListener(p); }
-void  IWindowBase::RemoveCommitWindowBufferListener(ICommitWindowBufferListener* p) { m_pWindowBaseImpl->RemoveCommitWindowBufferListener(p); }
+void  IWindowBase::DrawMemBitmap(HDC hDC, RECT* prc, bool bAlphaBlend) { m_pWindowBaseImpl->DrawMemBitmap(hDC, prc, bAlphaBlend); }
+// void  IWindowBase::AddCommitWindowBufferListener(ICommitWindowBufferListener* p) { m_pWindowBaseImpl->AddCommitWindowBufferListener(p); }
+// void  IWindowBase::RemoveCommitWindowBufferListener(ICommitWindowBufferListener* p) { m_pWindowBaseImpl->RemoveCommitWindowBufferListener(p); }
 
 bool  IWindowBase::AddAnchorItem(const SyncWindowData& data){ return m_pWindowBaseImpl->AddAnchorItem(data); }
 void  IWindowBase::HideAllAnchorItem() { m_pWindowBaseImpl->HideAllAnchorItem(); }

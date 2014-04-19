@@ -1,5 +1,8 @@
 #pragma once
 
+// To compile a Direct2D application, add d2d1.lib to the list of libraries. 
+// You can find d2d1.h and d2d1.lib in Windows Software Development Kit (SDK)
+// for Windows 7(http://msdn.microsoft.com/en-us/windows/bb980924.aspx).
 
 // msdn url:
 // http://msdn.microsoft.com/zh-cn/library/dd370994(v=vs.85).aspx

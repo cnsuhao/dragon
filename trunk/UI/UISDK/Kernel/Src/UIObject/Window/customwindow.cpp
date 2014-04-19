@@ -2,7 +2,7 @@
 #include "customwindow.h"
 #include "UISDK\Kernel\Src\Renderbase\renderbase\renderbase.h"
 #include "UISDK\Kernel\Inc\Interface\imapattr.h"
-#include "UISDK\Kernel\Src\RenderLayer\renderchain.h"
+#include "UISDK\Kernel\Src\RenderLayer2\layer\windowrender.h"
 #include "UISDK\Kernel\Src\UIObject\Window\wndtransmode\layered\layeredwrap.h"
 #include "UISDK\Kernel\Src\UIObject\Window\wndtransmode\aero\aerowrap.h"
 
@@ -41,22 +41,6 @@ void CustomWindow::OnInnerInitWindow( )
 
 }
 
-GRAPHICS_RENDER_LIBRARY_TYPE  CustomWindow::GetGraphicsRenderType()
-{
-    if (this->IsTransparent())  //  例如多层渲染的控件层，需要被alphablend到缓冲上
-        return GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS;
-
-    if (m_pTransparentMode)
-    {
-        WINDOW_TRANSPARENT_MODE eMode = m_pTransparentMode->GetModeValue();
-        if (eMode== WINDOW_TRANSPARENT_MODE_AERO || eMode == WINDOW_TRANSPARENT_MODE_LAYERED)
-             return GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS;;
-    }
-
-    return GRAPHICS_RENDER_LIBRARY_TYPE_GDI; 
-}
-
-//
 WINDOW_TRANSPARENT_MODE  CustomWindow::GetWndTransMode()
 {
     if (m_pTransparentMode)
@@ -172,9 +156,9 @@ void  CustomWindow::SetWndTransMode(WINDOW_TRANSPARENT_MODE eMode, bool bRedraw)
 		return;
 
 	SetWndTransMode(pMode);
-    if (bRedraw && m_pRenderChain)
+    if (bRedraw && m_pWindowRender)
     {
-        m_pRenderChain->OnWindowPaint(NULL);
+        m_pWindowRender->OnWindowPaint(NULL);
     }
 }
 void  CustomWindow::SetWndTransMode(IWndTransMode* pMode)
@@ -197,7 +181,7 @@ void  CustomWindow::SetWndTransMode(IWndTransMode* pMode)
         SAFE_RELEASE(pOldMode);
     }
 
-    m_pRenderChain->GetWindowLayer()->ReCreateRenderTarget();
+//    m_pRenderChain->GetWindowLayer()->ReCreateRenderTarget();
 
     // 每次是否需要清空缓存，避免alpha叠加
     WINDOW_TRANSPARENT_MODE eMode = GetWndTransMode();
@@ -207,46 +191,27 @@ void  CustomWindow::SetWndTransMode(IWndTransMode* pMode)
     else
         this->SetTransparent(false);
 
-    if (m_pRenderChain)
+    if (m_pWindowRender)
     {
-        m_pRenderChain->OnWindowTransparentModeChanged(m_pTransparentMode);
+        m_pWindowRender->OnWindowTransparentModeChanged(m_pTransparentMode);
     }
 }
 
-// [Virtual]
-// 1. 实现EraseBkgnd之后，UpdateWindowRgn
-// 2. 另外由于一些情况下隐藏时也可能需要绘制（如分层窗口...)
-bool CustomWindow::DrawObject(IRenderTarget* pRenderTarget, RenderContext roc)
+void  CustomWindow::virtualOnPostDrawObjectErasebkgnd()
 {
-    //if (this->IsVisible())  // 由于分层窗口在下次显示时不会先更新再显示，导致隐藏时作的刷新都没处理。因此将这里的隐藏去掉
-    {
-        ::UISendMessage(this->GetIMessage(), WM_ERASEBKGND, (WPARAM)pRenderTarget, (LPARAM)&roc );  // 将lparam置为1，与原始消息进行区分
+	if (m_bNeedToSetWindowRgn)
+	{
+		// 重新设置窗口透明形状 
+		// 注：
+		//    1. 不将该段代码放在OnErasebkgnd中的原因是，刷新一个按钮时也会走到
+		// OnEraseBkgnd中，导致这时的背景图片中被剪裁只剩下一个控件，update window rgn错误。
+		//    2. 同理，也不能放在CommitDoubleBuffet2Window中，因为也有可能是初始中刷新了一个对象
+		//    3. 如果放在_OnPaint当中的话，则会将窗口上的文字由于采用GDI绘制alpha变成0，也会被抠掉
 
-        // 重新设置窗口透明形状 
-        // 注：
-        //    1. 不将该段代码放在OnErasebkgnd中的原因是，刷新一个按钮时也会走到
-        // OnEraseBkgnd中，导致这时的背景图片中被剪裁只剩下一个控件，update window rgn错误。
-        //    2. 同理，也不能放在CommitDoubleBuffet2Window中，因为也有可能是初始中刷新了一个对象
-        //    3. 如果放在_OnPaint当中的话，则会将窗口上的文字由于采用GDI绘制alpha变成0，也会被抠掉
+		this->UpdateWindowRgn();
+	}
 
-        if (m_bNeedToSetWindowRgn)
-        {
-            this->UpdateWindowRgn();
-        }
-
-        this->_drawNcChildObject(pRenderTarget, roc);
-
-        roc.DrawClient(m_pIObject);
-        roc.Scroll(m_pIObject);
-        roc.Update(pRenderTarget);
-
-        ::UISendMessage(this, WM_PAINT, (WPARAM)pRenderTarget, (LPARAM)&roc);       // 将lparam置为1，与原始消息进行区分
-        this->DrawChildObject(pRenderTarget, roc);
-    }
-
-    return true;
 }
-
 
 // 屏蔽WM_PAINT消息，不需要绘制Nc (否则在拉伸CustomExWindow的时候会出现thickframe )
 LRESULT CustomWindow::_OnNcPaint( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
@@ -257,7 +222,7 @@ LRESULT CustomWindow::_OnNcPaint( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 
 void CustomWindow::OnEraseBkgnd(IRenderTarget* pRenderTarget)
 {
-	if (m_pBkgndRender || m_pForegndRender || m_pMaterialRender)
+	if (m_pBkgndRender || m_pForegndRender || m_pTextureRender)
 	{
 		CRect rc(0,0, GetWidth(), GetHeight());
 
@@ -270,11 +235,11 @@ void CustomWindow::OnEraseBkgnd(IRenderTarget* pRenderTarget)
             m_pBkgndRender->DrawState(pRenderTarget, &rcBkgnd, nState);
         }
 
-        if (m_pMaterialRender)
+        if (m_pTextureRender)
         {
             CRect rcTextureRegion(&rc);
-            rcTextureRegion.DeflateRect(&m_rcMaterialRenderRegion);
-            m_pMaterialRender->DrawState(pRenderTarget, &rcTextureRegion, nState);
+            rcTextureRegion.DeflateRect(&m_rcTextureRenderRegion);
+            m_pTextureRender->DrawState(pRenderTarget, &rcTextureRegion, nState);
         }
 
         if (m_pForegndRender)
@@ -310,7 +275,7 @@ void CustomWindow::CommitDoubleBuffet2Window(HDC hDCWnd, RECT* prcCommit, int nR
 //
 //	获取一个POINT在CustomWindow上面的位置
 //
-UINT CustomWindow::OnHitTest(POINT* pt)
+UINT CustomWindow::OnHitTest(POINT* pt, POINT*  ptInChild)
 {
 	if (m_nResizeCapability == WRSB_NONE)
 	{
@@ -380,7 +345,7 @@ BOOL CustomWindow::OnSetCursor( HWND hWnd, UINT nHitTest, UINT message )
 	POINT pt;
 	::GetCursorPos(&pt);
 	::MapWindowPoints(NULL,m_hWnd,&pt,1);
-	nHitTest = this->OnHitTest(&pt);
+	nHitTest = this->OnHitTest(&pt, NULL);
 	switch(nHitTest)
 	{
 	case HTTOPLEFT:
@@ -426,7 +391,7 @@ void CustomWindow::OnLButtonDown(UINT nFlags, POINT pt)
 {
 	SetMsgHandled(FALSE);
 
-	UINT nHitTest = this->OnHitTest(&pt);
+	UINT nHitTest = this->OnHitTest(&pt, NULL);
 	switch(nHitTest)
 	{
 	case HTTOPLEFT:

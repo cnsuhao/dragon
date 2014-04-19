@@ -43,11 +43,14 @@ public:
     bool  RemoveAttrib(const TCHAR* szKey);
     bool  ClearAttrib();
     
-    IUIElement*  FirstChild();
-    IUIElement*  FindChild(BSTR bstrChildName);
+    bool  FirstChild(IUIElement** ppElem);
+    bool  FindChild(BSTR bstrChildName, IUIElement** ppElem);
     IUIChildNodeEnum*  EnumChild();
     void  RemoveChild(IUIElement*);
     bool  AddChild(const TCHAR* szNodeName, IUIElement** pp);
+	bool  AddChild(IUIElement*  pElem);
+    bool  AddChildBefore(IUIElement*  pElem, IUIElement* pInsertBefore);
+    bool  AddChildAfter(IUIElement*  pElem, IUIElement* pInsertAfter);
 
 public:
     long  m_lRef;
@@ -67,7 +70,7 @@ public:
     bool  LoadFile(const TCHAR* szFile);
     bool  LoadContent(BSTR bstrContent);
 
-    IUIElement*  FindElem(const TCHAR* szText);
+	bool  FindElem(const TCHAR* szText, IUIElement** ppElem);
     bool  SaveAs(const TCHAR* szPath);
     bool  Save();
     const TCHAR*  GetPath() { return m_strPath.c_str(); }

@@ -204,12 +204,7 @@ void  NormalTreeItem::OnLButtonDown(UINT nFlags, POINT point)
     GetItemExpandIconRect(&rcItemExpand);
 
     POINT ptClient;
-    pCtrl->WindowPoint2ObjectClientPoint(&point, &ptClient);
-
-    int nxOffset=0, nyOffset=0;
-    pCtrl->GetScrollOffset(&nxOffset, &nyOffset);
-    ptClient.x += nxOffset;
-    ptClient.y += nyOffset;
+    pCtrl->WindowPoint2ObjectClientPoint(&point, &ptClient, true);
 
     if (rcItemExpand.PtInRect(ptClient))   
     {

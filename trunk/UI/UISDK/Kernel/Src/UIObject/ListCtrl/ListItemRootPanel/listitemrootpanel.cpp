@@ -37,22 +37,20 @@ void  ListItemRootPanel::OnEraseBkgnd(IRenderTarget* pRenderTarget, RenderContex
     if (NULL == m_pIListCtrl || NULL == m_pIListItem)
         return;
 
-    //m_pIListCtrl->RedrawItem(&m_pIListItem, 1);   // 特别定制了一个刷新函数进行优化
-
     // 将DC偏移量移到listctrl左上角
     POINT ptSave = {0, 0};
     pRenderTarget->GetViewportOrgEx(&ptSave);
 
     CRect  rcWindow;
     this->GetWindowRect(&rcWindow);
-    RenderContext roc(&rcWindow, false, pContext->m_bRequireAlphaChannel);
+    RenderContext roc(*pContext);
     
     roc.m_ptOffset.x -= m_pIListItemRootPanel->GetParentRectL();
     roc.m_ptOffset.y -= m_pIListItemRootPanel->GetParentRectT();
     roc.Update(pRenderTarget);
 
     m_pIListCtrl->RedrawItemByInnerCtrl(pRenderTarget, &roc, m_pIListItem);
-    pRenderTarget->SetViewportOrgEx(ptSave.x, ptSave.y, NULL);
+    pContext->Update(pRenderTarget);
 }
 
 void  ListItemRootPanel::SetListCtrlItemPtr(IListCtrlBase* p1, IListItemBase* p2)

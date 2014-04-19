@@ -53,6 +53,8 @@ class NormalTreeItemShareData;
 interface UICTRLAPI INormalTreeItemShareData : public IListItemTypeShareData
 {
     UI_DECLARE_Ixxx_INTERFACE(INormalTreeItemShareData, NormalTreeItemShareData);
+    int  GetImageWidth();
+    int  GetExpandIconWidth();
 };
 
 class NormalTreeItem;

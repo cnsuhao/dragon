@@ -7,7 +7,7 @@ interface IMessage;
 interface IUIApplication;
 interface IObject;
 struct    UIMSG;
-class     IRenderTarget;
+interface IRenderTarget;
 interface IRenderBitmap;
 interface IRenderBase;
 interface ITextRenderBase;
@@ -43,9 +43,9 @@ UISDKAPI void    _cdecl UI_LOG_ERROR( TCHAR*, ... );
 UISDKAPI void    _cdecl UI_LOG_FATAL( TCHAR*, ... );
 #define UI_LOG_TEST  UI_LOG_DEBUG
 
-UISDKAPI GRAPHICS_RENDER_LIBRARY_TYPE  GetRenderLibraryType(IObject* pObj);
-UISDKAPI IRenderTarget*  UICreateRenderTarget(GRAPHICS_RENDER_LIBRARY_TYPE eType, HWND hWnd=NULL);
-UISDKAPI void  UICreateRenderBitmap(GRAPHICS_RENDER_LIBRARY_TYPE eGraphicsRenderType, IMAGE_ITEM_TYPE eType, IRenderBitmap** ppOut);
+UISDKAPI IRenderTarget*  UICreateRenderTarget(IUIApplication* pUIApp, GRAPHICS_RENDER_LIBRARY_TYPE eType);   // IRenderTarget*没有引用计数机制，但仍采用release释放
+UISDKAPI void  UICreateRenderBitmap(IUIApplication*  pUIApp, GRAPHICS_RENDER_LIBRARY_TYPE eGraphicsRenderType, IMAGE_ITEM_TYPE eType, IRenderBitmap** ppOut);
+UISDKAPI GRAPHICS_RENDER_LIBRARY_TYPE  UIParseGraphicsRenderLibraryType(const TCHAR* szText);
 
 interface IUIDocument;
 UISDKAPI void  UILoadXmlDocument(const TCHAR* szXmlPath, IUIDocument** ppDoc);

@@ -16,8 +16,8 @@ interface UISDKAPI IPanel : public IObject
     ILayout*   GetLayout();
     void  SetLayoutType(LAYOUTTYPE eLayoutType);
 
-    void  SetMaterialRender(IRenderBase* p);
-    IRenderBase*  GetMaterialRender();
+    void  SetTextureRender(IRenderBase* p);
+    IRenderBase*  GetTextureRender();
 };
 
 }

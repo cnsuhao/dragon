@@ -136,9 +136,9 @@ void  ITextRenderBase::Init()
 {
      UISendMessage(static_cast<IMessage*>(this), UI_WM_INITIALIZE);
 }
-void  ITextRenderBase::CheckSkinMaterialChanged()
+void  ITextRenderBase::CheckSkinTextureChanged()
 {
-    return m_pTextRenderBaseImpl->CheckSkinMaterialChanged();
+    return m_pTextRenderBaseImpl->CheckSkinTextureChanged();
 }
 
 

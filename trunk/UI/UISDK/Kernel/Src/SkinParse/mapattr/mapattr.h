@@ -19,7 +19,7 @@ public:
     virtual long  GetAttr_CRegion4(const TCHAR* szKey, bool bErase, CRegion4* prcGet);
     virtual long  GetAttr_Image9Region(const TCHAR* szKey, bool bErase, C9Region* pRegion);
     virtual long  GetAttr_RenderBase(const TCHAR* szPrefix, const TCHAR* szKey, bool bErase, IUIApplication* pUIApp, IObject* pBindObj, IRenderBase** ppGet);
-    virtual long  GetAttr_TextRenderBase(const TCHAR* szKey, bool bErase, IUIApplication* pUIApp, IObject* pBindObj, ITextRenderBase** ppGet);
+    virtual long  GetAttr_TextRenderBase(const TCHAR* szPrefix, const TCHAR* szKey, bool bErase, IUIApplication* pUIApp, IObject* pBindObj, ITextRenderBase** ppGet);
 
     virtual bool  AddAttr(const TCHAR* szKey, const TCHAR* szValue);
     virtual bool  ExtractMapAttrByPrefix(const TCHAR* szPrefix, bool bErase, /*out*/IMapAttribute** ppMapAttribute);

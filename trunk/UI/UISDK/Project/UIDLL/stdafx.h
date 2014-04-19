@@ -15,6 +15,7 @@
 #include <map>
 #include <list>
 #include <vector>
+#include <stack>
 #include <algorithm>
 
 #include <atlbase.h>
@@ -49,3 +50,7 @@ using namespace UI;  // 在本模块内部放开 using 使用限制
 
 extern HINSTANCE g_hInstance;
 
+// 打印绘制流程
+// #ifdef _DEBUG
+// #define TRACE_DRAW_PROCESS
+// #endif

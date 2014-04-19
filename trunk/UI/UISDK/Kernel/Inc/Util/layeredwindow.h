@@ -55,7 +55,7 @@ public:
         m_nHeight = H;
 
 		m_hLayeredMemDC = ::CreateCompatibleDC(NULL);
-        m_hLayeredBitmap = UI::CreateMemBitmap(W,H, &m_nPitch, &m_pBits);
+        m_hLayeredBitmap = UI::CreateMemBitmap(W,-H, &m_nPitch, &m_pBits);
 
 		::SelectObject(m_hLayeredMemDC, m_hLayeredBitmap);
 	}
@@ -129,6 +129,12 @@ public:
 			n = 255;
 
 		m_nSourceConstantAlpha = n;
+	}
+
+	void Clear()
+	{
+		RECT rc = {0, 0, m_nWidth, m_nHeight};
+		::FillRect(m_hLayeredMemDC, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
 	}
 
 public:

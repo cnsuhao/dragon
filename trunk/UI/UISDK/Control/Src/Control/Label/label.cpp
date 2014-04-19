@@ -49,10 +49,10 @@ void Label::OnLButtonUp(UINT nFlags, POINT point)
         return;
 
     POINT ptObj = {0,0};
-    pParent->WindowPoint2ObjectClientPoint(&point, &ptObj);
+    pParent->WindowPoint2ObjectClientPoint(&point, &ptObj, true);
 
     // UI_WM_HITTEST是判断与自己的m_rcParent的交集，因此要将窗口坐标转换成parent的client坐标
-    UINT nHitTest = UISendMessage(m_pILabel, UI_WM_HITTEST, ptObj.x, ptObj.y);
+    UINT nHitTest = UISendMessage(m_pILabel, UI_WM_HITTEST, (WPARAM)&ptObj);
     if (HTNOWHERE != nHitTest)
     {
         this->OnClicked(&point);   // 备注：由于DoNotify可能导致当前press hover对象发生改变，使得本控件丢失刷新
@@ -90,7 +90,7 @@ void  Label::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
     pUIApp = m_pILabel->GetUIApplication();
 
     ITextRenderBase* pTextRender = NULL;
-    pMapAttrib->GetAttr_TextRenderBase(XML_TEXTRENDER_TYPE, true, pUIApp, static_cast<IObject*>(m_pILabel), &pTextRender);
+    pMapAttrib->GetAttr_TextRenderBase(NULL, XML_TEXTRENDER_TYPE, true, pUIApp, static_cast<IObject*>(m_pILabel), &pTextRender);
     if (pTextRender)
     {
         m_pILabel->SetTextRender(pTextRender);
@@ -242,9 +242,6 @@ void GifCtrl::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 		{
 			SAFE_RELEASE(m_pGifRender);
 
-//			POINT pt = this->GetRealPosInWindow();
-//			Gif_Timer_Notify notify(GetHWND(), pt.x + m_rcNonClient.left, pt.y + m_rcNonClient.top);
-
             Gif_Timer_Notify notify;
             memset(&notify, 0, sizeof(notify));
             notify.eType = Gif_Timer_Notify_Post_Thread_Msg;
@@ -282,7 +279,7 @@ void  GifCtrl::OnPaint(IRenderTarget* pRenderTarget)
 
 		// GIF都是直接带alpha通道的，可以用原始HDC绘制。否则使用Gdipulus::Graphics.GetHDC
 		// 会大大降低绘制效率
-		HDC hDC = pRenderTarget->GetBindHDC(); 
+		HDC hDC = pRenderTarget->GetHDC(); 
 		                     
         if (pRenderTarget->GetGraphicsRenderLibraryType() == GRAPHICS_RENDER_LIBRARY_TYPE_GDI)
         {
@@ -297,12 +294,6 @@ void  GifCtrl::OnPaint(IRenderTarget* pRenderTarget)
 
 void  GifCtrl::OnMove(CPoint ptPos)
 {
-	if (m_pGifRender)
-	{
-// 		POINT pt = this->GetRealPosInWindow();
-// 		Gif_Timer_Notify notify(GetHWND(),pt.x + m_rcNonClient.left, pt.y + m_rcNonClient.top);
-// 		m_pGifRender->ModifyRenderParam(&notify);
-	}
 }
 
 void  GifCtrl::OnTimer(UINT_PTR nIDEvent, LPARAM lParam)

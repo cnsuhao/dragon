@@ -54,6 +54,8 @@ void  WindowDragDropMgr::SetWindowBase(WindowBase* p)
 { 
     m_pWindowBase = p; 
 
+    // TODO:
+    // 放在这里创建m_pDropTargetHelper，会导致窗口创建变慢
     if (NULL == m_pDropTargetHelper)
     {
         ::CoCreateInstance(CLSID_DragDropHelper, NULL, CLSCTX_INPROC, IID_IDropTargetHelper, (void**)&m_pDropTargetHelper);
@@ -170,11 +172,12 @@ HRESULT STDMETHODCALLTYPE WindowDragDropMgr::DragOver(DWORD grfKeyState, POINTL 
 // Enteer/Over将调用DrawMove，因为好像这两种事件的处理是一样的
 HRESULT  WindowDragDropMgr::DragMove(IDataObject *pDataObj, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect)
 {
+    *pdwEffect = DROPEFFECT_NONE;
+
     Object*  pHoverObj = GetHoverObject2Drop();
     if (!pHoverObj)
-        return S_FALSE;
+        return S_OK;
 
-    *pdwEffect = DROPEFFECT_NONE;
     DROPTARGETEVENT_DATA data = {m_pDragingDataObj, grfKeyState, pt, pdwEffect};
 
     if (m_pObjHover != pHoverObj)

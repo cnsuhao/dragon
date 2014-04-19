@@ -89,6 +89,7 @@ namespace UI
 		int     SetFps(int n);
 
         virtual void OnWaitForHandleObjectCallback(HANDLE, LPARAM);
+		void    OnTime();
 	protected:
         void    Destroy();
 
@@ -102,6 +103,7 @@ namespace UI
 
 	protected:
         IAnimateManager*  m_pIAnimateManager;
+		LARGE_INTEGER     m_liPerFreq;     // 用于帧数计算
 
 		HANDLE m_hTimer;
 		int    m_nFps;

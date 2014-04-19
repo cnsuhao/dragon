@@ -49,17 +49,9 @@ typedef enum
 	UI_RESOURCE_LOG        = 0x0100,
 	UI_RESOURCE_LOGMODULE  = 0x0200,
 	UI_RESOURCE_SOURCEFILE = 0x0400,  // 资源所保存在的文件。用于UIBuilder查看文件
+    UI_RESOURCE_MENU       = 0x0800,
 }
 UI_RESOURCE_TYPE;
-
-typedef enum 
-{
-	GRAPHICS_RENDER_LIBRARY_TYPE_AUTO = 0,   // <- 依据窗口类型决定。分层窗口使用GDIPLUS,普通窗口使用GDI
-	GRAPHICS_RENDER_LIBRARY_TYPE_GDI,
-	GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS,
-	GRAPHICS_RENDER_LIBRARY_TYPE_DIRECT2D
-}
-GRAPHICS_RENDER_LIBRARY_TYPE;
 
 // 日志输出，使用方法参见ui.cpp
 #define LOG_LEVEL(pLog,cookie,level,content)         \
@@ -290,12 +282,13 @@ inline CONTROL_TYPE GetObjectExtentType(int type) { return  (CONTROL_TYPE)((type
 #define OBJECT_STYLE_REJECT_MOUSE_MSG_SELF  0x00200000    // 仅该对象不接受鼠标消息，其子对象还是接受鼠标消息的，如panel
 #define OBJECT_STYLE_RECEIVE_DRAGDROPEVENT  0x00400000    // 该对象接受拖拽消息
 #define OBJECT_STYLE_ENABLE_IME         0x00800000    // 该对象需要启用输入法，如EDIT,RICHEDIT
-#define OBJECT_STYLE_ZINDEX_OVERLAP     0x01000000    // 该对象与同一层的其它对象区域重叠了，导致刷新时异常。配上该样式后，将直接刷新父对象
+//#define OBJECT_STYLE_ZINDEX_OVERLAP     0x01000000    // 该对象与同一层的其它对象区域重叠了，导致刷新时异常。配上该样式后，将直接刷新父对象
 
 // window style
 #define WINDOW_STYLE_DESTROYED          0x00001000    // 表示该窗口已经被销毁了(WM_NCDESTROY)，用于触发OnFinalMessage
 #define WINDOW_STYLE_ATTACH             0x00002000    // 表示该窗口是attach的，创建、销毁由外部来控制
-#define WINDOW_STYLE_SETCREATERECT      0x00004000    // 创建窗口时指针了窗口大小，不用再进行窗口布局了
+#define WINDOW_STYLE_SETCREATERECT      0x00004000    // 创建窗口时指定了窗口大小，不用再进行窗口布局了
+#define WINDOW_STYLE_DIALOG_NORESIZE    0x00008000    // 用于解决win7下面Dialog显示大小于GetWindowRect不一致的问题
 
 // control style
 #define CONTROL_STYLE_TABSTOP           0x00001000    // 是否接受TAB快捷键的焦点

@@ -7,7 +7,7 @@
   </log>
   <skin active="mediaplay"></skin>
   
-  <Player Mute="0" Volume="33" Balance="0" PlayMode="4" PlayingFileName="F:\music\英雄的黎明.mp3" PlayingTime="29" WndTopMost="0" />
-  <Visual Type="1" FramesPerSec="25" />
+  <Player Mute="0" Volume="100" Balance="0" PlayMode="4" PlayingFileName="G:\Misuc\新建文件夹 (2)\Take me away.mp3" PlayingTime="86" WndTopMost="0" />
+  <Visual Type="3" FramesPerSec="25" />
 
 </config>

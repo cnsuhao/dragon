@@ -95,6 +95,7 @@ interface UICTRLAPI IMenu : public IListCtrlBase
 
     void  OnNewChildElement(IUIElement* pUIElement);
     int   TrackPopupMenu(UINT nFlag, int x, int y, IMessage* pNotifyObj, HWND hWndClickFrom = NULL, RECT* prcClickFrom = NULL);
+    IWindow*  CreateMenuWindow();
  
     IListItemBase*  AppendString(const TCHAR* szText, UINT nId);
     IListItemBase*  AppendSeparator(UINT nId);

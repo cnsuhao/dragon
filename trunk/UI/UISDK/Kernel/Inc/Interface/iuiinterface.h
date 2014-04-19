@@ -31,7 +31,7 @@ namespace UI
 	interface  ITopWindowManager;
 	interface  IAnimateManager;
 	interface  IWaitForHandlesMgr;
-	class      IRenderTarget;
+	interface  IRenderTarget;
 	interface  ITrayIcon;
 	interface  IMessageFilterMgr;
     interface  IMapAttribute;
@@ -95,6 +95,7 @@ namespace UI
 
         UINT  GetXmlDocCount();
         const TCHAR*  GetXmlDoc(UINT nIndex, IUIDocument** pp);
+		bool  GetXmlDocByName(const TCHAR* szName, IUIDocument** pp);
 
         const TCHAR*  GetName();
         const TCHAR*  GetPath();
@@ -484,8 +485,8 @@ namespace UI
     //
     interface ICommitWindowBufferListener
     {
-        virtual void  PreCommitWindowBuffer(HDC hDC, HDC hMemDC, IWindowBase* pWindow, RECT* prcCommit, int nRectCount) = 0;
-        virtual void  PostCommitWindowBuffer(HDC hDC, HDC hMemDC, IWindowBase* pWindow, RECT* prcCommit, int nRectCount) = 0;
+        virtual void  PreCommitWindowBuffer(HDC hDC, IRenderTarget* pRenderTarget, IWindowBase* pWindow, RECT* prcCommit, int nRectCount) = 0;
+        virtual void  PostCommitWindowBuffer(HDC hDC, IRenderTarget* pRenderTarget, IWindowBase* pWindow, RECT* prcCommit, int nRectCount) = 0;
 
         // 用于标明该listener只一次有效。在检测完一次后就将该listener删除
         virtual bool  OnlyListenOnce() = 0; 

@@ -33,7 +33,7 @@ public:
 	HWND  Detach();
 
 protected:
-	UINT  OnHitTest(POINT* pt);
+	UINT  OnHitTest(POINT* pt, POINT*  ptInChild);
 	void  OnVisibleChanged(BOOL bVisible, IObject* pObjChanged);
     void  SetAttribute(IMapAttribute* pMapAttrib, bool bReload=false);
     void  GetDesiredSize(SIZE* pSize);

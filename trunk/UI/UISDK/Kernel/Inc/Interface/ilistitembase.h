@@ -55,6 +55,7 @@ interface UISDKAPI IListItemBase : public IMessage
     void  SetPrevSelection(IListItemBase* p);
 	void  AddChild(IListItemBase* p);
 	void  AddChildFront(IListItemBase* p);
+    void  RemoveMeInTheTree();
 
     const CRect* GetParentRect();
     void  GetParentRect(CRect* prc);
@@ -92,6 +93,7 @@ interface UISDKAPI IListItemBase : public IMessage
     void  SetIconRender(IRenderBase* p);
     void  SetIconRenderType(RENDER_TYPE eType);
     void  SetIconFromFile(const TCHAR* szIconPath);
+    void  SetIconFromImageId(const TCHAR* szImageId);
 
     UINT  GetItemState();
     UINT  GetItemDelayOp();

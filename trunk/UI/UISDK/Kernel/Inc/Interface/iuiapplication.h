@@ -18,6 +18,7 @@ interface UISDKAPI IUIApplication : IUnknown
 
     HRESULT  SetLog(ILog* pLog, const TCHAR* szLogXmlPath);
     HRESULT  GetLog(ILog** ppLog);
+    HMODULE  GetUI3DModule();
 
     HRESULT  SetDesignMode(VARIANT_BOOL b, IUIEditor* pUIBuilder);
     bool     IsDesignMode();

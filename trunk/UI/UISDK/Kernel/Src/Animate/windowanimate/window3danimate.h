@@ -4,6 +4,7 @@
 #include "UISDK\Kernel\Src\Animate\3dwrap\3dlib\quad_perspective_transform.h"
 #include "UISDK\Kernel\Inc\Interface\ianimate.h"
 #include "UISDK\Kernel\Src\Animate\windowanimate\windowanimatebase.h"
+#include "UISDK\Kernel\Src\Animate\3dwrap\3dlib\quad_perspective_texture_mapping.h"
 
 namespace UI
 {
@@ -40,6 +41,8 @@ protected:
 	int     m_nOffsetX;
 	int     m_nOffsetY;
 	int     m_nOffsetZ;
+
+	QuadPerspectiveTextureMapping  textmapping;
 };
 
 }

@@ -1,17 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <skin>
 	<layout>
-		<CustomWindow id="chatdlg2" width="550" height="510" minwidth="550" minheight="510" text="二人会话" 
-                  transparent.type="aero" transparent.aero.trans.margins="5" istransparent="1" material.render.region="1"
+		<CustomWindow id="chatdlg2" graphics="gdiplus" width="550" height="510" minwidth="550" minheight="510" text="二人会话" 
+                  transparent.type="aero" transparent.aero.trans.margins="5" istransparent="1" texture.render.region="1"
                   transparent.aero.disable="anti" transparent.anti.9region="2,0,2,0,0,2,0,2"
                   resizeborder="5" maximizeborder="2"
                   xtransparent.maskalpha="200" bkgnd.render.type="null" font="normal">
-      <RenderChain>
-        <!-- 最外层边框 -->
-        <DirectRenderLayer zorder="1" layout.left="0" layout.top="0" layout.right="0" layout.bottom="0" 
-                           bkgnd.render.type="image" bkgnd.render.image="fringe_bkg.png" bkgnd.render.image.srcregion="5,5,29,285"
-                           bkgnd.render.image.9region="10" bkgnd.render.image.drawtype="stretchborder"/>
-      </RenderChain>
+      <PictureCtrl zorder="1" layout.left="-5" layout.top="-5" layout.right="-5" layout.bottom="-5" bkgnd.render.type="image" bkgnd.render.image="fringe_bkg.png" bkgnd.render.image.9region="15" bkgnd.render.image.drawtype="stretchborder"/>
+      
       <Panel layout="stack" layout.right="0" layout.top="-1" layout.direction="righttoleft">
         <Button id="sys_close" tooltip="关闭" bkgnd.render.image="icon_close" styleclass="imagebtn"/>
         <Button id="sys_maximize" tooltip="最大化" bkgnd.render.image="icon_max" styleclass="imagebtn"/>
@@ -23,7 +19,7 @@
       <Panel id="panel_content" istransparent="0" layout.left="1" layout.right="1" layout.top="90" layout.bottom="38" bkgnd.render.type="color" bkgnd.render.color="white" xforegnd.render.type="image" foregnd.render.image="chatframe.png" foregnd.render.image.drawtype="stretch" foregnd.render.image.9region="8" foregnd.render.image.srcregion="0,102,50,125" layout.dragbar.bkgnd.render.type="image" layout.dragbar.bkgnd.render.image="chatframe_surface" layout.dragbar.height="20" layout.dragbar.width="2" layout.dragbarpos="100" layout.align="bottom">
         <Panel id="panel_output" layout="stack" layout.direction="toptobottom" layout.left="0" layout.right="0" layout.top="0" layout.bottom="90">
           <xRichEdit id="outputedit" istransparent="1" layout.align="fill" bkgnd.render.type="color" bkgnd.render.color="white" margin="2,0,2,0"/>
-          <IEWrap id="outputie" url="http://www.baidu.com" layout.align="fill" margin="2,0,2,0"/>
+          <IEWrap id="outputie" url="http://www.baidu.com" layout.align="fill" margin="2,0,3,0"/>
           <Panel id="panel_font" layout="stack" height="30" bkgnd.render.type="color" bkgnd.render.color="avg_surface_color" layout.gap="2" visible="0">
             <CheckButton id="toolbar_btn_font_bold" styleclass="chat.toolbarbtn.check" margin="0,4,0,4" foregnd.render.image="chat.fonttoolbar.bold.icon"/>
             <CheckButton id="toolbar_btn_font_italic" styleclass="chat.toolbarbtn.check" margin="0,4,0,4" foregnd.render.image="chat.toolbar.italic.icon"/>

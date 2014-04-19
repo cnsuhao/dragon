@@ -4,73 +4,55 @@
 
 namespace UI
 {
-class  IRenderTarget;
+interface IRenderTarget;
+class RenderLayer2;
+class WindowRender;
 
-class RenderLayer;
-interface UISDKAPI IRenderLayer : public IPanel
+
+// 旋转中心位置
+enum ROTATE_CENTER_TYPE
 {
-    UI_DECLARE_Ixxx_INTERFACE(IRenderLayer, RenderLayer);
+    ROTATE_CENTER_TOPLEFT = 0,
+    ROTATE_CENTER_CENTER = 1,
+    // ...
+};
 
-    HDC   GetMemoryLayerDC();
+interface UISDKAPI IRenderLayer2
+{
+public:
+	IRenderLayer2(RenderLayer2* p);
+	~IRenderLayer2();
+
+	RenderLayer2*  GetImpl();
+	void  SetOpacity(byte b);
+	byte  GetOpacity();
+    HDC   GetHDC();
+    void  DirectCommit(bool bUpdate);
+	void  Rotate3D(int x, int y, int z);
+    void  Rotate2D(int degree);
+    void  SetRotateCenterPos(ROTATE_CENTER_TYPE eType, int xOffset, int yOffset);
     IRenderTarget*  GetRenderTarget();
-
-    void  SetLayerEnable(bool b);
-    bool  IsLayerEnable();
+    
+public:
+	RenderLayer2*  m_pRenderLayer2Impl;
 };
 
-class BufferRenderLayer;
-interface UISDKAPI IBufferRenderLayer : public IRenderLayer
+interface UISDKAPI IWindowRender
 {
-    UI_DECLARE_Ixxx_INTERFACE(IBufferRenderLayer, BufferRenderLayer);
+public:
+    IWindowRender(WindowRender* p);
+    ~IWindowRender();
 
-    bool  SaveLayer(const TCHAR*  szPath);
-};
-
-class ControlRenderLayer;
-interface UISDKAPI IControlRenderLayer : public IBufferRenderLayer
-{
-    UI_DECLARE_Ixxx_INTERFACE(IControlRenderLayer, ControlRenderLayer);
-};
-
-class WindowRenderLayer;
-interface UISDKAPI IWindowRenderLayer : public IBufferRenderLayer
-{
-    UI_DECLARE_Ixxx_INTERFACE(IWindowRenderLayer, WindowRenderLayer);
-};
-
-class DirectRenderLayer;
-interface UISDKAPI IDirectRenderLayer : public IRenderLayer
-{
-    UI_DECLARE_Ixxx_INTERFACE(IDirectRenderLayer, DirectRenderLayer)
-};
-
-class Layer3d;
-interface UISDKAPI ILayer3d : public IControlRenderLayer
-{
-    UI_DECLARE_Ixxx_INTERFACE(ILayer3d, Layer3d);
-};
-
-class RenderChain;
-class RenderContext;
-interface UISDKAPI IRenderChain
-{
-    IRenderChain();
-    ~IRenderChain();
-    RenderChain*  GetImpl();
-
-    IRenderLayer*  FindLayer(const TCHAR*  szLyerID);
-
-    IRenderTarget*  BeginRedrawObjectPart(IObject* pRedrawObj, RECT* prcArray, int nCount, bool* pbIsDrawing, RenderContext* pOutRenderContext);
-    void  EndRedrawObjectPart(IRenderTarget* pRenderTarget, RECT* prcArray, int nCount);
-
-    bool  GetRequireAlphaChannel();
+    WindowRender*  GetImpl();
     void  SetCanCommit(bool b);
-    bool  CanCommit();
-	void  Commit(RECT* prc);
 
-private:
-    RenderChain*  m_pImpl;
+    GRAPHICS_RENDER_LIBRARY_TYPE  GetGraphicsRenderType();
+	void  SetGraphicsRenderType(GRAPHICS_RENDER_LIBRARY_TYPE  eTpye);
+
+public:
+    WindowRender*  m_pWindowRenderImpl;
 };
+
 }
 
 #endif // IRENDERLAYER_H_8500D1A2_903C_4c76_B3B0_5248E65E95C3

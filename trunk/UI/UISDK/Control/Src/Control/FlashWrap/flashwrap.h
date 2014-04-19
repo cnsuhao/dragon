@@ -4,6 +4,14 @@
 
 namespace UI
 {
+	// 		ScaleMode可以取： 
+	// ShowAll:在控件内显示全部影片区域,保持影片长宽比例不变,影片的大小决定于控件长或宽中较小的一边.
+	// NoBorder:在控件内显示部分影片区域,保持影片长宽比例不变,影片的大小决定于控件长或宽中较大的一边.
+	// ExactFit:在控件内显示全部影片区域,不考虑影片的长宽比例,强制将影片的长宽等于控件的长宽. 
+	// 			0:相当于Scale取"ShowAll" 
+	// 			1:相当于Scale取"NoBorder" 
+	// 			2:相当于Scale取"ExactFit" 
+	//		m_pFlash->put_ScaleMode(2);
 
 
 #if 0

@@ -460,7 +460,11 @@ BOOL ScrollBarManager::InertiaScroll_Scroll(int nDeltaPos)
         bResult = FALSE;
     }
 
-    UISendMessage(m_pBindObject, UI_WM_INERTIAVSCROLL, nOldPos, nNewPos);
+    BOOL  bHandled = FALSE;
+    UISendMessage(m_pBindObject, UI_WM_INERTIAVSCROLL, nOldPos, nNewPos, 0, NULL, 0, &bHandled);
+    if (!bHandled)
+        m_pBindObject->UpdateObject();  // 防止有些控件没有处理该消息导致显示不正确
+
     return bResult;
 }
 
@@ -551,11 +555,7 @@ bool  ScrollBarManager::_SetScrollInfo1(SCROLLBAR_DIRECTION_TYPE eType, UISCROLL
         if (1 == lNotifyRet)  // 显隐发生变化，更新客户区域
         {
             UpdateBindObjectNonClientRect();
-            UISendMessage(m_pBindObject, WM_SIZE, 0,
-                MAKELPARAM(
-                    m_pBindObject->GetWidth(), 
-                    m_pBindObject->GetHeight())
-                );
+			m_pBindObject->GetImpl()->notify_WM_SIZE(0, m_pBindObject->GetWidth(), m_pBindObject->GetHeight());
             return false;
         }
     }

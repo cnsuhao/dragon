@@ -17,9 +17,9 @@ int   IRichEdit::GetText(TCHAR* szBuf, int nLen)
     return m_pRichEditImpl->GetRichEdit().GetText(szBuf, nLen);
 }
 
-bool  IRichEdit::AppendText(const TCHAR* szText, int nSize)
+bool  IRichEdit::AppendText(const TCHAR* szText, int nLength)
 {
-    return m_pRichEditImpl->GetRichEdit().AppendText(szText, nSize);
+    return m_pRichEditImpl->GetRichEdit().AppendText(szText, nLength);
 }
 
 bool  IRichEdit::GetEncodeTextW(IBuffer** ppBuffer)
@@ -77,6 +77,10 @@ void  IRichEdit::GetCharFormat(CHARFORMAT2* pcf)
 {
     return m_pRichEditImpl->GetRichEdit().GetCharFormat(pcf);
 }
+LRESULT  IRichEdit::SetCharFormatEx(UINT nPart, CHARFORMAT2* pcf)
+{
+	return m_pRichEditImpl->GetRichEdit().SetCharFormatEx(nPart, pcf);
+}
 bool  IRichEdit::InsertGif(const TCHAR* szGifFile)
 {
     return m_pRichEditImpl->GetRichEdit().InsertGif(szGifFile);
@@ -84,6 +88,11 @@ bool  IRichEdit::InsertGif(const TCHAR* szGifFile)
 bool  IRichEdit::InsertSkinGif(const TCHAR* szGifId)
 {
     return m_pRichEditImpl->GetRichEdit().InsertSkinGif(szGifId);
+}
+
+void  IRichEdit::SetSel(int nPos, int nLen)
+{
+	return m_pRichEditImpl->GetRichEdit().SetSel(nPos, nLen);
 }
 }
 

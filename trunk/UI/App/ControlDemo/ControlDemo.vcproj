@@ -320,7 +320,7 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Debug_Stage3D|Win32"
+			Name="Debug_Direct2D|Win32"
 			OutputDirectory="$(SolutionDir)Bin\Debug\"
 			IntermediateDirectory="Debug"
 			ConfigurationType="1"
@@ -544,6 +544,81 @@
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
+		<Configuration
+			Name="Debug_RenderLayer|Win32"
+			OutputDirectory="$(SolutionDir)Bin\Debug\"
+			IntermediateDirectory="Debug"
+			ConfigurationType="1"
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="$(SolutionDir)"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;DEMO_RENDERLAYER"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				UsePrecompiledHeader="2"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				OutputFile="$(OutDir)\Demo\$(ProjectName)_RenderLayer.exe"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="$(OutDir)lib\"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(OutDir)pdb\$(TargetName).pdb"
+				SubSystem="2"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -611,7 +686,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug_Stage3D|Win32"
+					Name="Debug_Direct2D|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -628,6 +703,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug_Animate|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug_RenderLayer|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -680,27 +763,27 @@
 			Name="01. RotateSoft3D"
 			>
 			<File
-				RelativePath=".\Soft3DRotate\ControlDemoWindow.cpp"
+				RelativePath=".\Soft3DRotate\RotateSoft3DWindow.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Soft3DRotate\ControlDemoWindow.h"
+				RelativePath=".\Soft3DRotate\RotateSoft3DWindow.h"
 				>
 			</File>
 		</Filter>
 		<Filter
-			Name="04. Stage3D"
+			Name="04. Direct2D"
 			>
 			<File
-				RelativePath="..\..\Bin\Debug\Demo\Default\stage3d.xml"
+				RelativePath="..\..\Bin\Debug\Demo\Default\direct2d.xml"
 				>
 			</File>
 			<File
-				RelativePath=".\Stage3D\Stage3DWindow.cpp"
+				RelativePath=".\Direct2D\Direct2DWindow.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Stage3D\Stage3DWindow.h"
+				RelativePath=".\Direct2D\Direct2DWindow.h"
 				>
 			</File>
 		</Filter>
@@ -733,6 +816,22 @@
 			</File>
 			<File
 				RelativePath=".\Animate\AnimateWindow.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="07. RenderLayer"
+			>
+			<File
+				RelativePath=".\RenderLayer\RenderLayer.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\RenderLayer\RenderLayer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Bin\Debug\Demo\Default\renderlayer.xml"
 				>
 			</File>
 		</Filter>

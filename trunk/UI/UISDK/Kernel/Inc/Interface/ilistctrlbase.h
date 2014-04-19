@@ -32,7 +32,7 @@
 //		code:    UI_LCN_SELCHANGED
 //		wparam:  IListItemBase* pOld
 //		lparam:  IListItemBase* pNew
-#define UI_LCN_SELCHANGED_SELF  135311304   // 给自己派生类发送的
+#define UI_LCN_SELCHANGED_SELF  135311306   // 给自己派生类发送的
 #define UI_LCN_SELCHANGED  135311305  // 给自己发送的
 
 
@@ -148,6 +148,8 @@ interface UISDKAPI IListCtrlBase : public IControl
     void  ToggleItemExpand(IListItemBase* pItem, bool bUpdate);
     void  CollapseItem(IListItemBase* pItem, bool bUpdate);
     void  ExpandItem(IListItemBase* pItem, bool bUpdate);
+    void  CollapseAll(bool bUpdate);
+    void  ExpandAll(bool bUpdate);
 
     IListItemBase*  GetHoverItem();
     IListItemBase*  GetPressItem();
@@ -178,7 +180,7 @@ interface UISDKAPI IListCtrlBase : public IControl
     void  SetItemTypeShareData(int lType, IListItemTypeShareData* pData);
     void  RemoveItemTypeShareData(int lType);
 
-    IListItemBase*  HitTest(POINT ptWindow);
+    IListItemBase*  HitTest(POINT ptWindow, __out POINT*  ptItem = NULL);
     IScrollBarManager*  GetIScrollBarMgr();
     void  SetSortCompareProc(ListItemCompareProc p);
     void  Sort();
@@ -195,7 +197,6 @@ interface UISDKAPI IListCtrlBase : public IControl
     void  ClearInvalidateItems();
     int   GetInvalidateItemCount();
     void  Refresh();
-    void  RedrawItem(IListItemBase** ppItemArray, int nCount);
     void  RedrawItemByInnerCtrl(IRenderTarget* pRenderTarget, RenderContext* pContext, IListItemBase* pItem);
     void  MakeItemVisible(IListItemBase* pItem, bool* pbNeedUpdate);
 

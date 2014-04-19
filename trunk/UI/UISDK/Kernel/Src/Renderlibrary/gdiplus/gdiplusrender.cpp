@@ -3,21 +3,33 @@
 #include "UISDK\Kernel\Src\UIEffect\blur\webkit\shadowblur.h"
 #include "UISDK\Kernel\Src\UIEffect\CacheBitmap\cachebitmap.h"
 #include "UISDK\Kernel\Src\Renderlibrary\gdi\gdirender.h"
+#include "UISDK\Kernel\Src\Renderlibrary\renderbuffer.h"
 
-GdiplusRenderTarget::GdiplusRenderTarget(HWND hWnd):IRenderTarget(hWnd)
+GdiplusRenderTarget::GdiplusRenderTarget()
 {
-	m_pGraphics = NULL;
-	m_hDC = NULL;
-	m_hRgnMeta = NULL;
-    m_pGdiMemBitmap = NULL;
+// 	m_pGraphics = NULL;
+// 	m_hRgnMeta = NULL;
+//  m_pGdiMemBitmap = NULL;
+    m_hBindDC = NULL;
+    m_lDrawingRef = 0;
+    m_pRenderBuffer = 0;
+#ifdef _DEBUG
+	m_ptOffset.x = m_ptOffset.y = 0;
+#endif
 }
 GdiplusRenderTarget::~GdiplusRenderTarget()
 {
-	SAFE_DELETE(m_pGraphics);
-	SAFE_DELETE_GDIOBJECT(m_hRgnMeta);
-	m_hDC = NULL;
+// 	SAFE_DELETE(m_pGraphics);
+// 	SAFE_DELETE_GDIOBJECT(m_hRgnMeta);
+    SAFE_DELETE(m_pRenderBuffer);
+	m_hBindDC = NULL;
+}
+void  GdiplusRenderTarget::Release()
+{
+    delete this;
 }
 
+#if 0  // 效率太低，废弃
 //
 //	Remark
 //		调用Graphics的GetHDC，获取到的HDC不会继承Graphics的任何属性，因此需要我们自己再设置一次属性
@@ -50,36 +62,62 @@ HDC GdiplusRenderTarget::GetHDC()
 
 	return hDC;
 }
+void GdiplusRenderTarget::ReleaseHDC( HDC hDC)
+{
+    if (NULL == hDC)
+        return;
+    m_pGraphics->ReleaseHDC(hDC);
+}
+#endif  
+
+HDC   GdiplusRenderTarget::GetHDC()
+{
+    if (m_hBindDC)
+        return m_hBindDC;
+
+    if (m_pRenderBuffer)
+        return m_pRenderBuffer->m_hDC;
+
+    UIASSERT(0);
+    return NULL;
+}
+void  GdiplusRenderTarget::ReleaseHDC(HDC hDC)
+{
+}
 
 // 该HDC不需要释放 
 HDC GdiplusRenderTarget::GetBindHDC()
 {
-	return m_hDC;
-}
-void GdiplusRenderTarget::ReleaseHDC( HDC hDC)
-{
-	if (NULL == hDC)
-		return;
-	m_pGraphics->ReleaseHDC(hDC);
+	return m_hBindDC;
 }
 
 HRGN GdiplusRenderTarget::GetClipRgn()
 {
-	Gdiplus::Region region;
-	m_pGraphics->GetClip(&region);
+// 	Gdiplus::Region region;
+// 	m_pGraphics->GetClip(&region);
+// 
+// 	return region.GetHRGN(m_pGraphics);
 
-	return region.GetHRGN(m_pGraphics);
+    HRGN hRgn = ::CreateRectRgn(0,0,0,0);
+    if( 1 != ::GetClipRgn(GetHDC(), hRgn) )  // 空或者失败
+    {
+        ::DeleteObject(hRgn);
+        hRgn = NULL;
+    }
+    return hRgn;
 }
+
+// 不能只设置hDC的剪裁，否则调用gdiplus绘制（如区域）时将超出
+// 但gdiplus的区域设置效果咋就这么低呢
 int GdiplusRenderTarget::SelectClipRgn( HRGN hRgn, int nMode)
 {
-	if (m_hDC)
-	{
-		if (RGN_COPY == nMode && NULL != hRgn)
-			::SelectClipRgn(m_hDC, hRgn);
-		else
-			::ExtSelectClipRgn(m_hDC, hRgn, nMode);  // 为gdi类型带alpha通道的位图绘制准备的
-	}
+    if (RGN_COPY == nMode && NULL != hRgn)
+        ::SelectClipRgn(GetHDC(), hRgn);
+    else
+        ::ExtSelectClipRgn(GetHDC(), hRgn, nMode);  // 为gdi类型带alpha通道的位图绘制准备的
 
+    Gdiplus::Status s = Gdiplus::Ok;
+#if 0
 	if (NULL == m_pGraphics)
 		return 0;
 
@@ -124,11 +162,9 @@ int GdiplusRenderTarget::SelectClipRgn( HRGN hRgn, int nMode)
 		break;
 	}
 
-	//Gdiplus::Status s = m_pGraphics->SetClip(pRegion, mode);
-	Gdiplus::Status s = Gdiplus::Ok;
-	s = m_pGraphics->SetClip(hRgn,mode);
+	s = m_pGraphics->SetClip(hRgn,mode);  // 效率非常低：优化！
 	SAFE_DELETE_GDIOBJECT(hRgnTemp);
-
+#endif
 //	delete pRegion;
 //	pRegion = NULL;
 
@@ -141,52 +177,65 @@ BOOL GdiplusRenderTarget::GetViewportOrgEx( LPPOINT lpPoint)
 		return FALSE;
 	}
 
-	Gdiplus::Matrix  m;
-	m_pGraphics->GetTransform(&m);
+// 	Gdiplus::Matrix  m;
+// 	m_pGraphics->GetTransform(&m);
+// 
+// 	lpPoint->x = round(m.OffsetX());
+// 	lpPoint->y = round(m.OffsetY());
 
-	lpPoint->x = (int)m.OffsetX();
-	lpPoint->y = (int)m.OffsetY();
-
+    ::GetViewportOrgEx(GetHDC(), lpPoint );
 	return TRUE;
 }
 BOOL GdiplusRenderTarget::OffsetViewportOrgEx( int xOffset, int yOffset, LPPOINT lpPoint) 
 {
-	if (lpPoint)
-	{
-		Gdiplus::Matrix  m;
-		m_pGraphics->GetTransform(&m);
+// 	if (lpPoint)
+// 	{
+// 		Gdiplus::Matrix  m;
+// 		m_pGraphics->GetTransform(&m);
+// 
+// 		lpPoint->x = round(m.OffsetX());
+// 		lpPoint->y = round(m.OffsetY());
+// 	}
 
-		lpPoint->x = (int)m.OffsetX();
-		lpPoint->y = (int)m.OffsetY();
-	}
+	::OffsetViewportOrgEx(GetHDC(), xOffset, yOffset, lpPoint);  // 为gdi类型带alpha通道的位图绘制准备的
 
-	::OffsetViewportOrgEx(m_hDC, xOffset, yOffset, lpPoint);  // 为gdi类型带alpha通道的位图绘制准备的
+#ifdef _DEBUG
+	::GetViewportOrgEx(GetHDC(), &m_ptOffset);
+#endif
 
-	if (Gdiplus::Ok == m_pGraphics->TranslateTransform((Gdiplus::REAL)xOffset,(Gdiplus::REAL)yOffset))
-		return TRUE;
-	else
-		return FALSE;
+// 	if (Gdiplus::Ok == m_pGraphics->TranslateTransform((Gdiplus::REAL)xOffset,(Gdiplus::REAL)yOffset))
+// 		return TRUE;
+// 	else
+// 		return FALSE;
+
+    return TRUE;
 }
 BOOL GdiplusRenderTarget::SetViewportOrgEx( int x, int y, LPPOINT lpPoint )
 {
-	if (lpPoint)
-	{
-		Gdiplus::Matrix  m;
-		m_pGraphics->GetTransform(&m);
-		lpPoint->x = (int)m.OffsetX();
-		lpPoint->y = (int)m.OffsetY();
-	}
+// 	if (lpPoint)
+// 	{
+// 		Gdiplus::Matrix  m;
+// 		m_pGraphics->GetTransform(&m);
+// 		lpPoint->x = round(m.OffsetX());
+// 		lpPoint->y = round(m.OffsetY());
+// 	}
 
-	::SetViewportOrgEx(m_hDC, x, y, lpPoint);  // 为gdi类型带alpha通道的位图绘制准备的
+	::SetViewportOrgEx(GetHDC(), x, y, lpPoint);  // 为gdi类型带alpha通道的位图绘制准备的
 
-	if (NULL == m_pGraphics)
-		return TRUE;
-	
-	m_pGraphics->ResetTransform();
-	if (Gdiplus::Ok == m_pGraphics->TranslateTransform((Gdiplus::REAL)x,(Gdiplus::REAL)y))
-		return TRUE;
-	else
-		return FALSE;
+#ifdef _DEBUG
+	::GetViewportOrgEx(GetHDC(), &m_ptOffset);
+#endif
+
+// 	if (NULL == m_pGraphics)
+// 		return TRUE;
+// 	
+// 	m_pGraphics->ResetTransform();
+// 	if (Gdiplus::Ok == m_pGraphics->TranslateTransform((Gdiplus::REAL)x,(Gdiplus::REAL)y))
+// 		return TRUE;
+// 	else
+// 		return FALSE;
+
+    return TRUE;
 }
 
 void GdiplusRenderTarget::BindHDC(HDC hDC)
@@ -194,7 +243,12 @@ void GdiplusRenderTarget::BindHDC(HDC hDC)
 	if (NULL == hDC)
 		return;
 
-	m_hDC = hDC;
+    if (m_pRenderBuffer)
+    {
+        SAFE_DELETE(m_pRenderBuffer);
+    }
+
+	m_hBindDC = hDC;
 
 // 	HBITMAP hMemBitmap = (HBITMAP) GetCurrentObject(m_hDC, OBJ_BITMAP);
 // 	//	m_pGdiMemBitmap = new Gdiplus::Bitmap(hMemBitmap,NULL);  // 这种方式由于是重新创建一张位图，会大量消耗内存。
@@ -205,16 +259,48 @@ void GdiplusRenderTarget::BindHDC(HDC hDC)
 // 	BYTE* pBits = (BYTE*)dibSection.dsBm.bmBits;
 // 	pBits += (dibSection.dsBm.bmHeight-1)*dibSection.dsBm.bmWidthBytes;  // 将指针移到第一行数据位置
 // 	m_pGdiMemBitmap = new Gdiplus::Bitmap(dibSection.dsBm.bmWidth, dibSection.dsBm.bmHeight, -dibSection.dsBm.bmWidthBytes, PixelFormat32bppARGB, (BYTE*)pBits);
-
 }
-bool  GdiplusRenderTarget::BeginDraw(RECT* prcArray, int nrcCount, bool bClear)
-{
-	bool bIsDrawing = NULL != m_pGraphics? true:false;
 
-	if (false == bIsDrawing)
+
+bool  GdiplusRenderTarget::CreateRenderBuffer(IRenderTarget*  pSrcRT)
+{
+    if (m_pRenderBuffer)
+        return false;
+
+    m_pRenderBuffer = new RenderBuffer;
+    m_hBindDC = NULL;
+
+    return true;
+}
+
+bool  GdiplusRenderTarget::ResizeRenderBuffer(unsigned int nWidth, unsigned int nHeight)
+{
+    if (!m_pRenderBuffer)
+        CreateRenderBuffer(NULL);
+
+    m_pRenderBuffer->Resize(nWidth, nHeight);
+    return true;
+}
+
+void  GdiplusRenderTarget::GetRenderBufferData(ImageData*  pData)
+{
+	if (!m_pRenderBuffer)
+		return;
+	m_pRenderBuffer->GetImageData(pData);
+}
+
+bool  GdiplusRenderTarget::BeginDraw()
+{
+    UIASSERT (0 == m_lDrawingRef);
+
+    HDC hDC = GetHDC();
+	if (0 == m_lDrawingRef)
 	{
-		//	m_pGraphics = Gdiplus::Graphics::FromHDC(hDC);   // 采用这种方式创建出来的graphics，再调用gethdc，返回的就是原始的hDC，无法使用alpha通道
-		m_pGraphics = new Gdiplus::Graphics(m_hDC/*m_pGdiMemBitmap*/);  // 使用内存图片创建出来的graphics，再调用gethdc，就能让HDC使用alpha通道 <-- 放弃！效率太低。直接使用HDC创建吧
+        // 采用这种方式创建出来的graphics，再调用gethdc，返回的就是原始的hDC，无法使用alpha通道
+		//	m_pGraphics = Gdiplus::Graphics::FromHDC(hDC);   
+
+        // 使用内存图片创建出来的graphics，再调用gethdc，就能让HDC使用alpha通道 <-- 放弃！效率太低。直接使用HDC创建吧
+		// m_pGraphics = new Gdiplus::Graphics(hDC/*m_pGdiMemBitmap*/);  
 
         // 启用GDIPLUS的cleartype功能
         // m_pGraphics->SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAliasGridFit);
@@ -223,116 +309,86 @@ bool  GdiplusRenderTarget::BeginDraw(RECT* prcArray, int nrcCount, bool bClear)
 
 		// 判断HDC是否被设置过了MetaRgn . ps. removed 20130206 在显示flash时，会频繁调用BeginDraw绘制，测试中发现
 		// SelectClipRgn中的SetClip会导致效率大大的下降。因为设置meta rgn是为了加快速度的，结果却变的更慢了
-		HRGN hRgnMeta = CreateRectRgn(0,0,0,0);
-		if (::GetMetaRgn(m_hDC, hRgnMeta))
-		{
-			SelectClipRgn(hRgnMeta);
-			m_hRgnMeta = hRgnMeta;
-		}
-		else
-		{
-			SAFE_DELETE_GDIOBJECT(hRgnMeta);
-		}
+// 		HRGN hRgnMeta = CreateRectRgn(0,0,0,0);
+// 		if (::GetMetaRgn(hDC, hRgnMeta))
+// 		{
+// 			SelectClipRgn(hRgnMeta);
+// 			m_hRgnMeta = hRgnMeta;
+// 		}
+// 		else
+// 		{
+// 			SAFE_DELETE_GDIOBJECT(hRgnMeta);
+// 		}
 	}
-#if 1
-	if (false == bIsDrawing)
-	{
-		if (nrcCount > 0 && NULL != prcArray)
-		{
-			RGNDATA*   pRgnData      = (RGNDATA*)new BYTE[ sizeof(RGNDATAHEADER) + nrcCount*sizeof(RECT) ];
-			pRgnData->rdh.dwSize     = sizeof(RGNDATAHEADER);
-			pRgnData->rdh.iType      = RDH_RECTANGLES;
-			pRgnData->rdh.nCount     = nrcCount;
-			pRgnData->rdh.nRgnSize   = nrcCount*sizeof(RECT);
-			for (int k = 0; k < nrcCount; k++)
-			{
-				RECT* prc = (RECT*)pRgnData->Buffer;
-				prc[k] = prcArray[k];
-			}
 
-			HRGN hRgn = ::ExtCreateRegion(NULL, sizeof(RGNDATAHEADER) + nrcCount*sizeof(RECT), pRgnData);
-			SAFE_ARRAY_DELETE(pRgnData);
-
-			this->SelectClipRgn(hRgn, RGN_COPY);
-			SAFE_DELETE_GDIOBJECT(hRgn);
-		}
-	}
-#else
-	if (NULL == prc && NULL == prc2)
-	{
-	}
-	else if (prc && NULL != prc2)
-	{
-		HRGN hRgn = CreateRectRgnIndirect(prc);
-		if (prc2)
-		{
-			HRGN hRgn2 = ::CreateRectRgnIndirect(prc2);
-			::CombineRgn(hRgn, hRgn, hRgn2, RGN_OR);
-			SAFE_DELETE_GDIOBJECT(hRgn2);
-		}
-		this->SelectClipRgn(hRgn, RGN_COPY);
-		SAFE_DELETE_GDIOBJECT(hRgn);
-	}
-	else
-	{
-		RECT *pNonNullRect = prc==NULL?prc2:prc;
-		HRGN hRgn = CreateRectRgnIndirect(pNonNullRect);
-		this->SelectClipRgn(hRgn, RGN_COPY);
-		SAFE_DELETE_GDIOBJECT(hRgn);
-	}
-#endif
-	if (bClear && nrcCount > 0)
-	{
-		HBRUSH hBrush = (HBRUSH)GetStockObject(BLACK_BRUSH);
-		for (int i = 0; i < nrcCount; i++)
-		{
-			::FillRect(m_hDC, &(prcArray[i]), hBrush);
-		}
-	}
-	return !bIsDrawing;
+    m_lDrawingRef ++;
+	return true;
 }
 void GdiplusRenderTarget::EndDraw( )
 {
-// 	SAFE_DELETE(m_pGdiMemBitmap);
- 	SAFE_DELETE(m_pGraphics);
+    -- m_lDrawingRef;
+    if (0 == m_lDrawingRef)
+    {
+// 	    SAFE_DELETE(m_pGraphics);
 
-	this->SetViewportOrgEx(0,0);
-	this->SelectClipRgn(NULL);
-	SAFE_DELETE_GDIOBJECT(m_hRgnMeta);
+	    this->SetViewportOrgEx(0,0);
+	    this->SelectClipRgn(NULL);
+
+//	    SAFE_DELETE_GDIOBJECT(m_hRgnMeta);
+    }
 }
 
-void GdiplusRenderTarget::Clear()
+void GdiplusRenderTarget::Clear(DWORD dwColor, RECT* prc)
 {
-	if (m_pGraphics)
-	{
-		m_pGraphics->Clear(Gdiplus::Color::MakeARGB(0,0,0,0));
-	}
-}
-BYTE* GdiplusRenderTarget::LockBits()
-{
-	if (NULL == m_hDC)
-		return NULL;
+// 	if (m_pGraphics)
+// 	{
+// 		m_pGraphics->Clear(Gdiplus::Color::MakeARGB(0,0,0,0));
+// 	}
+    HDC hDC = GetHDC();
 
-	HBITMAP hBitmap = (HBITMAP)::GetCurrentObject(m_hDC, OBJ_BITMAP);
-	if (NULL == hBitmap)
-		return NULL;
+    HBRUSH hBrush = ::CreateSolidBrush(dwColor);
+    if (prc)
+    {
+        ::FillRect(hDC, prc, hBrush);
+    }
+    else
+    {
+        BITMAP  bm;
+        HBITMAP hBitmap = (HBITMAP)::GetCurrentObject(hDC, OBJ_BITMAP);
+        if (NULL == hBitmap)
+            return;
 
-	DIBSECTION dib;
-	::GetObject(hBitmap, sizeof(DIBSECTION), &dib);
-	return (BYTE*)dib.dsBm.bmBits;
+        ::GetObject(hBitmap, sizeof(bm), &bm);
+        RECT  rc = {0,0, bm.bmWidth, bm.bmHeight};
+        ::FillRect(hDC, &rc, hBrush);
+    }
+    SAFE_DELETE_GDIOBJECT(hBrush);
 }
-void GdiplusRenderTarget::UnlockBits()
-{
-	
-}
+// BYTE* GdiplusRenderTarget::LockBits()
+// {
+// 	if (NULL == m_hDC)
+// 		return NULL;
+// 
+// 	HBITMAP hBitmap = (HBITMAP)::GetCurrentObject(m_hDC, OBJ_BITMAP);
+// 	if (NULL == hBitmap)
+// 		return NULL;
+// 
+// 	DIBSECTION dib;
+// 	::GetObject(hBitmap, sizeof(DIBSECTION), &dib);
+// 	return (BYTE*)dib.dsBm.bmBits;
+// }
+// void GdiplusRenderTarget::UnlockBits()
+// {
+// 	
+// }
 #if 0
 int GdiplusRenderTarget::DrawString(const TCHAR* szText, const CRect* lpRect, UINT nFormat, IRenderFont* pRenderFont, Color col)
 {
 	if (NULL == lpRect || lpRect->Width() <= 0 || lpRect->Height() <= 0)
 		return 0;
 
-	if (NULL == m_pGraphics)
-		return 0;
+// 	if (NULL == m_pGraphics)
+// 		return 0;
 
 	if (NULL == pRenderFont)
 	{
@@ -385,8 +441,10 @@ int GdiplusRenderTarget::DrawString(const TCHAR* szText, const CRect* lpRect, UI
 	{
 		format.SetLineAlignment(Gdiplus::StringAlignmentFar);
 	}
+
+    Graphics  g(GetHDC());
 	// Draw string.
-	Gdiplus::Status s = m_pGraphics->DrawString(
+	Gdiplus::Status s = /*m_pGraphics->*/g.DrawString(
 		szText,
 		-1/*_tcslen(szText)*/,
 		pFont,
@@ -399,7 +457,7 @@ int GdiplusRenderTarget::DrawString(const TCHAR* szText, const CRect* lpRect, UI
 #endif
 void  GdiplusRenderTarget::DrawString(IRenderFont* pFont, DRAWTEXTPARAM* pParam)
 {
-    this->DrawStringEx(m_pGraphics, m_hDC, pFont, pParam);
+    this->DrawStringEx(GetHDC(), pFont, pParam);
 }
 
 // 	m_pGraphics->SetTextRenderingHint(Gdiplus::TextRenderingHintSystemDefault);
@@ -407,9 +465,9 @@ void  GdiplusRenderTarget::DrawString(IRenderFont* pFont, DRAWTEXTPARAM* pParam)
 
 // Gdiplus 文字特效 http://www.codeproject.com/Articles/42529/Outline-Text
 /*static*/
-void  GdiplusRenderTarget::DrawStringEx(Gdiplus::Graphics* pGraphics, HDC hBindDC, IRenderFont* pRenderFont, DRAWTEXTPARAM* pParam)
+void  GdiplusRenderTarget::DrawStringEx(HDC hBindDC, IRenderFont* pRenderFont, DRAWTEXTPARAM* pParam)
 {
-    if (NULL == pGraphics || NULL == pRenderFont || NULL == pParam)
+    if (NULL == pRenderFont || NULL == pParam)
         return;
 
     if (pParam->prc->Width() <= 0 || pParam->prc->Height() <= 0)
@@ -445,13 +503,14 @@ void  GdiplusRenderTarget::DrawStringEx(Gdiplus::Graphics* pGraphics, HDC hBindD
     Gdiplus::StringFormat format(Gdiplus::StringFormat::GenericTypographic());
     GetStringFormatByGdiFormat(pParam->nFormatFlag, &format);
 
+    Gdiplus::Graphics  g(hBindDC);
     if (TEXT_EFFECT_NONE == pParam->nEffectFlag)
     {
-        Gdiplus::TextRenderingHint eOldHint = pGraphics->GetTextRenderingHint();
-        pGraphics->SetTextRenderingHint(((GdiplusRenderFont*)pRenderFont)->GetTextRenderingHint());
+        Gdiplus::TextRenderingHint eOldHint = g.GetTextRenderingHint();
+        g.SetTextRenderingHint(((GdiplusRenderFont*)pRenderFont)->GetTextRenderingHint());
 
         // Draw string.
-       /* Gdiplus::Status s = */pGraphics->DrawString(
+       g.DrawString(
             pParam->szText,
             -1/*_tcslen(szText)*/,
             pFont,
@@ -459,7 +518,7 @@ void  GdiplusRenderTarget::DrawStringEx(Gdiplus::Graphics* pGraphics, HDC hBindD
             &format,
             &textBrush);
 
-       pGraphics->SetTextRenderingHint(eOldHint);
+       g.SetTextRenderingHint(eOldHint);
     }
     else if (TEXT_EFFECT_HALO == pParam->nEffectFlag)
     {
@@ -480,9 +539,9 @@ void  GdiplusRenderTarget::DrawStringEx(Gdiplus::Graphics* pGraphics, HDC hBindD
         CacheBitmap::GetInstance()->Clear(0 , &rcMem);
 
         {
-        Gdiplus::Graphics g(hMemDC);
-        Gdiplus::TextRenderingHint eOldHint = pGraphics->GetTextRenderingHint();
-        g.SetTextRenderingHint(((GdiplusRenderFont*)pRenderFont)->GetTextRenderingHint());
+        Gdiplus::Graphics gMem(hMemDC);
+        Gdiplus::TextRenderingHint eOldHint = g.GetTextRenderingHint();
+        gMem.SetTextRenderingHint(((GdiplusRenderFont*)pRenderFont)->GetTextRenderingHint());
 
         Gdiplus::Color colorTextShadow;
         int a = pParam->bkcolor.a;
@@ -492,7 +551,7 @@ void  GdiplusRenderTarget::DrawStringEx(Gdiplus::Graphics* pGraphics, HDC hBindD
         Gdiplus::SolidBrush textShadowBrush(colorTextShadow);
 
         // 阴影
-        g.DrawString(
+        gMem.DrawString(
             pParam->szText,
             -1/*_tcslen(szText)*/,
             pFont,
@@ -507,7 +566,7 @@ void  GdiplusRenderTarget::DrawStringEx(Gdiplus::Graphics* pGraphics, HDC hBindD
         ShadowBlur(hMemBmp, pParam->bkcolor.GetGDICompatibleValue(), &rcMem, pParam->wParam);
 
         // 文字
-        g.DrawString(
+        gMem.DrawString(
             pParam->szText,
             -1/*_tcslen(szText)*/,
             pFont,
@@ -598,7 +657,8 @@ void GdiplusRenderTarget::FillRgn(HRGN hRgn, UI::Color* pColor)
 	color.SetValue(Gdiplus::Color::MakeARGB(pColor->a, pColor->r, pColor->g, pColor->b)) ;
 	Gdiplus::SolidBrush brush(color);
 
-	m_pGraphics->FillRegion(&brush, pRegion);
+    Gdiplus::Graphics  g(GetHDC());
+	g.FillRegion(&brush, pRegion);
 
 	delete pRegion;
 	pRegion = NULL;
@@ -608,7 +668,7 @@ void GdiplusRenderTarget::FillRgn(HRGN hRgn, UI::Color* pColor)
 // 在给gdiplus设置了消除锯齿模式后，会导致绘制出来的rect范围不精确，有虚边效果。
 // m_pGraphics->SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 // 例如一个10*10的矩形，就画出11*11的效果，并且四周有1px的虚边用于抗锯齿
-void GdiplusRenderTarget::FillRect(const CRect* lprc, UI::Color* pColor)
+void GdiplusRenderTarget::FillRect(const RECT* lprc, UI::Color* pColor)
 {
 	if (NULL == lprc || NULL == pColor)
 		return;
@@ -617,7 +677,9 @@ void GdiplusRenderTarget::FillRect(const CRect* lprc, UI::Color* pColor)
 	color.SetValue(Gdiplus::Color::MakeARGB(pColor->a, pColor->r, pColor->g, pColor->b));
 	Gdiplus::SolidBrush brush(color);
 
-	m_pGraphics->FillRectangle(&brush, lprc->left, lprc->top, lprc->Width(), lprc->Height());
+    Gdiplus::Graphics g(GetHDC());
+    g.FillRectangle(&brush, lprc->left, lprc->top, lprc->right-lprc->left, lprc->bottom-lprc->top);
+	//m_pGraphics->FillRectangle(&brush, lprc->left, lprc->top, lprc->right-lprc->left, lprc->bottom-lprc->top);
 }
 
 void GdiplusRenderTarget::TileRect(const CRect* lprc, IRenderBitmap* hBitmap)
@@ -638,14 +700,13 @@ void GdiplusRenderTarget::TileRect(const CRect* lprc, IRenderBitmap* hBitmap)
 		return;
 
 	Gdiplus::TextureBrush brush(pBitmap);
-	m_pGraphics->FillRectangle(&brush, lprc->left, lprc->top, lprc->Width(), lprc->Height());
+    
+    Gdiplus::Graphics g(GetHDC());
+	g.FillRectangle(&brush, lprc->left, lprc->top, lprc->Width(), lprc->Height());
 }
 
 void GdiplusRenderTarget::Rectangle(const CRect* lprc, UI::Color* pColBorder, UI::Color* pColBack, int nBorder, bool bNullBack)
 {
-	if (NULL == m_pGraphics)
-		return;
-
     CRect rc(lprc);
 	if (false == bNullBack)
 	{
@@ -658,21 +719,22 @@ void GdiplusRenderTarget::Rectangle(const CRect* lprc, UI::Color* pColBorder, UI
 	    color.SetValue(Gdiplus::Color::MakeARGB(pColBorder->a, pColBorder->r, pColBorder->g, pColBorder->b)) ;
 	    Gdiplus::Pen pen(color, (Gdiplus::REAL)nBorder);
 
-	    m_pGraphics->DrawRectangle(&pen,   
+        // PS: 居然在右侧和下侧多画了一px，不知道gdiplus怎么搞的
+        Gdiplus::Graphics g(GetHDC());
+	    g.DrawRectangle(&pen,   
 		    rc.left, rc.top, 
-		    rc.Width(), rc.Height()  
+		    rc.Width()-1, 
+            rc.Height()-1  
 		    );  
     }
 }
 
 void GdiplusRenderTarget::DrawFocusRect(const CRect* lprc)
 {
-	if (NULL == m_pGraphics)
-		return;
-
+    Gdiplus::Graphics g(GetHDC());
 	Gdiplus::Pen p( Gdiplus::Color(254,0,0,0));
 	p.SetDashStyle( Gdiplus::DashStyleDot);
-	m_pGraphics->DrawRectangle(&p,   
+	g.DrawRectangle(&p,   
 		lprc->left, lprc->top, 
 		lprc->Width()-1, lprc->Height()-1   // Remark:在这里如果不减1的话，会导致右、下的边框显示不全，原因未知
 		);  
@@ -690,7 +752,8 @@ void GdiplusRenderTarget::DrawLine(int x1, int y1, int x2, int y2, IRenderPen* p
 
 	Gdiplus::Point p1(x1, y1);
 	Gdiplus::Point p2(x2, y2);
-	m_pGraphics->DrawLine(pGdiplusPen->m_pPen, p1, p2);
+    Gdiplus::Graphics g(GetHDC());
+	g.DrawLine(pGdiplusPen->m_pPen, p1, p2);
 }
 void GdiplusRenderTarget::DrawPolyline(POINT* lppt, int nCount, IRenderPen* pPen)
 {
@@ -707,7 +770,8 @@ void GdiplusRenderTarget::DrawPolyline(POINT* lppt, int nCount, IRenderPen* pPen
 		p[i].X = lppt[i].x;
 		p[i].Y = lppt[i].y;
 	}
-	m_pGraphics->DrawLines(pGdiplusPen->m_pPen, p, nCount);
+    Gdiplus::Graphics g(GetHDC());
+	g.DrawLines(pGdiplusPen->m_pPen, p, nCount);
 	SAFE_ARRAY_DELETE(p);
 }
 
@@ -720,7 +784,8 @@ void GdiplusRenderTarget::GradientFillH( const CRect* lprc, COLORREF colFrom, CO
 	Gdiplus::Rect rect( lprc->left, lprc->top, lprc->Width(), lprc->Height());
 	Gdiplus::LinearGradientBrush  brush(rect, colorFrom, colorTo, Gdiplus::LinearGradientModeHorizontal);
 
-	m_pGraphics->FillRectangle(&brush, lprc->left, lprc->top, lprc->Width(), lprc->Height());
+    Gdiplus::Graphics g(GetHDC());
+	g.FillRectangle(&brush, lprc->left, lprc->top, lprc->Width(), lprc->Height());
 }
 
 void GdiplusRenderTarget::GradientFillV( const CRect* lprc, COLORREF colFrom, COLORREF colTo)
@@ -732,7 +797,8 @@ void GdiplusRenderTarget::GradientFillV( const CRect* lprc, COLORREF colFrom, CO
 	Gdiplus::Rect rect( lprc->left, lprc->top, lprc->Width(), lprc->Height());
 	Gdiplus::LinearGradientBrush  brush(rect, colorFrom, colorTo, Gdiplus::LinearGradientModeVertical);
 
-	m_pGraphics->FillRectangle(&brush, lprc->left, lprc->top, lprc->Width(), lprc->Height());
+    Gdiplus::Graphics g(GetHDC());
+	g.FillRectangle(&brush, lprc->left, lprc->top, lprc->Width(), lprc->Height());
 }
 
 void GdiplusRenderTarget::BitBlt(int xDest, int yDest, int wDest, int hDest, IRenderTarget* pSrcHDC, int xSrc, int ySrc, DWORD dwRop)
@@ -979,7 +1045,8 @@ void GdiplusRenderTarget::ImageList_Draw( IRenderBitmap* hBitmap, int x, int y, 
 
 	//	m_pGraphics->DrawImage(pBitmap, x,y,xSrc,ySrc, cx,cy, Gdiplus::UnitPixel);  <-- 使用这个版本会导致图片被放大...原因未知
 	Gdiplus::RectF rcDst( (Gdiplus::REAL)x, (Gdiplus::REAL)y, (Gdiplus::REAL)cx, (Gdiplus::REAL)cy);
-	m_pGraphics->DrawImage( pBitmap, rcDst, (Gdiplus::REAL)xSrc, (Gdiplus::REAL)ySrc, (Gdiplus::REAL)cx, (Gdiplus::REAL)cy, Gdiplus::UnitPixel);
+    Gdiplus::Graphics  g(GetHDC());
+	g.DrawImage( pBitmap, rcDst, (Gdiplus::REAL)xSrc, (Gdiplus::REAL)ySrc, (Gdiplus::REAL)cx, (Gdiplus::REAL)cy, Gdiplus::UnitPixel);
 }
 
 
@@ -992,22 +1059,24 @@ void GdiplusRenderTarget::DrawBitmap(IRenderBitmap* hBitmap, DRAWBITMAPPARAM* pP
 
 	if (p->GetGraphicsRenderLibraryType() == GRAPHICS_RENDER_LIBRARY_TYPE_GDI)
 	{
-		GdiRenderTarget::DrawBitmapEx(m_hDC, hBitmap, pParam);
+		GdiRenderTarget::DrawBitmapEx(GetHDC(), hBitmap, pParam);
 		return;
 	}
 
-	GdiplusRenderTarget::DrawBitmapEx(m_pGraphics, m_hDC, p, pParam);
+	GdiplusRenderTarget::DrawBitmapEx(GetHDC(), p, pParam);
 }
 
 // [注]:这里的alpha绘制效率很低，特别是在实现动画渐变效果时，效果很不好，最好还是用gdi的alpha blend
-void GdiplusRenderTarget::DrawBitmapEx(Gdiplus::Graphics* pGraphics, HDC hBindDC, IRenderBitmap* p, DRAWBITMAPPARAM* pParam)
+void GdiplusRenderTarget::DrawBitmapEx(HDC hBindDC, IRenderBitmap* p, DRAWBITMAPPARAM* pParam)
 {
-	if (NULL == pGraphics || p->GetGraphicsRenderLibraryType() != GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS)
+	if (p->GetGraphicsRenderLibraryType() != GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS)
 		return;
 
 	Gdiplus::Bitmap* pBitmap = ((GdiplusRenderBitmap*)p)->GetBitmap();
 	if (NULL == pBitmap)
 		return;
+
+    Gdiplus::Graphics  g(hBindDC);
 
 	// 利用颜色矩阵来直接绘制灰度图
 	Gdiplus::ImageAttributes* pImageAttribute = NULL;
@@ -1048,7 +1117,7 @@ void GdiplusRenderTarget::DrawBitmapEx(Gdiplus::Graphics* pGraphics, HDC hBindDC
 		Gdiplus::REAL nW = (Gdiplus::REAL)min(pParam->wSrc,pParam->wDest);
 		Gdiplus::REAL nH = (Gdiplus::REAL)min(pParam->hSrc,pParam->hDest);
 		Gdiplus::RectF destRect((Gdiplus::REAL)pParam->xDest, (Gdiplus::REAL)pParam->yDest, nW, nH);
-		pGraphics->DrawImage(pBitmap, destRect, (Gdiplus::REAL)pParam->xSrc, (Gdiplus::REAL)pParam->ySrc, nW, nH, Gdiplus::UnitPixel, pImageAttribute, NULL, NULL);
+		g.DrawImage(pBitmap, destRect, (Gdiplus::REAL)pParam->xSrc, (Gdiplus::REAL)pParam->ySrc, nW, nH, Gdiplus::UnitPixel, pImageAttribute, NULL, NULL);
 
         if (pParam->prcRealDraw)
         {
@@ -1057,7 +1126,7 @@ void GdiplusRenderTarget::DrawBitmapEx(Gdiplus::Graphics* pGraphics, HDC hBindDC
 	}
 	else if (pParam->nFlag & DRAW_BITMAP_STRETCH)
 	{
-		GdiplusRenderTarget::DrawBitmap(pGraphics, p, pParam->xDest, pParam->yDest, pParam->wDest, pParam->hDest,
+		GdiplusRenderTarget::DrawBitmap(&g, p, pParam->xDest, pParam->yDest, pParam->wDest, pParam->hDest,
 			pParam->xSrc, pParam->ySrc, pParam->wSrc, pParam->hSrc, pParam->pRegion, true, pImageAttribute);
 
         if (pParam->prcRealDraw)
@@ -1067,7 +1136,7 @@ void GdiplusRenderTarget::DrawBitmapEx(Gdiplus::Graphics* pGraphics, HDC hBindDC
 	}
 	else if (pParam->nFlag & DRAW_BITMAP_STRETCH_BORDER)
 	{
-		GdiplusRenderTarget::DrawBitmap(pGraphics, p, pParam->xDest, pParam->yDest, pParam->wDest, pParam->hDest,
+		GdiplusRenderTarget::DrawBitmap(&g, p, pParam->xDest, pParam->yDest, pParam->wDest, pParam->hDest,
 			pParam->xSrc, pParam->ySrc, pParam->wSrc, pParam->hSrc, pParam->pRegion, false, pImageAttribute);
 
         if (pParam->prcRealDraw)
@@ -1078,7 +1147,7 @@ void GdiplusRenderTarget::DrawBitmapEx(Gdiplus::Graphics* pGraphics, HDC hBindDC
 	else if (pParam->nFlag & DRAW_BITMAP_TILE)
 	{
 		Gdiplus::TextureBrush brush(pBitmap);
-		pGraphics->FillRectangle(&brush, pParam->xDest, pParam->yDest, pParam->wDest, pParam->hDest);
+		g.FillRectangle(&brush, pParam->xDest, pParam->yDest, pParam->wDest, pParam->hDest);
 
         if (pParam->prcRealDraw)
         {
@@ -1091,7 +1160,7 @@ void GdiplusRenderTarget::DrawBitmapEx(Gdiplus::Graphics* pGraphics, HDC hBindDC
 		int y = pParam->yDest + (pParam->hDest - pParam->hSrc)/2;
 
 		Gdiplus::RectF destRect((Gdiplus::REAL)x, (Gdiplus::REAL)y, (Gdiplus::REAL)pParam->wSrc, (Gdiplus::REAL)pParam->hSrc);
-		pGraphics->DrawImage(pBitmap, destRect, (Gdiplus::REAL)pParam->xSrc, (Gdiplus::REAL)pParam->ySrc, (Gdiplus::REAL)pParam->wSrc, (Gdiplus::REAL)pParam->hSrc, Gdiplus::UnitPixel, pImageAttribute, NULL, NULL);
+		g.DrawImage(pBitmap, destRect, (Gdiplus::REAL)pParam->xSrc, (Gdiplus::REAL)pParam->ySrc, (Gdiplus::REAL)pParam->wSrc, (Gdiplus::REAL)pParam->hSrc, Gdiplus::UnitPixel, pImageAttribute, NULL, NULL);
 
         if (pParam->prcRealDraw)
         {
@@ -1135,12 +1204,12 @@ void GdiplusRenderTarget::DrawBitmapEx(Gdiplus::Graphics* pGraphics, HDC hBindDC
 
 		if (bNeedToStretch)
 		{
-			GdiplusRenderTarget::DrawBitmap(pGraphics, p, xDisplayPos, yDisplayPos, wImage, hImage, pParam->xSrc, pParam->ySrc, pParam->wSrc, pParam->hSrc, pParam->pRegion, true, pImageAttribute);
+			GdiplusRenderTarget::DrawBitmap(&g, p, xDisplayPos, yDisplayPos, wImage, hImage, pParam->xSrc, pParam->ySrc, pParam->wSrc, pParam->hSrc, pParam->pRegion, true, pImageAttribute);
 		}
 		else
 		{
 			Gdiplus::RectF destRect((Gdiplus::REAL)xDisplayPos, (Gdiplus::REAL)yDisplayPos, (Gdiplus::REAL)pParam->wSrc, (Gdiplus::REAL)pParam->hSrc);
-			pGraphics->DrawImage(pBitmap, destRect, (Gdiplus::REAL)pParam->xSrc, (Gdiplus::REAL)pParam->ySrc, (Gdiplus::REAL)pParam->wSrc, (Gdiplus::REAL)pParam->hSrc, Gdiplus::UnitPixel, pImageAttribute, NULL, NULL);
+			g.DrawImage(pBitmap, destRect, (Gdiplus::REAL)pParam->xSrc, (Gdiplus::REAL)pParam->ySrc, (Gdiplus::REAL)pParam->wSrc, (Gdiplus::REAL)pParam->hSrc, Gdiplus::UnitPixel, pImageAttribute, NULL, NULL);
 		}
 
         if (pParam->prcRealDraw)
@@ -1157,7 +1226,7 @@ void GdiplusRenderTarget::DrawBitmapEx(Gdiplus::Graphics* pGraphics, HDC hBindDC
         int xSrc = pParam->xSrc+ (pParam->wSrc-(int)nW);
 
         Gdiplus::RectF destRect((Gdiplus::REAL)xDest, (Gdiplus::REAL)pParam->yDest, nW, nH);
-        pGraphics->DrawImage(pBitmap, destRect, (Gdiplus::REAL)pParam->xSrc, (Gdiplus::REAL)pParam->ySrc, nW, nH, Gdiplus::UnitPixel, pImageAttribute, NULL, NULL);
+        g.DrawImage(pBitmap, destRect, (Gdiplus::REAL)pParam->xSrc, (Gdiplus::REAL)pParam->ySrc, nW, nH, Gdiplus::UnitPixel, pImageAttribute, NULL, NULL);
 
         if (pParam->prcRealDraw)
         {
@@ -1254,8 +1323,113 @@ void GdiplusRenderTarget::DrawBitmapEx(Gdiplus::Graphics* pGraphics, HDC hBindDC
     }
 }
 
-void GdiplusRenderTarget::DrawRotateBitmap(IRenderBitmap* pBitmap, int nDegree, DRAWBITMAPPARAM* pParam)
-{
-	UIASSERT(0 && _T("未实现"));
-}
 #pragma endregion
+
+void  GdiplusRenderTarget::Save(const TCHAR*  szPath)
+{
+    if (m_pRenderBuffer)
+    {
+        m_pRenderBuffer->Dump();
+    }
+}
+
+void  GdiplusRenderTarget::Render2DC(HDC hDstDC, Render2TargetParam* pParam)
+{
+    int& xDst = pParam->xDst;
+    int& yDst = pParam->yDst; 
+    int& wDst = pParam->wDst; 
+    int& hDst = pParam->hDst; 
+    int& xSrc = pParam->xSrc; 
+    int& ySrc = pParam->ySrc; 
+    int& wSrc = pParam->wSrc; 
+    int& hSrc = pParam->hSrc; 
+    bool& bAlphaBlend = pParam->bAlphaBlend;
+    byte& opacity = pParam->opacity;
+
+    HDC hDC = GetHDC();
+    UIASSERT (hDC != hDstDC);
+
+	int nOldGraphicsMode = 0;
+	if (pParam->pTransform)
+	{
+		nOldGraphicsMode = ::GetGraphicsMode(hDstDC);
+		::SetGraphicsMode(hDstDC, GM_ADVANCED);
+		::SetWorldTransform(hDstDC, pParam->pTransform);
+	}
+
+    if (bAlphaBlend)
+    {
+        BLENDFUNCTION bf = {AC_SRC_OVER, 0, opacity, AC_SRC_ALPHA};
+        ::AlphaBlend(hDstDC, xDst, yDst, wDst, hDst, hDC, xSrc, ySrc, wSrc, hSrc, bf);
+    }
+    else
+    {
+        if (wDst == wSrc && hDst == hSrc)
+        {
+            ::BitBlt(hDstDC, xDst, yDst, wDst, hDst, hDC, xSrc, ySrc, SRCCOPY);
+        }
+        else
+        {
+            ::StretchBlt(hDstDC, xDst, yDst, wDst, hDst, hDC, xSrc, ySrc, wSrc, hSrc, SRCCOPY);
+        }
+    }
+	if (pParam->pTransform)
+	{
+		ModifyWorldTransform(hDstDC, NULL, MWT_IDENTITY);
+		::SetGraphicsMode(hDstDC, nOldGraphicsMode);
+	}
+}
+
+void  GdiplusRenderTarget::Render2Target(IRenderTarget* pDst, Render2TargetParam* pParam)
+{
+    if (!pDst)
+        return;
+
+    if (pDst->GetGraphicsRenderLibraryType() != GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS)
+    {
+        UI_LOG_WARN(_T("%s Graphcis Render library is wrong"), FUNC_NAME);
+        return;
+    }
+
+	GdiplusRenderTarget* pGdipDst = static_cast<GdiplusRenderTarget*>(pDst);
+	if (!pParam->pTransform || !m_pRenderBuffer)
+	{
+		return Render2DC(pGdipDst->GetHDC(), pParam);
+	}
+
+	ImageData  imageData;
+	m_pRenderBuffer->GetImageData(&imageData);
+	
+    // 要先平移再旋转，否则结果不正确
+	Gdiplus::Matrix  matrix;
+	matrix.SetElements(
+		pParam->pTransform->eM11,
+		pParam->pTransform->eM12,
+		pParam->pTransform->eM21,
+		pParam->pTransform->eM22, 
+		pParam->pTransform->eDx, 
+		pParam->pTransform->eDy);
+
+    Gdiplus::Graphics  gDst(pGdipDst->GetHDC());
+	gDst.MultiplyTransform(&matrix); // 与当前的偏移矩阵相乘
+
+	// 由于Gdi的变换不带抗锯齿，因此使用gdiplus的方式来实现 
+	Gdiplus::Bitmap*  pBitmap = new Gdiplus::Bitmap(imageData.m_nWidth, imageData.m_nHeight, abs(imageData.m_nStride), PixelFormat32bppARGB, (BYTE*)imageData.m_pScan0);
+
+	Gdiplus::RectF rcDst1( (Gdiplus::REAL)pParam->xDst, (Gdiplus::REAL)pParam->yDst, 
+		(Gdiplus::REAL)pParam->wDst, (Gdiplus::REAL)pParam->hDst);
+	gDst.DrawImage(pBitmap, rcDst1, 
+		(Gdiplus::REAL)pParam->xSrc, 
+		(Gdiplus::REAL)pParam->ySrc,
+		(Gdiplus::REAL)pParam->wSrc,
+		(Gdiplus::REAL)pParam->hSrc,
+		Gdiplus::UnitPixel, NULL
+		);
+
+//     POINT  ptOffset;
+//     ::GetViewportOrgEx(pGdipDst->GetHDC(), &ptOffset);
+// 	pGdipDst->m_pGraphics->ResetTransform();
+// 	pGdipDst->m_pGraphics->TranslateTransform((Gdiplus::REAL)ptOffset.x, (Gdiplus::REAL)ptOffset.y);
+
+	SAFE_DELETE(pBitmap);
+}

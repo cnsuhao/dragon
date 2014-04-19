@@ -91,7 +91,7 @@ L"    一个集播放、音效、转换、歌词等多种功能于一身的专业音频播放软件。\r\n\
 		{
 			m_pComboboxVisualType->GetListBox()->SetSortCompareProc(NULL);
 			m_pComboboxVisualType->AddStringEx(_T("<不显示>"))->SetData((LPARAM)VISUALIZATION_NONE);
-			m_pComboboxVisualType->AddStringEx(_T("梦幻星空"))->SetData((LPARAM)VISUALIZATION_NONE);
+			m_pComboboxVisualType->AddStringEx(_T("梦幻星空"))->SetData((LPARAM)VISUALIZATION_GOOM);
 			m_pComboboxVisualType->AddStringEx(_T("频谱分析"))->SetData((LPARAM)VISUALIZATION_SPECTRUM);
 			m_pComboboxVisualType->AddStringEx(_T("示波显示"))->SetData((LPARAM)VISUALIZATION_WAVE);
 			m_pComboboxVisualType->AddStringEx(_T("专辑封面"))->SetData((LPARAM)VISUALIZATION_NONE);

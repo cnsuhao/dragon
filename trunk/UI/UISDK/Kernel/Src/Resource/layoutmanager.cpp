@@ -176,6 +176,11 @@ HRESULT  LayoutManager::LoadLayout(IUIElement* pUIElement, IObject* pParent, IOb
     *ppObj = pIObject;
     pObj = pIObject->GetImpl();
 
+    // 在AddChild之前获取其z order，以便排序
+    CComBSTR  bstrZ;
+    if (pUIElement->GetAttrib(XML_ZORDER, &bstrZ))
+        pObj->SetZorderDirect(_wtoi(bstrZ));
+
     if (pParent)
         pParent->AddChild(pIObject);
 

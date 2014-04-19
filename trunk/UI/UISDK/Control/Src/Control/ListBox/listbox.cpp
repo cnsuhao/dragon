@@ -244,16 +244,6 @@ LRESULT ListBoxBase::OnDrawItem(WPARAM w, LPARAM l)
     return 0;
 }
 
-LRESULT ListBoxBase::OnGetGraphicsRenderType()
-{
-    if (m_pBindObject)  // 对于弹出式的listbox，由于窗口是弹出时才创建的，因此listbox向它的owner获取graphics type
-    {
-        return GetRenderLibraryType(m_pBindObject);
-    }
-    return GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
-}
-
-
 void ListBoxBase::OnInitPopupControlWindow()
 {
     m_pIListBoxBase->SetMinWidth(m_pBindObject->GetWidth());  // 限制宽度最小与COMBOBOX一致

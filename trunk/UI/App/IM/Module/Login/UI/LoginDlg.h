@@ -83,7 +83,6 @@ private:
 
     UI::IGifCtrl*    m_pGifLoadding;
 	UI::ITrayIcon*   m_pTrayIcon;
-    UI::IBufferRenderLayer*  m_pFlashLayer;
     UI::IFlashWrap*  m_pFlashCtrl;
     UI::ILabel*      m_pLabelLoginingText;
 

@@ -18,7 +18,6 @@ public:
         UIMSG_WM_LBUTTONUP(OnLButtonUp)
         UIMSG_WM_ANIMATE_TICK(OnAnimateTick)
         UIMSG_WM_TIMER(OnTimer)
-        UIMSG_WM_GETGRAPHICSRENDERLIBRARYTYPE(OnGetGraphicsRenderType)
         UIMSG_WM_GETOBJECTINFO(OnGetObjectInfo)
         UIMSG_WM_QUERYINTERFACE(QueryInterface)
         UIMSG_WM_RESETATTRIBUTE(ResetAttribute)
@@ -41,7 +40,6 @@ protected:
     void  SetAttribute(UI::IMapAttribute* pMapAttrib, bool bReload);
     void  ResetAttribute();
     void  OnLButtonUp(UINT nFlags, POINT point);
-    UI::GRAPHICS_RENDER_LIBRARY_TYPE  OnGetGraphicsRenderType() { return UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS; }  // 渐变消失，需要带alpha的文字绘制
     void  OnTimer(UINT_PTR nIDEvent, LPARAM lParam);
     void  OnAnimateTick(int nCount, UI::IStoryboard** ppArray);
 

@@ -2,11 +2,11 @@
 #include "UISDK\Project\UI3D\inc\istage3d.h"
 #include "UISDK\Project\UI3D\Src\D3D\stage\stage3d.h"
 #include "UISDK\Project\UI3D\src\D3D\element\rectangleelement.h"
+#include "UISDK\Project\UI3D\src\D3D\element\imageelement.h"
 
 #if 0
 #include "UISDK\Project\UI3D\src\Element\mesh\meshelem.h"
 #include "UISDK\Project\UI3D\src\Element\particle\particle.h"
-#include "UISDK\Project\UI3D\src\Element\image\imageelement.h"
 #endif
 
 namespace UI
@@ -31,6 +31,18 @@ IRectangleElement*  IStage3D::AddRectangleElement()
         return NULL;
     }
     return pElem->GetIRectangleElement();
+}
+
+IImageElement*  IStage3D::AddImageElement()
+{
+    ImageElement* pElem = new ImageElement;
+    if (!m_pStage3DImpl->AddElement(pElem))
+    {
+        delete pElem;
+        return NULL;
+    }
+
+    return pElem->GetIImageElement();
 }
 
 #if 0
@@ -58,17 +70,6 @@ IParticleElement*  IStage3D::AddParticleElement()
 	return pElem->GetIParticleElement();
 }
 
-IImageElement*  IStage3D::AddImageElement()
-{
-    ImageElement* pElem = new ImageElement;
-    if (!m_pStage3DImpl->AddElement(pElem))
-    {
-        delete pElem;
-        return NULL;
-    }
-
-    return pElem->GetIImageElement();
-}
 #endif
 void  IStage3D::GetFullWorldCoord(float fzWorld, float*  pfWidth, float* pfHeight)
 {

@@ -5,7 +5,7 @@ namespace UI
 {
 interface IRenderFont;
 interface IRenderPen;
-class IRenderTarget;
+interface IRenderTarget;
 class ImageData;
 interface IRenderFont;
     
@@ -82,6 +82,21 @@ enum TEXT_EFFECT
     TEXT_EFFECT_HALO = 1,   // 光圈效果 bkcolor指定光晕颜色。wParam高斯模糊半径系统
 };
 
+struct  Render2TargetParam
+{
+    int xDst;
+    int yDst;
+    int wDst;
+    int hDst;
+    int xSrc;
+    int ySrc;
+    int wSrc;
+    int hSrc;
+    bool bAlphaBlend;
+    byte opacity;
+    XFORM*  pTransform;
+};
+
 interface IRenderResource
 {
     virtual ~IRenderResource() = 0 {};
@@ -139,7 +154,7 @@ public:
 class RenderBitmapFactory
 {
 public:
-	static void CreateInstance(GRAPHICS_RENDER_LIBRARY_TYPE eGraphicsRenderType, IMAGE_ITEM_TYPE eType, IRenderBitmap** ppOut);
+	static void CreateInstance(IUIApplication* pUIApp, GRAPHICS_RENDER_LIBRARY_TYPE eGraphicsRenderType, IMAGE_ITEM_TYPE eType, IRenderBitmap** ppOut);
 };
 
 #define FONTITEM_FLAG_UNDERLINE 0x01
@@ -162,23 +177,7 @@ public:
 	virtual HFONT GetHFONT() = 0;
 	virtual bool  GetLogFont(LOGFONT* plf) = 0;
 
-// 	virtual void  AddModifyListener(Object* p) = 0;
-// 	virtual void  RemoveModifyListener(Object* p) = 0;
-// 	virtual void  NotifyListener() = 0;
 };
-
-// class IRenderFontListenerImpl : public IRenderFont
-// {
-// public:
-// 	virtual ~IRenderFontListenerImpl();
-// 
-// 	virtual void  AddModifyListener(Object* p);
-// 	virtual void  RemoveModifyListener(Object* p);
-// 	virtual void  NotifyListener();
-// 
-// protected:
-// 	list<Object*>  m_listFontModifyListener;  // 字体修改的监听者
-// };
 
 interface IRenderPen : public IRenderResource
 {
@@ -193,28 +192,46 @@ public:
 	virtual  bool  CreateSolidBrush(Color* pColor) = 0;
 };
 
-class IRenderTarget
+//
+// IRenderTarget的几种渲染方式：
+// 1. 调用BindHDC，将目标绘制在该HDC上面
+// 2. 调用CreateRenderBuffer，将目标绘制在自己的内部缓存当中
+//
+interface IRenderTarget
 {
-public:
-	IRenderTarget(HWND hWnd);
 	virtual ~IRenderTarget() =0 {};
-	virtual void     Release();
+	virtual void     Release() = 0;  // delete this;
 
 	virtual GRAPHICS_RENDER_LIBRARY_TYPE GetGraphicsRenderLibraryType() = 0;
 
 	virtual void     BindHDC(HDC hDC) = 0;
 	virtual HDC      GetBindHDC() = 0;
-	virtual HDC      GetHDC() = 0;
-	virtual void     ReleaseHDC( HDC hDC ) = 0;
-	
+	virtual bool     CreateRenderBuffer(IRenderTarget*  pSrcRT) = 0;  
+    virtual bool     ResizeRenderBuffer(unsigned int nWidth, unsigned int nHeight) = 0;
+	virtual void     GetRenderBufferData(ImageData*  pData) = 0;
+    virtual HDC      GetHDC() = 0;
+    virtual void     ReleaseHDC(HDC hDC) = 0;
+    virtual void     BindHWND(HWND hWnd) = 0;  // 仅D2D有用
+
+    virtual bool     BeginDraw() = 0;
+    virtual void     EndDraw() = 0;
+    virtual void     Clear(DWORD dwColor, RECT* prc) = 0;
+    virtual void     Save(const TCHAR*  szPath) = 0;
+    virtual void     Render2DC(HDC hDC, Render2TargetParam* pParam) = 0;
+    virtual void     Render2Target(IRenderTarget* pDst, Render2TargetParam*  pParam) = 0;
+
 	virtual HRGN     GetClipRgn() = 0;
 	virtual int      SelectClipRgn( HRGN hRgn, int nMode = RGN_COPY) = 0;
 	virtual BOOL     GetViewportOrgEx( LPPOINT lpPoint ) = 0;
 	virtual BOOL     SetViewportOrgEx( int x, int y, LPPOINT lpPoint = NULL) = 0;
 	virtual BOOL     OffsetViewportOrgEx( int x, int y, LPPOINT lpPoint = NULL) = 0;
 	
+    virtual IRenderPen*    CreateSolidPen(int nWidth, Color* pColor) = 0;
+    virtual IRenderPen*    CreateDotPen(int nWidth, Color* pColor) = 0; 
+    virtual IRenderBrush*  CreateSolidBrush(Color* pColor) = 0;
+
 	virtual void     FillRgn(HRGN hRgn, UI::Color* pColor) = 0;
-	virtual void     FillRect(const CRect* lprc, UI::Color* pColor) = 0;
+	virtual void     FillRect(const RECT* lprc, UI::Color* pColor) = 0;
 	virtual void     TileRect(const CRect* lprc, IRenderBitmap*) = 0;
 	virtual void     Rectangle(const CRect* lprc, UI::Color* pColBorder, UI::Color* pColBack, int nBorder, bool bNullBack) = 0;
 	virtual void     DrawFocusRect(const CRect* lprc) = 0;
@@ -225,27 +242,7 @@ public:
 	virtual void     BitBlt(int xDest, int yDest, int wDest, int hDest, IRenderTarget* pSrcHDC, int xSrc, int ySrc, DWORD dwRop ) = 0;
 	virtual void     ImageList_Draw(IRenderBitmap* , int x, int y, int col, int row, int cx, int cy) = 0;
 	virtual void     DrawBitmap(IRenderBitmap* , DRAWBITMAPPARAM* pParam) = 0;
-	virtual void     DrawRotateBitmap(IRenderBitmap* pBitmap, int nDegres, DRAWBITMAPPARAM* pParam) = 0;
     virtual void     DrawString(IRenderFont* pFont, DRAWTEXTPARAM* pParam) = 0;
-
-	//////////////////////////////////////////////////////////////////////////
-	//  resource object
-
-	virtual IRenderPen*    CreateSolidPen(int nWidth, Color* pColor) = 0;
-	virtual IRenderPen*    CreateDotPen(int nWidth, Color* pColor) = 0; 
-	virtual IRenderBrush*  CreateSolidBrush(Color* pColor) = 0;
-
-	virtual bool     BeginDraw(RECT* prcArray, int rcCount, bool bClear=false) = 0;
-	virtual void     EndDraw() = 0;
-	virtual void     ResizeRenderTarget( int nWidth, int nHeight ) = 0;
-	virtual BYTE*    LockBits() = 0;
-	virtual void     UnlockBits() = 0;
-	virtual void     Clear() = 0;
-	virtual void     Save( const String& strPath ) = 0;
-	virtual HBITMAP  CopyRect(RECT *prc) = 0;
-
-protected:
-	HWND    m_hWnd; 
 };
 
 interface IUICursor

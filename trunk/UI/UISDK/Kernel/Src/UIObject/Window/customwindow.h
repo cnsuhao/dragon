@@ -54,7 +54,6 @@ public:
 // 		UIMSG_WM_NCMBUTTONUP    (OnNcMButtonUp)
 // 		UIMSG_WM_NCMBUTTONDBLCLK(OnNcMButtonDblClk)
 
-        UIMSG_WM_GETGRAPHICSRENDERLIBRARYTYPE(GetGraphicsRenderType)
         UIMSG_WM_GET_WINDOW_TRANSPARENT_MODE(GetWndTransMode)
         UIMSG_WM_QUERYINTERFACE(QueryInterface)
         UIMSG_WM_GETOBJECTINFO(OnGetObjectInfo)
@@ -87,11 +86,10 @@ protected:
     void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
 
 	BOOL  PreCreateWindow(CREATESTRUCT* pcs);
-    GRAPHICS_RENDER_LIBRARY_TYPE  GetGraphicsRenderType();
 
     virtual void  OnInnerInitWindow();
 	virtual void  CommitDoubleBuffet2Window(HDC hDCWnd, RECT* prcCommit, int nRectCount=1);
-    virtual bool  DrawObject(IRenderTarget* p, RenderContext roc);
+	virtual void  virtualOnPostDrawObjectErasebkgnd();
 
 	// œ˚œ¢œÏ”¶
 protected:
@@ -104,7 +102,7 @@ protected:
 	void  OnEraseBkgnd(IRenderTarget* hDC);
 	BOOL  OnSetCursor(HWND hWnd, UINT nHitTest, UINT message);
 	void  OnLButtonDown(UINT nFlags, POINT point);
-    UINT  OnHitTest(POINT* pt);
+    UINT  OnHitTest(POINT* pt, POINT*  ptInChild);
 
 //	int  OnCreate(LPCREATESTRUCT lpCreateStruct);
 //	LRESULT  OnNcHitTest( POINT pt );

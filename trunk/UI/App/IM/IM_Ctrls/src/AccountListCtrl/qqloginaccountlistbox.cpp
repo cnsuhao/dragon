@@ -99,7 +99,7 @@ void  QQLoginAccountListBox::SetAttribute(UI::IMapAttribute* pMapAttrib, bool bR
         UI::IButton::CreateInstance(pUIApp, &m_pEraseBtn);
 		m_pEraseBtn->SetOutRef((void**)&m_pEraseBtn);  // 这样就能放心的在析构函数中去释放m_pEraseBtn
 
-		//pNewItem->m_pPanelRoot->AddChild(pEraseBtn);
+		// pNewItem->m_pPanelRoot->AddChild(pEraseBtn);
 
 // 		m_pEraseBtn->SetConfigWidth(16);
 // 		m_pEraseBtn->SetConfigHeight(16);
@@ -327,7 +327,13 @@ void QQLoginAccountListBox::HandleItemChanged(
 
 void QQLoginAccountListBox::OnAnimateTick(int nCount, UI::IStoryboard** ppArray)
 {
-	m_pIQQLoginAccountListBox->UpdateItemRect();
+	//m_pIQQLoginAccountListBox->UpdateItemRect();
+
+    SIZE sizeContent = {0,0};
+    m_pIQQLoginAccountListBox->GetLayout()->Arrange(NULL, &sizeContent);
+    
+    m_pIQQLoginAccountListBox->UpdateObject(true);
+    //m_MgrLayout.Arrange(p, &sizeContent);
 }
 
 

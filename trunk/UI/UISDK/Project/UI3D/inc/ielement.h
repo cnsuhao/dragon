@@ -8,6 +8,7 @@ class MeshElement;
 class ImageElement;
 class ParticleElement;
 class RectangleElement;
+class ImageElement;
 
 interface UI3D_API IElement
 {
@@ -37,6 +38,20 @@ private:
     RectangleElement*  m_pRectangleElementImpl;
 };
 
+interface UI3D_API IImageElement : public IElement
+{
+public:
+    IImageElement(ImageElement* pImpl);
+//     bool  LoadFromFile(const TCHAR* szText);
+//     void  SetDrawRect(float fLeft, float fTop, float fRight, float fBottom, float fZ);
+//     void  SetDirectDrawRect(RECT* prc, float fz);
+//     void  SetTransparency(float fAlpha);
+
+private:
+    ImageElement*  m_pImageElementImpl;
+};
+
+
 #if 0
 interface UI3D_API IMeshElement : public IElement
 {
@@ -46,19 +61,6 @@ public:
 
 private:
 	MeshElement*  m_pMeshElementImpl;
-};
-
-interface UI3D_API IImageElement : public IElement
-{
-public:
-    IImageElement(ImageElement* pImpl);
-    bool  LoadFromFile(const TCHAR* szText);
-    void  SetDrawRect(float fLeft, float fTop, float fRight, float fBottom, float fZ);
-	void  SetDirectDrawRect(RECT* prc, float fz);
-    void  SetTransparency(float fAlpha);
-
-private:
-    ImageElement*  m_pImageElementImpl;
 };
 
 interface UI3D_API IParticleElement : public IElement

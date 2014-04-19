@@ -527,3 +527,21 @@ const TCHAR*  SkinRes::GetXmlDoc(UINT nIndex, IUIDocument** pp)
 
     return pInfo->m_strDocPath.c_str();
 }
+bool  SkinRes::GetXmlDocByName(const TCHAR* szName, IUIDocument** pp)
+{
+	if (!szName || !pp)
+		return false;
+
+	_DocList::iterator iter = m_listDoc.begin();
+	for (; iter != m_listDoc.end(); iter++)
+	{
+		UISkinResDocInfo*  p = *iter;
+		if (p->m_strDocPath == szName)
+		{
+			*pp = p->m_pDoc;
+			p->m_pDoc->AddRef();
+			return true;
+		}
+	}
+	return false;
+}

@@ -81,7 +81,7 @@ void  CMainWnd::OnRing()
 
     CMaskWnd* pMaskWnd = NULL;
     CMaskWnd::CreateInstance(g_pUIApp, &pMaskWnd);
-    pMaskWnd->DoModal(g_pUIApp, _T("mask"), NULL);
+    pMaskWnd->DoModal(g_pUIApp, _T("mask"), NULL, false);
     SAFE_DELETE_Ixxx(pMaskWnd);
 
 	if (!::IsWindow(GetHWND()))
@@ -162,7 +162,7 @@ void  CMainWnd::OnContextMenu(HWND hWnd, POINT point)
     {
         CSettingWnd*  pSettingWnd = NULL;
         CSettingWnd::CreateInstance(g_pUIApp, &pSettingWnd);
-        if (IDOK == pSettingWnd->DoModal(g_pUIApp, _T("Setting"), GetHWND()))
+        if (IDOK == pSettingWnd->DoModal(g_pUIApp, _T("Setting"), GetHWND(), false))
         {
             SetTotalTime(GetConfig()->GetHour(), GetConfig()->GetMinute(), GetConfig()->GetSecond());
         }

@@ -11,7 +11,6 @@ namespace UI
 Menu::Menu()
 {
     m_pIMenu = NULL;
-    m_bLayered = false;
     m_bPopupAtParentRight = true;
     m_nTrackPopupMenuFlag = 0;
     m_nRetCmd = 0;
@@ -323,6 +322,9 @@ IListItemBase*  Menu::AppendPopup(const TCHAR* szText, UINT nId, IMenu* pSubMenu
 
 HRESULT  Menu::FinalConstruct(IUIApplication* p)
 {
+    PopupMenuWindow::CreateInstance(p, &m_pPopupWrapWnd);
+    m_pPopupWrapWnd->AddChild(m_pIMenu);
+
     DO_PARENT_PROCESS(IMenu, IListCtrlBase);
     if (FAILED(GetCurMsg()->lRet))
         return GetCurMsg()->lRet;
@@ -354,30 +356,27 @@ void Menu::ResetAttribute()
     // TODO: 手动切换主题时如果确定是否要修改这些值？
     if (IsThemeActive())
     {
-        m_pIMenu->SetItemHeight(22);
+        m_pIMenu->SetItemHeight(22, false);
         m_nIconGutterWidth = 28;
     }
     else
     {
-        m_pIMenu->SetItemHeight(18);
+        m_pIMenu->SetItemHeight(18, false);
         m_nIconGutterWidth = 20;
     }
     m_nPopupTriangleWidth = 20;
-
-    m_bLayered = false;
 }
 
 void  Menu::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 {
-    IUIApplication*  pUIApplication = m_pIMenu->GetUIApplication();
+	if (m_pPopupWrapWnd)
+	{
+		const TCHAR*  szText = pMapAttrib->GetAttr(XML_POPUPWINDOW_PREFIX XML_WINDOW_GRAPHICS_RENDER_LIBRARY, false);
+		m_pPopupWrapWnd->GetIWindowRender()->SetGraphicsRenderType(UIParseGraphicsRenderLibraryType(szText));
+	}
 
+    IUIApplication*  pUIApplication = m_pIMenu->GetUIApplication();
     const TCHAR* szText = NULL;
-    
-    szText = pMapAttrib->GetAttr(XML_WINDOW_TRANSPARENT_TYPE, false);
-    if (szText && 0 == _tcscmp(szText, XML_WINDOW_TRANSPARENT_TYPE_LAYERED))
-    {
-        m_bLayered = true;
-    }
 
     // 默认字体设置
     if (NULL == pMapAttrib->GetAttr(XML_TEXTRENDER_TYPE, false))
@@ -451,19 +450,6 @@ void  Menu::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 //     }
 }
 
-// 用于支持分层窗口样式的菜单 
-// 由于菜单刚创建时没有窗口，因此给Menu分配字体时，不知道使用哪种类型
-// 因此给Menu发一个GetGraphicsRenderLibraryType来获取
-LRESULT Menu::OnGetGraphicsRenderType()
-{
-    if (m_bLayered)
-    {
-        return GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS;
-    }
-    return GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
-}
-
-
 IListItemBase* Menu::GetMenuItemBySubMenu(IMenu* pSubMenu)
 {
     IListItemBase* pItem = m_pIMenu->GetFirstItem();
@@ -515,13 +501,9 @@ int  Menu::TrackPopupMenu(UINT nFlag, int x, int y, IMessage* pNotifyObj, HWND h
     m_nTrackPopupMenuFlag = nFlag;
     m_nRetCmd = 0;
 
-    if (NULL == m_pPopupWrapWnd)
+    if (NULL == m_pPopupWrapWnd->GetHWND())
     {
-        PopupMenuWindow::CreateInstance(m_pIMenu->GetUIApplication(), &m_pPopupWrapWnd);
-        if (NULL == m_pPopupWrapWnd)
-            return -1;
-
-        m_pPopupWrapWnd->Create(m_pIMenu, _T("PopupMenuWindow"));
+        m_pPopupWrapWnd->Create(m_pIMenu, m_pIMenu, _T("PopupMenuWindow"), hWndClickFrom);
     }
 
     m_pIMenu->SetNotify(pNotifyObj, 0);
@@ -531,6 +513,22 @@ int  Menu::TrackPopupMenu(UINT nFlag, int x, int y, IMessage* pNotifyObj, HWND h
     m_pPopupWrapWnd->Show(pt, (nFlag&TPM_RETURNCMD)?TRUE:FALSE);
 
     return m_nRetCmd;
+}
+
+// 本函数主要用于UIEditor当中显示菜单图像
+IWindow*  Menu::CreateMenuWindow()
+{
+    if (!m_pIMenu->GetUIApplication()->IsDesignMode())
+        return NULL;
+
+    if (NULL == m_pPopupWrapWnd->GetHWND())
+    {
+        m_pPopupWrapWnd->Create(m_pIMenu, m_pIMenu, _T("PopupMenuWindow"), NULL);
+    }
+    POINT pt = { 0, 0 };
+    m_pPopupWrapWnd->Show(pt, FALSE, TRUE);
+
+    return GetPopupWindow();
 }
 
 void  Menu::SetReturnCmd(UINT n) 
@@ -708,6 +706,12 @@ void Menu::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
             OnClick(pItem);
         }
     }
+}
+
+// 在pretranslate中屏蔽该消息，以解决在按钮上狂按空格，会一直弹出菜单的问题
+void  Menu::OnKeyUp( UINT nChar, UINT nRepCnt, UINT nFlags )
+{
+
 }
 
 //
@@ -976,13 +980,9 @@ int  Menu::PopupAsSubMenu(UINT nFlags, Menu* pParentMenu, IListItemBase* pItem)
 
     HWND hParentWnd = pParentMenu->GetPopupWindowHandle();
 
-    if (NULL == m_pPopupWrapWnd)
+    if (NULL == m_pPopupWrapWnd->GetHWND())
     {
-        PopupMenuWindow::CreateInstance(m_pIMenu->GetUIApplication(), &m_pPopupWrapWnd);
-        if (NULL == m_pPopupWrapWnd)
-            return -1;
-
-        m_pPopupWrapWnd->Create(m_pIMenu, _T("PopupSubMenuWindow"));
+        m_pPopupWrapWnd->Create(m_pIMenu, m_pIMenu, _T("PopupSubMenuWindow"));
     }
 
     // 	ATTRMAP map = m_mapAttribute;

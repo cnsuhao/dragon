@@ -12,10 +12,9 @@ public:
 	ScrollPanel();
 	~ScrollPanel();
 
-    UI_DECLARE_OBJECT3(ScrollPanel, OBJ_CONTROL|PANEL_SCROLL, _T("Kernel/Container"))
+    UI_DECLARE_OBJECT3(ScrollPanel, OBJ_PANEL|PANEL_SCROLL, _T("Kernel/Container"))
 
 	UI_BEGIN_MSG_MAP
-        UIMSG_WM_SIZE(OnSize)
         UIMSG_WM_GETOBJECTINFO(OnGetObjectInfo)
         UIMSG_WM_MOUSEWHEEL(OnMouseWheel)
         UICHAIN_MSG_MAP_POINT_MEMBER(m_pMgrScrollBar)
@@ -28,12 +27,12 @@ public:
     IScrollPanel*  GetIScrollPanel() { return m_pIScrollPanel; }
 
 protected:
+	virtual void  virtualOnSize(UINT nType, UINT nWidth, UINT nHeight);
+
     HRESULT  FinalConstruct(IUIApplication* p);
 	void  ResetAttribute();
 	void  SetAttribute(IMapAttribute* pMapAttrib, bool bReload );
-    void  OnSize(UINT nType, int cx, int cy);
     BOOL  OnMouseWheel(UINT nFlags, short zDelta, POINT pt);
-//	UINT  OnHitTest(POINT* pt);
 
 protected:
     IScrollPanel*      m_pIScrollPanel;

@@ -333,6 +333,9 @@ void  PropertyCtrlComboBoxItem::BeginEdit()
     GetValueColumnRect(&rc);
     rc.DeflateRect(2,1,1,1);
 
+    IPanel* pPanel = m_pIPropertyCtrlComboBoxItem->GetRootPanel();
+    pPanel->AddChild(m_pShareData->pComboBoxCtrl);
+
     m_pShareData->pComboBoxCtrl->SetText(m_strValue.c_str());
 	IListBox* pListBox = m_pShareData->pComboBoxCtrl->GetListBox();
 	map<int, OptionItem*>::iterator iter = m_mapItems.begin();
@@ -341,8 +344,6 @@ void  PropertyCtrlComboBoxItem::BeginEdit()
 		OptionItem* pItem = iter->second;
 		pListBox->AddString(pItem->strText.c_str(), LISTITEM_OPFLAG_NOALL)->SetData(pItem->nIndex);
 	}
-    IPanel* pPanel = m_pIPropertyCtrlComboBoxItem->GetRootPanel();
-    pPanel->AddChild(m_pShareData->pComboBoxCtrl);
 
 //    m_pShareData->pComboBoxCtrl->SetObjectPos(&rc, 0);
     m_pShareData->pComboBoxCtrl->SetConfigLeft(rc.left);

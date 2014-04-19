@@ -32,10 +32,10 @@ SkinUI::~SkinUI()
 }
 
 
-// material.render.type="image"
-// material.render.image="skin"
-// material.render.region="6"
-// material.render.image.drawtype="bitbltrighttop"
+// texture.render.type="image"
+// texture.render.image="skin"
+// texture.render.region="6"
+// texture.render.image.drawtype="bitbltrighttop"
 void  SkinUI::CreateShareSkinRender()
 {
     UI::IUIApplication*  pUIApp = IM::GetUIApplication();
@@ -117,9 +117,9 @@ void  SkinUI::Show()
         m_pSkinDlg->SetSkinUI(this);
         m_pSkinDlg->InitData(m_byteAlpha, m_byteTextureAlpha);
 
-        if (NULL == m_pSkinDlg->GetMaterialRender())
+        if (NULL == m_pSkinDlg->GetTextureRender())
         {
-            m_pSkinDlg->SetMaterialRender(GetShareSkinRender());
+            m_pSkinDlg->SetTextureRender(GetShareSkinRender());
         }
 
         if (NULL == m_pMainUI)
@@ -204,7 +204,7 @@ void  SkinUI::ChangeSkin(const String&  strFile, int nImageDrawType, int nColor,
         pTopWindowMgr->UpdateAllWindow();
 
         UI::UIMSG  msg;
-        msg.message = UI_WM_SKINMATERIALCHANGED;
+        msg.message = UI_WM_SKINTEXTURECHANGED;
         pTopWindowMgr->ForwardMessage2AllObj(&msg);
 
         pTopWindowMgr->UpdateAllWindow();

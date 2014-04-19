@@ -71,7 +71,7 @@ public:
 
 	void   SetLogFont( LOGFONT* pLogFont );
 	void   ModifyFont( LOGFONT* pLogFont );
-	IRenderFont* GetFont( GRAPHICS_RENDER_LIBRARY_TYPE eRenderType = GRAPHICS_RENDER_LIBRARY_TYPE_GDI );
+	IRenderFont* GetFont(SkinRes* pSkinRes, GRAPHICS_RENDER_LIBRARY_TYPE eRenderType = GRAPHICS_RENDER_LIBRARY_TYPE_GDI );
 
 	WPARAM GetWParam() { return m_wParam; }
 	LPARAM GetLParam() { return m_lParam; }
@@ -92,9 +92,7 @@ private:
 	GDIRenderFont*       m_pGdiFont;
 	GdiplusRenderFont*   m_pGdiplusFont;
 
-#ifdef UI_D2D_RENDER
-	Direct2DRenderFont*  m_pD2DFont;
-#endif
+	IRenderFont*   m_pD2DFont;
 };
 
 //
@@ -103,7 +101,7 @@ private:
 class FontRes
 {
 public:
-    FontRes();
+    FontRes(SkinRes*  m_pSkinRes);
 	~FontRes();
 
     IFontRes*  GetIFontRes();
@@ -126,6 +124,7 @@ public:
 	bool GetRenderFontID(IRenderFont* pFont, String& strID);
 
 private:
+    SkinRes*  m_pSkinRes;
     IFontRes*  m_pIFontRes;
     vector<FontResItem*>  m_vFonts;
 };

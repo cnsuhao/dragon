@@ -3,6 +3,7 @@
 #include "DirectSoundEngine.h"
 #include <math.h>
 #include "App\Player\Player_Sound/UIEffect/blur//blur.h"
+#include "App\Player\Player_Sound\sound\goom\goom.h"
 
 CSpectrumAnalyser::CSpectrumAnalyser()
 {
@@ -15,6 +16,7 @@ CSpectrumAnalyser::CSpectrumAnalyser()
 	m_nSampleBufferSize = 0;
 	m_nBandCount = 0;
 	m_nSamplesPerBand = 0;
+    m_pGoom = NULL;
 
 	m_pBandValue = NULL;
 	m_pOldBandValue = NULL;
@@ -44,6 +46,7 @@ CSpectrumAnalyser::CSpectrumAnalyser()
 }
 CSpectrumAnalyser::~CSpectrumAnalyser()
 {
+    SAFE_DELETE(m_pGoom);
 	this->Release();
 	DeleteCriticalSection(&m_cs);
 }
@@ -199,6 +202,10 @@ int CSpectrumAnalyser::GetAnslyserSampleCount()
 	{
 		return m_nAnalyserSampleCount;
 	}
+    else if (m_eType == VISUALIZATION_GOOM)
+    {
+        return m_nAnalyserSampleCount;
+    }
 	else if (m_eType == VISUALIZATION_WAVE)
 	{
 		return m_rcRender.right - m_rcRender.left;
@@ -219,6 +226,7 @@ void CSpectrumAnalyser::SetVisualizationType(E_VISUALIZATION_TYPE eType)
 	SAFE_ARRAY_DELETE(m_pOldBandValue);
 	SAFE_ARRAY_DELETE(m_pPeaksDelay);
 	SAFE_ARRAY_DELETE(m_pPeaksValue);
+    SAFE_DELETE(m_pGoom);
 
 	if (VISUALIZATION_WAVE == m_eType)
 	{
@@ -248,6 +256,15 @@ void CSpectrumAnalyser::SetVisualizationType(E_VISUALIZATION_TYPE eType)
 
 		m_bSuspend &= ~THREAD_SUSPEND_BY_VISUAL_NONE;
 	}
+    else if (VISUALIZATION_GOOM == m_eType)
+    {
+        m_pLeftRightSampleData = new float[m_nAnalyserSampleCount];
+        m_nSampleBufferSize = m_nAnalyserSampleCount*m_nChannels*m_nBytePerSample;
+        m_pSampleBuffer = new signed char[m_nSampleBufferSize];
+
+        m_pGoom = new Goom;
+        m_pGoom->Init(m_rcRender.right-m_rcRender.left, m_rcRender.bottom-m_rcRender.top);
+    }
 	else
 	{
 		m_bSuspend |= THREAD_SUSPEND_BY_VISUAL_NONE;
@@ -311,6 +328,11 @@ bool CSpectrumAnalyser::OnSetVisualization(VisualizationInfo* pInfo)
 			    memset(m_pPeaksValue,   nNewH, sizeof(int)*m_nBandCount);
             if (m_pPeaksDelay)
 			    memset(m_pPeaksDelay,   0, sizeof(int)*m_nBandCount);
+
+            if (m_pGoom)
+            {
+                m_pGoom->Resize(nNewW, nNewH);
+            }
 		}
 	}
 	if (pInfo->nMask & VI_MASK_TYPE)
@@ -365,6 +387,7 @@ HRESULT CSpectrumAnalyser::RenderFile(int nChannel, int nBytePerSample)
 	{
 	case VISUALIZATION_SPECTRUM:
 	case VISUALIZATION_WAVE:
+    case VISUALIZATION_GOOM:
 		m_nSampleBufferSize = GetAnslyserSampleCount()*m_nChannels*m_nBytePerSample;
 		m_pSampleBuffer = new signed char[m_nSampleBufferSize];
 		break;
@@ -550,6 +573,11 @@ void CSpectrumAnalyser::Process()
  			FFTSamples();
 	 		DrawBands();
 		}
+        else if (m_eType == VISUALIZATION_GOOM)
+        {
+           // FFTSamples();
+            DrawGoom();
+        }
 		else
 		{
 			DrawWave();
@@ -570,7 +598,10 @@ void CSpectrumAnalyser::TransformSamples()
 // 			m_Left[a] = (float) m_pSampleBuffer[a] / 128.0F;
 // 			m_Right[a] = m_Left[a];
 
-			m_pLeftRightSampleData[i] = (float)m_pSampleBuffer[i] / 128.0f;
+            if (m_eType == VISUALIZATION_GOOM)
+                m_pLeftRightSampleData[i] = (float)m_pSampleBuffer[i];
+            else
+			    m_pLeftRightSampleData[i] = (float)m_pSampleBuffer[i] / 128.0f;
 		}
 
 	} 
@@ -582,7 +613,11 @@ void CSpectrumAnalyser::TransformSamples()
 // 			m_Right[i] = (float) m_pSampleBuffer[(i<<1)+1] / 128.0F;
 
 			int n = i<<1;
-			m_pLeftRightSampleData[i] = (m_pSampleBuffer[n] + m_pSampleBuffer[n+1]) / 256.0F;
+
+            if (m_eType == VISUALIZATION_GOOM)
+                m_pLeftRightSampleData[i] = (float)(m_pSampleBuffer[n] + m_pSampleBuffer[n+1]);
+            else
+			    m_pLeftRightSampleData[i] = (float)(m_pSampleBuffer[n] + m_pSampleBuffer[n+1]) / 256.0F;
 		}
 
 	} 
@@ -594,7 +629,10 @@ void CSpectrumAnalyser::TransformSamples()
 // 				m_pSampleBuffer[i<<1]) / 32767.0F;
 // 			m_Right[i] =  m_Left[i];
 
-			m_pLeftRightSampleData[i] = (float) (( m_pSampleBuffer[(i<<1)+1] << 8) + m_pSampleBuffer[i<<1]) / 32767.0F;
+            if (m_eType == VISUALIZATION_GOOM)
+                m_pLeftRightSampleData[i] = (float) (( m_pSampleBuffer[(i<<1)+1] << 8) + m_pSampleBuffer[i<<1]);
+            else
+			    m_pLeftRightSampleData[i] = (float) (( m_pSampleBuffer[(i<<1)+1] << 8) + m_pSampleBuffer[i<<1]) / 32767.0F;
 		}
 	} 
 	else if (m_nChannels == 2 &&  m_nBytePerSample == 2)
@@ -610,7 +648,10 @@ void CSpectrumAnalyser::TransformSamples()
 			float fLeft = (float) (( m_pSampleBuffer[n+1] << 8) + m_pSampleBuffer[n]);
 			float fRight = (float) (( m_pSampleBuffer[n+3] << 8) + m_pSampleBuffer[n+2]);
 
-			m_pLeftRightSampleData[i] = (fLeft+fRight)/65534.0F;
+            if (m_eType == VISUALIZATION_GOOM)
+                m_pLeftRightSampleData[i] = (fLeft+fRight);
+            else
+			    m_pLeftRightSampleData[i] = (fLeft+fRight)/65534.0F;
 		}
 	}
 }
@@ -870,4 +911,13 @@ void CSpectrumAnalyser::ReleaseVisualSnapshot()
 {
 	::SelectObject(m_hRenderWndMemDC, m_hMemBitmap);
 	LeaveCriticalSection(&m_cs);
+}
+
+void  CSpectrumAnalyser::DrawGoom()
+{   
+    int   nWidth = m_rcRender.right - m_rcRender.left;
+    int   nHeight = m_rcRender.bottom - m_rcRender.top;
+
+    m_pGoom->Render(m_pLeftRightSampleData, m_nAnalyserSampleCount, m_hMemBitmap);
+    ::BitBlt(m_hRenderWndDC, m_rcRender.left, m_rcRender.top,nWidth,nHeight,m_hRenderWndMemDC,0,0,SRCCOPY);
 }

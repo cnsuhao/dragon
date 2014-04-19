@@ -2,6 +2,7 @@
 #include "CommitWindowBufferListenerMgr.h"
 #include "UISDK\Kernel\Src\UIObject\Window\windowbase.h"
 
+#if 0
 CommitWindowBufferListenerMgr::CommitWindowBufferListenerMgr()
 {	
 	m_pWindow = NULL;
@@ -11,7 +12,7 @@ CommitWindowBufferListenerMgr::~CommitWindowBufferListenerMgr()
 	m_list.clear();
 }
 
-void CommitWindowBufferListenerMgr::DoPre(HDC hDC, HDC hMemDC, RECT* prc, int nRectCount)
+void CommitWindowBufferListenerMgr::DoPre(HDC hDC, IRenderTarget* pRenderTarget, RECT* prc, int nRectCount)
 {
 	if (0 == m_list.size())
 		return;
@@ -24,10 +25,10 @@ void CommitWindowBufferListenerMgr::DoPre(HDC hDC, HDC hMemDC, RECT* prc, int nR
 		if (NULL == pItem)
 			continue;
 
-		pItem->PreCommitWindowBuffer(hDC, hMemDC, m_pWindow->GetIWindowBase(), prc, nRectCount);
+		pItem->PreCommitWindowBuffer(hDC, pRenderTarget, m_pWindow->GetIWindowBase(), prc, nRectCount);
 	}
 }
-void CommitWindowBufferListenerMgr::DoPost(HDC hDC, HDC hMemDC, RECT* prc, int nRectCount)
+void CommitWindowBufferListenerMgr::DoPost(HDC hDC, IRenderTarget* pRenderTarget, RECT* prc, int nRectCount)
 {
 	if (0 == m_list.size())
 		return;
@@ -41,7 +42,7 @@ void CommitWindowBufferListenerMgr::DoPost(HDC hDC, HDC hMemDC, RECT* prc, int n
 		if (NULL == pItem)
 			continue;
 
-		pItem->PostCommitWindowBuffer(hDC, hMemDC, m_pWindow->GetIWindowBase(), prc, nRectCount);
+		pItem->PostCommitWindowBuffer(hDC, pRenderTarget, m_pWindow->GetIWindowBase(), prc, nRectCount);
 
 		if (pItem->OnlyListenOnce())
 			iter = m_list.erase(iter);
@@ -74,3 +75,4 @@ void  CommitWindowBufferListenerMgr::ClearListener()
 {
 	m_list.clear();
 }
+#endif

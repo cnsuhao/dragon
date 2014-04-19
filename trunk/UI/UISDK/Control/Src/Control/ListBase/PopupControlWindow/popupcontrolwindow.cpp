@@ -2,13 +2,15 @@
 #include "popupcontrolwindow.h"
 #include "UISDK\Control\Inc\Interface\imenu.h"
 #include "UISDK\Control\Src\Control\Menu\menu.h"
+#include "UISDK\Kernel\Inc\Interface\ilayout.h"
 
 namespace UI
 {
 
 PopupControlWindow::PopupControlWindow()
 {
-	m_pObject = NULL;
+	m_pBindObject = NULL;
+	m_pContentObj = NULL;
 	m_bExitLoop = false;
     m_bMouseIn = false;
 	m_hWndClickFrom = NULL;
@@ -27,36 +29,28 @@ BOOL PopupControlWindow::PreCreateWindow(CREATESTRUCT* pcs)
     {
         pcs->dwExStyle |= WS_EX_NOACTIVATE;
     }
-	pcs->lpszClass = WND_POPUP_CONTROL_SHADOW_NAME;
+	pcs->lpszClass = /*WND_POPUP_CONTROL_NAME*/WND_POPUP_CONTROL_SHADOW_NAME;
 	
     SetMsgHandled(FALSE);
     return TRUE;
 }
 
-void  PopupControlWindow::Create(IObject*  pBindObj, const TCHAR* szId, HWND hParentWnd)
+void  PopupControlWindow::Create(IObject*  pBindObj, IObject* pContentObj, const TCHAR* szId, HWND hParentWnd)
 {
-    m_pObject = pBindObj;
+    m_pBindObject = pBindObj;
+	m_pContentObj = pContentObj;
     __super::Create(GetUIApplication(), _T(""), hParentWnd);  // 在创建完panel的layer之后再创建窗口，避免第一次响应_OnSize中没有layout
 
     IMapAttribute*  pMapAttrib = NULL;
     pBindObj->GetMapAttribute(&pMapAttrib);
     if (pMapAttrib)
     {
-        IMapAttribute*  pMapAttribCopy = NULL;
-        pMapAttrib->CreateCopy(&pMapAttribCopy);
+		if (szId)
+			this->SetID(szId);
 
-        if (szId)
-            this->SetID(szId);
-
-		SERIALIZEDATA data = {0};
-		data.pMapAttrib = pMapAttrib;
-		data.nFlag = SERIALIZEFLAG_LOAD;
-		UISendMessage(this, UI_WM_SERIALIZE, (WPARAM)&data);
-//        UISendMessage(this, UI_WM_SETATTRIBUTE, (WPARAM)pMapAttrib, (LPARAM)false);
-
-        SAFE_RELEASE(pMapAttribCopy);
-        SAFE_RELEASE(pMapAttrib);
-    }
+		SetAttributeByPrefix(XML_POPUPWINDOW_PREFIX, pMapAttrib, false, true);
+		SAFE_RELEASE(pMapAttrib);
+	}
 }
  
 void  PopupControlWindow::SetPopupFromInfo(HWND hWnd, RECT* prcClickInWnd)
@@ -68,15 +62,21 @@ void  PopupControlWindow::SetPopupFromInfo(HWND hWnd, RECT* prcClickInWnd)
 		m_rcClickFrom.SetRectEmpty();
 }
 
-void  PopupControlWindow::Show(POINT pt, BOOL bDoModal)
+// 2014.4.18  libo
+// 增加一个bDesignMode，用于支持在UIEditor当中显示菜单 
+void  PopupControlWindow::Show(POINT pt, BOOL bDoModal, BOOL bDesignMode)
 {
-    if (NULL == m_pObject)
+    if (NULL == m_pBindObject || NULL == m_pContentObj)
         return;
 
     m_bExitLoop = false;
-    UISendMessage(m_pObject, UI_WM_INITPOPUPCONTROLWINDOW, 0,0,0, this);
+    UISendMessage(m_pContentObj, UI_WM_INITPOPUPCONTROLWINDOW, 0,0,0, this);
+	if (m_pBindObject && m_pBindObject != m_pContentObj)
+	{
+		UISendMessage(m_pBindObject, UI_WM_INITPOPUPCONTROLWINDOW, 0,0,0, this);
+	}
 
-    SIZE size = m_pObject->GetDesiredSize();
+    SIZE size = m_pContentObj->GetDesiredSize();
 
     CRect rcWorkArea;
     MONITORINFO mi = {sizeof(MONITORINFO), 0};
@@ -98,10 +98,27 @@ void  PopupControlWindow::Show(POINT pt, BOOL bDoModal)
     if (pt.y + size.cy > rcWorkArea.bottom)
         pt.y = rcWorkArea.bottom - size.cy;
 
+    // 注：如果该窗口上一次的大小和这一次显示的大小一致，会导致窗口收不到OnSize通知，导致内部控件无法布局
     HWND hPopupWnd = GetHWND();
-    ::SetWindowPos(hPopupWnd, NULL, pt.x, pt.y, size.cx, size.cy, SWP_SHOWWINDOW|SWP_NOZORDER|SWP_NOACTIVATE);
-	if (!GetUIApplication()->IsDesignMode())
+    CRect rcOld, rcNew;
+
+    ::GetClientRect(hPopupWnd, &rcOld);
+    ::SetWindowPos(hPopupWnd, NULL, pt.x, pt.y, size.cx, size.cy, SWP_NOZORDER|SWP_NOACTIVATE);
+    ::GetClientRect(hPopupWnd, &rcNew);
+
+    if (rcNew.Width() == rcOld.Width() && rcNew.Height() == rcOld.Height())
+    {
+        if (GetLayout())
+            GetLayout()->Arrange(NULL);
+    }
+
+	if (!bDesignMode)
 	{
+        ::ShowWindow(hPopupWnd, SW_SHOWNOACTIVATE);
+        // TODO: 下次自己实现一个AnimateWindow吧
+        //     UpdateWindow(hPopupWnd);
+        //     BOOL b = ::AnimateWindow(hPopupWnd, 2000, AW_SLIDE|AW_VER_POSITIVE);
+
 		IMessageFilterMgr* pMgr = NULL;
 		GetUIApplication()->GetMessageFilterMgr(&pMgr);
 		pMgr->AddMessageFilter(static_cast<IPreTranslateMessage*>(this));
@@ -121,10 +138,14 @@ void  PopupControlWindow::Hide()
 
     ::ShowWindow(GetHWND(), SW_HIDE);
 
-    if (m_pObject)
+    if (m_pContentObj)
     {
-        UISendMessage(m_pObject, UI_WM_UNINITPOPUPCONTROLWINDOW, 0,0,0, this);  // 将该消息放在这里发送，保证每一个子菜单窗口销毁时都能收到该消息
+        UISendMessage(m_pContentObj, UI_WM_UNINITPOPUPCONTROLWINDOW, 0,0,0, this);  // 将该消息放在这里发送，保证每一个子菜单窗口销毁时都能收到该消息
     }
+	if (m_pBindObject && m_pBindObject != m_pContentObj)
+	{
+		UISendMessage(m_pBindObject, UI_WM_UNINITPOPUPCONTROLWINDOW, 0,0,0, this);
+	}
 
     // 通知对象窗口被销毁
     IMessageFilterMgr* pMgr = NULL;
@@ -142,11 +163,10 @@ void PopupControlWindow::OnInitialize()
     __super::nvProcessMessage(GetCurMsg(), 0, 0);
     SetWindowResizeType(WRSB_NONE);
 
-    if (m_pObject)
-    {
-	    m_pObject->AddHook(this, 0, 1);
-	    this->AddChild(m_pObject);
-    }
+//     if (m_pContentObj)
+//     {
+// 	    m_pContentObj->AddHook(this, 0, 1);
+//     }
 }
 
 void PopupControlWindow::OnDestroy()
@@ -155,11 +175,11 @@ void PopupControlWindow::OnDestroy()
 
 	// 避免窗口在DestroyChildObject中delete child object
 	// 同时避免在销毁root menu时，会先销毁子菜单的窗口，因此在这里将子菜单的parent也清理掉
-	if (m_pObject)
+	if (m_pContentObj)
 	{
-		m_pObject->RemoveHook(this);
+		//m_pContentObj->RemoveHook(this);
 		this->Standalone();
-		m_pObject->SetParentObjectDirect(NULL);
+		m_pContentObj->SetParentObjectDirect(NULL);
 	}
 }
 
@@ -205,7 +225,7 @@ BOOL PopupControlWindow::PreTranslateMessage(MSG* pMsg)
 		}
 
 		BOOL bHandle = FALSE;
-		UISendMessage(this->m_pObject, pMsg->message, pMsg->wParam, pMsg->lParam, 0, 0, 0, &bHandle);
+		UISendMessage(this->m_pContentObj, pMsg->message, pMsg->wParam, pMsg->lParam, 0, 0, 0, &bHandle);
 		//return bHandle;
         return TRUE;
 	}
@@ -289,23 +309,6 @@ BOOL PopupControlWindow::OnEraseBkgnd(IRenderTarget* pRenderTarget)
 	return TRUE;
 }
 
-LRESULT PopupControlWindow::OnGetGraphicsRenderType()
-{
-	if (m_pObject)
-	{
-		// 注：这里没有去调用GetGraphicsRenderType，因为GetGraphicsRenderType中m_pObject又会反调用m_pWindow->GetGraphicsRenderLibraryType
-		//     有可能导致死嵌套
-
-		GRAPHICS_RENDER_LIBRARY_TYPE e = (GRAPHICS_RENDER_LIBRARY_TYPE)UISendMessage(m_pObject, UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE );
-		if (GRAPHICS_RENDER_LIBRARY_TYPE_AUTO == e)
-		{
-			e = GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
-		}
-		return e;
-	}
-	return  GRAPHICS_RENDER_LIBRARY_TYPE_AUTO;
-}
-
 
 PopupListBoxWindow::PopupListBoxWindow()
 {
@@ -337,7 +340,7 @@ BOOL PopupListBoxWindow::PreTranslateMessage(MSG* pMsg)
 			nChar == VK_NEXT)
 		{
 			BOOL bHandle = FALSE;
-			UISendMessage(this->m_pObject, pMsg->message, pMsg->wParam, pMsg->lParam, 0, 0, 0, &bHandle);
+			UISendMessage(this->m_pContentObj, pMsg->message, pMsg->wParam, pMsg->lParam, 0, 0, 0, &bHandle);
 			return TRUE;/*bHandle*/; // 有可能传给了其实控件
 		}
 
@@ -363,7 +366,7 @@ void PopupListBoxWindow::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	if (VK_DOWN == nChar || VK_UP == nChar) 
 	{
 		SetMsgHandled(TRUE);
-		m_pObject->ProcessMessage(GetCurMsg(), 0);
+		m_pContentObj->ProcessMessage(GetCurMsg(), 0);
 	}
 	return;
 }
@@ -378,9 +381,9 @@ PopupMenuWindow::PopupMenuWindow()
 void PopupMenuWindow::OnInitialize()
 {
 	__super::OnInitialize();
-    if (m_pObject)
+    if (m_pContentObj)
     {
-        IMenu* p = (IMenu*)m_pObject->QueryInterface(uiiidof(IMenu));
+        IMenu* p = (IMenu*)m_pContentObj->QueryInterface(uiiidof(IMenu));
         if (p)
             m_pMenu = p->GetImpl();
     }

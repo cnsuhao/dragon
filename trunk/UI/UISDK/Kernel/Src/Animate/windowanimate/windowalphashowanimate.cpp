@@ -3,7 +3,7 @@
 #include "UISDK\Kernel\Src\Animate\windowanimate\layeredanimatewindow.h"
 #include "UISDK\Kernel\Src\UIObject\Window\windowbase.h"
 #include "UISDK\Kernel\Src\Animate\animatemgr.h"
-#include "UISDK\Kernel\Src\RenderLayer\renderchain.h"
+#include "UISDK\Kernel\Src\RenderLayer2\layer\windowrender.h"
 
 namespace UI
 {
@@ -28,10 +28,10 @@ WindowAlphaShowAnimate::~WindowAlphaShowAnimate()
 
 void  WindowAlphaShowAnimate::Initialize()
 {
-    m_pWindow->GetRenderChain()->SetCanCommit(false);
+    m_pWindow->GetWindowRender()->SetCanCommit(false);
     ::ShowWindow(m_pWindow->m_hWnd, SW_SHOW);
     m_pWindow->PaintWindow(NULL);
-    m_pWindow->GetRenderChain()->SetCanCommit(true);
+    m_pWindow->GetWindowRender()->SetCanCommit(true);
 
     __super::Initialize();
 }
@@ -77,7 +77,11 @@ bool  WindowAlphaShowAnimate::DoAction(int nId, int nDuration, bool bShow)
     this->SetNotifyObj(m_pWindow->GetIMessage());
     this->Begin();
 
-    m_SrcImage.BitBlt(m_pLayeredWindow->m_hLayeredMemDC,0,0, m_pLayeredWindow->m_nWidth, m_pLayeredWindow->m_nHeight, 0 , 0);
+    m_SrcImage.BitBlt(m_pLayeredWindow->m_hLayeredMemDC,
+		m_rcWindowInBuffer.left,
+		m_rcWindowInBuffer.top,
+		m_pLayeredWindow->m_nWidth,
+		m_pLayeredWindow->m_nHeight, 0 , 0);
 
     return true;
 }

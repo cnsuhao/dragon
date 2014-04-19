@@ -29,6 +29,15 @@ public:
     void  SetINormalTreeItemShareData(INormalTreeItemShareData* p)
     { m_pINormalTreeItemShareData = p; SetIMessageProxy(static_cast<IMessage*>(p)); }
 
+public:
+    int  GetImageWidth()
+    {
+        return nImageWidth;
+    }
+    int  GetExpandIconWidth()
+    {
+        return nExpandIconWidth;
+    }
 protected:
     void  ResetAttribute();
 

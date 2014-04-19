@@ -11,7 +11,7 @@ protected:
 	GdiBrush();
 public:
 	~GdiBrush();
-	static   void  CreateInstance(IRenderBrush** ppOutRef);
+	static   void  CreateInstance(IRenderBrush** ppOut);
 
 public:
 	virtual  GRAPHICS_RENDER_LIBRARY_TYPE GetGraphicsRenderLibraryType() { return GRAPHICS_RENDER_LIBRARY_TYPE_GDI; }

@@ -162,11 +162,11 @@ bool  TextRenderBase::IsThemeRender()
             m_nTextRenderType < TEXTRENDER_TYPE_THEME_LAST; 
 }
 
-void  TextRenderBase::CheckSkinMaterialChanged()
+void  TextRenderBase::CheckSkinTextureChanged()
 {
     if (m_nTextRenderType > TEXTRENDER_TYPE_CONTRAST_FIRST && m_nTextRenderType < TEXTRENDER_TYPE_CONTRAST_LAST)
     {
-        UISendMessage(static_cast<IMessage*>(m_pITextRenderBase), UI_WM_SKINMATERIALCHANGED);
+        UISendMessage(static_cast<IMessage*>(m_pITextRenderBase), UI_WM_SKINTEXTURECHANGED);
     }
 }
 
@@ -224,7 +224,7 @@ void NormalTextRender::SetAttribute(SetAttrPrefixData* pData)
 	szText = pMapAttrib->GetAttr(strAttr.c_str(), pData->bErase);
 	if (szText)
 	{
-		pFontRes->GetFont((BSTR)szText, ::GetRenderLibraryType(m_pObject->GetIObject()), &m_hFont);
+		pFontRes->GetFont((BSTR)szText, m_pObject->GetGraphicsRenderLibraryType(), &m_hFont);
 	}
 	if (NULL == m_hFont)
 	{
@@ -237,7 +237,7 @@ void NormalTextRender::SetAttribute(SetAttrPrefixData* pData)
 		else
 		{
 			// 可能是没有窗口对象，比如是一个 popup listbox或者menu，窗口还没有创建。获取默认字体
-			pFontRes->GetDefaultFont(GetRenderLibraryType(m_pObject->GetIObject()), &m_hFont);
+			pFontRes->GetDefaultFont(m_pObject->GetGraphicsRenderLibraryType(), &m_hFont);
 		}
 	}
 }
@@ -324,7 +324,7 @@ void ContrastColorTextRender::SetAttribute(SetAttrPrefixData* pData)
     const TCHAR*  szText = pMapAttrib->GetAttr(strAttr.c_str(), pData->bErase);
     if (szText)
     {
-        pFontRes->GetFont((BSTR)szText, ::GetRenderLibraryType(m_pObject->GetIObject()), &m_hFont);
+        pFontRes->GetFont((BSTR)szText, m_pObject->GetGraphicsRenderLibraryType(), &m_hFont);
     }
     if (NULL == m_hFont)
     {
@@ -337,7 +337,7 @@ void ContrastColorTextRender::SetAttribute(SetAttrPrefixData* pData)
         else
         {
             // 可能是没有窗口对象，比如是一个 popup listbox或者menu，窗口还没有创建。获取默认字体
-            pFontRes->GetDefaultFont(GetRenderLibraryType(m_pObject->GetIObject()), &m_hFont);
+            pFontRes->GetDefaultFont(m_pObject->GetGraphicsRenderLibraryType(), &m_hFont);
         }
     }
 
@@ -421,7 +421,7 @@ void ContrastColorTextRender::DrawState(TEXTRENDERBASE_DRAWSTATE* pDrawStruct)
         pRenderTarget->DrawString(m_hFont, &param);
     }
 }
-LRESULT  ContrastColorTextRender::OnSkinMaterialChanged(UINT, WPARAM, LPARAM)
+LRESULT  ContrastColorTextRender::OnSkinTextureChanged(UINT, WPARAM, LPARAM)
 {
     SAFE_RELEASE(m_pColorText);
     return 0;
@@ -452,7 +452,7 @@ void  ContrastColorListTextRender::Clear()
 }
 
 
-LRESULT  ContrastColorListTextRender::OnSkinMaterialChanged(UINT, WPARAM, LPARAM)
+LRESULT  ContrastColorListTextRender::OnSkinTextureChanged(UINT, WPARAM, LPARAM)
 {
     for (int i = 0; i < m_nCount; i++)
     {
@@ -487,7 +487,7 @@ void ContrastColorListTextRender::SetAttribute(SetAttrPrefixData* pData)
     szText = pMapAttrib->GetAttr(strAttrib.c_str(), pData->bErase);
     if (szText && m_pObject)
     {
-        pFontRes->GetFont((BSTR)szText, ::GetRenderLibraryType(m_pObject->GetIObject()), &m_hFont);
+        pFontRes->GetFont((BSTR)szText, m_pObject->GetGraphicsRenderLibraryType(), &m_hFont);
     }
 
     if (NULL == m_hFont)
@@ -502,7 +502,7 @@ void ContrastColorListTextRender::SetAttribute(SetAttrPrefixData* pData)
         else
         {
             // 可能是没有窗口对象，比如是一个 popup listbox或者menu，窗口还没有创建。获取默认字体
-            pFontRes->GetDefaultFont(GetRenderLibraryType(m_pObject->GetIObject()), &m_hFont);
+            pFontRes->GetDefaultFont(m_pObject->GetGraphicsRenderLibraryType(), &m_hFont);
         }
     }
 }
@@ -631,7 +631,7 @@ void ColorListTextRender::SetAttribute(SetAttrPrefixData* pData)
     szText = pMapAttrib->GetAttr(strAttrib.c_str(), pData->bErase);
 	if (szText && m_pObject)
 	{
-		pFontRes->GetFont((BSTR)szText, ::GetRenderLibraryType(m_pObject->GetIObject()), &m_hFont);
+		pFontRes->GetFont((BSTR)szText, m_pObject->GetGraphicsRenderLibraryType(), &m_hFont);
 	}
 
 	if (NULL == m_hFont)
@@ -646,7 +646,7 @@ void ColorListTextRender::SetAttribute(SetAttrPrefixData* pData)
 		else
 		{
 			// 可能是没有窗口对象，比如是一个 popup listbox或者menu，窗口还没有创建。获取默认字体
-			pFontRes->GetDefaultFont(GetRenderLibraryType(m_pObject->GetIObject()), &m_hFont);
+			pFontRes->GetDefaultFont(m_pObject->GetGraphicsRenderLibraryType(), &m_hFont);
 		}
 	}
 }
@@ -785,7 +785,7 @@ void FontColorListTextRender::SetAttribute(SetAttrPrefixData* pData)
 		{
 			if(! vFont[i].empty() )
 			{
-				pFontRes->GetFont((BSTR)vFont[i].c_str(), ::GetRenderLibraryType(m_pObject->GetIObject()), &m_vTextFont[i]);
+				pFontRes->GetFont((BSTR)vFont[i].c_str(), m_pObject->GetGraphicsRenderLibraryType(), &m_vTextFont[i]);
 			}
 		}
 	}

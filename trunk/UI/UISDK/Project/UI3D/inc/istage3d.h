@@ -20,8 +20,8 @@ interface UI3D_API IStage3D : public IPanel
 #if 0
 	IMeshElement*  AddMeshElement();
 	IParticleElement*  AddParticleElement();
-    IImageElement*  AddImageElement();
 #endif
+    IImageElement*      AddImageElement();
     IRectangleElement*  AddRectangleElement();
 
 	void  GetFullWorldCoord(float fzWorld, float*  pfWidth, float* pfHeight);

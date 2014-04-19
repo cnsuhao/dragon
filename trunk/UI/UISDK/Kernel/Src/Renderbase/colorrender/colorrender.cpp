@@ -38,14 +38,14 @@ void  ColorBorderRender_DrawState(RENDERBASE_DRAWSTATE* pDrawStruct, Object* pOb
     if (0 != rBorder.left)
     {
         CRect rcLeft = pDrawStruct->rc;
-        rcLeft.right = rBorder.left;
+        rcLeft.right = rcLeft.left+rBorder.left;
         
         pRenderTarget->FillRect(&rcLeft, &c);
     }
     if (0 != rBorder.top)
     {
         CRect rcTop = pDrawStruct->rc;
-        rcTop.bottom = rBorder.top;
+        rcTop.bottom = rcTop.top+rBorder.top;
         pRenderTarget->FillRect(&rcTop, &c);
     }
     if (0 != rBorder.right)
@@ -171,7 +171,7 @@ void ColorRender::DrawState(RENDERBASE_DRAWSTATE* pDrawStruct)
 
 	if (m_pBkColor)
     {
-		pRenderTarget->FillRect(&pDrawStruct->rc, m_pBkColor);
+ 		pRenderTarget->FillRect(&pDrawStruct->rc, m_pBkColor);
     }
 
     if (m_pBorderColor)

@@ -34,7 +34,7 @@ void GroupBox::SetAttribute(IMapAttribute* pMapAttr, bool bReload)
     IUIApplication*  pUIApp = m_pIGroupBox->GetUIApplication();
  
     ITextRenderBase* pTextRendr = NULL;
-    pMapAttr->GetAttr_TextRenderBase(XML_TEXTRENDER_TYPE, true, pUIApp, m_pIGroupBox, &pTextRendr);
+    pMapAttr->GetAttr_TextRenderBase(NULL, XML_TEXTRENDER_TYPE, true, pUIApp, m_pIGroupBox, &pTextRendr);
     if (pTextRendr)
     {
         pTextRendr->SetTextAlignment(DT_EDITCONTROL|DT_WORDBREAK);
@@ -146,7 +146,7 @@ void GroupBox::OnEraseBkgnd(IRenderTarget* pRenderTarget)
 	HRGN hRgnOld = pRenderTarget->GetClipRgn();
 
 	CRect rc = m_rcTextClipInWindow;
-	POINT pt = m_pIGroupBox->GetRealPosInWindow();
+	POINT pt = m_pIGroupBox->GetRealPosInWindow();  // PS: 当在旋转时，这个位置取的不正确，这种情况下先另用这个控件
 	rc.OffsetRect(pt.x, pt.y);
 
 	HRGN hRgnClip = ::CreateRectRgnIndirect(&rc);  // 剪裁区域是基于窗口的，而不是基于偏移

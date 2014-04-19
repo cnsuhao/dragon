@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "affine_texture_mapping.h"
+#include "fpu_rounding.h"
 
 namespace UI
 {
@@ -14,88 +15,6 @@ AffineTextureMapping::~AffineTextureMapping()
 
 }
 
-void  AffineTextureMapping::Do()
-{
-    // 分解为两个三角形: ∥ABCD --> △ABD + △BCD
-    DoTriangle(&m_point[0], &m_point[1], &m_point[3]);
-    DoTriangle(&m_point[1], &m_point[2], &m_point[3]);
-}
-
-void  AffineTextureMapping::DoTriangle(TexturePoint* V0, TexturePoint* V1, TexturePoint* V2)
-{
-    // 检查三角形合法性
-    if (V0->xt == V1->xt && V1->xt == V2->xt)
-        return;
-    if (V0->yt == V1->yt && V1->yt == V2->yt)
-        return;
-
-    // 三角形顶点索引
-    TexturePoint* A = V0;
-    TexturePoint* B = V1;
-    TexturePoint* C = V2; 
-
-#pragma region // 判断三角形类型，将y值小的排在前面
-    
-    TexturePoint* temp = NULL;
-
-	if (B->yt < A->yt)
-	{
-		temp = B; B = A; A = temp;
-	}
-	if (C->yt < A->yt)
-	{
-		temp = C; C = A; A = temp;
-	}
-	if (C->yt < B->yt)
-	{
-		temp = C; C = B; B = temp;
-	}
-
-
-	TRIANGLE_TYPE  eTriangleType = TRIANGLE_GENERAL;
-	if (A->yt == B->yt)
-	{
-		eTriangleType = TRIANGLE_FLAT_TOP;
-
-		if (B->xt < A->xt)
-		{
-			temp = B; B = A; A = temp;
-		}
-	}
-	else if (B->yt == C->yt)
-	{
-		eTriangleType = TRIANGLE_FLAT_BOTTOM;
-
-		if (C->xt < B->xt)
-		{
-			temp = C; C = B; B = temp;
-		}
-	}
-
-#pragma endregion
-	switch (eTriangleType)
-	{
-	case TRIANGLE_FLAT_TOP:
-		{
-			DoFlatTopTriangle(A, B, C);
-		}
-		break;
-
-	case TRIANGLE_FLAT_BOTTOM:
-		{
-			DoFlatBottomTriangle(A, B, C);
-		}
-		break;
-
-	case TRIANGLE_GENERAL:
-		{
-            DoGeneralTriangle(A, B, C);
-		}
-		break;
-	}
-
-}
-
 //
 //  A     B
 //
@@ -105,17 +24,17 @@ void  AffineTextureMapping::DoFlatTopTriangle(TexturePoint* A, TexturePoint* B, 
 {
     MappingParam  param = {0};
 
-    param.yStart = A->yt;
-    param.yEnd = C->yt;
+    param.yStart = A->yDest;
+    param.yEnd = C->yDest;
 
-    param.xStart = (float)A->xt;
-    param.xEnd = (float)B->xt;
+    param.xStart = (float)A->xDest;
+    param.xEnd = (float)B->xDest;
 
-    float fHeight = (float)(C->yt - A->yt);  // A-B等高
+    float fHeight = (float)(C->yDest - A->yDest);  // A-B等高
     float _fHeight = 1/fHeight;
 
-    param.kLeft = (float)(C->xt - A->xt) * _fHeight; 
-    param.kRight = (float)(C->xt - B->xt) * _fHeight;  
+    param.kLeft = (float)(C->xDest - A->xDest) * _fHeight; 
+    param.kRight = (float)(C->xDest - B->xDest) * _fHeight;  
 
     param.uStart = (float)A->u;
     param.vStart = (float)A->v;
@@ -139,17 +58,17 @@ void  AffineTextureMapping::DoFlatBottomTriangle(TexturePoint* A, TexturePoint* 
 {
     MappingParam  param = {0};
 
-    param.yStart = A->yt;
-    param.yEnd = C->yt;
+    param.yStart = A->yDest;
+    param.yEnd = C->yDest;
 
-    param.xStart = (float)A->xt;
-    param.xEnd = (float)A->xt;
+    param.xStart = (float)A->xDest;
+    param.xEnd = (float)A->xDest;
 
-    float fHeight = (float)(C->yt - A->yt);  // B-C等高
+    float fHeight = (float)(C->yDest - A->yDest);  // B-C等高
     float _fHeight = 1/fHeight;
 
-    param.kLeft = (float)(B->xt - A->xt) * _fHeight; 
-    param.kRight = (float)(C->xt - A->xt) * _fHeight;  
+    param.kLeft = (float)(B->xDest - A->xDest) * _fHeight; 
+    param.kRight = (float)(C->xDest - A->xDest) * _fHeight;  
 
     param.uStart = (float)A->u;
     param.vStart = (float)A->v;
@@ -181,7 +100,7 @@ void  AffineTextureMapping::DoGeneralTriangle(TexturePoint* A, TexturePoint* B, 
     param.kLeft = 0.0f;  // 两条直线的斜率的倒数
     param.kRight = 0.0f;   
 
-    param.xStart = (float)A->xt;  // 扫描线x坐标范围
+    param.xStart = (float)A->xDest;  // 扫描线x坐标范围
     param.xEnd = param.xStart;
 
     param.uStart = (float)A->u;   // 扫描线所对应的纹理坐标范围
@@ -189,16 +108,16 @@ void  AffineTextureMapping::DoGeneralTriangle(TexturePoint* A, TexturePoint* B, 
     param.uEnd = (float)A->u;
     param.vEnd = (float)A->v;
 
-    float fHeightAB = (float)(B->yt - A->yt);
-    float fHeightAC = (float)(C->yt - A->yt);
-    float fHeightBC = (float)(C->yt - B->yt);
+    float fHeightAB = (float)(B->yDest - A->yDest);
+    float fHeightAC = (float)(C->yDest - A->yDest);
+    float fHeightBC = (float)(C->yDest - B->yDest);
     float _fHeightAB = 1/fHeightAB;
     float _fHeightAC = 1/fHeightAC;
     float _fHeightBC = 1/fHeightBC;
 
-    float kAB = (float)(B->xt - A->xt) * _fHeightAB; 
-    float kAC = (float)(C->xt - A->xt) * _fHeightAC;  // 2. 相对于A,值越小越靠左。相对于C，值越大越靠左
-    float kBC = (float)(C->xt - B->xt) * _fHeightBC;  
+    float kAB = (float)(B->xDest - A->xDest) * _fHeightAB; 
+    float kAC = (float)(C->xDest - A->xDest) * _fHeightAC;  // 2. 相对于A,值越小越靠左。相对于C，值越大越靠左
+    float kBC = (float)(C->xDest - B->xDest) * _fHeightBC;  
 
     float kuAB = float(B->u - A->u) * _fHeightAB;
     float kvAB = float(B->v - A->v) * _fHeightAB;
@@ -209,8 +128,8 @@ void  AffineTextureMapping::DoGeneralTriangle(TexturePoint* A, TexturePoint* B, 
 
     // 分为两个三角形
     {
-        param.yStart = A->yt;
-        param.yEnd = B->yt;
+        param.yStart = A->yDest;
+        param.yEnd = B->yDest;
 
         if (kAC > kAB)
         {
@@ -237,7 +156,7 @@ void  AffineTextureMapping::DoGeneralTriangle(TexturePoint* A, TexturePoint* B, 
     }
     {
         param.yStart = param.yEnd;
-        param.yEnd = C->yt;
+        param.yEnd = C->yDest;
 
         if (kAC > kBC)
         {
@@ -271,13 +190,17 @@ void  AffineTextureMapping::DoGeneralTriangle(TexturePoint* A, TexturePoint* B, 
 
 void  AffineTextureMapping::_do_triangle(MappingParam* pParam)
 {
-    byte* pSrcBit = (byte*)m_pTexture->GetBits();
-    byte* pDstBit = (byte*)m_pDestBuffer->GetBits();
+    set_round_down();  //设置FPU的舍入模式，在Bilinear函数中需要使用汇编加快float->int。
 
-    int nSrcPitch = m_pTexture->GetPitch();
-    int nDstPitch = m_pDestBuffer->GetPitch();
+    byte* pSrcBit = (byte*)m_texture.m_pScan0;
+    byte* pDstBit = (byte*)m_destBuffer.m_pScan0;
 
-    for (int y = pParam->yStart; y < pParam->yEnd; y++)
+    int nSrcPitch = m_texture.m_nStride;
+    int nDstPitch = m_destBuffer.m_nStride;
+
+    Color Color0, Color1, Color2, Color3, ColorResult;  // 二次线性插值数据
+
+    for (int y = pParam->yStart; y <= pParam->yEnd; y++)
     {
         float fWidth = pParam->xEnd - pParam->xStart;
         if (fWidth > EPSILON_E6 || fWidth < -EPSILON_E6)  // != 0
@@ -289,19 +212,60 @@ void  AffineTextureMapping::_do_triangle(MappingParam* pParam)
             float kvScanline = (pParam->vEnd -pParam->vStart) * _fWidth; 
 
             float fu = pParam->uStart;
-            float fv = pParam->vStart;
+            float fv = pParam->vStart; 
 
-            int nStart = (int)(pParam->xStart+0.5);
-            DWORD* pDestBuf = GetPixelAddr(pDstBit, nDstPitch, nStart, y);
+            int nStart = round(pParam->xStart);
+            int nEnd = round(pParam->xEnd);
+            byte*  pDestBuf = (byte*)GetPixelAddr(pDstBit, nDstPitch, nStart, y);
 
-            int nLength = (int)(fWidth+1);
-            for (int x = 0 ; x < nLength; x++)
+            for (int x = nStart ; x <= nEnd; x++)
             {
-                *pDestBuf = GetPixelValue(pSrcBit, nSrcPitch, (int)fu, (int)fv);
+                int  nuSrc = 0, nvSrc = 0;
+                FLOAT_TO_INT(fu, nuSrc);
+                FLOAT_TO_INT(fv, nvSrc);
+#if 1
+                int u = 0, v = 0;
+                float fuTemp = (fu - nuSrc)*256;
+                float fvTemp = (fv - nvSrc)*256;
+                FLOAT_TO_INT(fuTemp, u);  
+                FLOAT_TO_INT(fvTemp, v);
+
+                byte* pbSrcBits = (byte*)GetPixelAddr(pSrcBit, nSrcPitch, nuSrc, nvSrc);
+                Color0.m_col = *((DWORD*)(pbSrcBits));  // 注：这里的顺序是bgra
+                Color2.m_col = (((DWORD*)(pbSrcBits))[1]);
+                pbSrcBits += nSrcPitch;
+                Color1.m_col = *((DWORD*)(pbSrcBits));
+                Color3.m_col = (((DWORD*)(pbSrcBits))[1]);
+
+                int pm3_16  = u*v; 
+                int pm2_16  = u*(256-v);
+                int pm1_16  = v*(256-u);
+                int pm0_16  = (256-u)*(256-v);
+
+                ColorResult.a = (byte)((pm0_16*Color0.a + pm1_16*Color1.a + pm2_16*Color2.a + pm3_16*Color3.a) >> FIXP16_SHIFT);
+                ColorResult.r = (byte)((pm0_16*Color0.r + pm1_16*Color1.r + pm2_16*Color2.r + pm3_16*Color3.r) >> FIXP16_SHIFT);
+                ColorResult.g = (byte)((pm0_16*Color0.g + pm1_16*Color1.g + pm2_16*Color2.g + pm3_16*Color3.g) >> FIXP16_SHIFT);
+                ColorResult.b = (byte)((pm0_16*Color0.b + pm1_16*Color1.b + pm2_16*Color2.b + pm3_16*Color3.b) >> FIXP16_SHIFT);
+
+#if 1
+                // AlphaBlend
+                int nAlphaSub = 255 - ColorResult.a;
+                pDestBuf[0] = ColorResult.r + (nAlphaSub * pDestBuf[0] >> 8);  // 注:这里仍然用r而不是b，因为获取的时候就是反过来的
+                pDestBuf[1] = ColorResult.g + (nAlphaSub * pDestBuf[1] >> 8);
+                pDestBuf[2] = ColorResult.b + (nAlphaSub * pDestBuf[2] >> 8);
+                pDestBuf[3] = ColorResult.a + (nAlphaSub * pDestBuf[3] >> 8);
+#else
+                
+                *(DWORD*)pDestBuf = ColorResult.m_col;
+#endif
+#else
+                // 直接映射
+                *(DWORD*)pDestBuf = GetPixelValue(pSrcBit, nSrcPitch, (int)fu, (int)fv);
+#endif
 
                 fu += kuScanline;
                 fv += kvScanline;
-                pDestBuf++;
+                pDestBuf += 4;
             }
         }
         pParam->xStart += pParam->kLeft;
@@ -311,6 +275,8 @@ void  AffineTextureMapping::_do_triangle(MappingParam* pParam)
         pParam->uEnd += pParam->kuRight;
         pParam->vEnd += pParam->kvRight;
     }
+
+    restore_cw();
 }
 
 }

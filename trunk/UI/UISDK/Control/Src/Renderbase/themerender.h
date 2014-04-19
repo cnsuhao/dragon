@@ -176,7 +176,8 @@ private:
 class SliderTrackButtonThemeRender : public IThemeRenderBase
 {
 public:
-    SliderTrackButtonThemeRender() { m_pISliderCtrl = NULL; }
+    SliderTrackButtonThemeRender() { 
+		m_pISliderCtrl = NULL; }
     UI_DECLARE_RENDERBASE2(SliderTrackButtonThemeRender, XML_RENDER_TYPE_THEME, RENDER_TYPE_THEME_SLIDER_TRACK_BUTTON, CONTROL_BUTTON, BUTOTN_STYLE_SLIDERTRACKBUTTON)
 
     UI_BEGIN_MSG_MAP_Ixxx(SliderTrackButtonThemeRender)

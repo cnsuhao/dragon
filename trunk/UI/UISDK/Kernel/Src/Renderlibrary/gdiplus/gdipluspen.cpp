@@ -18,6 +18,7 @@ void  GdiplusPen::CreateInstance(IRenderPen** ppOutRef)
 		return;
 
 	GdiplusPen* p = new GdiplusPen();
+    p->AddRef();
 	*ppOutRef = static_cast<IRenderPen*>(p);
 }
 

@@ -54,6 +54,7 @@
 #include <shlwapi.h>
 #include <malloc.h>
 
+
 // 在版本小于0x0500时，显示PNG图片不会透明
 #ifndef WINVER				 
 	#define WINVER 0x0500	 
@@ -97,12 +98,13 @@ namespace UI
 	public:
 		ImageData()
 		{
+			m_bNeedDeletePtr = false;
 			m_ptr = m_pScan0 = 0;
 			m_nbpp = m_nStride = m_nWidth = m_nHeight = 0;
 		}
 		~ImageData()
 		{
-			if( NULL != m_ptr )
+			if (m_ptr && m_bNeedDeletePtr)
 				delete[] m_ptr;
 			m_ptr = m_pScan0 = 0;
 			m_nbpp = m_nStride = m_nWidth = m_nHeight = 0;
@@ -114,6 +116,7 @@ namespace UI
 		int    m_nStride;     // Offset, in bytes, between consecutive scan lines of the bitmap. If the stride is positive, the bitmap is top-down. If the stride is negative, the bitmap is bottom-up.
 		int    m_nWidth;      // 图片宽度
 		int    m_nHeight;     // 图片高度
+		bool  m_bNeedDeletePtr;  // 是否需要释放m_ptr
 	};
 
 	class CImageDC
@@ -1394,7 +1397,10 @@ namespace UI
 			// Let GDI+ work its magic
 			Gdiplus::Bitmap bmDest( GetWidth(), GetHeight(), GetPitch(), eDestPixelFormat, static_cast< BYTE* >( GetBits() ) );
 			Gdiplus::Graphics gDest( &bmDest );
-			gDest.DrawImage( &bmSrc, 0,0);
+            gDest.DrawImage( &bmSrc, 0,0); //-- libo 2014.3.19 直接这么绘制调用会导致图片被拉伸（如24位的bmp图片）,DPI不一致
+
+            //bmSrc.SetResolution(96,96);
+			gDest.DrawImage( &bmSrc, 0,0,GetWidth(), GetHeight()); 
 		}
 
 		return( S_OK );

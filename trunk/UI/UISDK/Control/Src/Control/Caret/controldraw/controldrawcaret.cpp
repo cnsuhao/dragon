@@ -16,7 +16,7 @@ void  CreateCaretRenderBitmap(HBITMAP hbmp, UI::IRenderBitmap** pp)
     GetObject(hbmp, sizeof(bm), &bm);
 
     IRenderBitmap* pRenderBitmap = NULL;
-    UI::UICreateRenderBitmap(UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDI, IMAGE_ITEM_TYPE_IMAGE, &pRenderBitmap);
+    UI::UICreateRenderBitmap(NULL, UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDI, IMAGE_ITEM_TYPE_IMAGE, &pRenderBitmap);
 
     if (/*1 == bm.bmBitsPixel*/ bm.bmBitsPixel != 32)
     {

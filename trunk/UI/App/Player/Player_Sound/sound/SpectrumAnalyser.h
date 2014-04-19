@@ -3,7 +3,7 @@
 #include "..\player_sound.h"
 #include "..\\threadmessage.h"
 class   ISoundEngine;
-
+class   Goom;
 #define DEFAULT_FFT_SAMPLE_BUFFER_SIZE   2048/*2048*/    // FFT的大小，看大家都是设置为2048.但再设置小点不是能更节省计算量吗？
 
 enum THREAD_SUSPEND_REASON
@@ -48,6 +48,7 @@ public:
 	void     DrawWave();
     void     BlurWave();
     void     BlurWaveBitmap();
+    void     DrawGoom();
 
 	void     Play();
 	void     Pause();
@@ -112,6 +113,8 @@ public:
 
     HBITMAP  m_hWaveMemBitmap;
     HDC      m_hWaveMemBitmapDC;
+
+    Goom*    m_pGoom;                 // 梦幻星空
 
 	// 线程数据
 	HANDLE   m_hThread;              // 频谱分析线程

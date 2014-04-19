@@ -16,7 +16,8 @@ QQLoginAccountComboBox::~QQLoginAccountComboBox()
 
 HRESULT  QQLoginAccountComboBox::FinalConstruct(UI::IUIApplication* p)
 {
-    SetMsgHandled(FALSE);
+    // 先给父类pUIApp赋值，否则SetDropDownObjectPtr拿不到pUIApp指针
+    DO_PARENT_PROCESS(IQQLoginAccountComboBox, UI::IComboBoxBase); 
 
 	IQQLoginAccountListBox* pListBox = NULL;
     IQQLoginAccountListBox::CreateInstance(p, &pListBox);

@@ -10,6 +10,15 @@ namespace UI
 	float sin_look[361] = {0.0};
 
 
+    void  Init_Sin_Cos_Tables()
+    {
+        if (!g_bInitSinCosTable)
+        {
+            g_bInitSinCosTable = true;
+            Build_Sin_Cos_Tables();
+        }
+    }
+
 void Build_Sin_Cos_Tables(void)
 {
 	// create sin/cos lookup table

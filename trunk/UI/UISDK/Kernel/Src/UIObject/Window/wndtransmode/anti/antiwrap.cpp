@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "antiwrap.h"
 #include "UISDK/Kernel/Src/UIObject/Window/customwindow.h"
-#include "UISDK/Kernel/Src/RenderLayer/renderchain.h"
 
 namespace UI
 {

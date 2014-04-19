@@ -10,12 +10,11 @@
 #include "UISDK\Kernel\Src\UIObject\Window\windowbase.h"
 #include "UISDK\Kernel\Src\UIObject\HwndHost\HwndHost.h"
 #include "UISDK\Kernel\Src\Renderlibrary\uicursor.h"
-#include "UISDK\Kernel\Src\RenderLayer\renderlayer.h"
-#include "UISDK\Kernel\Src\RenderLayer\renderchain.h"
+#include "UISDK\Kernel\Src\RenderLayer2\layer\windowrender.h"
 #include "UISDK\Kernel\Src\Helper\layout\layout.h"
-#include "UISDK\Kernel\Src\Helper\layout\canvaslayout.h"
-#include "UISDK\Kernel\Src\Animate\3dwrap\ui3dwrap.h"
-#include "UISDK\Kernel\Src\RenderLayer2\renderlayer2.h"
+#include "UISDK\Kernel\Src\RenderLayer2\layer\renderlayer2.h"
+#include "UISDK\Kernel\Src\RenderLayer2\soft3d\renderlayersoft3d.h"
+#include "UISDK\Kernel\Src\Base\Applicatoin\uiapplication.h"
 
 namespace UI
 {
@@ -38,6 +37,7 @@ Object::Object()
 	this->m_pUserData = NULL;
 	this->m_pUIApplication = NULL;
 	this->m_ppOutRef = NULL;
+    this->m_nzOrder = 0;
 
 	m_pBkgndRender = NULL;
 	m_pForegndRender = NULL;
@@ -61,12 +61,12 @@ Object::~Object(void)
 
     SAFE_RELEASE(m_pIMapAttributeRemain);
     SAFE_RELEASE(m_pLayoutParam);
-
-    if (m_pObject3DWrap)
-    {
-        m_pObject3DWrap->EndByDestroy();
-        SAFE_DELETE(m_pObject3DWrap);
-    }
+// 
+//     if (m_pObject3DWrap)
+//     {
+//         m_pObject3DWrap->EndByDestroy();
+//         SAFE_DELETE(m_pObject3DWrap);
+//     }
 }
 
 HRESULT Object::FinalConstruct(IUIApplication* p)
@@ -96,12 +96,16 @@ void Object::FinalRelease()
 		pEditor->OnObjectDeleteInd(m_pIObject);
 	}
 
+	//	清理自己的邻居关系
+	RemoveMeInTheTree();
+
 	m_rcParent.left = m_rcParent.right = m_rcParent.top = m_rcParent.bottom = 0;
 	SAFE_RELEASE(m_pBkgndRender);
 	SAFE_RELEASE(m_pForegndRender);
 	SAFE_RELEASE(m_pTextRender);
 	SAFE_RELEASE(m_pCursor);
 	SAFE_DELETE_GDIOBJECT(m_hRgn);
+    SAFE_DELETE(m_pRenderLayer);
 }
 
 // 注：如果在其它模块直接调用 pCtrl->m_strID=L"..."的话，在对象释放时将会崩溃
@@ -109,11 +113,15 @@ void Object::SetId(const TCHAR* szText)
 {
 	if (NULL == szText)
 	{
-		m_strID.clear();
+		m_strId.clear();
 		return;
 	}
 
-	m_strID = szText;
+	m_strId = szText;
+}
+const  TCHAR*  Object::GetId() 
+{
+    return m_strId.c_str(); 
 }
 
 TCHAR* Object::GetObjectName()
@@ -138,140 +146,19 @@ CONTROL_TYPE Object::GetObjectExtentType()
     return ::GetObjectExtentType(nType);
 }
 
-//
-//	重绘这个对象(一般是鼠标移上移下，状态变化等时候的重绘)
-//
-//	1. 不透明的控件，直接在原处绘即可，包括了背景为COLOR、Image的情况
-//		TODO: 考虑将ButtonBkRender再抽象出来，给所有的控件使用
-//	2. 透明的控件...是否需要考虑下优化为直接取到自己在父窗口下的背景，而不是刷新整个窗口
-//
-
-void Object::UpdateObject(bool bUpdateNow)
-{
-	if (IsVisible() && CanRedraw())
-    {
-	    RenderChain*  pRenderChain = GetRenderChain();
-	    if (pRenderChain)
-	    {
-		    pRenderChain->UpdateObject(this, false, bUpdateNow);
-	    }
-    }
-}
-
-// 当对象隐藏/移动的时候，刷新背景
-
-void Object::UpdateObjectBkgnd(bool bUpdateNow)
-{
-	if (!CanRedraw())
-		return ;
-
-    RenderChain*  pRenderChain = GetRenderChain();
-    if (pRenderChain)
-    {
-        pRenderChain->UpdateObject(this, true, bUpdateNow);
-    }
-}
-
-//
-//	当对象显示/隐藏，或者大小发生改变时，重新刷新自己所在layout的布局
-//
-//	1. 获取自己的所在Layout
-//	2. 测量Layout的大小是否发生改变，如果这个Layout大小改变，再获取上一层Layout
-//
-void Object::UpdateLayout(bool bUpdate)
-{
-    if (this->GetObjectType() == OBJ_WINDOW)
-    {
-        //UI_UpdateLayout((WindowBase*)this, bUpdate?TRUE:FALSE);
-
-        if (((WindowBase*)this)->GetLayout())
-            ((WindowBase*)this)->GetLayout()->Arrange(NULL);
-
-        if (bUpdate)
-            this->UpdateObject();
-
-        return;
-    }
-
-    Object* pParent = this->GetParentObject();
-    Object* pObjectToUpdate = this;
-
-    while (pParent)
-    {
-        int nObjType = pParent->GetObjectType();
-        if (OBJ_PANEL != nObjType && OBJ_WINDOW != nObjType)  // 例如listview中的headerctrl，它的父对象不是panel
-		{
-			UISendMessage(pParent, WM_SIZE, 0, MAKELPARAM(pParent->GetWidth(), pParent->GetHeight()));
-            return;
-		}
-
-        ILayout* pLayout = ((Panel*)pParent)->GetLayout();
-        if (NULL == ((Panel*)pParent)->GetLayout())
-            return;
-
-        SIZE sizeOld = {pParent->GetWidth(), pParent->GetHeight()};
-        SIZE size = pParent->GetDesiredSize();
-        //UISendMessage(pParent->GetIMessage(), UI_WM_GETDESIREDSIZE, (WPARAM)&size);
-
-        // pParent的大小发生了变化，继续往上
-        if (sizeOld.cx != size.cx || sizeOld.cy != size.cy)
-        {
-            if (pParent->GetParentObject())
-            {
-                pObjectToUpdate = pParent;
-                pParent = pParent->GetParentObject();  // TODO: 有点乱... 当是窗口的时候size为window rect，sizeOld为client rect，因此肯定不一样
-                continue;                              // 所以在这里如果发现是window( parent==null )则继续往下处理
-            }
-			else if (pParent->GetObjectType() == OBJ_WINDOW)
-			{
-				HWND hWnd = GetHWND();
-
-				CRect rcWndNow;
-				::GetWindowRect(hWnd, rcWndNow);
-				if (rcWndNow.Width() == size.cx && rcWndNow.Height() == size.cy)  // 当大小没有改变时，不会触发WM_SIZE，也就不会更新了
-				{
-					
-				}
-				else
-				{
-					UINT nFlag = SWP_NOZORDER|SWP_NOMOVE|SWP_NOACTIVATE;
-					if (!bUpdate) 
-						nFlag |= SWP_NOREDRAW;   // 有用吗？需要再测试
-					SetWindowPos(GetHWND(), 0, 0,0, size.cx, size.cy, nFlag);
-					return;
-				}
-			}
-        }
-
-        IObject* pIObjectToUpdate = NULL;
-        if (pObjectToUpdate)
-            pIObjectToUpdate = pObjectToUpdate->GetIObject();
-        pLayout->Arrange(pIObjectToUpdate, bUpdate);
-
-        break;
-    }
-}
-
 void Object::SetCanRedraw( bool bReDraw )
 {
 	if (bReDraw)
-	{
 		m_nCanRedrawRef --;
-	//	this->clearStateBit( CSB_PREVENTREDRAW );
-	}
 	else
-	{
 		m_nCanRedrawRef ++;
-	//	this->setStateBit( CSB_PREVENTREDRAW );
-	}
 }
 
-
+// TODO: 需要往上递归进行判断
 bool Object::CanRedraw()
 {
-	return 0==m_nCanRedrawRef; //!this->testStateBit(CSB_PREVENTREDRAW);
+	return 0==m_nCanRedrawRef;
 }
-
 
 bool Object::SetCursor(const TCHAR* szCursorId)
 {
@@ -284,55 +171,73 @@ bool Object::SetCursor(const TCHAR* szCursorId)
     pCursorRes->GetCursor(szCursorId, &m_pCursor); 
 	if (NULL == m_pCursor)
 	{
-		UI_LOG_WARN(_T("%s get cursor failed. Object id=%s, cursor id=%s"), FUNC_NAME, m_strID.c_str(), szCursorId);	
+		UI_LOG_WARN(_T("%s get cursor failed. Object id=%s, cursor id=%s"), FUNC_NAME, m_strId.c_str(), szCursorId);	
 		return false;
 	}
 
 	return true;
 }
 
-// 获取对象所在渲染层
-RenderLayer*  Object::GetRenderLayer()
+// 获取自己本身的layer指针
+RenderLayer2*  Object::GetSelfRenderLayer2()
 {
+    return m_pRenderLayer;
+}
+// 获取自己所在的layer指针
+RenderLayer2*  Object::GetRenderLayer2()
+{
+    RenderLayer2*  pRenderLayer = NULL;
+
     Object* pObj = this;
-    while (NULL != pObj)
+    while (pObj)
     {
-        OBJ_TYPE eType = pObj->GetObjectType();
-        if (OBJ_LAYER == eType)
-        {
-            return static_cast<RenderLayer*>(pObj);
-        }
-        else if (OBJ_WINDOW == eType)
-        {
-            return static_cast<RenderLayer*>(pObj);
-        }
-        else
-        {
-            pObj = pObj->GetParentObject();
-        }
+        pRenderLayer = pObj->GetSelfRenderLayer2();
+        if (pRenderLayer)
+            break;
+
+        pObj = pObj->m_pParent;
     }
+
+    return pRenderLayer;
+}
+
+// 获取自己所在层的层对象
+Object*  Object::GetRenderLayerCreateObject()
+{
+    RenderLayer2*  p = GetRenderLayer2();
+    if (p)
+        return p->GetCreateObject();
+
     return NULL;
 }
 
-RenderChain* Object::GetRenderChain()
-{   
-    RenderLayer*  pRenderLayer = this->GetRenderLayer();
-    if (NULL == pRenderLayer)
+WindowRender*  Object::GetWindowRender()
+{
+    WindowBase* pWindow = GetWindowObject();
+    if (!pWindow)
         return NULL;
 
-    return pRenderLayer->GetRenderChainPtr();
+    return pWindow->GetWindowRender();
 }
 
 // 获取一个控件所在窗口句炳
 WindowBase* Object::GetWindowObject()
 {
-    RenderLayer* pRenderLayer= this->GetRenderLayer();
-    if (pRenderLayer)
-        return pRenderLayer->GetWindowPtr();
+    Object*  pParent = this;
+    do 
+    {
+        if (!pParent->m_pParent)
+            break;
+        pParent = pParent->m_pParent;
+    } 
+    while (1);
 
+    //return static_cast<WindowBase*>(pParent);
+    IWindowBase*  pWindowBase = (IWindowBase*)pParent->GetIObject()->QueryInterface(uiiidof(IWindowBase));
+    if (pWindowBase)
+        return pWindowBase->GetImpl();
     return NULL;
 }
-
 
 HWND Object::GetHWND()
 {
@@ -371,7 +276,7 @@ HWND Object::GetHWND()
 // 		Object* pTempObj = NULL;
 // 		while( pTempObj = pObjRet->EnumChildObject( pTempObj ) )
 // 		{
-// 			if (vPath[i] == pTempObj->m_strID )
+// 			if (vPath[i] == pTempObj->m_strId )
 // 			{
 // 				pObjRet = pTempObj;
 // 				break;  // jump out of while
@@ -408,7 +313,7 @@ Object*  Object::FindChildObject(const TCHAR* szObjId)
 	Object* pRet = this->_findChildObjectItem(szObjId);
 	if (NULL == pRet)
 	{
-		UI_LOG_WARN(_T("%s Find \"%s\" from \"%s\" failed."), FUNC_NAME, szObjId, this->m_strID.c_str() );
+		UI_LOG_WARN(_T("%s Find \"%s\" from \"%s\" failed."), FUNC_NAME, szObjId, this->m_strId.c_str() );
 	}
 	return pRet;
 }
@@ -444,12 +349,13 @@ void Object::ResetAttribute()
 	::SetRectEmpty(&m_rcNonClient);
 	::SetRectEmpty(&m_rcBorder);
 
+    m_nzOrder = 0;
+
     SAFE_RELEASE(m_pLayoutParam);
 	SAFE_RELEASE(m_pBkgndRender);
 	SAFE_RELEASE(m_pForegndRender);
 	SAFE_RELEASE(m_pTextRender);
 	SAFE_RELEASE(m_pCursor);
-
 }
 
 void  Object::OnSerialize(SERIALIZEDATA* pData)
@@ -469,6 +375,7 @@ void  Object::OnSerialize(SERIALIZEDATA* pData)
         m_pLayoutParam->Serialize(pData);
     }
 }
+
 bool Object::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 {
     // 保存属性，用于扩展。
@@ -487,21 +394,23 @@ bool Object::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
     const TCHAR* szText = NULL;
     szText = pMapAttrib->GetAttr(XML_ID, true);
     if (szText)
-        m_strID = szText;
+        m_strId = szText;
 	
     // 可见性
-	bool bVisible = true;
-    if (MAPATTR_RET_NOT_EXIST != pMapAttrib->GetAttr_bool(XML_VISIBLE, true, &bVisible))
+    if (!bReload)
     {
-	    if (false == bVisible)
-		    m_nStateBit |= OSB_UNVISIBLE;
+	    bool bVisible = true;
+        pMapAttrib->GetAttr_bool(XML_VISIBLE, true, &bVisible);
+        if (false == bVisible)
+            m_nStateBit |= OSB_UNVISIBLE;
         else
             m_nStateBit &= ~OSB_UNVISIBLE;
     }
 
-    bool bDisable = false;
-    if (MAPATTR_RET_NOT_EXIST != pMapAttrib->GetAttr_bool(XML_DISABLE, true, &bDisable))
+    if (!bReload)
     {
+        bool bDisable = false;
+        pMapAttrib->GetAttr_bool(XML_DISABLE, true, &bDisable);
         if (bDisable)
             m_nStateBit |= OSB_DISABLE;
         else
@@ -560,26 +469,27 @@ bool Object::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
             m_nStyle &= ~OBJECT_STYLE_REJECT_MOUSE_MSG_ALL;
     }
 
-    bool bZindexOverlap = false;
-    if (MAPATTR_RET_NOT_EXIST != pMapAttrib->GetAttr_bool(XML_ZINDEX_OVERLAP, true, &bZindexOverlap))
-    {
-        if (bZindexOverlap)
-            m_nStyle |= OBJECT_STYLE_ZINDEX_OVERLAP;
-        else
-            m_nStyle &= ~OBJECT_STYLE_ZINDEX_OVERLAP;
-    }
-	
 	// 鼠标样式
 	szText = pMapAttrib->GetAttr(XML_CURSOR, true);
 	if (szText)
 		this->SetCursor(szText);
 
-    // 分层
-    bool bLayer = false;
-    pMapAttrib->GetAttr_bool(L"layer", true, &bLayer);
-    if (bLayer)
-    {
+    // z序 (注：默认在从xml加载之后，AddChild之前会先解析一次)
+    pMapAttrib->GetAttr_int(XML_ZORDER, true, (int*)&m_nzOrder);
+//     bool bZindexOverlap = false;
+//     if (MAPATTR_RET_NOT_EXIST != pMapAttrib->GetAttr_bool(XML_ZINDEX_OVERLAP, true, &bZindexOverlap))
+//     {
+//         if (bZindexOverlap)
+//             m_nStyle |= OBJECT_STYLE_ZINDEX_OVERLAP;
+//         else
+//             m_nStyle &= ~OBJECT_STYLE_ZINDEX_OVERLAP;
+//     }
 
+	bool  bCreateLayer = false;
+    pMapAttrib->GetAttr_bool(XML_LAYER, true, &bCreateLayer);
+    if (bCreateLayer)
+    {
+		CreateRenderLayer();
     }
 
 	return true;
@@ -597,14 +507,28 @@ void  Object::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA*  pData)
 	pEditor->CreateBoolAttribute(pObjGroup, XML_DISABLE, false, szPrefix, NULL, L"是否被禁用。默认可用");
     pEditor->CreateBoolAttribute(pObjGroup, XML_BACKGND_IS_TRANSPARENT, false, szPrefix, NULL, L"控件背景是否透明。如果控件背景透明，在绘制时则需要再绘制父控件背景。默认不透明");
     pEditor->CreateBoolAttribute(pObjGroup, XML_REJEST_MOUSE_MSG, false, szPrefix, NULL, L"是否屏蔽鼠标消息。默认接受");
-    pEditor->CreateBoolAttribute(pObjGroup, XML_ZINDEX_OVERLAP, false, szPrefix, NULL, L"是否和其它控件有重叠区域。默认没有");
+//  pEditor->CreateBoolAttribute(pObjGroup, XML_ZINDEX_OVERLAP, false, szPrefix, NULL, L"是否和其它控件有重叠区域。默认没有");
+    pEditor->CreateTextAttribute(pObjGroup, XML_ZORDER, szPrefix, NULL, L"控件z序");
+    pEditor->CreateBoolAttribute(pObjGroup, XML_LAYER, false, szPrefix, NULL, L"是否为该控件创建一个层（分配一个缓存）。例如用于支持特效");
 	pEditor->CreateTextAttribute(pObjGroup, XML_MARGIN, szPrefix, NULL, L"外间距");
 	pEditor->CreateTextAttribute(pObjGroup, XML_PADDING, szPrefix, NULL, L"内间距");
 	pEditor->CreateTextAttribute(pObjGroup, XML_BORDER, szPrefix, NULL, L"边框");
     pEditor->CreateTextAttribute(pObjGroup, XML_CURSOR, szPrefix, NULL, L"鼠标样式");
 
+    IUIEditorGroupAttribute* pLayoutGroup = pEditor->CreateGroupAttribute(pObjGroup, XML_LAYOUT, NULL);
+    if (m_pLayoutParam)
+    {
+        EDITORGETOBJECTATTRLISTDATA data = {0};
+        data.pEditor = pEditor;
+        data.pGroupAttr = pLayoutGroup;
+        m_pLayoutParam->OnEditorGetAttrList(&data);
+    }
+
+    // bkgnd.render.xxxx
     IUIEditorGroupAttribute* pBkRenderGroup = pEditor->CreateGroupAttribute(pObjGroup, XML_BACKGND_RENDER_PREFIX, NULL);
-	pEditor->CreateTextAttribute(pBkRenderGroup, XML_RENDER_TYPE, szPrefix, XML_BACKGND_RENDER_PREFIX);
+	IUIEditorComboBoxAttribute*  pBkgndRenderType = pEditor->CreateComboBoxAttribute(pBkRenderGroup, XML_RENDER_TYPE, szPrefix, XML_BACKGND_RENDER_PREFIX);
+    pBkgndRenderType->SetReloadOnChanged(true);  
+    m_pUIApplication->GetImpl()->UIEditor_FillRenderBaseType2Combobox(pBkgndRenderType);
     if (m_pBkgndRender)
     {
         String strPrefix;
@@ -619,8 +543,11 @@ void  Object::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA*  pData)
         UISendMessage(m_pBkgndRender, UI_EDITOR_GETOBJECTATTRLIST, (WPARAM)&data);
     }
 
+    // foregnd.render.xxxx
     IUIEditorGroupAttribute* pForeRenderGroup = pEditor->CreateGroupAttribute(pObjGroup, XML_FOREGND_RENDER_PREFIX, NULL);
-	pEditor->CreateTextAttribute(pForeRenderGroup, XML_RENDER_TYPE, szPrefix, XML_FOREGND_RENDER_PREFIX);
+	IUIEditorComboBoxAttribute*  pForegndRenderType = pEditor->CreateComboBoxAttribute(pForeRenderGroup, XML_RENDER_TYPE, szPrefix, XML_FOREGND_RENDER_PREFIX);
+    pForegndRenderType->SetReloadOnChanged(true);  
+    m_pUIApplication->GetImpl()->UIEditor_FillRenderBaseType2Combobox(pForegndRenderType);
     if (m_pForegndRender)
     {
         String strPrefix;
@@ -633,15 +560,6 @@ void  Object::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA*  pData)
         data.pGroupAttr = pForeRenderGroup;
         data.szPrefix = strPrefix.c_str();
         UISendMessage(m_pForegndRender, UI_EDITOR_GETOBJECTATTRLIST, (WPARAM)&data);
-    }
-
-    IUIEditorGroupAttribute* pLayoutGroup = pEditor->CreateGroupAttribute(pObjGroup, XML_LAYOUT, NULL);
-    if (m_pLayoutParam)
-    {
-        EDITORGETOBJECTATTRLISTDATA data = {0};
-        data.pEditor = pEditor;
-        data.pGroupAttr = pLayoutGroup;
-        m_pLayoutParam->OnEditorGetAttrList(&data);
     }
 }
 
@@ -658,7 +576,7 @@ void  Object::ParseStyleAndSetAttribute(IMapAttribute* pMatAttrib, bool bReload)
             IStyleManager* pStyleMgr = pSkinRes->GetStyleManager();
             if (pStyleMgr)
             {
-                pStyleMgr->LoadStyle(GetObjectName(), szStyleClass, m_strID.c_str(), pMatAttrib);
+                pStyleMgr->LoadStyle(GetObjectName(), szStyleClass, m_strId.c_str(), pMatAttrib);
             }
         }
     }
@@ -719,7 +637,7 @@ void Object::SetAttributeByPrefix(const TCHAR* szPrefix, IMapAttribute* pMapAttr
 // 			pSkinRes->GetStyleManager(&pStyleMgr);
 // 			if (pStyleMgr)
 // 			{
-// 				pStyleMgr->LoadStyle(pChildObj->GetObjectName(), szStyleClass, pChildObj->m_strID.c_str(), pMapAttrib);
+// 				pStyleMgr->LoadStyle(pChildObj->GetObjectName(), szStyleClass, pChildObj->m_strId.c_str(), pMapAttrib);
 // 			}
 // 		}
 // 	}
@@ -754,25 +672,6 @@ void  Object::GetMapAttribute(IMapAttribute** ppMapAttribute)
         *ppMapAttribute = m_pIMapAttributeRemain;
         m_pIMapAttributeRemain->AddRef();
     }
-}
-
-
-//
-//	获取对象自己期望的大小
-//
-SIZE Object::GetDesiredSize()
-{
-    if (!m_pLayoutParam)
-    {
-       CreateLayoutParam();
-
-       if (!m_pLayoutParam) // 还是创建不成功，例如Combobox中的Button，它没有父Panel-Layout
-       {
-           m_pLayoutParam = CanvasLayout::s_CreateLayoutParam(m_pIObject);
-       }
-    }
-
-    return m_pLayoutParam->CalcDesiredSize();
 }
 
 
@@ -816,446 +715,6 @@ void Object::SetBorderRegion( CRegion4* prc )
 		m_rcBorder.bottom + rcOther.bottom );
 }
 
-// 要绘制该对象之前，获取该对象在窗口中的实现位置，用于设置偏移量和裁剪区
-
-POINT Object::GetRealPosInWindow()
-{
-	int xOffset = 0;
-	int yOffset = 0;
-
-	Object* pObjParent = NULL;
-	Object* pObjChild = this;
-	while (pObjParent = this->EnumParentObject(pObjParent))
-	{
-        xOffset += pObjChild->GetParentRectL();
-		yOffset += pObjChild->GetParentRectT();
-
-		if (!pObjChild->IsNcObject())
-		{
-			xOffset += pObjParent->GetNonClientL();
-			yOffset += pObjParent->GetNonClientT();
-
-			int xScroll = 0, yScroll = 0;
-			if (pObjParent->GetScrollOffset(&xScroll, &yScroll))
-			{
-				xOffset -= xScroll;
-				yOffset -= yScroll;
-			}
-		}
-
-		pObjChild = pObjParent;
-	}
-
-	POINT pt = {xOffset, yOffset};
-	return pt;
-}
-
-// 获取一个对象在窗口上的可视区域。例如用于绘制该对象时的裁剪
-// Param:
-//    bCalcInLayer: 当对象位于一个layer上时，重绘该对象需要获取的时该对象在层上的区域，而不是
-//                  在窗口上的区域。但层自己也有一个相对于窗口的位置，这个位置需要区分对待
-bool Object::GetObjectVisibleRect(RECT* prc, bool bInWindowOrLayer)
-{
-	CRect  rcClip, rcTemp, rcParent;
-	rcClip.SetRectEmpty();
-
-	Object* pObjParent = NULL;;
-
-	int xOffset = 0, yOffset = 0;
-
-	bool bFirstParent = true;
-	bool bBreak = false;
-	while (!bBreak)
-	{
-		pObjParent = this->REnumParentObject(pObjParent);
-		if (NULL == pObjParent)  // 最后还需要再计算一次自己在父对象中的范围
-		{
-			pObjParent = this;
-			bBreak = true;
-		}
-
-		if (bFirstParent)
-		{
-            if (bInWindowOrLayer)
-            {
-			    pObjParent->GetParentRect(&rcClip);
-            }
-            else
-            {
-                rcClip.SetRect(0, 0, pObjParent->GetWidth(), pObjParent->GetHeight());
-            }
-			bFirstParent = false;
-		}
-		else
-		{
-			pObjParent->GetParentRect(&rcParent);
-
-			// 减掉非客户区域
-			if (!pObjParent->IsNcObject())
-			{
-				CRegion4 rcNonRect;
-				pObjParent->GetParentObject()->GetNonClientRegion(&rcNonRect);
-				Util::DeflatRect(&rcClip, &rcNonRect);
-
-				xOffset += rcNonRect.left; 
-				yOffset += rcNonRect.top;
-
-				// pObjParent在它的父中的直接位置（减掉了滚动区域)
-				int xScroll = 0, yScroll= 0;
-				pObjParent->GetParentObject()->GetScrollOffset(&xScroll, &yScroll);
-				::OffsetRect(&rcParent, -xScroll, -yScroll);
-			}
-
-			// 计算出pObjParent在窗口中的位置
-			::OffsetRect(&rcParent, xOffset, yOffset);
-			
-			BOOL b = ::IntersectRect(rcTemp, &rcClip, &rcParent);
-			if (false == b)
-				return false;
-
-			rcClip = rcTemp;
-
-			xOffset = rcParent.left; 
-			yOffset = rcParent.top;
-		}
-	}
-
-	if (rcClip.Width() <= 0 || rcClip.Height() <= 0)
-		return false;
-
-	::CopyRect(prc, &rcClip);
-	return true;
-}
-
-bool  Object::GetObjectVisibleClientRect(RECT* prc, bool bInWindowOrLayer)
-{
-    if (false == GetObjectVisibleRect(prc, bInWindowOrLayer))
-        return false;
-
-    prc->left += m_rcNonClient.left;
-    prc->top  += m_rcNonClient.top;
-    prc->right  -= m_rcNonClient.right;
-    prc->bottom -= m_rcNonClient.bottom;
-    return true;
-}
-
-HBITMAP  Object::TakeSnapshot()
-{
-    RenderChain*  pRenderChain = GetRenderChain();
-    if (!pRenderChain)
-        return NULL;
-
-    Image image;
-    image.Create(m_rcParent.Width(), m_rcParent.Height(), 32, Image::createAlphaChannel);
-    HDC hDC = image.BeginDrawToMyself();
-    
-    IRenderTarget*  pRenderTarget = ::UICreateRenderTarget(GetRenderLibraryType(m_pIObject));
-    pRenderTarget->BindHDC(hDC);
-
-    pRenderTarget->BeginDraw(NULL, 0);
-
-    CRect rcRenderRegion(0, 0, image.GetWidth(), image.GetHeight());
-    RenderContext roc(&rcRenderRegion, true, pRenderChain->GetRequireAlphaChannel());
-    this->RealDrawObject(pRenderTarget, roc);
-    pRenderTarget->EndDraw();
-
-    pRenderTarget->Release();
-    image.EndDrawToMyself();
-    return image.Detach();
-}
-
-HBITMAP  Object::TakeBkgndSnapshot()
-{
-    RenderChain*  pRenderChain = GetRenderChain();
-    if (!pRenderChain)
-        return NULL;
-
-    Image image;
-    image.Create(m_rcParent.Width(), m_rcParent.Height(), 32, Image::createAlphaChannel);
-    HDC hDC = image.BeginDrawToMyself();
-
-	IRenderTarget*  pRenderTarget = ::UICreateRenderTarget(GetRenderLibraryType(m_pIObject));
-    pRenderTarget->BindHDC(hDC);
-
-    pRenderTarget->BeginDraw(NULL, 0);
-
-    CRect rcRenderRegion(0, 0, image.GetWidth(), image.GetHeight());
-    RenderContext roc(NULL, false, pRenderChain->GetRequireAlphaChannel());
-    CRect rcWindow;
-    GetWindowRect(&rcWindow);
-    roc.m_ptOffset.x = -rcWindow.left;
-    roc.m_ptOffset.y = -rcWindow.top;
-    roc.Update(pRenderTarget);
-    roc.m_bUpdateClip = false;
-
-    this->DrawObjectTransparentBkgnd(pRenderTarget, roc, true);
-    pRenderTarget->EndDraw();
-
-    pRenderTarget->Release();
-    image.EndDrawToMyself();
-    return image.Detach();
-}
-
-//
-// 递归. 将该对象及其子对象绘制到pRenderTarget上面
-// 因为子控件的范围可能要比parent还大，因此在这里必须取子和父的交集clip rgn进行绘制  
-//
-
-bool Object::DrawObject(IRenderTarget* pRenderTarget, RenderContext roc)
-{
-	if (this->IsMySelfVisible() && this->CanRedraw())
-    {
-        if (m_pObject3DWrap)
-        {
-            m_pObject3DWrap->OnDrawObject(pRenderTarget, roc);
-        }
-        else
-        {
-            RealDrawObject(pRenderTarget, roc);
-        }
-        return true;
-    }
-    return false;
-}
-// 很多情况下面不需要判断自己的可见性，因些将绘制代码从DrawObject抽出来
-void  Object::RealDrawObject(IRenderTarget* pRenderTarget, RenderContext roc)
-{
-    ::UISendMessage(this, WM_ERASEBKGND, (WPARAM)pRenderTarget, (LPARAM)&roc);  // 将lparam置为1，与原始消息进行区分
-    this->_drawNcChildObject(pRenderTarget, roc);
-
-    roc.DrawClient(m_pIObject);
-    roc.Scroll(m_pIObject);
-    roc.Update(pRenderTarget);
-
-    ::UISendMessage(this, WM_PAINT, (WPARAM)pRenderTarget, (LPARAM)&roc);       // 将lparam置为1，与原始消息进行区分
-    this->DrawChildObject(pRenderTarget, roc);
-}
-
-
-void Object::DrawChildObject(IRenderTarget* pRenderTarget, RenderContext& roc)
-{
-	Object*  pChild = NULL;
-	while (pChild = EnumChildObject(pChild))
-	{
-		RenderContext rocChild = roc;
-		if (rocChild.DrawChild(pChild->GetIObject()))
-        {
-            rocChild.Update(pRenderTarget);
-			pChild->DrawObject(pRenderTarget, rocChild);
-        }
-	}
-}
-
-
-void Object::_drawNcChildObject(IRenderTarget* pRenderTarget, RenderContext& roc)
-{
-	Object*  pChild = NULL;
-	while (pChild = EnumNcChildObject(pChild))
-	{
-		RenderContext rocChild = roc;
-		if (rocChild.DrawChild(pChild->GetIObject()))
-        {
-            rocChild.Update(pRenderTarget);
-			pChild->DrawObject(pRenderTarget, rocChild);
-        }
-	}
-}
-
-// 如果是透明背景的话，需要获取父窗口中的背景
-// 但即使是不透明的object，也需要一层层遍历下来获取它的剪裁区域
-//
-//   为了适应于对象隐藏的时候能够刷新自己的父对象背景，需要增加一个场景来忽略自己的透明属性
-//   因此增加bSelfTransparent，当普通刷新的时候传递this->IsTransparen()，其它时候直接传递false
-
-void Object::DrawObjectTransparentBkgnd(IRenderTarget* pRenderTarget, RenderContext& roc, bool bSelfTransparent)
-{
-	bool    bTransparent = bSelfTransparent;
-	Object* pObjFirstParentToDrawBk = NULL;
-	
-	if (bTransparent)
-	{
-		// 检查祖父对象中有没有不透明的，从该父对象画起
-		Object* pObjParent = NULL;
-		while (pObjParent = this->EnumParentObject(pObjParent))
-		{
-			if (!pObjParent->IsTransparent())
-			{
-				pObjFirstParentToDrawBk = pObjParent;
-				break;
-			}
-		}
-	}
-	else
-	{
-		pObjFirstParentToDrawBk = this;   // 虽然不需要绘制，但还是需要依据父对象进行偏移
-	}
-
-	Object* pObjParent = NULL;
-	while (pObjParent = this->REnumParentObject(pObjParent))
-	{
-        OBJ_TYPE eType = pObjParent->GetObjectType();
-		if (OBJ_WINDOW != eType && OBJ_LAYER != eType)
-		{
-			if (!pObjParent->IsNcObject())
-			{
-                Object* pParent = pObjParent->GetParentObject();
-                if (pParent)
-                {
-				    roc.Scroll(pParent->GetIObject());
-				    roc.DrawClient(pParent->GetIObject());
-                }
-			}
-			roc.DrawChild(pObjParent->GetIObject());
-            roc.Update(pRenderTarget);
-		}
-
-		if (pObjFirstParentToDrawBk)
-		{
-			if (pObjParent != pObjFirstParentToDrawBk)  // 从pObjFirstParentToDrawBk开始绘制
-				continue;
-
-			pObjFirstParentToDrawBk = NULL;             // 清除标记
-		}
-
-		::UISendMessage(pObjParent, WM_ERASEBKGND, (WPARAM)pRenderTarget, (LPARAM)&roc );
-	}
-
-	if (!this->IsNcObject())
-	{
-        Object* pParent = this->GetParentObject();
-        if (pParent)
-        {
-		    roc.Scroll(pParent->GetIObject());
-		    roc.DrawClient(pParent->GetIObject());
-        }
-	}
-	roc.DrawChild(m_pIObject);
-    roc.Update(pRenderTarget);
-}
-
-//
-// 获取该对象的偏移量
-//
-// ReturnQ
-//		返回false表示该对象无滚动数据
-//
-
-bool Object::GetScrollOffset(int* pxOffset, int* pyOffset)
-{
-	if (NULL == pxOffset || NULL == pyOffset)
-		return false;
-
-	*pxOffset = 0; *pyOffset = 0;
-
-	bool bHScroll = this->TestStyle(OBJECT_STYLE_HSCROLL);
-	bool bVScroll = this->TestStyle(OBJECT_STYLE_VSCROLL);
-	if (bHScroll || bVScroll)
-	{
-		::UISendMessage(this, UI_WM_GETSCROLLOFFSET, (WPARAM)pxOffset, (LPARAM)pyOffset);
-		return true;
-	}
-
-	return false;
-}
-
-
-bool Object::GetScrollRange(int* pxRange, int* pyRange)
-{
-	if (NULL == pxRange || NULL == pyRange)
-		return false;
-
-	*pxRange = 0; *pyRange = 0;
-
-	bool bHScroll = this->TestStyle(OBJECT_STYLE_HSCROLL);
-	bool bVScroll = this->TestStyle(OBJECT_STYLE_VSCROLL);
-	if (bHScroll || bVScroll)
-	{
-		::UISendMessage(this, UI_WM_GETSCROLLRANGE, (WPARAM)pxRange, (LPARAM)pyRange);
-		return true;
-	}
-
-	return false;
-}
-
-
-void Object::WindowPoint2ObjectPoint(const POINT* ptWindow, POINT* ptObj)
-{
-	if (NULL == ptObj || NULL == ptWindow)
-		return;
-
-	POINT pt = this->GetRealPosInWindow();
-	ptObj->x = ptWindow->x - pt.x;
-	ptObj->y = ptWindow->y - pt.y;
-}
-
-
-void Object::WindowPoint2ObjectClientPoint(const POINT* ptWindow, POINT* ptClient)
-{
-	if (NULL == ptClient || NULL == ptWindow)
-		return;
-
-	POINT pt = this->GetRealPosInWindow();
-	ptClient->x = ptWindow->x - pt.x - m_rcNonClient.left;
-	ptClient->y = ptWindow->y - pt.y - m_rcNonClient.top;
-}
-
-
-void Object::WindowPoint2ObjectClientPoint_CalcScroll(const POINT* ptWindow, POINT* ptObj)
-{
-	if (NULL == ptObj || NULL == ptWindow)
-		return;
-
-	this->WindowPoint2ObjectClientPoint(ptWindow, ptObj);
-
-	int x = 0, y = 0;
-	this->GetScrollOffset(&x, &y);
-	ptObj->x += x;
-	ptObj->y += y;
-}
-
-
-void Object::ObjectPoint2ObjectClientPoint(const POINT* ptObj, POINT* ptClient)
-{
-	if (NULL == ptObj || NULL == ptClient)
-		return;
-
-	ptClient->x = ptObj->x - m_rcNonClient.left;
-	ptClient->y = ptObj->y - m_rcNonClient.top;
-}
-
-
-void Object::ClientRect2ObjectRect(const RECT* rcClient, RECT* rcObj)
-{
-	if (NULL == rcClient || NULL == rcObj)
-		return;
-
-	CopyRect(rcObj, rcClient);
-	::OffsetRect(rcObj, m_rcNonClient.left, m_rcNonClient.top);
-}
-
-void  Object::WindowRect2ObjectClientRect(const RECT* rcWindow, RECT* rcObj)
-{
-    UIASSERT(rcWindow && rcObj);
-
-    POINT ptWindow = {rcWindow->left, rcWindow->top};
-    POINT ptClient = {0};
-
-    this->WindowPoint2ObjectClientPoint(&ptWindow, &ptClient);
-    rcObj->left = ptClient.x;
-    rcObj->top = ptClient.y;
-    rcObj->right = rcObj->left + (rcWindow->right-rcWindow->left);
-    rcObj->bottom = rcObj->top + (rcWindow->bottom-rcWindow->top);
-}
-
-void Object::GetWindowRect(CRect* lprc)
-{
-	if (NULL == lprc)
-		return;
-	
-	lprc->SetRect(0,0,GetWidth(), GetHeight());
-	POINT pt = this->GetRealPosInWindow();
-	lprc->OffsetRect(pt.x, pt.y);
-}
 
 void*  Object::QueryInterface(const IID* pIID)
 {
@@ -1318,10 +777,10 @@ IRenderFont* Object::GetRenderFont()
 }
 
 //
-//	[public] [virtual]  UINT HitTest( POINT* pt )
+//	[public] [virtual]  UINT HitTest( POINT* ptInParent )
 //
 //	Parameters
-//		pt
+//		ptInParent
 //			[in]  要试探的位置，通常为鼠标当前位置
 //
 //	Return
@@ -1333,25 +792,39 @@ IRenderFont* Object::GetRenderFont()
 //		你这个位置处于我什么部位。同时给Object配备一个RECT，来表示每一个对象的范围，因为大部分时候使用的都是RECT区域。
 //
 
-UINT Object::OnHitTest(POINT* pt)
+UINT Object::OnHitTest(POINT* ptInParent, __out POINT* ptInChild)
 {
 	BOOL  bIn = FALSE;
 
 	if (this->m_hRgn != NULL)
 	{
-		bIn = ::PtInRegion(m_hRgn, pt->x, pt->y);
-		return HTCLIENT;
+        UIASSERT(0);  // 未实现
+// 		bIn = ::PtInRegion(m_hRgn, ptInParent->x, ptInParent->y);
+//      if (bIn)
+// 		    return HTCLIENT;
 	}
+    else if (m_pRenderLayer && m_pRenderLayer->m_pTransform)
+    {
+        bIn =  m_pRenderLayer->m_pTransform->HitTest(ptInParent, ptInChild) ?  TRUE:FALSE;
+        if (bIn)
+            return HTCLIENT;
+    }
 	else
 	{
-		bIn = ::PtInRect(&m_rcParent, *pt);
+		bIn = ::PtInRect(&m_rcParent, *ptInParent);
 
 		if (bIn)
 		{
 			CRect rcClient;
 			this->GetClientRect(&rcClient);
 
-			if (::PtInRect(&rcClient, *pt))
+            if (ptInChild)
+            {
+                ptInChild->x = ptInParent->x - m_rcParent.left;
+                ptInChild->y = ptInParent->y - m_rcParent.top;
+            }
+
+			if (::PtInRect(&rcClient, *ptInParent))
 				return HTCLIENT;
 			else
 				return HTBORDER;
@@ -1369,17 +842,13 @@ void Object::OnThemeChanged()
         m_pBkgndRender->CheckThemeChanged();
     if (m_pForegndRender)
         m_pForegndRender->CheckThemeChanged();
-
-#if 0 // -- 架构改造
-	ON_RENDER_THEME_CHANGED_TEXT(m_pTextRender);
-#endif
 }
 
-LRESULT  Object::OnSkinMaterialChanged(UINT, WPARAM, LPARAM)
+LRESULT  Object::OnSkinTextureChanged(UINT, WPARAM, LPARAM)
 {
     if (m_pTextRender)
     {
-        m_pTextRender->CheckSkinMaterialChanged();
+        m_pTextRender->CheckSkinTextureChanged();
     }
     return 0;
 }
@@ -1423,6 +892,7 @@ void  Object::OnRedrawObject()
 {
     this->UpdateObject();
 }
+
 /*
 **	[private] bool    testStateBit( BYTE nbit );
 **	[private] bool    setStateBit( BYTE nbit );
@@ -1698,20 +1168,27 @@ void Object::SetVisible(bool b, bool bRedraw, bool bUpdateLayout)
 
 	if (b != bOld)
 	{
+        // 确实存在在初始化中调用setvisible，但此时还没有 m_pParent 的情况，如SystemScrollBar
+        RenderLayer2*  p = GetRenderLayer2();
+
 		if (bUpdateLayout)
 		{
 			this->UpdateLayout(bRedraw);
-		}
-		else
-		{
-			if(bRedraw)
-			{
-				if (b)
-					this->UpdateObject(); 
-				else
-					this->UpdateObjectBkgnd(true); 
-			}
-		}
+            if (!bRedraw && p)
+                p->SetDirty(true);
+        }
+        else if(bRedraw)
+        {
+            if (b)
+                this->UpdateObject(); 
+            else
+                this->UpdateObjectBkgnd(true); 
+        }
+        else
+        {
+            if (p)
+                p->SetDirty(true);
+        }
 	}
 }
 
@@ -1739,8 +1216,21 @@ void Object::SetEnable(bool b, bool bUpdateNow, bool bNoitfy)
     if (bNoitfy && b != bOld)
 	    UISendMessage(GetIMessage(), UI_WM_STATECHANGED2, (WPARAM)OSB_DISABLE);
 
-	if (b != bOld && bUpdateNow)
-		this->UpdateObject();
+	if (b != bOld)
+    {
+        if (bUpdateNow)
+		    this->UpdateObject();
+        else
+            GetRenderLayer2()->SetDirty(true);
+
+        // 重新发送鼠标消息，例如鼠标正好位于该控件上面，则需要将该控件设置为hover，否则点击无效
+        POINT pt = {0, 0};
+        ::GetCursorPos(&pt);
+        HWND hWnd = GetHWND();
+        ::MapWindowPoints(NULL, hWnd, &pt, 1);
+        ::SendMessage(hWnd, WM_MOUSEMOVE, 0, MAKELPARAM(pt.x, pt.y));
+
+    }
 }
 
 
@@ -1920,502 +1410,6 @@ bool  Object::IsRejectMouseMsgSelf()
 }
 
 
-int Object::GetWidth()
-{
-	return m_rcParent.Width();
-}
-
-
-int Object::GetHeight()
-{
-	return m_rcParent.Height();
-}
-
-
-int Object::GetWidthWithMargins()
-{
-	return m_rcParent.Width() + m_rcMargin.left + m_rcMargin.right;
-}
-
-
-int Object::GetHeightWithMargins()
-{
-	return m_rcParent.Height() + m_rcMargin.top + m_rcMargin.bottom;
-}
-
-// 注：这里的clientrect 并不是0,0起点的，而是相对于Object左上角而言
-
-void Object::GetClientRect(CRect* prc)
-{
-	if (NULL == prc)
-		return;
-
-	prc->SetRect(
-		m_rcNonClient.left, 
-		m_rcNonClient.top, 
-		this->GetWidth() - m_rcNonClient.right, 
-		this->GetHeight()- m_rcNonClient.bottom); 
-}
-
-// 注：这里的clientrect 是0,0起点的
-
-void Object::GetClientRectAsWin32( CRect* prc )
-{
-	if (NULL == prc)
-		return;
-
-	prc->SetRect(
-		0, 
-		0, 
-		this->GetWidth() - m_rcNonClient.left - m_rcNonClient.right, 
-		this->GetHeight()- m_rcNonClient.top - m_rcNonClient.bottom); 
-}
-
-// clientrect在窗口中的坐标
-void Object::GetClientRectInWindow( CRect* prc )
-{
-	if (NULL == prc)
-		return;
-
-	this->GetWindowRect(prc);
-	prc->left += m_rcNonClient.left;
-	prc->top  += m_rcNonClient.top;
-	prc->right  -= m_rcNonClient.right;
-	prc->bottom -= m_rcNonClient.bottom;
-}
-
-//
-// 遍历自己的nc object来更新自己的non client region
-//
-void Object::UpdateObjectNonClientRegion()
-{
-	CRegion4  rcNonClient(0,0,0,0);
-
-    UIMSG msg;
-	msg.message = UI_WM_CALC_PARENT_NONCLIENTRECT;
-	msg.wParam = (WPARAM)&rcNonClient;
-	msg.pMsgFrom = this->GetIMessage();
-
-	Object* pNcChild = NULL;
-	while (pNcChild = this->EnumNcChildObject(pNcChild))
-	{
-		msg.pMsgTo = pNcChild->GetIMessage();
-		UISendMessage(&msg);
-	}
-
-	this->SetNonClientRegionExcludePaddingBorder(&rcNonClient);
-}
-
-
-void Object::SetNonClientRegionExcludePaddingBorder( CRegion4* prc )
-{
-	m_rcNonClient.SetRect(
-		prc->left   + m_rcPadding.left   + m_rcBorder.left,
-		prc->top    + m_rcPadding.top    + m_rcBorder.top,
-		prc->right  + m_rcPadding.right  + m_rcBorder.right,
-		prc->bottom + m_rcPadding.bottom + m_rcBorder.bottom);
-}
-
-
-void Object::SetNonClientRegionExcludePaddingBorderL( int n )
-{
-	m_rcNonClient.left = n + m_rcPadding.left + m_rcBorder.left;
-}
-
-void Object::SetNonClientRegionExcludePaddingBorderT( int n )
-{
-	m_rcNonClient.top = n + m_rcPadding.top + m_rcBorder.top;
-}
-
-void Object::SetNonClientRegionExcludePaddingBorderB( int n )
-{
-	m_rcNonClient.bottom = n + m_rcPadding.bottom + m_rcBorder.bottom;
-}
-
-void Object::SetNonClientRegionExcludePaddingBorderR( int n )
-{
-	m_rcNonClient.right = n + m_rcPadding.right + m_rcBorder.right;
-}
-
-
-void Object::GetParentRect( CRect* prc )
-{
-	if (NULL == prc)
-		return;
-
-	prc->CopyRect(&m_rcParent);
-}
-
-ILayoutParam*  Object::GetLayoutParam()
-{
-    return m_pLayoutParam;
-}
-void  Object::CreateLayoutParam()
-{
-    SAFE_RELEASE(m_pLayoutParam);
-
-    if (!m_pParent)
-        return;
-
-    ILayout* pLayout = (ILayout*)UISendMessage(m_pParent, UI_WM_GETLAYOUT);
-    if (!pLayout)
-        return;
-
-    m_pLayoutParam = pLayout->CreateLayoutParam(m_pIObject);
-}
-
-void  Object::SetLayoutParam(ILayoutParam* p)
-{
-    SAFE_RELEASE(m_pLayoutParam);
-    m_pLayoutParam = p;
-}
-int   Object::GetConfigWidth()
-{
-    if (m_pLayoutParam)
-    {
-        if (m_pLayoutParam->GetLayoutType() != LAYOUT_TYPE_CANVAS)
-            return NDEF;
-        else
-            return static_cast<CanvasLayoutParam*>(m_pLayoutParam)->GetConfigWidth();
-    }
-    else
-    {
-        int nRet = NDEF;
-        m_pIMapAttributeRemain->GetAttr_int(XML_WIDTH, false, &nRet);
-        return nRet;
-    }
-}
-int   Object::GetConfigHeight()
-{
-    if (m_pLayoutParam)
-    {
-        if (m_pLayoutParam->GetLayoutType() != LAYOUT_TYPE_CANVAS)
-            return NDEF;
-        else
-            return static_cast<CanvasLayoutParam*>(m_pLayoutParam)->GetConfigHeight();
-    }
-    else
-    {
-        int nRet = NDEF;
-        m_pIMapAttributeRemain->GetAttr_int(XML_HEIGHT, false, &nRet);
-        return nRet;
-    }
-}
-int   Object::GetConfigLayoutFlags()
-{
-    if (m_pLayoutParam)
-    {
-        if (m_pLayoutParam->GetLayoutType() != LAYOUT_TYPE_CANVAS)
-            return 0;
-        else
-            return static_cast<CanvasLayoutParam*>(m_pLayoutParam)->GetConfigLayoutFlags();
-    }
-    else
-    {
-        const TCHAR* szText = m_pIMapAttributeRemain->GetAttr(XML_LAYOUT_ITEM_ALIGN, false);
-        if (!szText)
-            return 0;
-
-        return CanvasLayoutParam::ParseAlignAttr(szText);
-    }
-}
-int   Object::GetConfigLeft()
-{
-    if (m_pLayoutParam)
-    {
-        if (m_pLayoutParam->GetLayoutType() != LAYOUT_TYPE_CANVAS)
-            return NDEF;
-        else
-            return static_cast<CanvasLayoutParam*>(m_pLayoutParam)->GetConfigLeft();
-    }
-    else
-    {
-        int nRet = NDEF;
-        m_pIMapAttributeRemain->GetAttr_int(XML_LAYOUT_ITEM_LEFT, false, &nRet);
-        return nRet;
-    }
-}
-int   Object::GetConfigRight()
-{
-    if (m_pLayoutParam)
-    {
-        if (m_pLayoutParam->GetLayoutType() != LAYOUT_TYPE_CANVAS)
-            return NDEF;
-        else
-            return static_cast<CanvasLayoutParam*>(m_pLayoutParam)->GetConfigRight();
-    }
-    else
-    {
-        int nRet = NDEF;
-        m_pIMapAttributeRemain->GetAttr_int(XML_LAYOUT_ITEM_RIGHT, false, &nRet);
-        return nRet;
-    }
-}
-int   Object::GetConfigTop()
-{
-    if (m_pLayoutParam)
-    {
-        if (m_pLayoutParam->GetLayoutType() != LAYOUT_TYPE_CANVAS)
-            return NDEF;
-        else
-            return static_cast<CanvasLayoutParam*>(m_pLayoutParam)->GetConfigTop();
-    }
-    else
-    {
-        int nRet = NDEF;
-        m_pIMapAttributeRemain->GetAttr_int(XML_LAYOUT_ITEM_TOP, false, &nRet);
-        return nRet;
-    }
-}
-int   Object::GetConfigBottom()
-{
-    if (m_pLayoutParam)
-    {
-        if (m_pLayoutParam->GetLayoutType() != LAYOUT_TYPE_CANVAS)
-            return NDEF;
-        else
-            return static_cast<CanvasLayoutParam*>(m_pLayoutParam)->GetConfigBottom();
-    }
-    else
-    {
-        int nRet = NDEF;
-        m_pIMapAttributeRemain->GetAttr_int(XML_LAYOUT_ITEM_BOTTOM, false, &nRet);
-        return nRet;
-    }
-}
-
-void  Object::SetConfigWidth(int n)
-{
-    if (m_pLayoutParam)
-    {
-        if (m_pLayoutParam->GetLayoutType() == LAYOUT_TYPE_CANVAS)
-            static_cast<CanvasLayoutParam*>(m_pLayoutParam)->SetConfigWidth(n);
-    }
-    else
-    {
-        CanvasLayout::s_GetObjectLayoutParam(this)->SetConfigWidth(n);
-    }
-}
-void  Object::SetConfigHeight(int n)
-{
-    if (m_pLayoutParam)
-    {
-        if (m_pLayoutParam->GetLayoutType() == LAYOUT_TYPE_CANVAS)
-            static_cast<CanvasLayoutParam*>(m_pLayoutParam)->SetConfigHeight(n);
-    }
-    else
-    {
-        CanvasLayout::s_GetObjectLayoutParam(this)->SetConfigHeight(n);
-    }
-}
-void  Object::SetConfigLayoutFlags(int n)
-{
-    if (m_pLayoutParam)
-    {
-        if (m_pLayoutParam->GetLayoutType() == LAYOUT_TYPE_CANVAS)
-            static_cast<CanvasLayoutParam*>(m_pLayoutParam)->SetConfigLayoutFlags(n);
-    }
-    else
-    {
-        CanvasLayout::s_GetObjectLayoutParam(this)->SetConfigLayoutFlags(n);
-    }
-}
-void  Object::SetConfigLeft(int n)
-{
-    if (m_pLayoutParam)
-    {
-        if (m_pLayoutParam->GetLayoutType() == LAYOUT_TYPE_CANVAS)
-            static_cast<CanvasLayoutParam*>(m_pLayoutParam)->SetConfigLeft(n);
-    }
-    else
-    {
-        CanvasLayout::s_GetObjectLayoutParam(this)->SetConfigLeft(n);
-    }
-}
-void  Object::SetConfigRight(int n)
-{
-    if (m_pLayoutParam)
-    {
-        if (m_pLayoutParam->GetLayoutType() == LAYOUT_TYPE_CANVAS)
-            static_cast<CanvasLayoutParam*>(m_pLayoutParam)->SetConfigRight(n);
-    }
-    else
-    {
-        CanvasLayout::s_GetObjectLayoutParam(this)->SetConfigRight(n);
-    }
-}
-void  Object::SetConfigTop(int n)
-{
-    if (m_pLayoutParam)
-    {
-        if (m_pLayoutParam->GetLayoutType() == LAYOUT_TYPE_CANVAS)
-            static_cast<CanvasLayoutParam*>(m_pLayoutParam)->SetConfigTop(n);
-    }
-    else
-    {
-        CanvasLayout::s_GetObjectLayoutParam(this)->SetConfigTop(n);
-    }
-}
-void  Object::SetConfigBottom(int n)
-{
-    if (m_pLayoutParam)
-    {
-        if (m_pLayoutParam->GetLayoutType() == LAYOUT_TYPE_CANVAS)
-            static_cast<CanvasLayoutParam*>(m_pLayoutParam)->SetConfigBottom(n);
-    }
-    else
-    {
-        CanvasLayout::s_GetObjectLayoutParam(this)->SetConfigBottom(n);
-    }
-}
-
-void Object::SetObjectPos(int x, int y, int cx, int cy, int nFlag)
-{
-    bool bMove = (nFlag&SWP_NOMOVE)?false:true;
-    bool bSize = (nFlag&SWP_NOSIZE)?false:true;
-
-    //  TODO: 加上这一段代码会导致SetVisible中的布局出现问题，如果pp -> p -> o，o发生变化
-    //  让p去重新布局，然后p再检测自己的desiredsize变化了，再向pp请求重新布局，结果pp的大
-    //  小没有发生变化，导致p不会去重新布局，o刷新失败。
-//     if (bMove && 
-//         x == m_rcParent.left &&
-//         y == m_rcParent.top && 
-//         bSize && 
-//         cx == m_rcParent.Width() && 
-//         cy == m_rcParent.Height())
-//         return;
-
-	nFlag |= SWP_NOZORDER;   // 该函数不提供修改ZORDER的功能
-	WINDOWPOS wndpos =  {NULL, NULL, x, y, cx, cy, nFlag};
-	UISendMessage(this, WM_WINDOWPOSCHANGING, 0, (LPARAM)&wndpos);
-	x = wndpos.x;
-	y = wndpos.y;
-	cx = wndpos.cx;
-	cy = wndpos.cy;
-	nFlag = wndpos.flags;
-
-	if (bMove&&bSize)
-	{
-		
-	}
-	else if (bMove)
-	{
-		cx = this->GetWidth();
-		cy = this->GetHeight();
-	}
-	else if (bSize)
-	{
-		x = m_rcParent.left;
-		y = m_rcParent.top;
-	}
-	else
-	{
-		return;  // DONOTHING
-	}
-
-	RECT rcOldVisibleRect = {0};
-	if (bMove || bSize) 
-	{
-		// 刷新移动前的区域位置
-		if (!(nFlag & SWP_NOREDRAW))
-		{
-			this->GetObjectVisibleRect(&rcOldVisibleRect, true);  // 获取下当前会刷新的区域范围，放在后面进行提交
-			this->UpdateObjectBkgnd(false);  // 这里不能立即刷新，否则后面再调用UpdateObject可能造成闪烁（移动后的位置有重合的情况下）
-		}
-	}
-
-    int nObjType = this->GetObjectType();
-	if (nObjType == OBJ_WINDOW)
-	{
-		// 对于窗口来说，这里设置的是非客户区的大小
-		WindowBase* pThis = (WindowBase*)this;
-		::SetWindowPos(pThis->GetHWND(), NULL, x, y, cx, cy, SWP_NOZORDER|SWP_NOACTIVATE);
-		::GetClientRect(pThis->GetHWND(), &m_rcParent);
-		return;
-	}
-	else if (nObjType == OBJ_HWNDHOST)
-	{
-        m_rcParent.SetRect(x, y, x+cx, y+cy);
-
-        // 转化为窗口坐标，而不是父对象坐标
-		HwndHost* pThis = (HwndHost*)this;
-        if (pThis->m_hWnd)
-        {
-            CRect rcWindow;
-            pThis->GetWindowRect(&rcWindow);
-		    ::SetWindowPos(pThis->m_hWnd, NULL, 
-                rcWindow.left, rcWindow.top, rcWindow.Width(), rcWindow.Height(), 
-                SWP_NOZORDER|SWP_NOACTIVATE);
-        }
-
-		if (!(nFlag&SWP_NOUPDATELAYOUTPOS))
-		{
-			UpdateLayoutPos();
-		}
-		return;
-	}
-	else
-	{
-		::SetRect(&m_rcParent, x,y,x+cx,y+cy);
-	}
-    if (!(nFlag&SWP_NOUPDATELAYOUTPOS))
-    {
-        UpdateLayoutPos();
-    }
-
-	// MSDN: MoveWindow sends the WM_WINDOWPOSCHANGING, WM_WINDOWPOSCHANGED, WM_MOVE, WM_SIZE, and WM_NCCALCSIZE messages to the window. 
-	// 在这里我们暂时只先发送WM_MOVE/WM_SIZE消息
-    if (!(nFlag & SWP_NOSENDCHANGING))
-    {
-	    if (bMove)
-		    UISendMessage(this, WM_MOVE, 0, MAKELPARAM(m_rcParent.left,m_rcParent.top));
-	    if (bSize)
-		    UISendMessage(this, WM_SIZE, 0, MAKELPARAM(m_rcParent.Width(),m_rcParent.Height()));
-
-	    WINDOWPOS wndpos2 =  {NULL, NULL, x, y, cx, cy, nFlag};
-	    UISendMessage(this, WM_WINDOWPOSCHANGED, NULL, (LPARAM)&wndpos2);
-    }
-
-	if (bMove || bSize)
-	{
-		// 刷新移动后的区域位置
-		if (!(nFlag & SWP_NOREDRAW))
-		{
-			this->UpdateObject();
-
-			// 将移动之前的区域数据提交到窗口上，避免闪烁
-			this->GetWindowObject()->CommitDoubleBuffet2Window(NULL, &rcOldVisibleRect);
-		}
-	}
-}
-
-
-void Object::SetObjectPos(CRect* prc, int nFlag)
-{
-	if (NULL == prc)
-		return;
-
-	this->SetObjectPos(prc->left, prc->top, prc->Width(), prc->Height(), nFlag);
-}
-
-// 根据m_rcParent更新 m_nConfigLeft/m_nConfigRight/m_nConfigTop/m_nConfigBottom/m_nConfigLayoutFlags
-void Object::UpdateLayoutPos()
-{
-//     if (!m_pParent)
-//         return;
-//     
-//     ILayout* pLayout = (ILayout*)UISendMessage(m_pParent, UI_WM_GETLAYOUT);
-//     if (!pLayout)
-//         return;
-// 
-//     pLayout->UpdateObjectLayoutPos(m_pIObject);
-    
-    if (m_pLayoutParam)
-    {
-        m_pLayoutParam->UpdateByRect();
-    }
-}
-
 // 当手动创建一个对象（非从xml中加载时，可以调用该函数完全默认属性的加载)
 void  Object::InitDefaultAttrib()
 {
@@ -2431,7 +1425,7 @@ void  Object::InitDefaultAttrib()
             IStyleManager* pStyleMgr = pSkinRes->GetStyleManager();
             if (pStyleMgr)
             {
-                pStyleMgr->LoadStyle(GetObjectName(), NULL, m_strID.c_str(), pMapAttrib);
+                pStyleMgr->LoadStyle(GetObjectName(), NULL, m_strId.c_str(), pMapAttrib);
             }
         }
     }
@@ -2466,7 +1460,25 @@ void  Object::SetUIApplication(IUIApplication* p)
 { 
 	m_pUIApplication = p;
 }
+IUIApplication*  Object::GetUIApplication() 
+{ 
+    return m_pUIApplication; 
+}
 
+HRGN  Object::GetRgn()
+{
+    return m_hRgn; 
+}
+
+int  Object::GetZOrder() 
+{
+    return m_nzOrder; 
+}
+
+void  Object::SetZorderDirect(int z) 
+{
+    m_nzOrder = z;
+}
 
 void Object::SetBkgndRender(IRenderBase* p)
 {
@@ -2593,7 +1605,7 @@ DWORD  Object::CalcContrastTextColor()
     if (NULL == pWindowBase)
         return 0;
 
-    HDC hDC = pWindowBase->GetMemoryLayerDC();  // 仅获取控件层DC （目前做不到全部layer）当前缓冲图片上并不包含文字内容，但包含object背景
+    HDC hDC = pWindowBase->GetRenderLayer2()->GetRenderTarget()->GetHDC();
     if (NULL == hDC)
         return 0;
 
@@ -2601,12 +1613,15 @@ DWORD  Object::CalcContrastTextColor()
     if (NULL == hBitmap)
         return 0;
 
-    CRect rcWindow;
-    GetWindowRect(&rcWindow);
+    CRect rcLayer;
+    GetVisibleRectInWindow(&rcLayer);
 
     Image  image;
-    image.Attach(hBitmap);
-    DWORD  dwAverageColor = image.GetAverageColor(&rcWindow);
+    image.Attach(hBitmap, Image::DIBOR_TOPDOWN);
+// #ifdef _DEBUG
+//     image.Save(L"C:\\aa.png", Gdiplus::ImageFormatPNG);
+// #endif
+    DWORD  dwAverageColor = image.GetAverageColor(&rcLayer);
     image.Detach();
 
     // 将alpha值应用上
@@ -2684,36 +1699,48 @@ bool  Object::ReleaseKeyboardCapture()
     return true;
 }
 
-Object3DWrap*  Object::Begin3D()
-{
-    if (m_pObject3DWrap)
-        return m_pObject3DWrap;
-
-    m_pObject3DWrap = new Object3DWrap(this);
-    m_pObject3DWrap->Begin();
-
-    return m_pObject3DWrap;
-}
-void  Object::End3D()
-{
-    if (!m_pObject3DWrap)
-        return;
-
-    m_pObject3DWrap->End();
-    SAFE_DELETE(m_pObject3DWrap);
-}
-Object3DWrap*  Object::Get3DWrap()
-{
-    return m_pObject3DWrap;
-}
+// Object3DWrap*  Object::Begin3D()
+// {
+//     if (m_pObject3DWrap)
+//         return m_pObject3DWrap;
+// 
+//     m_pObject3DWrap = new Object3DWrap(this);
+//     m_pObject3DWrap->Begin();
+// 
+//     return m_pObject3DWrap;
+// }
+// void  Object::End3D()
+// {
+//     if (!m_pObject3DWrap)
+//         return;
+// 
+//     m_pObject3DWrap->End();
+//     SAFE_DELETE(m_pObject3DWrap);
+// }
+// Object3DWrap*  Object::Get3DWrap()
+// {
+//     return m_pObject3DWrap;
+// }
 
 bool  Object::CreateRenderLayer()
 {
     if (m_pRenderLayer)
         return true;
-
-    m_pRenderLayer = new RenderLayer2;
-
-    return false;   
+	
+	m_pRenderLayer = new RenderLayer2(this);
+    return true;   
 }
+
+GRAPHICS_RENDER_LIBRARY_TYPE  Object::GetGraphicsRenderLibraryType()
+{
+    WindowRender*  pWindowRender = GetWindowRender();
+    if (!pWindowRender)
+    {
+		return GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
+		//return (GRAPHICS_RENDER_LIBRARY_TYPE)UISendMessage(m_pIObject, UI_WM_GET_GRAPHICS_RENDER_LIBRARY_TYPE);
+    }
+
+    return pWindowRender->GetGraphicsRenderType();
+}
+
 }

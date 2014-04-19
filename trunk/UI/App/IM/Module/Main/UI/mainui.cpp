@@ -94,9 +94,9 @@ long  CMainUI::Create()
         if (m_pSkinUI)
         {
             IM::GetFramework()->SubscribeUIEvent(EVENT_SKIN_TEXTURE_ALPHA_CHANGED, static_cast<IM::IUI*>(this));
-            if (NULL == m_pMainDlg->GetMaterialRender())
+            if (NULL == m_pMainDlg->GetTextureRender())
             {
-                m_pMainDlg->SetMaterialRender(m_pSkinUI->GetShareSkinRender());
+                m_pMainDlg->SetTextureRender(m_pSkinUI->GetShareSkinRender());
             }
             m_pMainDlg->ChangeTextureAlpha(m_pSkinUI->GetTextureAlpha());
         }

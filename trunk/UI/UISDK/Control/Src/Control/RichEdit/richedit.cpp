@@ -42,7 +42,7 @@ void  RichEdit::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
     IUIApplication*  pUIApplication = m_pIRichEdit->GetUIApplication();
 
     ITextRenderBase* pTextRender = NULL;
-    pMapAttrib->GetAttr_TextRenderBase(XML_TEXTRENDER_TYPE, true, pUIApplication, m_pIRichEdit, &pTextRender);
+    pMapAttrib->GetAttr_TextRenderBase(NULL, XML_TEXTRENDER_TYPE, true, pUIApplication, m_pIRichEdit, &pTextRender);
 	if (pTextRender)
 	{
         m_pIRichEdit->SetTextRender(pTextRender);
@@ -167,21 +167,23 @@ void RichEdit::OnEraseBkgnd(IRenderTarget*  pRendrTarget)
 }
 
 
-void RichEdit::OnPaint(IRenderTarget*  pRendrTarget, RenderContext* pContext)
+void RichEdit::OnPaint(IRenderTarget*  pRenderTarget, RenderContext* pContext)
 {
-	HDC hDC = pRendrTarget->GetBindHDC();
+	HDC hDC = pRenderTarget->GetHDC();
 	m_wrapRichEidt.Draw(hDC, m_pIRichEdit->TestStyleEx(RICHEDIT_STYLE_TEXTSHADOW));
   
     CRect  rcWnd;
-    m_pIRichEdit->GetObjectVisibleRect(&rcWnd, false);
+    m_pIRichEdit->GetVisibleRectInLayer(&rcWnd);
 
 	if (m_rcInvalidate.IsRectEmpty())
 	{
-        if (pContext->m_bRequireAlphaChannel)
+        if (pRenderTarget->GetGraphicsRenderLibraryType() != GRAPHICS_RENDER_LIBRARY_TYPE_GDI)
 		{
 			Util::FixAlphaData data = {0};
 			data.hDC = hDC;
+            OffsetRect(&rcWnd, pContext->m_ptBufferOffset.x, pContext->m_ptBufferOffset.y);  // 缓存还有偏移
 			data.lprc = &rcWnd;
+			data.bTopDownDib = TRUE;
 			data.eMode = Util::SET_ALPHA_255_IF_ALPHA_IS_0;
 			Util::FixBitmapAlpha(&data);
 		}
@@ -193,10 +195,12 @@ void RichEdit::OnPaint(IRenderTarget*  pRendrTarget, RenderContext* pContext)
         CRect rcFix;
         rcFix.IntersectRect(&m_rcInvalidate, &rcWnd);
 
-        if (pContext->m_bRequireAlphaChannel)
+        if (pRenderTarget->GetGraphicsRenderLibraryType() != GRAPHICS_RENDER_LIBRARY_TYPE_GDI)
 		{
 			Util::FixAlphaData data = {0};
 			data.hDC = hDC;
+			data.bTopDownDib = TRUE;
+            OffsetRect(&rcFix, pContext->m_ptBufferOffset.x, pContext->m_ptBufferOffset.y);  // 缓存还有偏移
 			data.lprc = &rcFix;
 			data.eMode = Util::SET_ALPHA_255_IF_ALPHA_IS_0;
 			Util::FixBitmapAlpha(&data);
@@ -213,8 +217,7 @@ LRESULT RichEdit::OnRedrawObject(UINT uMsg, WPARAM wParam, LPARAM lParam)
 	if (false == m_wrapRichEidt.GetInvalidateRect(&m_rcInvalidate, &bRedrawScrollbar))
 		return 0;
 
-    IRenderLayer*  pRenderLayer = m_pIRichEdit->GetRenderLayer();
-    HDC hDC = pRenderLayer->GetMemoryLayerDC();
+    HDC hDC = m_pIRichEdit->GetRenderLayer2()->GetHDC();
     if (NULL == hDC)
         return 0;
 
@@ -297,6 +300,8 @@ LRESULT RichEdit::OnForwardMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void RichEdit::OnSize(UINT nType, int cx, int cy)
 {
+    SetMsgHandled(FALSE);
+
 	// 更新滚动条的属性
 	CRect rcClient;
 	m_pIRichEdit->GetClientRect(&rcClient);
@@ -401,5 +406,84 @@ HRESULT  RichEdit::OnTxNotify(DWORD iNotify, void* pv, BOOL& bHandled)
     return S_OK;
 }
 
+// 代码修改自mfc源码：CFontDialog dlgfnt.cpp
+void FillInLogFont(LOGFONT& m_lf, const CHARFORMAT& cf)
+{
+    BOOL bIsFormat2 = (cf.cbSize >= sizeof(CHARFORMAT2));
+
+    if (cf.dwMask & CFM_SIZE)
+    {
+        HDC dc = CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+        LONG yPerInch = ::GetDeviceCaps(dc, LOGPIXELSY);
+        m_lf.lfHeight = round(-((cf.yHeight * yPerInch) / 1440.f));  // <-- 直接转成(int)会导致大小不一致，如11.6,应该转成12，而不是11
+        DeleteDC(dc);
+    }
+    else
+    {
+        m_lf.lfHeight = 0;
+    }
+
+    m_lf.lfWidth = 0;
+    m_lf.lfEscapement = 0;
+    m_lf.lfOrientation = 0;
+
+    if ((cf.dwMask & (CFM_ITALIC|CFM_BOLD)) == (CFM_ITALIC|CFM_BOLD))
+    {
+        m_lf.lfWeight = (cf.dwEffects & CFE_BOLD) ? FW_BOLD : FW_NORMAL;
+        m_lf.lfItalic = (BYTE)((cf.dwEffects & CFE_ITALIC) ? TRUE : FALSE);
+    }
+    else
+    {
+        m_lf.lfWeight = FW_DONTCARE;
+        m_lf.lfItalic = FALSE;
+    }
+
+    if ((cf.dwMask & (CFM_UNDERLINE|CFM_STRIKEOUT|CFM_COLOR)) ==
+        (CFM_UNDERLINE|CFM_STRIKEOUT|CFM_COLOR))
+    {
+        m_lf.lfUnderline = (BYTE)((cf.dwEffects & CFE_UNDERLINE) ? TRUE : FALSE);
+        m_lf.lfStrikeOut = (BYTE)((cf.dwEffects & CFE_STRIKEOUT) ? TRUE : FALSE);
+    }
+    else
+    {
+        m_lf.lfUnderline = (BYTE)FALSE;
+        m_lf.lfStrikeOut = (BYTE)FALSE;
+    }
+
+    m_lf.lfCharSet = DEFAULT_CHARSET;  // <-- 一些特殊字符使用ANISI_CHARSET绘制会显示不出来
+    if (cf.dwMask & CFM_CHARSET)
+        m_lf.lfCharSet = cf.bCharSet;
+
+    m_lf.lfOutPrecision = OUT_DEFAULT_PRECIS;
+    m_lf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+    m_lf.lfQuality = DEFAULT_QUALITY;
+
+    if (bIsFormat2)
+    {
+        const CHARFORMAT2* pCF2 = (const CHARFORMAT2*) &cf;
+        if (pCF2->dwMask & CFM_WEIGHT)
+            m_lf.lfWeight = pCF2->wWeight;
+
+        // CHAFORMAT2 has UNICODE face name, CHARFORMAT doesn't
+
+        if (cf.dwMask & CFM_FACE)
+        {
+            m_lf.lfPitchAndFamily = pCF2->bPitchAndFamily;
+            Checked::tcscpy_s(m_lf.lfFaceName, _countof(m_lf.lfFaceName), (LPTSTR)pCF2->szFaceName);
+        }
+    }
+    else
+    {
+        m_lf.lfPitchAndFamily = cf.bPitchAndFamily;
+        String strFaceName(cf.szFaceName);
+        Checked::tcsncpy_s(m_lf.lfFaceName, _countof(m_lf.lfFaceName), strFaceName.c_str(), _TRUNCATE);
+    }
+
+    if (!(cf.dwMask & CFM_FACE))
+    {
+        m_lf.lfPitchAndFamily = DEFAULT_PITCH|FF_DONTCARE;
+        m_lf.lfFaceName[0] = (TCHAR)0;
+    }
+}
 
 }

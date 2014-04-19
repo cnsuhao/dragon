@@ -120,7 +120,7 @@ void ContactList::OnDropTargetEvent( UI::DROPTARGETEVENT_TYPE eType, UI::DROPTAR
             ScreenToClient(m_pIContactList->GetHWND(), &pt);
 
             POINT ptClient;
-            m_pIContactList->WindowPoint2ObjectClientPoint(&pt, &ptClient);
+            m_pIContactList->WindowPoint2ObjectClientPoint(&pt, &ptClient, true);
 
             CRect rcClient;
             m_pIContactList->GetClientRectAsWin32(&rcClient);

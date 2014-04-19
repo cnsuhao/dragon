@@ -7,15 +7,18 @@
 
 #include "targetver.h"
 
-#define WIN32_LEAN_AND_MEAN             // 从 Windows 头中排除极少使用的资料
+//#define WIN32_LEAN_AND_MEAN             // 从 Windows 头中排除极少使用的资料
 // Windows 头文件:
 #include <windows.h>
+#include <gdiplus.h>
+#pragma comment(lib, "gdiplus.lib")
 
 // C 运行时头文件
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+
 
 // 依赖库
 #include "UISDK\Project\UIUtil\h\util.h"

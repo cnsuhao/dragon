@@ -49,6 +49,7 @@
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
+				WarnAsError="true"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -297,6 +298,14 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\Kernel\Src\Base\Object\object.rect.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Kernel\Src\Base\Object\object.render.cpp"
+							>
+						</File>
+						<File
 							RelativePath="..\..\Kernel\Src\Base\Object\objserialize.h"
 							>
 						</File>
@@ -538,86 +547,6 @@
 						>
 						<File
 							RelativePath="..\..\Kernel\Src\Util\Buffer\BufferT.h"
-							>
-						</File>
-					</Filter>
-				</Filter>
-				<Filter
-					Name="07. renderlayer"
-					>
-					<Filter
-						Name="01. renderchain"
-						>
-						<File
-							RelativePath="..\..\Kernel\Src\RenderLayer\renderchain.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\RenderLayer\renderchain.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="02. renderlayer"
-						>
-						<File
-							RelativePath="..\..\Kernel\Src\RenderLayer\irenderlayer.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\RenderLayer\renderlayer.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\RenderLayer\renderlayer.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="03. direct"
-						>
-						<File
-							RelativePath="..\..\Kernel\Src\RenderLayer\directrenderlayer.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\RenderLayer\directrenderlayer.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="04. buffer"
-						>
-						<File
-							RelativePath="..\..\Kernel\Src\RenderLayer\bufferrenderlayer.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\RenderLayer\bufferrenderlayer.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="05. window"
-						>
-						<File
-							RelativePath="..\..\Kernel\Src\RenderLayer\windowrenderlayet.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\RenderLayer\windowrenderlayet.h"
-							>
-						</File>
-					</Filter>
-					<Filter
-						Name="06. 3d"
-						>
-						<File
-							RelativePath="..\..\Kernel\Src\RenderLayer\3dlayer.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\RenderLayer\3dlayer.h"
 							>
 						</File>
 					</Filter>
@@ -1182,6 +1111,10 @@
 									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\3dmatrix.h"
 									>
 								</File>
+								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\fpu_rounding.h"
+									>
+								</File>
 							</Filter>
 							<Filter
 								Name="texturemapping"
@@ -1215,6 +1148,10 @@
 									>
 								</File>
 								<File
+									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\texture_mapping_base.cpp"
+									>
+								</File>
+								<File
 									RelativePath="..\..\Kernel\Src\Animate\3dwrap\3dlib\texture_mapping_base.h"
 									>
 								</File>
@@ -1231,22 +1168,6 @@
 									>
 								</File>
 							</Filter>
-						</Filter>
-						<Filter
-							Name="3dwrap"
-							>
-							<File
-								RelativePath="..\..\Kernel\Src\Animate\3dwrap\iobject3dwrap.cpp"
-								>
-							</File>
-							<File
-								RelativePath="..\..\Kernel\Src\Animate\3dwrap\ui3dwrap.cpp"
-								>
-							</File>
-							<File
-								RelativePath="..\..\Kernel\Src\Animate\3dwrap\ui3dwrap.h"
-								>
-							</File>
 						</Filter>
 					</Filter>
 					<Filter
@@ -1265,6 +1186,14 @@
 							>
 							<FileConfiguration
 								Name="Debug|Win32"
+								>
+								<Tool
+									Name="VCCLCompilerTool"
+									UsePrecompiledHeader="0"
+								/>
+							</FileConfiguration>
+							<FileConfiguration
+								Name="Release|Win32"
 								>
 								<Tool
 									Name="VCCLCompilerTool"
@@ -1378,6 +1307,18 @@
 						</File>
 						<File
 							RelativePath="..\..\Kernel\Src\Renderlibrary\gdiplus\gdiplusrender.h"
+							>
+						</File>
+					</Filter>
+					<Filter
+						Name="03. renderbuffer"
+						>
+						<File
+							RelativePath="..\..\Kernel\Src\Renderlibrary\renderbuffer.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Kernel\Src\Renderlibrary\renderbuffer.h"
 							>
 						</File>
 					</Filter>
@@ -1530,14 +1471,6 @@
 						>
 						<File
 							RelativePath="..\..\Kernel\Src\Helper\mousekeyboard\iwindowmousemgr.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\Helper\mousekeyboard\keyboardmanager.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\Kernel\Src\Helper\mousekeyboard\keyboardmanager.h"
 							>
 						</File>
 						<File
@@ -1747,29 +1680,65 @@
 					</Filter>
 				</Filter>
 				<Filter
-					Name="7.5 renderlayer2"
+					Name="07. renderlayer2"
 					>
 					<Filter
-						Name="renderlayer"
+						Name="01. layer"
 						>
 						<File
-							RelativePath="..\..\Kernel\Src\RenderLayer2\renderlayer2.cpp"
+							RelativePath="..\..\Kernel\Src\RenderLayer2\layer\irenderlayer2.cpp"
+							>
+						</File>
+						<Filter
+							Name="renderlayer"
+							>
+							<File
+								RelativePath="..\..\Kernel\Src\RenderLayer2\layer\renderlayer2.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Kernel\Src\RenderLayer2\layer\renderlayer2.h"
+								>
+							</File>
+						</Filter>
+						<Filter
+							Name="windowrender"
+							>
+							<File
+								RelativePath="..\..\Kernel\Src\RenderLayer2\layer\windowrender.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\..\Kernel\Src\RenderLayer2\layer\windowrender.h"
+								>
+							</File>
+						</Filter>
+					</Filter>
+					<Filter
+						Name="02. filter effect"
+						>
+					</Filter>
+					<Filter
+						Name="03. soft3d"
+						>
+						<File
+							RelativePath="..\..\Kernel\Src\RenderLayer2\soft3d\renderlayersoft3d.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\Kernel\Src\RenderLayer2\renderlayer2.h"
+							RelativePath="..\..\Kernel\Src\RenderLayer2\soft3d\renderlayersoft3d.h"
 							>
 						</File>
 					</Filter>
 					<Filter
-						Name="renderchain"
+						Name="04. transform2d"
 						>
 						<File
-							RelativePath="..\..\Kernel\Src\RenderLayer2\renderchain2.cpp"
+							RelativePath="..\..\Kernel\Src\RenderLayer2\transform2d\renderlayertransform2d.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\Kernel\Src\RenderLayer2\renderchain2.h"
+							RelativePath="..\..\Kernel\Src\RenderLayer2\transform2d\renderlayertransform2d.h"
 							>
 						</File>
 					</Filter>

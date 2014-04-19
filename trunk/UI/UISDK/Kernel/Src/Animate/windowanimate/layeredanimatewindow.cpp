@@ -3,7 +3,7 @@
 #include "UISDK\Kernel\Inc\Interface\ianimate.h"
 #include "UISDK\Kernel\Src\UIObject\Window\windowbase.h"
 #include "UISDK\Kernel\Src\Animate\windowanimate\windowanimatebase.h"
-#include "UISDK\Kernel\Src\RenderLayer\renderchain.h"
+#include "UISDK\Kernel\Src\RenderLayer2\layer\windowrender.h"
 
 namespace UI
 {
@@ -25,12 +25,10 @@ LayeredAnimateWindow::~LayeredAnimateWindow()
 
         // 解决取消分层窗口属性后，窗口变黑的问题
         HDC hDC = ::GetDC(m_hHostWnd);
-        ::BitBlt(hDC,0,0, m_pWindow->GetWidth(), m_pWindow->GetHeight(), m_pWindow->GetRenderChainMemDC(), 0,0, SRCCOPY);
+        RECT rc = {0,0, m_pWindow->GetWidth(), m_pWindow->GetHeight()};
+        m_pWindow->DrawMemBitmap(hDC, &rc, false);
         ReleaseDC(m_hHostWnd, hDC);
     }
-
-//     m_pWindow->RemoveHook(this->GetIMessage());
-//     m_pWindow->GetRenderChain()->SetCanCommit(true);
 
     //	m_pWindow->UpdateObject(); // 有可能是动画的第一步结束，因此不能随便更新
 }
@@ -42,8 +40,8 @@ void LayeredAnimateWindow::Soul_Attach(WindowBase* pWnd)
     m_pWindow = pWnd;
     m_hHostWnd = pWnd->GetHWND();
 
-    //pWnd->SetCanRedraw(false);  // 防止动画过程中其它对象绘制影响动画显示
-    m_pWindow->GetRenderChain()->SetCanCommit(false);
+    // 防止动画过程中其它对象绘制影响动画显示
+    m_pWindow->GetWindowRender()->SetCanCommit(false);
 
     pWnd->AddHook(this->GetIMessage(), 0, 0);
 
@@ -113,7 +111,7 @@ BOOL LayeredAnimateWindow::nvProcessMessage(UIMSG* pMsg, int nMsgMapID, bool bDo
             if (bAllFinish)
             {
                 m_pWindow->RemoveHook(this->GetIMessage());
-                m_pWindow->GetRenderChain()->SetCanCommit(true);
+                m_pWindow->GetWindowRender()->SetCanCommit(true);
             }
             return FALSE;
         }

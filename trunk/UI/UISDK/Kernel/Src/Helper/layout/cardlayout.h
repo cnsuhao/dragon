@@ -10,6 +10,7 @@ class CardLayoutParam : public LayoutParamBase
 {
 public:
     virtual LAYOUTTYPE  GetLayoutType() { return LAYOUT_TYPE_CARD; }
+    virtual bool  IsSizedByContent() { return false; }
 };
 
 class CardLayout : public LayoutBase<CardLayout, CardLayoutParam, LAYOUT_TYPE_CARD>

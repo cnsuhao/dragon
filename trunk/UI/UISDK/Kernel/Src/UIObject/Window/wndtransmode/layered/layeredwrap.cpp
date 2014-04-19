@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "layeredwrap.h"
 #include "UISDK/Kernel/Src/UIObject/Window/customwindow.h"
-#include "UISDK/Kernel/Src/RenderLayer/renderchain.h"
+#include "UISDK\Kernel\Src\RenderLayer2\layer\renderlayer2.h"
 
 #define WINDOWS_MINIMIZED_POINT  -32000  // 窗口最小化后，window传递给我们的位置
 namespace UI
@@ -189,7 +189,7 @@ void  LayeredWindowWrap::OnMouseMove(UINT nFlags, POINT point)
 
     m_pWindow->SetCanRedraw(false);  // 缓存被清空，防止此期间有object redraw,提交到窗口时，数据不完整。
     //m_pWindow->CreateDoubleBuffer(m_sizeWindow.cx, m_sizeWindow.cy);
-    m_pWindow->m_pRenderChain->OnWindowResize(0, m_sizeWindow.cx, m_sizeWindow.cy);
+    m_pWindow->notify_WM_SIZE(0, m_sizeWindow.cx, m_sizeWindow.cy);
 
     // 注意：m_rcParent的更新千万不能使用GetWindowRect。因为窗口的大小现在就没有变
     //       所以这里也就没有采用SendMessage(WM_SIZE)的方法
@@ -275,12 +275,18 @@ bool  LayeredWindowWrap::IsMinimized()
 
 bool LayeredWindowWrap::Commit()
 {
+	RenderLayer2*  pLayer = m_pWindow->GetSelfRenderLayer2();
+	IRenderTarget* pRenderTarget = pLayer->GetRenderTarget();
+	RECT  rcOffset;
+	pLayer->GetRectDrawInBuffer(&rcOffset);
+
     // 主要是为了防止在分层窗口大小改变时，需要重新创建缓存，
     // 在缓存完整绘制完一次之前禁止提交到窗口上
     if (!m_pWindow->CanRedraw())  
         return true; 
 
-    POINT ptMemDC  = {0,0};
+    POINT ptMemDC  = {rcOffset.left, rcOffset.top};
+
     int   nFlag = ULW_ALPHA/*ULW_OPAQUE*/;
     DWORD dwColorMask = 0;
 
@@ -311,18 +317,8 @@ bool LayeredWindowWrap::Commit()
         m_pWindow->m_hWnd, NULL, 
         IsMinimized() ? NULL : &m_ptWindow, 
         &m_sizeWindow, 
-        m_pWindow->m_pRenderChain->GetMemoryDC(), 
+        pRenderTarget ->GetHDC(), // TODO: 考虑d2d提交方式
         &ptMemDC, dwColorMask, &bf, nFlag); 
-
-    static bool bDebug = false;
-    if (bDebug)
-    {
-        m_pWindow->m_pRenderChain->GetMemoryBuffer()->Save(L"C:\\aaa.png", Gdiplus::ImageFormatPNG);
-    }
-    if (FALSE == bRet)
-    {
-        UI_LOG_ERROR(_T("%s UpdateLayeredWindow Failed."), FUNC_NAME);
-    }
 
     return true;
 }
@@ -404,7 +400,7 @@ LRESULT LayeredWindowWrap::_OnCancelMode( UINT uMsg, WPARAM wParam, LPARAM lPara
 //
 void LayeredWindowWrap::OnLButtonDown(UINT nFlags, POINT pt)
 {
-    UINT nHitTest = m_pWindow->OnHitTest(&pt);
+    UINT nHitTest = m_pWindow->OnHitTest(&pt, NULL);
 
     switch(nHitTest)
     {
@@ -451,7 +447,8 @@ void  LayeredWindowWrap::Enable(bool b)
         SetWindowLong(m_hWnd, GWL_EXSTYLE, GetWindowLong(m_hWnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 
         HDC hDC = ::GetDC(m_hWnd);
-        ::BitBlt(hDC,0,0, m_pWindow->GetWidth(), m_pWindow->GetHeight(), m_pWindow->m_pRenderChain->GetMemoryDC(), 0,0, SRCCOPY);
+        RECT  rc = {0,0, m_pWindow->GetWidth(), m_pWindow->GetHeight()};
+        m_pWindow->DrawMemBitmap(hDC, &rc, false);
         ReleaseDC(m_hWnd, hDC);
     }
 }

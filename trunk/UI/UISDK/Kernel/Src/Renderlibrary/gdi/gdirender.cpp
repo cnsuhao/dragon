@@ -3,47 +3,40 @@
 #include "UISDK\Kernel\Src\UIEffect\blur\webkit\shadowblur.h"
 #include "UISDK\Kernel\Src\UIEffect\CacheBitmap\cachebitmap.h"
 #include "UISDK\Kernel\Src\Renderlibrary\gdiplus\gdiplusrender.h"
+#include "UISDK\Kernel\Src\Renderlibrary\renderbuffer.h"
 #include <math.h>
 
 
-GdiRenderTarget::GdiRenderTarget(HWND hWnd):IRenderTarget(hWnd)
+GdiRenderTarget::GdiRenderTarget()
 {
- 	m_hDC = NULL;
-	m_bDrawing = false;
+    m_hBindDC = NULL;
+	m_lDrawingRef = 0;
+    m_pRenderBuffer = NULL;
+#ifdef _DEBUG
+    m_ptOffset.x = m_ptOffset.y = 0;
+#endif
 }
 GdiRenderTarget::~GdiRenderTarget()
 {
-// 	if( NULL != m_hWnd && NULL != m_hDC)
-// 	{
-// 		::ReleaseDC(m_hWnd,m_hDC);
-// 	}
- 	m_hDC = NULL;
+    SAFE_DELETE(m_pRenderBuffer);
+ 	m_hBindDC = NULL;
 }
 
-// IRenderTarget* GdiRenderTarget::CreateCompatibleHRDC( int nWidth, int nHeight )
-// {
-// 	UIASSERT(0);  // TODO: 该函数有用吗
-// 	return (IRenderTarget*)new GDIMemRenderDC(m_hDC, nWidth, nHeight);
-// }
+void  GdiRenderTarget::Release()
+{
+    delete this;
+}
 
-HDC GdiRenderTarget::GetHDC()
-{
-	return m_hDC;
-}
-void GdiRenderTarget::ReleaseHDC( HDC hDC )
-{
-	return ;
-}
 // 该HDC不需要释放 
 HDC GdiRenderTarget::GetBindHDC()
 {
-	return m_hDC;
+	return m_hBindDC;
 }
 
 HRGN GdiRenderTarget::GetClipRgn()
 {
 	HRGN hRgn = ::CreateRectRgn(0,0,0,0);
-	if( 1 != ::GetClipRgn(m_hDC,hRgn) )  // 空或者失败
+	if( 1 != ::GetClipRgn(GetHDC(), hRgn) )  // 空或者失败
 	{
 		::DeleteObject(hRgn);
 		hRgn = NULL;
@@ -54,10 +47,10 @@ int GdiRenderTarget::SelectClipRgn( HRGN hRgn, int nMode )
 {
 	if (RGN_COPY == nMode/* && NULL != hRgn*/)
 	{
-		return ::SelectClipRgn(m_hDC, hRgn);
+		return ::SelectClipRgn(GetHDC(), hRgn);
 	}
 
-	int nRet = ExtSelectClipRgn(m_hDC, hRgn, nMode);
+	int nRet = ExtSelectClipRgn(GetHDC(), hRgn, nMode);
 	return nRet;
 }
 
@@ -68,17 +61,25 @@ BOOL GdiRenderTarget::GetViewportOrgEx( LPPOINT lpPoint )
 		return FALSE;
 	}
 
-	::GetViewportOrgEx(m_hDC, lpPoint );
+	::GetViewportOrgEx(GetHDC(), lpPoint );
 	return TRUE;
 }
 BOOL GdiRenderTarget::SetViewportOrgEx( int x, int y, LPPOINT lpPoint ) 
 {
-	BOOL bRet1 = ::SetViewportOrgEx( m_hDC, x, y, lpPoint);
+	BOOL bRet1 = ::SetViewportOrgEx(GetHDC(), x, y, lpPoint);
+
+#ifdef _DEBUG
+    ::GetViewportOrgEx(GetHDC(), &m_ptOffset);
+#endif
 	return bRet1;
 }
 BOOL GdiRenderTarget::OffsetViewportOrgEx(int x, int y, LPPOINT lpPoint)
 {
-	BOOL bRet1 = ::OffsetViewportOrgEx( m_hDC, x, y, lpPoint );
+	BOOL bRet1 = ::OffsetViewportOrgEx(GetHDC(), x, y, lpPoint );
+
+#ifdef _DEBUG
+    ::GetViewportOrgEx(GetHDC(), &m_ptOffset);
+#endif
 	return bRet1;
 }
 
@@ -87,105 +88,99 @@ void GdiRenderTarget::BindHDC(HDC hDC)
 	if (NULL == hDC)
 		return;
 
-	m_hDC = hDC;
+    if (m_pRenderBuffer)
+    {
+        SAFE_DELETE(m_pRenderBuffer);
+    }
+	m_hBindDC = hDC;
 }
+
+bool  GdiRenderTarget::CreateRenderBuffer(IRenderTarget*  pSrcRT)
+{
+    if (m_pRenderBuffer)
+        return false;
+
+    m_pRenderBuffer = new RenderBuffer;
+    m_hBindDC = NULL;
+
+    return true;
+}
+
+bool  GdiRenderTarget::ResizeRenderBuffer(unsigned int nWidth, unsigned int nHeight)
+{
+    if (!m_pRenderBuffer)
+        CreateRenderBuffer(NULL);
+
+    m_pRenderBuffer->Resize(nWidth, nHeight);
+    return true;
+}
+
+void  GdiRenderTarget::GetRenderBufferData(ImageData*  pData)
+{
+	if (!m_pRenderBuffer)
+		return;
+	m_pRenderBuffer->GetImageData(pData);
+}
+
+HDC   GdiRenderTarget::GetHDC()
+{
+    if (m_hBindDC)
+        return m_hBindDC;
+    
+    if (m_pRenderBuffer)
+        return m_pRenderBuffer->m_hDC;
+
+    UIASSERT(0);
+    return NULL;
+}
+void  GdiRenderTarget::ReleaseHDC(HDC hDC)
+{
+
+}
+
 //
 // 如果需要同时绘制两个item项，则可以提供两个RECT进行裁剪
 //
-// bClear主要是用于分层窗口中的透明背景，目前没有发现GDI有需要重刷背景的地方
+// bClear主要是用于分层窗口中的透明背景
 //
-bool GdiRenderTarget::BeginDraw(RECT* prcArray, int nrcCount, bool bClear)
+bool GdiRenderTarget::BeginDraw()
 {
-#if 1
-	if (false == m_bDrawing)  // 如果已经在绘制了，则不能把上一次的剪裁区域给覆盖了
-	{
-		if (nrcCount > 0 && NULL != prcArray)
-		{
-			RGNDATA*   pRgnData      = (RGNDATA*)new BYTE[ sizeof(RGNDATAHEADER) + nrcCount*sizeof(RECT) ];
-			pRgnData->rdh.dwSize     = sizeof(RGNDATAHEADER);
-			pRgnData->rdh.iType      = RDH_RECTANGLES;
-			pRgnData->rdh.nCount     = nrcCount;
-			pRgnData->rdh.nRgnSize   = nrcCount*sizeof(RECT);
-			for (int k = 0; k < nrcCount; k++)
-			{
-				RECT* prc = (RECT*)pRgnData->Buffer;
-				prc[k] = prcArray[k];
-			}
-
-			HRGN hRgn = ::ExtCreateRegion(NULL, sizeof(RGNDATAHEADER) + nrcCount*sizeof(RECT), pRgnData);
-			SAFE_ARRAY_DELETE(pRgnData);
-
-			this->SelectClipRgn(hRgn, RGN_COPY);
-			SAFE_DELETE_GDIOBJECT(hRgn);
-		}
-	}
-
-#else
-	if (NULL == prc && NULL == prc2)
-	{
-	}
-	else if (prc && NULL != prc2)
-	{
-		HRGN hRgn = CreateRectRgnIndirect(prc);
-		if (prc2)
-		{
-			HRGN hRgn2 = ::CreateRectRgnIndirect(prc2);
-			::CombineRgn(hRgn, hRgn, hRgn2, RGN_OR);
-			SAFE_DELETE_GDIOBJECT(hRgn2);
-		}
-		this->SelectClipRgn(hRgn, RGN_COPY);
-		SAFE_DELETE_GDIOBJECT(hRgn);
-	}
-	else
-	{
-		RECT *pNonNullRect = prc==NULL?prc2:prc;
-		HRGN hRgn = CreateRectRgnIndirect(pNonNullRect);
-		this->SelectClipRgn(hRgn, RGN_COPY);
-		SAFE_DELETE_GDIOBJECT(hRgn);
-	}
-#endif
-
-	if (bClear && nrcCount > 0)
-	{
-		HBRUSH hBrush = (HBRUSH)GetStockObject(BLACK_BRUSH);
-		for (int i = 0; i < nrcCount; i++)
-		{
-			::FillRect(m_hDC, &(prcArray[i]), hBrush);
-		}
-	}
-	if (false == m_bDrawing)
-	{
-		m_bDrawing = true;
-		return true;
-	}
-	else
-    {
-		return false;
-    }
+    UIASSERT (0 == m_lDrawingRef);
+    m_lDrawingRef ++;
+    return true;
 }
+
 void GdiRenderTarget::EndDraw()
 {
-	if (m_bDrawing)
+    -- m_lDrawingRef;
+	if (m_lDrawingRef==0)
 	{
 		this->SetViewportOrgEx(0,0);
 		this->SelectClipRgn(NULL);
-		m_bDrawing = false;
 	}
 }
 
-void GdiRenderTarget::Clear()
+void GdiRenderTarget::Clear(DWORD dwColor, RECT* prc)
 {
-	if (NULL == m_hDC)
-		return;
+    HDC hDC = GetHDC();
 
-	BITMAP  bm;
-	HBITMAP hBitmap = (HBITMAP)::GetCurrentObject(m_hDC, OBJ_BITMAP);
-	if (NULL == hBitmap)
-		return;
+    HBRUSH hBrush = ::CreateSolidBrush(dwColor);
+    if (prc)
+    {
+        ::FillRect(hDC, prc, hBrush);
+    }
+    else
+    {
+        BITMAP  bm;
+        HBITMAP hBitmap = (HBITMAP)::GetCurrentObject(hDC, OBJ_BITMAP);
+        if (NULL == hBitmap)
+            return;
 
-	::GetObject(hBitmap, sizeof(bm), &bm);
-	RECT  rc = {0,0, bm.bmWidth, bm.bmHeight};
-	::FillRect(m_hDC, &rc, (HBRUSH)::GetStockObject(BLACK_BRUSH));
+        ::GetObject(hBitmap, sizeof(bm), &bm);
+        RECT  rc = {0,0, bm.bmWidth, bm.bmHeight};
+        ::FillRect(hDC, &rc, hBrush);
+    }
+    SAFE_DELETE_GDIOBJECT(hBrush);
 }
 
 void  GdiRenderTarget::DrawString(IRenderFont* pRenderFont, DRAWTEXTPARAM* pParam)
@@ -197,13 +192,13 @@ void  GdiRenderTarget::DrawString(IRenderFont* pRenderFont, DRAWTEXTPARAM* pPara
 		return;
 	
 
+    HDC hDC = GetHDC();
     GRAPHICS_RENDER_LIBRARY_TYPE  eType = pRenderFont->GetGraphicsRenderLibraryType();
 	if (eType != GRAPHICS_RENDER_LIBRARY_TYPE_GDI)
 	{
         if (eType == GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS)
         {
-            Gdiplus::Graphics g(m_hDC);
-            GdiplusRenderTarget::DrawStringEx(&g, m_hDC, pRenderFont, pParam);
+            GdiplusRenderTarget::DrawStringEx(hDC, pRenderFont, pParam);
             return;
         }
         else
@@ -212,8 +207,6 @@ void  GdiRenderTarget::DrawString(IRenderFont* pRenderFont, DRAWTEXTPARAM* pPara
 	    	return;
         }
 	}
-
-	HDC hDC = m_hDC;	
 
     switch (pParam->nEffectFlag)
     {
@@ -273,8 +266,6 @@ void  GdiRenderTarget::DrawString(IRenderFont* pRenderFont, DRAWTEXTPARAM* pPara
         }
         break;
     }
-
-	
 }
 
 
@@ -285,11 +276,11 @@ void GdiRenderTarget::FillRgn( HRGN hRgn, UI::Color* pColor)
         return;
 
 	HBRUSH hBrush = ::CreateSolidBrush(RGB(pColor->r, pColor->g, pColor->b));
-	::FillRgn(m_hDC, hRgn, hBrush);
+	::FillRgn(GetHDC(), hRgn, hBrush);
 	::DeleteObject(hBrush);
 }
 
-void GdiRenderTarget::FillRect(const CRect* lprc, UI::Color* pColor)
+void GdiRenderTarget::FillRect(const RECT* lprc, UI::Color* pColor)
 {
     if (NULL == pColor)
         return;
@@ -301,7 +292,7 @@ void GdiRenderTarget::FillRect(const CRect* lprc, UI::Color* pColor)
     gdicolor = pColor->GetGDICompatibleValue();
 
 	HBRUSH hBrush = ::CreateSolidBrush(gdicolor);
-	int n = ::FillRect(m_hDC, lprc, hBrush);
+	int n = ::FillRect(GetHDC(), lprc, hBrush);
 	::DeleteObject(hBrush);
 }
 
@@ -316,7 +307,7 @@ void GdiRenderTarget::TileRect(const CRect* lprc, IRenderBitmap* pRenderBitmap)
 
 	GDIRenderBitmap* pBitmap = (GDIRenderBitmap*)p;
 	HBRUSH hBrush = ::CreatePatternBrush(pBitmap->GetBitmap()->operator HBITMAP());
-	::FillRect(m_hDC, lprc, hBrush);
+	::FillRect(GetHDC(), lprc, hBrush);
 	::DeleteObject(hBrush);
 }
 
@@ -353,7 +344,7 @@ void GdiRenderTarget::Rectangle(const CRect* lprc, UI::Color* pColBorder, UI::Co
 		hBrush = ::CreateSolidBrush(gdicolBack);
 	}
 
-	HDC hDC = m_hDC;
+	HDC hDC = GetHDC();
 
 	HPEN hOldPen = (HPEN)::SelectObject(hDC, hPen);
 	HBRUSH hOldBrush = (HBRUSH)::SelectObject(hDC, hBrush);
@@ -368,7 +359,7 @@ void GdiRenderTarget::Rectangle(const CRect* lprc, UI::Color* pColBorder, UI::Co
 
 void GdiRenderTarget::DrawFocusRect( const CRect* lprc )
 {
-	::DrawFocusRect(m_hDC, lprc);
+	::DrawFocusRect(GetHDC(), lprc);
 }
 void GdiRenderTarget::DrawLine(int x1, int y1, int x2, int y2, IRenderPen* pPen)
 {
@@ -378,13 +369,14 @@ void GdiRenderTarget::DrawLine(int x1, int y1, int x2, int y2, IRenderPen* pPen)
 	if (pPen->GetGraphicsRenderLibraryType() != GRAPHICS_RENDER_LIBRARY_TYPE_GDI)
 		return;
 
+    HDC hDC = GetHDC();
 	GdiPen* pGdiPen = (GdiPen*)pPen;
-	HPEN hOldPen = (HPEN)::SelectObject(m_hDC, pGdiPen->m_hPen);
+	HPEN hOldPen = (HPEN)::SelectObject(hDC, pGdiPen->m_hPen);
 
-	::MoveToEx(m_hDC, x1, y1, NULL);
-	::LineTo(m_hDC, x2, y2);
+	::MoveToEx(hDC, x1, y1, NULL);
+	::LineTo(hDC, x2, y2);
 
-	::SelectObject(m_hDC, hOldPen);
+	::SelectObject(hDC, hOldPen);
 }
 void GdiRenderTarget::DrawPolyline(POINT* lppt, int nCount, IRenderPen* pPen)
 {
@@ -394,21 +386,21 @@ void GdiRenderTarget::DrawPolyline(POINT* lppt, int nCount, IRenderPen* pPen)
 	if (pPen->GetGraphicsRenderLibraryType() != GRAPHICS_RENDER_LIBRARY_TYPE_GDI)
 		return;
 
+    HDC hDC = GetHDC();
+
 	GdiPen* pGdiPen = (GdiPen*)pPen;
-	HPEN hOldPen = (HPEN)::SelectObject(m_hDC, pGdiPen->m_hPen);
-
-	::Polyline(m_hDC, lppt, nCount);
-
-	::SelectObject(m_hDC, hOldPen);
+	HPEN hOldPen = (HPEN)::SelectObject(hDC, pGdiPen->m_hPen);
+	::Polyline(hDC, lppt, nCount);
+	::SelectObject(hDC, hOldPen);
 }
 
 void GdiRenderTarget::GradientFillH( const CRect* lprc, COLORREF colFrom, COLORREF colTo )
 {
-	Util::GradientFillH(m_hDC, lprc, colFrom, colTo );
+	Util::GradientFillH(GetHDC(), lprc, colFrom, colTo );
 }
 void GdiRenderTarget::GradientFillV( const CRect* lprc, COLORREF colFrom, COLORREF colTo )
 {
-	Util::GradientFillV(m_hDC, lprc, colFrom, colTo );
+	Util::GradientFillV(GetHDC(), lprc, colFrom, colTo );
 }
 
 void GdiRenderTarget::BitBlt(int xDest, int yDest, int wDest, int hDest, IRenderTarget* pSrcHDC, int xSrc, int ySrc, DWORD dwRop)
@@ -418,7 +410,8 @@ void GdiRenderTarget::BitBlt(int xDest, int yDest, int wDest, int hDest, IRender
 	if (pSrcHDC->GetGraphicsRenderLibraryType() != GRAPHICS_RENDER_LIBRARY_TYPE_GDI)
 		return;
 
-	::BitBlt(m_hDC, xDest,yDest,wDest,hDest, pSrcHDC->GetHDC(),xSrc,ySrc,dwRop );
+    GdiRenderTarget*  pSrcRT = static_cast<GdiRenderTarget*>(pSrcHDC);
+	::BitBlt(GetHDC(), xDest,yDest,wDest,hDest, pSrcRT->GetHDC(),xSrc,ySrc,dwRop);
 }
 
 void GdiRenderTarget::DrawBitmap( IRenderBitmap* hBitmap, int x, int y)
@@ -438,7 +431,7 @@ void GdiRenderTarget::DrawBitmap( IRenderBitmap* hBitmap, int x, int y)
 	if (NULL == pImage)
 		return;
 
-	pImage->Draw(m_hDC, x,y);
+	pImage->Draw(GetHDC(), x,y);
 }
 void GdiRenderTarget::DrawBitmap(IRenderBitmap* pBitmap, int xDest, int yDest, int wDest, int hDest, int xSrc, int ySrc)
 {
@@ -456,7 +449,7 @@ void GdiRenderTarget::DrawBitmap(IRenderBitmap* pBitmap, int xDest, int yDest, i
 	if (NULL == pImage)
 		return;
 
-	pImage->Draw(m_hDC, xDest,yDest, wDest,hDest, xSrc, ySrc, wDest, hDest);
+	pImage->Draw(GetHDC(), xDest,yDest, wDest,hDest, xSrc, ySrc, wDest, hDest);
 }
 void GdiRenderTarget::DrawBitmap( IRenderBitmap* hBitmap, int xDest, int yDest, int nDestWidth, 
 							int nDestHeight, int xSrc, int ySrc, int nSrcWidth, int nSrcHeight )
@@ -476,7 +469,7 @@ void GdiRenderTarget::DrawBitmap( IRenderBitmap* hBitmap, int xDest, int yDest, 
 	if (NULL == pImage)
 		return;
 
-	pImage->Draw(m_hDC, xDest, yDest, nDestWidth, nDestHeight, xSrc, ySrc, nSrcWidth, nSrcHeight );
+	pImage->Draw(GetHDC(), xDest, yDest, nDestWidth, nDestHeight, xSrc, ySrc, nSrcWidth, nSrcHeight );
 }
 
 void GdiRenderTarget::DrawBitmap( IRenderBitmap* hBitmap, int xDest, int yDest, int nDestWidth, 
@@ -501,7 +494,7 @@ void GdiRenderTarget::DrawBitmap( IRenderBitmap* hBitmap, int xDest, int yDest, 
 	if (NULL == pImage)
 		return;
 
-	pImage->Draw(m_hDC, xDest, yDest, nDestWidth, nDestHeight, xSrc, ySrc, nSrcWidth, nSrcHeight, p9Region );
+	pImage->Draw(GetHDC(), xDest, yDest, nDestWidth, nDestHeight, xSrc, ySrc, nSrcWidth, nSrcHeight, p9Region );
 }
 
 void GdiRenderTarget::ImageList_Draw( IRenderBitmap* hBitmap, int x, int y, int col, int row, int cx, int cy )
@@ -521,7 +514,7 @@ void GdiRenderTarget::ImageList_Draw( IRenderBitmap* hBitmap, int x, int y, int 
 	if (NULL == pImage)
 		return;
 
-	pImage->ImageList_Draw(m_hDC, x,y,col,row,cx,cy);
+	pImage->ImageList_Draw(GetHDC(), x,y,col,row,cx,cy);
 }
 
 void GdiRenderTarget::DrawBitmapEx(HDC hDC, IRenderBitmap* pBitmap, DRAWBITMAPPARAM* pParam)
@@ -531,8 +524,7 @@ void GdiRenderTarget::DrawBitmapEx(HDC hDC, IRenderBitmap* pBitmap, DRAWBITMAPPA
 	{
 		if (p->GetGraphicsRenderLibraryType() == GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS) // 需要抗锯齿的情况
 		{
-			Gdiplus::Graphics g(hDC);
-			GdiplusRenderTarget::DrawBitmapEx(&g, hDC, p, pParam);
+			GdiplusRenderTarget::DrawBitmapEx(hDC, p, pParam);
 		}
 		return;
 	}
@@ -671,9 +663,10 @@ void GdiRenderTarget::DrawBitmap(IRenderBitmap* pRenderBitmap, DRAWBITMAPPARAM* 
 	if (NULL == pRenderBitmap || NULL == pParam)
 		return;
 
-	GdiRenderTarget::DrawBitmapEx(m_hDC, pRenderBitmap, pParam);
+	GdiRenderTarget::DrawBitmapEx(GetHDC(), pRenderBitmap, pParam);
 }
 
+#if 0
 //
 //
 // 绕着图片中心旋转nDegree度绘制图片
@@ -741,9 +734,10 @@ void GdiRenderTarget::DrawRotateBitmap(IRenderBitmap* pBitmap, int nDegree, DRAW
 		pImage->PlgBlt(m_hDC, ptArg, pParam->xSrc, pParam->ySrc, pParam->wSrc, pParam->hSrc, NULL, 0, 0);
 
 #else
+        HDC hDC = GetHDC();
 
  		int nOldGraphicsMode = ::GetGraphicsMode(m_hDC);
- 		::SetGraphicsMode(m_hDC, GM_ADVANCED);
+ 		::SetGraphicsMode(hDC, GM_ADVANCED);
   		XFORM xForm = {0};
 		xForm.eM11 = cosAngle;
 		xForm.eM12 = sinAngle;
@@ -751,14 +745,15 @@ void GdiRenderTarget::DrawRotateBitmap(IRenderBitmap* pBitmap, int nDegree, DRAW
 		xForm.eM22 = cosAngle;
 		xForm.eDx = ptCenter.x - cosAngle*ptCenter.x + sinAngle*ptCenter.y;
 		xForm.eDy = ptCenter.y - cosAngle*ptCenter.y - sinAngle*ptCenter.x;
-		SetWorldTransform(m_hDC, &xForm);
- 		DrawBitmapEx(m_hDC, pBitmap, pParam);
+		SetWorldTransform(hDC, &xForm);
+ 		DrawBitmapEx(hDC, pBitmap, pParam);
 
-		ModifyWorldTransform(m_hDC, NULL, MWT_IDENTITY);
- 		::SetGraphicsMode(m_hDC, nOldGraphicsMode);
+		ModifyWorldTransform(hDC, NULL, MWT_IDENTITY);
+ 		::SetGraphicsMode(hDC, nOldGraphicsMode);
 #endif
 	}
 }
+#endif
 
 
 IRenderPen* GdiRenderTarget::CreateSolidPen(int nWidth, Color* pColor)
@@ -795,218 +790,72 @@ IRenderBrush*  GdiRenderTarget::CreateSolidBrush(Color* pColor)
 	return p;
 }
 
-#if 0
-GDIMemRenderDC::GDIMemRenderDC(HDC hDC, int nWidth, int nHeight ):GdiRenderTarget(NULL)
+void  GdiRenderTarget::Render2DC(HDC hDstDC, Render2TargetParam* pParam)
 {
-	UIASSERT(0);  // 不再使用该类
-	::OutputDebugString(_T("TODO: GDIMemRenderDC::GDIMemRenderDC 删除该函数，不再调用。\r\n"));
-	m_hDC = ::CreateCompatibleDC(hDC);
+    int& xDst = pParam->xDst;
+    int& yDst = pParam->yDst; 
+    int& wDst = pParam->wDst; 
+    int& hDst = pParam->hDst; 
+    int& xSrc = pParam->xSrc; 
+    int& ySrc = pParam->ySrc; 
+    int& wSrc = pParam->wSrc; 
+    int& hSrc = pParam->hSrc; 
+    bool& bAlphaBlend = pParam->bAlphaBlend;
+    byte& opacity = pParam->opacity;
 
-	m_pMemBitmap = NULL;
-	GDIRenderBitmap::CreateInstance((IRenderBitmap**)&m_pMemBitmap);
-	m_pMemBitmap->Create(nWidth, -nHeight);
-	m_hOldBitmap = (HBITMAP)::SelectObject(m_hDC, m_pMemBitmap->GetBitmap()->GetHBITMAP() );
+    HDC hDC = GetHDC();
+    UIASSERT (hDC != hDstDC);
 
-	::SetBkMode(m_hDC, TRANSPARENT);   // 不去支持带背景的文字，如果需要就使用背景填充
-	::SetStretchBltMode(m_hDC, COLORONCOLOR);
+    int nOldGraphicsMode = 0;
+    if (pParam->pTransform)
+    {
+        nOldGraphicsMode = ::GetGraphicsMode(hDstDC);
+        ::SetGraphicsMode(hDstDC, GM_ADVANCED);
+        ::SetWorldTransform(hDstDC, pParam->pTransform);
+    }
+    
+    if (bAlphaBlend)
+    {
+        BLENDFUNCTION bf = {AC_SRC_OVER, 0, opacity, AC_SRC_ALPHA};
+        ::AlphaBlend(hDstDC, xDst, yDst, wDst, hDst, hDC, xSrc, ySrc, wSrc, hSrc, bf);
+    }
+    else
+    {
+        if (wDst == wSrc && hDst == hSrc)
+        {
+            ::BitBlt(hDstDC, xDst, yDst, wDst, hDst, hDC, xSrc, ySrc, SRCCOPY);
+        }
+        else
+        {
+            ::StretchBlt(hDstDC, xDst, ySrc, wDst, hDst, hDC, xSrc, ySrc, wSrc, hSrc, SRCCOPY);
+        }
+    }
+    
+    if (pParam->pTransform)
+    {
+        ModifyWorldTransform(hDstDC, NULL, MWT_IDENTITY);
+        ::SetGraphicsMode(hDstDC, nOldGraphicsMode);
+    }
 }
-GDIMemRenderDC::GDIMemRenderDC(HWND hWnd, int nWidth, int nHeight ) : GdiRenderTarget(hWnd) 
+void  GdiRenderTarget::Render2Target(IRenderTarget* pDst, Render2TargetParam* pParam)
 {
-	UIASSERT(0);  // 不再使用该类
+    if (!pDst)
+        return;
 
-	m_hWndDC = NULL;
-	m_hOldWndDC = NULL;
-	m_hDC    = NULL;
-	m_hOldBitmap = NULL;
+    if (pDst->GetGraphicsRenderLibraryType() != GRAPHICS_RENDER_LIBRARY_TYPE_GDI)
+    {
+        UI_LOG_WARN(_T("%s Graphcis Render library is wrong"), FUNC_NAME);
+        return;
+    }
 
-	m_nWidth = nWidth;
-	m_nHeight = nHeight;
-
-	m_pMemBitmap = NULL;
-	GDIRenderBitmap::CreateInstance((IRenderBitmap**)&m_pMemBitmap);
-	m_pMemBitmap->Create(nWidth, -nHeight);
-}
-GDIMemRenderDC::~GDIMemRenderDC()
-{
-	if (m_hOldBitmap)
-	{
-	    if (m_hDC)
-		{
-			::SelectObject(m_hDC, m_hOldBitmap);
-			m_hOldBitmap = NULL;
-		}
-		else
-		{
-			UI_LOG_WARN(_T("%s old bitmap is not selected back into dc"),FUNC_NAME);
-		}		
-	}
-	SAFE_DELETE(m_pMemBitmap);
-
-	if( NULL != m_hDC )
-	{
-		::DeleteDC(m_hDC);
-		m_hDC = NULL;
-	}
-	m_hWndDC = NULL;
-}
-
-bool GDIMemRenderDC::BeginDraw(HDC hDC)
-{
-	// 注：在这里排查了一天。有时候发现窗口变成空白了，没有内容。
-	//     然后调试过程中，流程也正常，不知道是哪的问题，打印出来的图片显示mem bmp只显示了一部分控件，然后后面一直也没有再变化
-	//     通过加了一句FillRect(RGB(0,0,0)),发现mem bmp的内容居然没有发生变化。因此可以推断是mem bmp没有被正确选入到m_hDC中。
-	//     然后在BeginDraw中发现，出现问题的时候，selectobject返回为空，失败了。再观察堆栈，发现BeginDraw嵌套响应了两次，而
-	//     EndDraw没有响应，导致第一次的m_hDC被重写，同时mem bmp也由于被第一次的m_hDC选入了而无法释放，因此也不能再被
-	//     其它DC选入。所以才导致所有的绘制操作都无效了。
-	//     
-	if (m_hDC)  
-	{
-		UI_LOG_WARN(_T("%s pre invoke has not been finish."),FUNC_NAME);
-		return false;
-	}
-
-	m_hOldWndDC = hDC;
-	m_hWndDC = hDC == NULL ? ::GetDC(m_hWnd):hDC;
-	m_hDC = ::CreateCompatibleDC(m_hWndDC);
-	m_hOldBitmap = (HBITMAP)::SelectObject(m_hDC, m_pMemBitmap->GetBitmap()->GetHBITMAP() );
-	UIASSERT(NULL != m_hOldBitmap);
-
-	::SetBkMode(m_hDC, TRANSPARENT);
-	::SetStretchBltMode(m_hDC, COLORONCOLOR);
-
-	return true;
+    GdiRenderTarget* pGdiDst = static_cast<GdiRenderTarget*>(pDst);
+    return Render2DC(pGdiDst->GetHDC(), pParam);
 }
 
-void GDIMemRenderDC::EndDraw( )
+void  GdiRenderTarget::Save(const TCHAR*  szPath )
 {
-    if (NULL == m_hDC)
-		return;
-		
-	::BitBlt(m_hWndDC, 0,0, m_nWidth, m_nHeight, m_hDC, 0,0, SRCCOPY );
-
-	if (m_hOldBitmap)
-	{
-		::SelectObject(m_hDC, m_hOldBitmap);
-		m_hOldBitmap = NULL;
-	}
-
-	::DeleteDC(m_hDC);
-	if( NULL == m_hOldWndDC )
-	{
-		::ReleaseDC(m_hWnd, m_hWndDC);
-	}
-	m_hWndDC = NULL;
-	m_hOldWndDC = NULL;
-	m_hDC = NULL;
+    if (m_pRenderBuffer)
+    {
+        m_pRenderBuffer->Dump();
+    }
 }
-// void GDIMemRenderDC::EndDraw( int xDest, int yDest, int wDest, int hDest, int xSrc, int ySrc, bool bFinish )
-// {
-// 	if (NULL == m_hDC)
-// 		return;
-// 
-// 	::BitBlt(m_hWndDC, xDest, yDest, wDest, hDest, m_hDC, xSrc,ySrc, SRCCOPY );
-// 	if (!bFinish)
-// 		return;
-// 
-// 	if (m_hOldBitmap)
-// 	{
-// 		::SelectObject(m_hDC, m_hOldBitmap);
-// 		m_hOldBitmap = NULL;
-// 	}
-// 	::DeleteDC(m_hDC);
-// 	if( NULL == m_hOldWndDC )
-// 	{
-// 		::ReleaseDC(m_hWnd, m_hWndDC);
-// 	}
-// 	m_hWndDC = NULL;
-// 	m_hOldWndDC = NULL;
-// 	m_hDC = NULL;
-// }
-
-void GDIMemRenderDC::ResizeRenderTarget( int nWidth, int nHeight )
-{
-	if( m_nWidth == nWidth && m_nHeight == nHeight )
-		return;
-
-	m_nWidth = nWidth;
-	m_nHeight = nHeight;
-	
-	if (m_hDC && NULL != m_hOldBitmap)
-	{
-		SelectObject(m_hDC, m_hOldBitmap);
-		m_hOldBitmap = NULL;
-	}
-	SAFE_DELETE(m_pMemBitmap);
-
-	GDIRenderBitmap::CreateInstance((IRenderBitmap**)&m_pMemBitmap);
-	m_pMemBitmap->Create(nWidth, -nHeight);
-
-	if( NULL != m_hDC )
-	{
-		m_hOldBitmap = (HBITMAP)::SelectObject( m_hDC, m_pMemBitmap->GetBitmap()->GetHBITMAP() );
-	}
-}
-BYTE* GDIMemRenderDC::LockBits()
-{
-#if 0
-	DIBSECTION dibsection;
-	int nBytes;
-
-	nBytes = ::GetObject( m_hMemBitmap, sizeof( DIBSECTION ), &dibsection );
-	if( nBytes == sizeof( DIBSECTION ) )
-	{
-		return (BYTE*)dibsection.dsBm.bmBits;
-	}
-	else
-	{
-		return NULL;
-	}
-#else
-	if( NULL == m_pMemBitmap )
-		return NULL;
-
-	return m_pMemBitmap->LockBits();
-#endif
-}
-void GDIMemRenderDC::UnlockBits()
-{
-	if( NULL == m_pMemBitmap )
-		return;
-
-	m_pMemBitmap->UnlockBits();
-}
-
-void GDIMemRenderDC::Save( const String& strPath )
-{
-	if( m_pMemBitmap->GetBitmap() )
-	{
-		REFGUID guidType = Gdiplus::ImageFormatBMP;
-		String strExt = strPath.substr(strPath.length()-3,3);
-		if (0 == _tcsicmp(strExt.c_str(), _T("bmp")))
-		{
-		}
-		else if (0 == _tcsicmp(strExt.c_str(), _T("png")))
-		{
-			memcpy((void*)&guidType, & Gdiplus::ImageFormatPNG, sizeof(GUID));
-		}
-		else if (0 == _tcsicmp(strExt.c_str(), _T("jpg")))
-		{
-			memcpy((void*)&guidType, & Gdiplus::ImageFormatJPEG, sizeof(GUID));
-		}
-		else
-		{
-			return ;
-		}
-
-		m_pMemBitmap->GetBitmap()->Save( strPath.c_str(), guidType);
-	}
-}
-
-HBITMAP GDIMemRenderDC::CopyRect(RECT *prc)
-{
-	if (NULL == m_pMemBitmap)
-		return NULL;
-
-	return m_pMemBitmap->CopyRect(prc);
-}
-#endif

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "wndtransmodebase.h"
 #include "UISDK/Kernel/Src/UIObject/Window/customwindow.h"
+#include "UISDK\Kernel\Src\RenderLayer2\layer\renderlayer2.h"
 
 namespace UI
 {
@@ -70,7 +71,7 @@ void WndTransModeBase::GetWindowBitmapInfo(byte** ppScan0, int& nPitch)
     if (!ppScan0)
         return;
 
-    HDC hMemDC = m_pWindow->GetRenderChainMemDC();
+    HDC hMemDC = m_pWindow->GetRenderLayer2()->GetRenderTarget()->GetHDC();
     UIASSERT(hMemDC);
 
     BITMAP  bm;
@@ -80,8 +81,7 @@ void WndTransModeBase::GetWindowBitmapInfo(byte** ppScan0, int& nPitch)
     ::GetObject(hBitmap, sizeof(bm), &bm);
 
     nPitch = bm.bmWidthBytes;
-    BYTE*  pScan0 = (BYTE*)bm.bmBits + (bm.bmHeight-1)*nPitch;
-    nPitch = -nPitch;
+    BYTE*  pScan0 = (BYTE*)bm.bmBits;
 
     *ppScan0 = pScan0;
 }

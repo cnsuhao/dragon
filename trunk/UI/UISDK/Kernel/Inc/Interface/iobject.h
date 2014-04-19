@@ -8,8 +8,9 @@ namespace UI
 interface IWindowBase;
 interface IPanel;
 interface IRenderLayer;
-interface IRenderChain;
+interface IRenderLayer2;
 interface IObject3DWrap;
+interface ILayoutParam;
 class Object;
 
 interface UISDKAPI IObject : public IMessage
@@ -17,16 +18,15 @@ interface UISDKAPI IObject : public IMessage
     UI_DECLARE_Ixxx_INTERFACE(IObject, Object)
 
     const TCHAR*  GetId();
-    void  SetID(const TCHAR* szText);
+    void     SetID(const TCHAR* szText);
 
-    IWindowBase*  GetWindowObject();
-    IRenderLayer*  GetRenderLayer();
-    IRenderChain*  GetRenderChain();
-    HWND  GetHWND();
+    IWindowBase*     GetWindowObject();
+	IRenderLayer2*   GetRenderLayer2();
+    HWND     GetHWND();
 
-    void  SetOutRef(void** ppOutRef);
+    void     SetOutRef(void** ppOutRef);
     IUIApplication* GetUIApplication();
-    void  SetUIApplication(IUIApplication* p);
+    void     SetUIApplication(IUIApplication* p);
     
     void     InitDefaultAttrib();
     void     SetObjectPos(int x, int y, int cx, int cy, int nFlag=0);
@@ -48,6 +48,7 @@ interface UISDKAPI IObject : public IMessage
     void     clearStateBit(UINT bit);
     bool     CanRedraw();
     IRenderFont* GetRenderFont();
+    bool     CreateRenderLayer();
 
     int      GetStateBit();
     bool     IsFocus();
@@ -77,6 +78,8 @@ interface UISDKAPI IObject : public IMessage
     void     SetHover(bool, bool bNotify=true);
     void     SetPress(bool, bool bNotify=true);
     void     SetSelected(bool, bool bNotify=true);
+	void     SetZorderDirect(int lz);
+	int      GetZOrder();
 
     bool     IsTransparent();
     void     SetTransparent(bool b);
@@ -115,6 +118,7 @@ interface UISDKAPI IObject : public IMessage
     void  SetPrevObjectDirect(IObject* p); 
 
     void  AddChild(IObject*);
+    void  InsertChild(IObject* pObj, IObject* pInsertAfter);
     void  AddNcChild(IObject*);
     bool  IsMyChild(IObject* pChild, bool bFindInGrand);
     bool  RemoveChildInTree(IObject* pChild);
@@ -130,6 +134,7 @@ interface UISDKAPI IObject : public IMessage
     void  UpdateObject(bool bUpdateNow=true);
     void  UpdateObjectBkgnd(bool bUpdateNow);
     void  UpdateLayout(bool bUpdate);    
+    void  UpdateMyLayout(bool bUpdate);
 
     void  GetNonClientRegion(CRegion4* prc);
     void  SetNonClientRegionExcludePaddingBorder(CRegion4*);
@@ -176,21 +181,22 @@ interface UISDKAPI IObject : public IMessage
 
     POINT  GetRealPosInWindow();
     void  GetWindowRect(CRect*);
-    void  WindowPoint2ObjectPoint(const POINT* ptWindow, POINT* ptObj);
-    void  WindowPoint2ObjectClientPoint(const POINT* ptWindow, POINT* ptObj);
-    void  WindowPoint2ObjectClientPoint_CalcScroll(const POINT* ptWindow, POINT* ptObj);
+    void  WindowPoint2ObjectPoint(const POINT* ptWindow, POINT* ptObj, bool bCalcTransform);
+    void  WindowPoint2ObjectClientPoint(const POINT* ptWindow, POINT* ptObj, bool bCalcTransform);
     void  ObjectPoint2ObjectClientPoint(const POINT* ptWindow, POINT* ptObj);
     void  ClientRect2ObjectRect(const RECT* rcClient, RECT* rcObj);
     bool  GetScrollOffset(int* pxOffset, int* pyOffset);
     bool  GetScrollRange(int* pxRange, int* pyRange);
-    bool  GetObjectVisibleRect(RECT* prc, bool bInWindowOrLayer); 
-    bool  GetObjectVisibleClientRect(RECT* prc, bool bInWindowOrLayer);
+    bool  GetVisibleRectInWindow(RECT* prc);
+    bool  GetVisibleRectInLayer(RECT* prc);
+    bool  GetVisibleClientRectInLayer(RECT* prc);
 
     int   GetWidth();
     int   GetHeight();
     int   GetWidthWithMargins();
     int   GetHeightWithMargins(); 
 
+	ILayoutParam*  GetLayoutParam();
     int   GetConfigWidth();
     int   GetConfigHeight();
     int   GetConfigLayoutFlags();
@@ -226,16 +232,17 @@ interface UISDKAPI IObject : public IMessage
     SIZE  GetDesiredSize();
     HBITMAP  TakeSnapshot();
     HBITMAP  TakeBkgndSnapshot();
-    
+    GRAPHICS_RENDER_LIBRARY_TYPE  GetGraphicsRenderLibraryType();
+
     bool  SetCursor(const TCHAR* szCursorID);
     bool  SetMouseCapture(int nNotifyMsgId);
     bool  ReleaseMouseCapture();
     bool  SetKeyboardCapture(int nNotifyMsgId);
     bool  ReleaseKeyboardCapture();
 
-    IObject3DWrap*  Begin3D();
-    void  End3D();
-    IObject3DWrap*  Get3DWrap();
+//     IObject3DWrap*  Begin3D();
+//     void  End3D();
+//     IObject3DWrap*  Get3DWrap();
 };
 
 }

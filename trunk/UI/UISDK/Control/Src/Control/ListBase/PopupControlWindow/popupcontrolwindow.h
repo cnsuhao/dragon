@@ -15,7 +15,6 @@ public:
         UIMSG_WM_MOUSEACTIVATE(OnMouseActivate)
         UIMSG_WM_ACTIVATEAPP(OnActivateApp)
         UIMSG_WM_DESTROY(OnDestroy)
-        UIMSG_WM_GETGRAPHICSRENDERLIBRARYTYPE(OnGetGraphicsRenderType)
         UIMSG_WM_SKINCHANGING(OnSkinChanging)
         UIMSG_WM_INITIALIZE(OnInitialize)
         UIMSG_WM_PRECREATEWINDOW(PreCreateWindow)
@@ -31,11 +30,10 @@ protected:
     void  OnDestroy();
     int   OnMouseActivate(HWND wndTopLevel, UINT nHitTest, UINT message);
     void  OnActivateApp(BOOL bActive, DWORD dwThreadID);
-    LRESULT  OnGetGraphicsRenderType();
 
 public:
-    void  Create(IObject*  pBindObj, const TCHAR* szId, HWND hParentWnd = NULL);
-    void  Show(POINT pt, BOOL bDoModal);
+    void  Create(IObject*  pBindObj, IObject* pContentObj, const TCHAR* szId, HWND hParentWnd = NULL);
+    void  Show(POINT pt, BOOL bDoModal, BOOL bDesignMode=FALSE);
     void  Hide();
     void  Destroy();
 	void  SetPopupFromInfo(HWND hWnd, RECT* prcClickInWnd);
@@ -44,9 +42,10 @@ protected:
     void   _DestroyPopupWindow();
 
 protected:
-    IObject*  m_pObject;   // 弹出窗口中装载的对象指针，如ListBox* Menu*
-    bool      m_bExitLoop; // 在收到WM_EXITPOPUPLOOP之后，该变量为true
-    bool      m_bMouseIn;  // 鼠标在窗口上，用于触发WM_MOUSELEAVE
+    IObject*  m_pBindObject;// 如Menu* ComboboxBase*，用于通知、获取属性来源。主要为了实现将popupwindow更多的依赖于combobox，而不是listbox
+	IObject*  m_pContentObj;// 弹出窗口中装载的对象指针，如ListBox* Menu* 
+    bool      m_bExitLoop;  // 在收到WM_EXITPOPUPLOOP之后，该变量为true
+    bool      m_bMouseIn;   // 鼠标在窗口上，用于触发WM_MOUSELEAVE
 
 	// 用于解决在弹出菜单后点击按钮，菜单会隐藏后又显示出来的问题
 	HWND  m_hWndClickFrom; // 为NULL时表示不判断

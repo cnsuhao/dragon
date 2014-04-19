@@ -177,7 +177,7 @@ void  CanvasLayout::ArrangeObject(Object*  pChild, const int& nWidth, const int&
     }
 
     rcChildObj.OffsetRect(x, y);
-    pChild->SetObjectPos(&rcChildObj, SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS);
+    pChild->SetObjectPos(&rcChildObj, SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS|SWP_FORCESENDSIZEMSG);
 }
 //////////////////////////////////////////////////////////////////////////
 
@@ -235,22 +235,39 @@ void  CanvasLayoutParam::UpdateByRect()
     m_pObj->GetParentRect(&rcParent);
     pParent->GetClientRect(&rcPanel);
 
+    bool  bSetX = false;
     if (m_nConfigLeft >= 0)
     {
+        bSetX = true;
         m_nConfigLeft = rcParent.left;
-    }
-    if (m_nConfigTop >= 0)
-    {
-        m_nConfigTop = rcParent.top;
     }
     if (m_nConfigRight >= 0)
     {
+        bSetX = true;
         m_nConfigRight = rcPanel.Width() - rcParent.right;
+    }
+    if (!bSetX)
+    {
+        m_nConfigLeft = rcParent.left;   // 当left/right都没有指定时，强制设置一个
+    }
+
+
+    bool  bSetY = false;
+    if (m_nConfigTop >= 0)
+    {
+        bSetY = true;
+        m_nConfigTop = rcParent.top;
     }
     if (m_nConfigBottom >= 0)
     {
+        bSetY = true;
         m_nConfigBottom = rcPanel.Height() - rcParent.bottom;
     }
+    if (!bSetY)
+    {
+        m_nConfigTop = rcParent.top;   // 当top/bottom都没有指定时，强制设置一个
+    }
+
     if (m_nConfigWidth >= 0)
     {
         m_nConfigWidth = rcParent.Width();
@@ -262,12 +279,12 @@ void  CanvasLayoutParam::UpdateByRect()
 }
 void  CanvasLayoutParam::Serialize(SERIALIZEDATA* pData)
 {
+	IMapAttribute* pMapAttrib = pData->pMapAttrib;
+	if (NULL == pMapAttrib)
+		return;
+
     if (pData->nFlag & SERIALIZEFLAG_LOAD)
     {
-        IMapAttribute* pMapAttrib = pData->pMapAttrib;
-        if (NULL == pMapAttrib)
-            return;
-
         //  设置布局相关值
         const TCHAR* szText = pMapAttrib->GetAttr(XML_WIDTH, false);
         if (szText)
@@ -298,7 +315,89 @@ void  CanvasLayoutParam::Serialize(SERIALIZEDATA* pData)
             m_nConfigLayoutFlags = ParseAlignAttr(szText);
         }
     }
+	else if (pData->nFlag & SERIALIZEFLAG_SAVE)
+	{
+		TCHAR  szText[16] = {0};
+
+		// width
+		if (m_nConfigWidth >= 0)
+		{
+			_stprintf(szText, _T("%d"), m_nConfigWidth);
+			pMapAttrib->AddAttr(XML_WIDTH, szText);
+		}
+		else if (m_nConfigWidth == AUTO)
+		{
+			pMapAttrib->AddAttr(XML_WIDTH, XML_AUTO);
+		}
+
+		// height
+		if (m_nConfigHeight >= 0)
+		{
+			_stprintf(szText, _T("%d"), m_nConfigHeight);
+			pMapAttrib->AddAttr(XML_HEIGHT, szText);
+		}
+		else if (m_nConfigHeight == AUTO)
+		{
+			pMapAttrib->AddAttr(XML_HEIGHT, XML_AUTO);
+		}
+
+		// left, top, right, bottom
+		if (m_nConfigLeft >= 0)
+		{
+			_stprintf(szText, _T("%d"), m_nConfigLeft);
+			pMapAttrib->AddAttr(XML_LAYOUT_ITEM_LEFT, szText);
+		}
+		if (m_nConfigTop >= 0)
+		{
+			_stprintf(szText, _T("%d"), m_nConfigTop);
+			pMapAttrib->AddAttr(XML_LAYOUT_ITEM_TOP, szText);
+		}
+		if (m_nConfigRight >= 0)
+		{
+			_stprintf(szText, _T("%d"), m_nConfigRight);
+			pMapAttrib->AddAttr(XML_LAYOUT_ITEM_RIGHT, szText);
+		}
+		if (m_nConfigBottom >= 0)
+		{
+			_stprintf(szText, _T("%d"), m_nConfigBottom);
+			pMapAttrib->AddAttr(XML_LAYOUT_ITEM_BOTTOM, szText);
+		}
+
+		// align
+		String  strAttr;
+		if (m_nConfigLayoutFlags & LAYOUT_ITEM_ALIGN_LEFT)
+		{
+			strAttr.append(XML_LAYOUT_ITEM_ALIGN_LEFT);
+		}
+		if (m_nConfigLayoutFlags & LAYOUT_ITEM_ALIGN_RIGHT)
+		{
+			if (!strAttr.empty())
+				strAttr.append(1, XML_SEPARATOR);
+			strAttr.append(XML_LAYOUT_ITEM_ALIGN_RIGHT);
+		}
+		if (m_nConfigLayoutFlags & LAYOUT_ITEM_ALIGN_BOTTOM)
+		{
+			if (!strAttr.empty())
+				strAttr.append(1, XML_SEPARATOR);
+			strAttr.append(XML_LAYOUT_ITEM_ALIGN_BOTTOM);
+		}
+		if (m_nConfigLayoutFlags & LAYOUT_ITEM_ALIGN_CENTER)
+		{
+			if (!strAttr.empty())
+				strAttr.append(1, XML_SEPARATOR);
+			strAttr.append(XML_LAYOUT_ITEM_ALIGN_CENTER);
+		}
+		if (m_nConfigLayoutFlags & LAYOUT_ITEM_ALIGN_VCENTER)
+		{
+			if (!strAttr.empty())
+				strAttr.append(1, XML_SEPARATOR);
+			strAttr.append(XML_LAYOUT_ITEM_ALIGN_VCENTER);
+		}
+		if (!strAttr.empty())
+			pMapAttrib->AddAttr(XML_LAYOUT_ITEM_ALIGN, strAttr.c_str());
+	}
 }
+
 void  CanvasLayoutParam::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
 {
     IUIEditor* pEditor = pData->pEditor;
@@ -339,6 +438,17 @@ int  CanvasLayoutParam::ParseAlignAttr(const TCHAR* szAttr)
     SAFE_RELEASE(pEnum);
 
     return nRet;
+}
+
+bool  CanvasLayoutParam::IsSizedByContent()
+{
+    bool  bWidthNotConfiged = (m_nConfigLeft == NDEF || m_nConfigRight == NDEF) && m_nConfigWidth ==AUTO;
+    bool  bHeightNotConfiged = (m_nConfigTop == NDEF || m_nConfigBottom == NDEF) && m_nConfigHeight == AUTO;
+
+    if (bWidthNotConfiged || bHeightNotConfiged)
+        return true;
+
+    return false;
 }
 
 }

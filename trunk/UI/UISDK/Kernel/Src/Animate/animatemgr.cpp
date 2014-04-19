@@ -14,6 +14,8 @@ AnimateManager::AnimateManager()
 	m_bHandlingTimerCallback = false;
 	m_nFps = 60;
 	m_pUIApplication = NULL;
+
+	::QueryPerformanceFrequency(&m_liPerFreq);
 }
 
 AnimateManager::~AnimateManager()
@@ -228,13 +230,15 @@ void  AnimateManager::AddStoryboardBlock(IStoryboard* p)
     Storyboard*  pStoryboard = p->GetImpl();
     IMessage*    pNotify = pStoryboard->GetNotifyObj();
 
-    int nSleep = 1000/m_nFps;
+    if (NULL == m_hTimer)
+        StartAnimate();
+
+    p->GetImpl()->OnAnimateStart();
 
     bool bFinish = false;
     while (1)
     {
         bFinish = pStoryboard->OnTick();
-
         if (pNotify)
         {
             UISendMessage(pNotify, UI_WM_ANIMATE_TICK, (WPARAM)1, (LPARAM)&p);
@@ -247,11 +251,16 @@ void  AnimateManager::AddStoryboardBlock(IStoryboard* p)
                 UISendMessage(pNotify, UI_WM_ANIMATE_OVER);  // TODO: 有可能该对象还有其它非阻塞型动画
             }
             SAFE_DELETE_Ixxx(p);
+
+            if (0 == m_listObjStoryboard.size())
+                KillTimer();
+
             return;
         }
         else
         {
-            ::Sleep(nSleep);    
+            // sleep效率太低，换成使用Waitable Timer
+            WaitForSingleObject(m_hTimer,INFINITE); 
         }
     }
 }
@@ -404,7 +413,19 @@ ObjectStoryboardIter AnimateManager::FindObjectStoryboardIter(IMessage* pNotify)
 }
 
 void AnimateManager::OnWaitForHandleObjectCallback(HANDLE h, LPARAM l)
+//void  AnimateManager::OnTime()
 { 
+// 	static long lPrev = 0;
+// 	static LARGE_INTEGER liPrev = {0};
+// 	static LARGE_INTEGER liNow = {0};
+// 	::QueryPerformanceCounter(&liNow);
+// 	 int time = (int)((liNow.QuadPart - liPrev.QuadPart)*1000/m_liPerFreq.QuadPart);
+// 
+// 	char  szText[64] = {0};
+// 	sprintf(szText, "%d\n", time);
+// 	liPrev = liNow;
+// 	::OutputDebugStringA(szText);
+	
 	m_bHandlingTimerCallback = true;
 
 	ObjectStoryboardIter iter = m_listObjStoryboard.begin();
@@ -450,6 +471,16 @@ void AnimateManager::OnWaitForHandleObjectCallback(HANDLE h, LPARAM l)
 	m_bHandlingTimerCallback = false;
 }
 
+VOID CALLBACK TimerAPCProc(
+						   LPVOID lpArgToCompletionRoutine,
+						   DWORD dwTimerLowValue,
+						   DWORD dwTimerHighValue
+						   )
+{
+	AnimateManager*  pThis = (AnimateManager*)lpArgToCompletionRoutine;
+	//pThis->OnTime();
+}
+
 void AnimateManager::SetTimer()
 {
 	if (m_hTimer)
@@ -473,7 +504,7 @@ void AnimateManager::SetTimer()
     liDueTime.QuadPart = -1000*10*nPeriod;   // 第一次响应延迟时间。负值表示一个相对的时间，代表以100纳秒为单位的相对时间，（如从现在起的5ms，则设置为-50000）
 
     // 注： 不要使用TimerAPCProc,该方式需要让线程处理alertable状态，
-    //      即调用SleepEx(x, TRUE)让线程进行等待状态
+    //      即调用SleepEx(x, TRUE)让线程进入等待状态
     // LONG lPeriod：设置定时器周期性的自我激发，该参数的单位为毫秒。
     // 如果为0，则表示定时器只发出一次信号，大于0时，定时器没隔一段时
     // 间自动重新激活一个计时器，直至取消计时器使用
@@ -481,6 +512,12 @@ void AnimateManager::SetTimer()
     {
         UIASSERT(0);
     }
+
+// 	SleepEx
+// 	if (!SetWaitableTimer(m_hTimer, &liDueTime, nPeriod, TimerAPCProc, (LPVOID)this, 0))
+// 	{
+// 		UIASSERT(0);
+// 	}
 }
 void AnimateManager::KillTimer()
 {

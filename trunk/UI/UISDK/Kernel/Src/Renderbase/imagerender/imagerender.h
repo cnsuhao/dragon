@@ -129,6 +129,8 @@ public:
 	int   GetStateIndex(int nState);
 protected:
 	void  DrawIndexWidthAlpha(IRenderTarget*, const CRect* prc, int nIndex, byte bAlpha);
+    void  CreateAnimate(int nFrom, int nTo);
+    void  DestroyAnimate();
 
 protected:
     IImageListRender*  m_pIImageListRender;

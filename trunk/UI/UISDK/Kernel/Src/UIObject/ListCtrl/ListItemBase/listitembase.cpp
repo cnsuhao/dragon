@@ -102,6 +102,30 @@ void  ListItemBase::AddChild(ListItemBase* p)
 		this->SetChildItem(p);
 	}
 }
+
+// 将自己（包括自己的子结点）在树结构中移除
+void ListItemBase::RemoveMeInTheTree()
+{
+    if (m_pPrev)
+    {
+        m_pPrev->m_pNext = this->m_pNext;
+    }
+    else
+    {
+        if (m_pParent) 
+        {
+            m_pParent->m_pChild = this->m_pNext;
+        }
+    }
+
+    if (m_pNext)
+    {
+        m_pNext->m_pPrev = this->m_pPrev;
+    }
+
+    m_pParent = m_pNext = m_pPrev = NULL;
+}
+
 void  ListItemBase::SetText(const TCHAR* szText)
 {
     if (NULL == szText)
@@ -574,23 +598,16 @@ void  ListItemBase::DrawItemInnerControl(IRenderTarget* pRenderTarget, RenderCon
 	if (!m_pPanelRoot->GetChildObject())
 		return;
 
-    // 将DC偏移原点调整到RootPanel左上角
+	RenderContext context(*proc);
+	context.m_bUpdateClip = true;
+	context.DrawListItem(m_pIListItemBase);
 
-    POINT ptOldOffset = {0,0};
-    pRenderTarget->GetViewportOrgEx(&ptOldOffset);
+	m_pPanelRoot->GetImpl()->DrawChildObject(pRenderTarget, context);
 	
-	RenderContext roc = *proc;
-	roc.m_bUpdateClip = true;
-	roc.DrawListItem(m_pIListItemBase);
-
-	roc.m_ptOffset.x = ptOldOffset.x + m_rcParent.left;
-	roc.m_ptOffset.y = ptOldOffset.y + m_rcParent.top;
-	m_pPanelRoot->GetImpl()->DrawChildObject(pRenderTarget, roc);
-	
-	{
+	{ 
 		bool bOld = proc->m_bUpdateClip;
 		proc->m_bUpdateClip = true;
-		proc->Update(pRenderTarget);  // 还原
+		proc->Update(pRenderTarget);  // 还原剪裁区域
 		proc->m_bUpdateClip = bOld;
 	}
 }
@@ -792,12 +809,45 @@ void  ListItemBase::SetIconFromFile(const TCHAR* szIconPath)
     IImageRender*  pImageForeRender = (IImageRender*)m_pIconRender->QueryInterface(UI::uiiidof(IImageRender));
 
     UI::IRenderBitmap*  pRenderBitmap = NULL;
-    UI::UICreateRenderBitmap(GetRenderLibraryType(GetIListCtrlBase()), IMAGE_ITEM_TYPE_IMAGE, &pRenderBitmap);
+    UI::UICreateRenderBitmap(
+        GetIListCtrlBase()->GetUIApplication(),
+        GetIListCtrlBase()->GetGraphicsRenderLibraryType(), 
+        IMAGE_ITEM_TYPE_IMAGE, 
+        &pRenderBitmap);
     pRenderBitmap->LoadFromFile(szIconPath, true);
     pImageForeRender->SetRenderBitmap(pRenderBitmap);
     pImageForeRender->SetImageDrawType(UI::DRAW_BITMAP_CENTER);
     SAFE_RELEASE(pRenderBitmap);
+}
+void  ListItemBase::SetIconFromImageId(const TCHAR* szImageId)
+{
+    SAFE_RELEASE(m_pIconRender);
+    if (NULL == szImageId)
+        return;
 
+    if (NULL == m_pListCtrlBase)
+        return;
+
+    IUIApplication*  pUIApplication = GetIListCtrlBase()->GetUIApplication();
+    if (NULL == pUIApplication)
+    {
+        UIASSERT(0);
+        return;
+    }
+
+    UI::IRenderBitmap*  pRenderBitmap = NULL;
+    pUIApplication->GetActiveSkinImageRes()->GetBitmap(
+        szImageId, 
+        GetIListCtrlBase()->GetGraphicsRenderLibraryType(), 
+        &pRenderBitmap);
+    if (!pRenderBitmap)
+        return;
+
+    pUIApplication->CreateRenderBase(RENDER_TYPE_IMAGE, GetIListCtrlBase(), &m_pIconRender);
+    IImageRender*  pImageForeRender = (IImageRender*)m_pIconRender->QueryInterface(UI::uiiidof(IImageRender));
+    pImageForeRender->SetRenderBitmap(pRenderBitmap);
+    pImageForeRender->SetImageDrawType(UI::DRAW_BITMAP_CENTER);
+    SAFE_RELEASE(pRenderBitmap);
 }
 
 void*  ListItemBase::QueryInterface(const IID* pIID)

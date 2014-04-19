@@ -5,7 +5,7 @@
 #include "UISDK\Kernel\Src\Resource\skinres.h"
 #include "UISDK\Kernel\Inc\Interface\ixmlwrap.h"
 
-FontManager::FontManager(SkinRes* p)
+FontManager::FontManager(SkinRes* p):m_resFont(p)
 {
     m_pUIElement = NULL;
     m_pIFontManager = NULL;

@@ -17,18 +17,18 @@
 #include "UISDK\Kernel\Src\Helper\layout\averagelayout.h"
 #include "UISDK\Kernel\Src\UIObject\HwndHost\HwndHost.h"
 #include "UISDK\Kernel\Src\UIObject\Panel\ScrollPanel\scrollpanel.h"
-// #include "UISDK\Kernel\Src\Window\tooltipwindow.h"
 #include "UISDK\Kernel\Src\Resource\imagemanager.h"
 #include "UISDK\Kernel\Src\Resource\colormanager.h"
 #include "UISDK\Kernel\Src\Resource\fontmanager.h"
 #include "UISDK\Kernel\Src\Resource\stylemanager.h"
 #include "UISDK\Kernel\Src\Resource\layoutmanager.h"
-#include "UISDK\Kernel\Src\RenderLayer\renderchain.h"
 #include "UISDK\Kernel\Inc\Interface\iuieditor.h"
+#include "UISDK\Project\UI3D\inc\inc.h"
 
 ILog*     UIApplication::s_pLog = NULL;
 long      UIApplication::s_lUiLogCookie = 0;
 long      UIApplication::s_lAppCount = 0;
+HMODULE   UIApplication::s_hUI3D = NULL;
 
 UIApplication::UIApplication(IUIApplication* p) : 
     m_pUIApplication(p),
@@ -102,7 +102,10 @@ UIApplication::~UIApplication(void)
 #endif
 
     if (0 == s_lAppCount)
+    {
 	    SAFE_RELEASE(s_pLog);
+        ReleaseUI3D();
+    }
 
     ClearRegisterUIObject();
 
@@ -119,6 +122,7 @@ UIApplication::~UIApplication(void)
 //	::CoUninitialize(); // do not call CoInitialize, CoInitializeEx, or CoUninitialize from the DllMain function. 
 	OleUninitialize();
 }
+
 
 HRESULT  UIApplication::SetSkinDirection(const TCHAR* szDir)
 {
@@ -612,7 +616,7 @@ bool UIApplication::GetUICreateInstanceFuncPtr(const TCHAR* bstrXmlName, funcUIC
 		}
 	}
 
-	UI_LOG_DEBUG(_T("%s get func ptr failed. name=%s"), FUNC_NAME, bstrXmlName);  // 从warn改成debug级别。可能是renderchain，它由别的方式来创建
+	UI_LOG_DEBUG(_T("%s get func ptr failed. name=%s"), FUNC_NAME, bstrXmlName);  // 从warn改成debug级别
 	return false;
 }
 
@@ -700,7 +704,7 @@ void UIApplication::RegisterDefaultUIObject()
     m_mapSkinTagParseData[XML_LAYOUT] = LayoutManager::UIParseSkinElement;
     m_mapSkinTagParseData[XML_INCLUDE] = SkinParseEngine::UIParseIncludeElement;
 
-    m_mapLayoutTagParseData[XML_RENDERCHAIN] = RenderChain::LoadRenderChain;
+ //   m_mapLayoutTagParseData[XML_RENDERCHAIN] = RenderChain::LoadRenderChain;  -- 废弃
 
  //   m_mapLayoutTagParseData[_T("Menu")] = LayoutManager::UIParseLayoutElement;
 }
@@ -835,6 +839,25 @@ HRESULT  UIApplication::CreateRenderBase(int nType, IObject* pObject, IRenderBas
 
     UI_LOG_WARN(_T("%s Create Failed. Type=%d"), FUNC_NAME, nType);
     return E_FAIL;
+}
+
+// 将所有的renderbase类型填充到编辑器属性列表的下拉框中
+void  UIApplication::UIEditor_FillRenderBaseType2Combobox(IUIEditorComboBoxAttribute*  pCombo)
+{
+    UIRENDERBASE_CREATE_DATA::iterator iter = m_vecUIRenderBaseCreateData.begin();
+    for ( ; iter != m_vecUIRenderBaseCreateData.end(); iter++ )
+    {
+        UIRENDERBASE_CREATE_INFO* pData = *iter;
+        if (NULL == pData)
+            continue;
+
+        // 虽然theme有很多种，但都是自适应的，只需要填充一次即可
+        if (pData->m_strName == XML_RENDER_TYPE_THEME)
+            continue;
+
+        pCombo->AddOption(pData->m_strName.c_str());
+    }
+    pCombo->AddOption(XML_RENDER_TYPE_THEME);
 }
 
 HRESULT  UIApplication::RegisterUITextRenderBaseCreateData(const TCHAR* bstrName, int nType, int nControlType, int nControlSubType, funcUICreateTextRenderBasePtr pfunc)
@@ -1052,10 +1075,29 @@ BOOL UIApplication::IsDialogMessage(MSG* pMsg)
 	return FALSE;
 }
 
+//////////////////////////////////////////////////////////////////////////
+//
 // http://dsdm.bokee.com/6033955.html  如何正确使用PeekMessage
 // 这里要注意的是多重模态的问题，如何保证正常退出
+//
+//////////////////////////////////////////////////////////////////////////
+// 2014.2.27 libo
+// 注意，不要使用MsgWaitForMultipleObjects -- QS_ALLEVENTS标志，会出现系统卡顿现象，例如安装了底层键盘钩子时，一输入就卡了
+//
+// HHOOK  g_hKeyBoardHook = NULL;
+// LRESULT CALLBACK  LLKeyboardProc(int code, WPARAM wParam, LPARAM lParam)
+// {
+//     return 0;
+//     return CallNextHookEx(g_hKeyBoardHook, code, wParam, lParam);
+// }
+// hKeyBoardHook = ::SetWindowsHookEx(WH_KEYBOARD_LL, (HOOKPROC)KeyboardProc, g_hInstance, NULL);
+// 
+//////////////////////////////////////////////////////////////////////////
+
 HRESULT  UIApplication::MsgHandleLoop(bool* pbQuitLoopRef)
 {
+    
+
 	DWORD    dwRet = 0;
     DWORD&   nCount = m_WaitForHandlesMgr.m_nHandleCount;
     HANDLE*& pHandles = m_WaitForHandlesMgr.m_pHandles;
@@ -1166,5 +1208,57 @@ void UIApplication::LoadUIObjectListToToolBox()
     for (; iter != m_vecUICreateData.end(); iter++)
     {
         m_pUIEditor->OnToolBox_AddObject((*iter)->m_strXmlName.c_str(), (*iter)->m_strCategory.c_str(), (*iter)->m_nObjType);
+    }
+}
+
+HMODULE  UIApplication::GetUI3DModule()
+{
+    if (!s_hUI3D)
+    {
+        LoadUI3D();
+    }
+
+    return s_hUI3D;
+}
+
+// 加载UI3D.dll
+void  UIApplication::LoadUI3D()
+{
+    if (s_hUI3D)
+        return;
+
+    TCHAR  szPath[MAX_PATH] = {0};
+    Util::GetAppPath_(g_hInstance, szPath);
+    _tcscat(szPath, _T("UI3D.dll"));
+
+    s_hUI3D = LoadLibrary(szPath);
+
+    if (!s_hUI3D)
+    {
+        UI_LOG_INFO(_T("%s Load UI3D.dll Failed. Error code = %d"), FUNC_NAME, GetLastError());
+    }
+    else
+    {
+        funcUI3D_Init pFunc = (funcUI3D_Init)GetProcAddress(s_hUI3D, "UI3D_Init");
+        if (pFunc)
+            pFunc(m_pUIApplication, false);  // 暂时先直接写false吧
+        else
+            UIASSERT(0);
+    }
+}
+
+// 卸载UI3D.dll
+void  UIApplication::ReleaseUI3D()
+{
+    if (s_hUI3D)
+    {
+        funcUI3D_Release pFunc = (funcUI3D_Release)GetProcAddress(s_hUI3D, "UI3D_Release");
+        if (pFunc)
+            pFunc();
+        else
+            UIASSERT(0);
+
+        FreeLibrary(s_hUI3D);
+        s_hUI3D = NULL;
     }
 }

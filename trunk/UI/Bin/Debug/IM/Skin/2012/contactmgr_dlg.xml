@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <skin>
   <layout>
-    <CustomWindow id="friendmgrdlg" width="806" height="548" minwidth="806" minheight="548" text="好友管理器" font="normal"
+    <CustomWindow id="friendmgrdlg" graphics="gdiplus" width="806" height="548" minwidth="806" minheight="548" text="好友管理器" font="normal"
                   bkgnd.render.type="image" bkgnd.render.image.drawtype="stretch" bkgnd.render.image="shadow_bkg.png" bkgnd.render.image.9region="10"
-                  material.render.region="6" 
+                  texture.render.region="6" 
                   foregnd.render.type="image" foregnd.render.image="contactmgr_texture" foregnd.render.image.drawtype="stretch" foregnd.render.image.9region="10,50,10,50"
                   transparent.type="aero" transparent.part="" transparent.part.9region="5" istransparent="1" >
       <RenderChain>

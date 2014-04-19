@@ -5,9 +5,6 @@
 #include "UISDK\Kernel\Inc\Interface\iwindow.h"
 #include "UISDK/Kernel/Inc/Interface/ianimate.h"
 
-// 注
-// 1. 如何解决系统类型按钮，当前选中按钮在置顶显示的问题
-//    在刷新附近按钮时不能覆盖当前按钮
 
 HRESULT  TabCtrl::UIParseLayoutElement(IUIElement* pElement, IUIApplication*  pUIApp, IObject* pParent, IObject** ppOut)
 {
@@ -63,10 +60,12 @@ HRESULT  TabCtrl::UIParseNewItem(IUIElement* pChildElem)
     ILayoutManager*  pLayoutMgr = pUIApp->GetActiveSkinLayoutMgr();
 
     // 获取head/content
-    IUIElement*  pHead = pChildElem->FindChild(L"head");
+    IUIElement*  pHead = NULL;
+	pChildElem->FindChild(L"head", &pHead);
     if (pHead)
     {
-        IUIElement* pChildElem = pHead->FirstChild();
+        IUIElement* pChildElem = NULL;
+		pHead->FirstChild(&pChildElem);
         if (pChildElem)
         {
             pLayoutMgr->LoadLayout(pChildElem, m_pPanelHead, &pIObjHead);
@@ -77,10 +76,12 @@ HRESULT  TabCtrl::UIParseNewItem(IUIElement* pChildElem)
     if (NULL == pIObjHead)
         return E_FAIL;
 
-    IUIElement*  pContent = pChildElem->FindChild(L"content");
+    IUIElement*  pContent = NULL;
+	pChildElem->FindChild(L"content", &pContent);
     if (pContent)
     {
-        IUIElement* pChildElem = pContent->FirstChild();
+        IUIElement* pChildElem = NULL;
+		pContent->FirstChild(&pChildElem);
         if (pChildElem)
         {
             pLayoutMgr->LoadLayout(pChildElem, m_pPanelContent, &pIObjContent);
@@ -169,7 +170,7 @@ void  TabCtrlBase::ResetAttribute()
 {
     DO_PARENT_PROCESS(ITabCtrlBase, IPanel);
 
-    m_nHeadHeight = 20;
+    m_nHeadHeight = 21;
     m_eHeadLayoutType = TABCTRL_HEAD_LAYOUT_TYPE_FIX;
 }
 void  TabCtrlBase::SetAttribute(IMapAttribute* pMapAttr, bool bReload)
@@ -207,6 +208,26 @@ void  TabCtrlBase::SetAttribute(IMapAttribute* pMapAttr, bool bReload)
     }
 }
 
+void  TabCtrlBase::OnEraseBkgnd(UI::IRenderTarget* pRenderTarget)
+{
+	if (!m_pPanelContent)
+		return;
+
+	IRenderBase*  pBkgndRender = m_pITabCtrlBase->GetBkRender();
+	if (pBkgndRender)
+	{
+		CRect rc;
+		m_pPanelContent->GetParentRect(&rc);
+
+		// 让按钮压住上面这条线
+		if (m_pITabCtrlBase->TestStyleEx(TABCTRL_STYLE_BOTTOM))
+			rc.bottom+=2;  // bkgnd有2px的底
+		else
+			rc.top--;  
+
+		pBkgndRender->DrawState(pRenderTarget, &rc, 0);
+	}
+}
 
 void  TabCtrlBase::AddItem(int nId, IObject* pBtn, IObject* pContent)
 {
@@ -235,16 +256,19 @@ void  TabCtrlBase::AddItem(int nId, IObject* pBtn, IObject* pContent)
         p->m_pPrev = m_pLastItem;
         m_pLastItem = p;
     }
+    m_nCount++;
+
     if (NULL == m_pCurItem)
     {
         SetCurItem(p);
     }
-    m_nCount++;
 }
 
 
 void  TabCtrlBase::OnSize(UINT nType, int cx, int cy)
 {
+    SetMsgHandled(FALSE);
+
     CRect  rcClient;
     m_pITabCtrlBase->GetClientRect(&rcClient);
     cx = rcClient.Width();
@@ -304,25 +328,38 @@ void  TabCtrlBase::RelayoutButton(int x, int y, int width, int height)
 
     default:
         {
-            const int N = 3;
+            const int N = 2;
             x += N;
 
             TabCtrlItemBase* p = m_pFirstItem;
             while (p)
             {
                 SIZE  s = p->m_pBtn->GetDesiredSize();
+                s.cy = m_nHeadHeight;
 
-                if (s.cy > height)
-                    s.cy = height;
-
-                if (m_pCurItem == p)
+                if (m_pITabCtrlBase->TestStyleEx(TABCTRL_STYLE_BOTTOM))
                 {
-                    p->m_pBtn->SetObjectPos(x-N, height-s.cy-N, s.cx+N+N, s.cy+N, SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS);
+                    if (m_pCurItem == p)
+                    {
+                        p->m_pBtn->SetObjectPos(x-N, height-m_nHeadHeight, s.cx+N+N, m_nHeadHeight, SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS);
+                    }
+                    else
+                    {
+                        p->m_pBtn->SetObjectPos(x, height-m_nHeadHeight, s.cx, m_nHeadHeight-N, SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS);
+                    }
                 }
                 else
                 {
-                    p->m_pBtn->SetObjectPos(x, height-s.cy, s.cx, s.cy, SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS);
+                    if (m_pCurItem == p)
+                    {
+                        p->m_pBtn->SetObjectPos(x-N, height-s.cy, s.cx+N+N, m_nHeadHeight, SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS);
+                    }
+                    else
+                    {
+                        p->m_pBtn->SetObjectPos(x, height-s.cy+N, s.cx, m_nHeadHeight-N, SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS);
+                    }
                 }
+                
                 
                 x += s.cx;
                 p = p->m_pNext;
@@ -349,7 +386,8 @@ void  TabCtrlBase::SetCurItem(TabCtrlItemBase*  pItem)
     if (m_pCurItem == pItem)
         return;
 
-    bool  bAnimate = false;
+	TabCtrlItemBase*  pOldItem = m_pCurItem;
+    bool      bAnimate = false;
     IObject*  pAnimateObj1 = NULL;  // 当前显示
     IObject*  pAnimateObj2 = NULL;  // 要显示的
     IObject*  pBtn1 = NULL;
@@ -439,17 +477,22 @@ void  TabCtrlBase::SetCurItem(TabCtrlItemBase*  pItem)
         }
     }
 
-    // TODO: 不支持
-//     if (m_eHeadLayoutType == TABCTRL_HEAD_LAYOUT_TYPE_Win32)
-//     {
-//         // 将当前项挪到最前面来 
-//         if (m_nCount > 1)
-//         {
-//             m_pCurItem->m_pBtn->MoveToAsLastChild();
-//         }
-//         RelayoutButton(0, 0, m_pPanelHead->GetHeight(), m_pPanelHead->GetHeight());
-//         m_pPanelHead->UpdateObject();
-//     }
+    if (m_eHeadLayoutType == TABCTRL_HEAD_LAYOUT_TYPE_Win32)
+    {
+        // 将当前项挪到最前面来 
+        if (m_pCurItem)
+        {
+            m_pCurItem->m_pBtn->MoveToAsLastChild();
+			m_pCurItem->m_pBtn->SetZorderDirect(1);
+        }
+		if (pOldItem)
+		{
+		    pOldItem->m_pBtn->SetZorderDirect(0);
+	    }
+
+        RelayoutButton(0, 0, m_pPanelHead->GetHeight(), m_pPanelHead->GetHeight());
+        m_pPanelHead->UpdateObject();
+    }
 }
 
 TabCtrlItemBase*  TabCtrlBase::FindItemByBtn(IObject* pObj)

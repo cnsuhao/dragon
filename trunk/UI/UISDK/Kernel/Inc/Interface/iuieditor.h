@@ -59,10 +59,17 @@ namespace UI
 	{
 		virtual UIEDITOR_ATTR_TYPE  GetAttrType() { return UIEDITOR_ATTR_TYPE_BOOL; }
 	};
+
+    // 定义listitem的flag，用于特殊用途
+#define UIEditorComboBoxAttributeFlag_ReloadOnChange  1   // 对应SetReloadOnChanged/GetReloadOnChanged
+
     interface IUIEditorComboBoxAttribute : public IUIEditorAttribute
     {
         virtual UIEDITOR_ATTR_TYPE  GetAttrType() { return UIEDITOR_ATTR_TYPE_COMBOBOX; }
         virtual IUIEditorComboBoxAttribute*  AddOption(const TCHAR* szText, const TCHAR* szValue = NULL) = 0;
+        virtual void  SetReloadOnChanged(bool b) = 0;
+        virtual bool  GetReloadOnChanged() = 0;
+
     };
 	interface IUIEditorButtonAttribute : public IUIEditorAttribute
 	{

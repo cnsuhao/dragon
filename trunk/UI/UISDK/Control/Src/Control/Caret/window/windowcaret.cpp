@@ -302,7 +302,7 @@ void  CaretWindow::_SetPos(int x, int y)
 
     if (m_pObject)
     {
-        POINT ptCtrl = m_pObject->GetRealPosInWindow();
+        POINT ptCtrl = m_pObject->GetRealPosInWindow();  // PS: 当在旋转时，这个位置取的不正确，这种情况下最好用控件自绘光标
 
         x += ptCtrl.x;
         y += ptCtrl.y;
@@ -341,7 +341,7 @@ LRESULT CaretWindow::OnSyncWindowPosChanging( UINT uMsg, WPARAM wParam, LPARAM l
 	POINT pt = {m_ptLast.x, m_ptLast.y};
     if (m_pObject)
     {
-        POINT ptCtrl = m_pObject->GetRealPosInWindow();
+        POINT ptCtrl = m_pObject->GetRealPosInWindow();  // PS: 当在旋转时，这个位置取的不正确，这种情况下最好用控件自绘光标
         pt.x += ptCtrl.x;
         pt.y += ptCtrl.y;
     }

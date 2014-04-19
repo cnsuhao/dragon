@@ -40,7 +40,7 @@ void  CMaskWnd::OnInitialize()
 	if (m_vecPicInFolder.size() > 0)
 	{
 		//m_pCurPic = new UI::IImage;
-		UI::UICreateRenderBitmap(UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDI, UI::IMAGE_ITEM_TYPE_IMAGE, &m_pBmp);
+		UI::UICreateRenderBitmap(NULL, UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDI, UI::IMAGE_ITEM_TYPE_IMAGE, &m_pBmp);
 		GetNextPicIndex();
 		m_pBmp->LoadFromFile(m_vecPicInFolder[m_nCurPicIndex].c_str(), true);
 		
@@ -149,7 +149,7 @@ void  CMaskWnd::OnSwitchPic()
 	GetNextPicIndex();
 	if (!m_pTemp)
 	{
-		UI::UICreateRenderBitmap(UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDI, UI::IMAGE_ITEM_TYPE_IMAGE, &m_pTemp);
+		UI::UICreateRenderBitmap(NULL, UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDI, UI::IMAGE_ITEM_TYPE_IMAGE, &m_pTemp);
 	}
 	m_pTemp->LoadFromFile(m_vecPicInFolder[m_nCurPicIndex].c_str(), true);
 
@@ -211,7 +211,7 @@ void  CMaskWnd::OnEraseBkgnd(UI::IRenderTarget* pRenderTarget)
 	if (!m_pBmp)
 		return;
 
-	HDC hDC = pRenderTarget->GetBindHDC();
+	HDC hDC = pRenderTarget->GetHDC();
 	CRect rc;
 	::GetClientRect(GetHWND(), &rc);
 
