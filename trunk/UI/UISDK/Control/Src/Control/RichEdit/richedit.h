@@ -46,6 +46,7 @@ public:
 		UIMESSAGE_HANDLER_EX( WM_HSCROLL, OnScroll )
 		UIMESSAGE_HANDLER_EX( UI_WM_GETSCROLLOFFSET,OnGetScrollOffset )
         UIMESSAGE_HANDLER_EX( WM_MOUSEWHEEL, OnForwardMessage )
+		UIMSG_WM_GETDLGCODE( OnGetDlgCode )
 
         UIMESSAGE_HANDLER_EX( WM_IME_STARTCOMPOSITION, OnForwardMessage )
         UIMESSAGE_HANDLER_EX( WM_IME_ENDCOMPOSITION,   OnForwardMessage )
@@ -105,6 +106,7 @@ protected:
 //	LRESULT  OnMouseRangeMsg(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void     OnSize(UINT nType, int cx, int cy);
 	void     OnRButtonDown(UINT nFlags, CPoint point);
+	UINT     OnGetDlgCode(LPMSG lpMsg);
 	
 	void     OnShowWindow(BOOL bShow, UINT nStatus);
 	void     OnVisibleChanged(BOOL bVisible, IObject* pParent);
@@ -114,12 +116,8 @@ protected:
 
 	WindowlessRichEdit   m_wrapRichEidt;
 	IScrollBarManager*   m_pMgrScrollBar;
-    CCaret  m_caret;      // 光标
-
-	CRect  m_rcInvalidate;
-
-// 	friend class ITextHostImpl;
-// 	friend class WindowlessRichEdit;
+    CCaret   m_caret;        // 光标
+	bool     m_bRedrawing;   // 用于区别是外部直接调用的UpdateObject，还是OnRedrawObject调用的UpdateObject
 };
 
 }

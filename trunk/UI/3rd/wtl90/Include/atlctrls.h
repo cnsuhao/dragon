@@ -1,19 +1,18 @@
-// Windows Template Library - WTL version 8.0
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Windows Template Library - WTL version 9.0
+// Copyright (C) Microsoft Corporation, WTL Team. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
 // The use and distribution terms for this software are covered by the
-// Microsoft Permissive License (Ms-PL) which can be found in the file
-// Ms-PL.txt at the root of this distribution.
+// Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.php)
+// which can be found in the file CPL.TXT at the root of this distribution.
+// By using this software in any fashion, you are agreeing to be bound by
+// the terms of this license. You must not remove this notice, or
+// any other, from this software.
 
 #ifndef __ATLCTRLS_H__
 #define __ATLCTRLS_H__
 
 #pragma once
-
-#ifndef __cplusplus
-	#error ATL requires C++ compilation (use a .cpp suffix)
-#endif
 
 #ifndef __ATLAPP_H__
 	#error atlctrls.h requires atlapp.h to be included first
@@ -21,10 +20,6 @@
 
 #ifndef __ATLWIN_H__
 	#error atlctrls.h requires atlwin.h to be included first
-#endif
-
-#if (_WIN32_IE < 0x0300)
-	#error atlctrls.h requires IE Version 3.0 or higher
 #endif
 
 #ifndef _WIN32_WCE
@@ -52,7 +47,7 @@
 // CEditCommands<T>
 // CScrollBarT<TBase> - CScrollBar
 //
-// CImageList
+// CImageListT<t_bManaged> - CImageList, CImageListManaged
 // CListViewCtrlT<TBase> - CListViewCtrl
 // CTreeViewCtrlT<TBase> - CTreeViewCtrl
 // CTreeItemT<TBase> - CTreeItem
@@ -1810,9 +1805,7 @@ public:
 	{
 		int nMin = 0, nMax = 0;
 		::GetScrollRange(m_hWnd, SB_CTL, &nMin, &nMax);
-		SCROLLINFO info = { 0 };
-		info.cbSize = sizeof(SCROLLINFO);
-		info.fMask = SIF_PAGE;
+		SCROLLINFO info = { sizeof(SCROLLINFO), SIF_PAGE };
 		if(::GetScrollInfo(m_hWnd, SB_CTL, &info))
 			nMax -= ((info.nPage - 1) > 0) ? (info.nPage - 1) : 0;
 
@@ -1854,28 +1847,41 @@ typedef CScrollBarT<ATL::CWindow>   CScrollBar;
 ///////////////////////////////////////////////////////////////////////////////
 // CImageList
 
-class CImageList
+// forward declarations
+template <bool t_bManaged> class CImageListT;
+typedef CImageListT<false>   CImageList;
+typedef CImageListT<true>    CImageListManaged;
+
+
+template <bool t_bManaged>
+class CImageListT
 {
 public:
+// Data members
 	HIMAGELIST m_hImageList;
 
-// Constructor
-	CImageList(HIMAGELIST hImageList = NULL) : m_hImageList(hImageList)
+// Constructor/destructor/operators
+	CImageListT(HIMAGELIST hImageList = NULL) : m_hImageList(hImageList)
 	{ }
 
-// Operators, etc.
-	CImageList& operator =(HIMAGELIST hImageList)
+	~CImageListT()
 	{
-		m_hImageList = hImageList;
-		return *this;
+		if(t_bManaged && (m_hImageList != NULL))
+			Destroy();
 	}
 
-	operator HIMAGELIST() const { return m_hImageList; }
+	CImageListT<t_bManaged>& operator =(HIMAGELIST hImageList)
+	{
+		Attach(hImageList);
+		return *this;
+	}
 
 	void Attach(HIMAGELIST hImageList)
 	{
 		ATLASSERT(m_hImageList == NULL);
 		ATLASSERT(hImageList != NULL);
+		if(t_bManaged && (m_hImageList != NULL) && (m_hImageList != hImageList))
+			ImageList_Destroy(m_hImageList);
 		m_hImageList = hImageList;
 	}
 
@@ -1885,6 +1891,8 @@ public:
 		m_hImageList = NULL;
 		return hImageList;
 	}
+
+	operator HIMAGELIST() const { return m_hImageList; }
 
 	bool IsNull() const { return (m_hImageList == NULL); }
 
@@ -2222,7 +2230,7 @@ public:
 	{
 		ATLASSERT(::IsWindow(hWnd));
 		memset(this, 0, sizeof(TOOLINFO));
-		cbSize = sizeof(TOOLINFO);
+		cbSize = RunTimeHelper::SizeOf_TOOLINFO();
 		uFlags = nFlags;
 		if(nIDTool == 0)
 		{
@@ -2482,7 +2490,7 @@ public:
 		ATLASSERT(lpToolInfo != NULL);
 
 		TTHITTESTINFO hti = { 0 };
-		hti.ti.cbSize = sizeof(TOOLINFO);
+		hti.ti.cbSize = RunTimeHelper::SizeOf_TOOLINFO();
 		hti.hwnd = hWnd;
 		hti.pt.x = pt.x;
 		hti.pt.y = pt.y;
@@ -3777,7 +3785,7 @@ public:
 		return InsertColumn(nItem, &lvc);
 	}
 
-	int AddItem(int nItem, int nSubItem, LPCTSTR strItem, int nImageIndex = -1)
+	int AddItem(int nItem, int nSubItem, LPCTSTR strItem, int nImageIndex = -3)
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
 		LVITEM lvItem = { 0 };
@@ -3785,7 +3793,7 @@ public:
 		lvItem.iItem = nItem;
 		lvItem.iSubItem = nSubItem;
 		lvItem.pszText = (LPTSTR)strItem;
-		if(nImageIndex != -1)
+		if(nImageIndex != -3)
 		{
 			lvItem.mask |= LVIF_IMAGE;
 			lvItem.iImage = nImageIndex;
@@ -3919,15 +3927,19 @@ public:
 	}
 #endif // (_WIN32_WINNT >= 0x0600)
 
-	// single-selection only
+	// Note: selects only one item
 	BOOL SelectItem(int nIndex)
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
-		ATLASSERT((GetStyle() & LVS_SINGLESEL) != 0);
+
+		// multi-selection only: de-select all items
+		if((GetStyle() & LVS_SINGLESEL) == 0)
+			SetItemState(-1, 0, LVIS_SELECTED);
 
 		BOOL bRet = SetItemState(nIndex, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
 		if(bRet)
 			bRet = EnsureVisible(nIndex, FALSE);
+
 		return bRet;
 	}
 };
@@ -5882,10 +5894,20 @@ public:
 		return (BOOL)::SendMessage(m_hWnd, TB_DELETEBUTTON, nIndex, 0L);
 	}
 
-	UINT CommandToIndex(UINT nID) const
+	BOOL InsertSeparator(int nIndex, int cxWidth = 8)
+	{
+		return InsertButton(nIndex, 0, BTNS_SEP, 0, cxWidth, (INT_PTR)0, 0);
+	}
+
+	BOOL AddSeparator(int cxWidth = 8)
+	{
+		return AddButton(0, BTNS_SEP, 0, cxWidth, (INT_PTR)0, 0);
+	}
+
+	int CommandToIndex(UINT nID) const
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
-		return (UINT)::SendMessage(m_hWnd, TB_COMMANDTOINDEX, nID, 0L);
+		return (int)::SendMessage(m_hWnd, TB_COMMANDTOINDEX, nID, 0L);
 	}
 
 #ifndef _WIN32_WCE
@@ -6335,17 +6357,24 @@ public:
 	}
 
 #ifndef _WIN32_WCE
-	CToolTipCtrl GetTooltips() const
+	CToolTipCtrl GetToolTips() const
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
 		return CToolTipCtrl((HWND)::SendMessage(m_hWnd, TCM_GETTOOLTIPS, 0, 0L));
 	}
 
-	void SetTooltips(HWND hWndToolTip)
+	// this method is deprecated, please use GetToolTips
+	CToolTipCtrl GetTooltips() const { return GetToolTips(); }
+
+	void SetToolTips(HWND hWndToolTip)
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
 		::SendMessage(m_hWnd, TCM_SETTOOLTIPS, (WPARAM)hWndToolTip, 0L);
 	}
+
+	// this method is deprecated, please use SetToolTips
+	void SetTooltips(HWND hWndToolTip) { SetToolTips(hWndToolTip); }
+
 #endif // !_WIN32_WCE
 
 	int GetCurFocus() const
@@ -6587,10 +6616,10 @@ public:
 		return (int)::SendMessage(m_hWnd, TBM_GETSELSTART, 0, 0L);
 	}
 
-	void SetSelStart(int nMin)
+	void SetSelStart(int nMin, BOOL bRedraw = TRUE)
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
-		::SendMessage(m_hWnd, TBM_SETSELSTART, 0, (LPARAM)nMin);
+		::SendMessage(m_hWnd, TBM_SETSELSTART, bRedraw, (LPARAM)nMin);
 	}
 
 	int GetSelEnd() const
@@ -6599,10 +6628,10 @@ public:
 		return (int)::SendMessage(m_hWnd, TBM_GETSELEND, 0, 0L);
 	}
 
-	void SetSelEnd(int nMax)
+	void SetSelEnd(int nMax, BOOL bRedraw = TRUE)
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
-		::SendMessage(m_hWnd, TBM_SETSELEND, 0, (LPARAM)nMax);
+		::SendMessage(m_hWnd, TBM_SETSELEND, bRedraw, (LPARAM)nMax);
 	}
 
 	void GetSelection(int& nMin, int& nMax) const
@@ -6611,10 +6640,10 @@ public:
 		nMax = GetSelEnd();
 	}
 
-	void SetSelection(int nMin, int nMax)
+	void SetSelection(int nMin, int nMax, BOOL bRedraw = TRUE)
 	{
-		SetSelStart(nMin);
-		SetSelEnd(nMax);
+		SetSelStart(nMin, FALSE);
+		SetSelEnd(nMax, bRedraw);
 	}
 
 	void GetChannelRect(LPRECT lprc) const
@@ -7217,12 +7246,10 @@ typedef CAnimateCtrlT<ATL::CWindow>   CAnimateCtrl;
 
 #ifndef _WIN32_WCE
 
-#ifdef _UNICODE
-#if (_RICHEDIT_VER == 0x0100)
-#undef RICHEDIT_CLASS
-#define RICHEDIT_CLASS	L"RICHEDIT"
-#endif // (_RICHEDIT_VER == 0x0100)
-#endif // _UNICODE
+#if defined(_UNICODE) && (_RICHEDIT_VER == 0x0100)
+  #undef RICHEDIT_CLASS
+  #define RICHEDIT_CLASS	L"RICHEDIT"
+#endif
 
 template <class TBase>
 class CRichEditCtrlT : public TBase
@@ -8337,8 +8364,8 @@ public:
 		REBARINFO rbi = { 0 };
 		rbi.cbSize = sizeof(REBARINFO);
 		rbi.fMask = RBIM_IMAGELIST;
-		if( (BOOL)::SendMessage(m_hWnd, RB_GETBARINFO, 0, (LPARAM)&rbi) == FALSE ) return CImageList();
-		return CImageList(rbi.himl);
+		BOOL bRet = (BOOL)::SendMessage(m_hWnd, RB_GETBARINFO, 0, (LPARAM)&rbi);
+		return CImageList((bRet != FALSE) ? rbi.himl : NULL);
 	}
 
 	BOOL SetImageList(HIMAGELIST hImageList)

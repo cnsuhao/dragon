@@ -324,7 +324,7 @@ bool  DotLine_SelectRegionRender::Init(Object* pObj, POINT pt)
     // 计算裁剪区域
     CRect rcVisible;
     CRect rcClient;
-    if (false == m_pObject->GetVisibleRectInWindow(&rcVisible))   // 该对象在窗口上不可见，不绘制
+    if (false == m_pObject->GetRectInWindow(&rcVisible, true))   // 该对象在窗口上不可见，不绘制
         return false;
 
     m_hWndDC = GetDC(m_hWnd);

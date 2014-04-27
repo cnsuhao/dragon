@@ -146,7 +146,7 @@ void  Object::RealUpdateObjectEx(RECT* prcObjArray, int nCount, bool bUpdateNow)
     {
         WindowRender* pWndRender = GetWindowRender();
 		if (pWndRender)
-	        pWndRender->Commit(prcDamageInLayer, nCount);
+	        pWndRender->Commit(NULL, prcDamageInLayer, nCount);
     }
 
     SAFE_ARRAY_DELETE(prcObjDamage);

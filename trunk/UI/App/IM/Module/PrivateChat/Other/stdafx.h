@@ -10,6 +10,9 @@
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 // Windows Header Files:
 #include <windows.h>
+#include "atlbase.h"
+#include <3rd\wtl90\include\atlapp.h>
+#include <3rd\wtl90\include\atldlgs.h>
 
 #include "App\IM\include\framework_inc.h"
 #pragma comment(lib, "framework.lib")
@@ -25,10 +28,6 @@
 
 #include "App\IM\IM_Ctrls\inc\inc.h"
 #pragma comment (lib, "IM_Ctrls.lib")
-
-#include "atlbase.h"
-#include <3rd\wtl80\include\atlapp.h>
-#include <3rd\wtl80\include\atldlgs.h>
 
 class CPrivateChatUI;
 class CPrivateChatBiz;

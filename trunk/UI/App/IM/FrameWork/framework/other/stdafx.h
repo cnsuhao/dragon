@@ -13,6 +13,8 @@
 #include <vector>
 #include <algorithm>
 using namespace std;
+#include <atlbase.h>
+#include <atlwin.h>
 
 // “¿¿µø‚
 #include "UISDK\Project\UIUtil\h\util.h"

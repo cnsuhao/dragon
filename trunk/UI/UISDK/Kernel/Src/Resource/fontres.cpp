@@ -354,9 +354,9 @@ FontResItem* FontRes::GetFontItem( const String& strID )
 	}
 	return NULL;
 }
-HRESULT FontRes::GetFont(BSTR bstrFontID, GRAPHICS_RENDER_LIBRARY_TYPE eRenderType, __out IRenderFont** ppOut)
+HRESULT FontRes::GetFont(const TCHAR* szFontId, GRAPHICS_RENDER_LIBRARY_TYPE eRenderType, __out IRenderFont** ppOut)
 {
-	if (NULL == bstrFontID || NULL == ppOut)
+	if (NULL == szFontId || NULL == ppOut)
 		return E_INVALIDARG;
 
 	vector<FontResItem*>::iterator iter = m_vFonts.begin();
@@ -366,7 +366,7 @@ HRESULT FontRes::GetFont(BSTR bstrFontID, GRAPHICS_RENDER_LIBRARY_TYPE eRenderTy
 	for (; iter != iterEnd; iter++)
 	{
 		FontResItem* p = *iter;
-		if (0 == wcscmp(p->GetIDRef().c_str(), bstrFontID))
+		if (0 == wcscmp(p->GetIDRef().c_str(), szFontId))
 		{
 			if (p->GetWParam() == 0 && p->GetLParam() == 0 )
 			{

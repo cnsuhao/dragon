@@ -14,8 +14,8 @@
 
 #pragma warning(disable:4996)
 #include <atlbase.h>
-#include "3rd\wtl80\include\atlapp.h"
-#include "3rd\wtl80\include\atldlgs.h"
+#include "3rd\wtl90\include\atlapp.h"
+#include "3rd\wtl90\include\atldlgs.h"
 
 #include "App\IM\include\framework_inc.h"
 #pragma comment(lib, "framework.lib")

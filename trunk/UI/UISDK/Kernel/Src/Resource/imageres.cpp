@@ -513,7 +513,7 @@ ImageResItem* ImageRes::LoadItem(const TCHAR* szType, IMapAttribute* pMapAttrib,
 
 long ImageRes::GetImageCount() 
 {
-	return (long)m_vImages.size();
+    return (long)m_mapImages.size();
 }
 
 IImageResItem* ImageRes::GetImageResItem(long lIndex)
@@ -524,41 +524,42 @@ IImageResItem* ImageRes::GetImageResItem(long lIndex)
 
 	return pItem->GetIImageResItem();
 }
-IImageResItem*  ImageRes::GetImageResItem(const TCHAR* szID)
+IImageResItem*  ImageRes::GetImageResItem(const TCHAR* szId)
 {
-	if (NULL == szID)
+	if (NULL == szId)
 		return NULL;
 
-	vector<ImageResItem*>::iterator  iter = m_vImages.begin();
-	for (; iter != m_vImages.end(); iter++)
-	{
-		ImageResItem* p = *iter;
-		if (0 == _tcscmp(szID, p->GetIdRef().c_str()))
-			return p->GetIImageResItem();
-	}
-	return NULL;
+    ImageResItem* p = GetImageItem2(szId);
+    if (p)
+        return p->GetIImageResItem();
+    return NULL;
 }
 
 ImageResItem* ImageRes::GetImageItem2(int nIndex)
 {
 	if (nIndex < 0)
 		return NULL;
-	if (nIndex >= (int)m_vImages.size())
-		return NULL;
 
-	return m_vImages[nIndex];
+    if (nIndex >= (int)m_mapImages.size())
+        return NULL;
+
+    _MyIter iter = m_mapImages.begin();
+    for (int i = 0; i < nIndex; i++)
+    {
+        iter++;
+    }
+
+    return iter->second;
 }
 
 ImageResItem* ImageRes::GetImageItem2(const TCHAR* szId)
 {
-	vector<ImageResItem*>::iterator  iter = m_vImages.begin();
-	for (; iter != m_vImages.end(); iter++)
-	{
-		ImageResItem* p = *iter;
-		if (0 == _tcscmp(p->GetId(), szId))
-			return p;
-	}
-	return NULL;
+    String strId(szId);
+    _MyIter iter = m_mapImages.find(strId);
+    if (iter == m_mapImages.end())
+        return NULL;
+
+    return  iter->second;
 }
 
 ImageResItem*  ImageRes::InsertImage(IMAGE_ITEM_TYPE eType, const TCHAR* szId, const TCHAR* szPath)
@@ -595,7 +596,8 @@ ImageResItem*  ImageRes::InsertImage(IMAGE_ITEM_TYPE eType, const TCHAR* szId, c
 	pImageItem->SetId(szId);
 	pImageItem->SetPath(szPath);
 
-	this->m_vImages.push_back(pImageItem);  
+	String  strId(szId);
+    m_mapImages[strId] = pImageItem;
 	return pImageItem;
 }
 
@@ -629,19 +631,15 @@ bool ImageRes::RemoveImage(const TCHAR* szId)
     if (!szId)
         return false;
 
-	vector<ImageResItem*>::iterator  iter = m_vImages.begin();
-	for (; iter != m_vImages.end(); iter++)
-	{
-		ImageResItem* p = *iter;
-		if (0 == _tcscmp(p->GetId(), szId))
-		{
-			delete p; 
-			p = NULL;
-			m_vImages.erase(iter);
-			return true;
-		}
-	}
-	return false;
+    String strId(szId);
+    _MyIter iter = m_mapImages.find(strId);
+    if (iter == m_mapImages.end())
+        return false;
+
+    ImageResItem* p = iter->second;
+    delete p;
+    m_mapImages.erase(iter);
+    return true;
 }
 bool ImageRes::RemoveImage(IImageResItem* pItem)
 {
@@ -650,65 +648,51 @@ bool ImageRes::RemoveImage(IImageResItem* pItem)
 
     ImageResItem* pItemImpl = pItem->GetImpl();
     
-    vector<ImageResItem*>::iterator iter = m_vImages.begin();
-    for (; iter != m_vImages.end(); iter++)
+    _MyIter iter = m_mapImages.begin();
+    for (; iter != m_mapImages.end(); iter++)
     {
-        if (*iter == pItemImpl)
+        if (iter->second == pItemImpl)
         {
-            delete pItemImpl; 
-            m_vImages.erase(iter);
+            delete pItemImpl;
+            m_mapImages.erase(iter);
             return true;
         }
     }
-//     vector<ImageResItem*>::iterator iter = std::find(m_vImages.begin(), m_vImages.end(), pItemImpl);
-//     if (iter == m_vImages.end())
-//         return false;
 
     return false;
 }
 bool ImageRes::Clear()
 {
-	vector<ImageResItem*>::iterator  iter = m_vImages.begin();
-	vector<ImageResItem*>::iterator  iterEnd = m_vImages.end();
-
-	for (; iter != iterEnd; iter++)
-	{
-		ImageResItem* p = *iter;
-		delete p;
-		p = NULL;
-	}
-
-	m_vImages.clear();
+    _MyIter iter = m_mapImages.begin();
+    for (; iter != m_mapImages.end(); iter++)
+    {
+        ImageResItem* p = iter->second;
+        delete p;
+    }
+    m_mapImages.clear();
 	return true;
 }
 
 bool ImageRes::ChangeSkinHLS(short h, short l, short s, int nFlag)
 {
-	vector<ImageResItem*>::iterator  iter = m_vImages.begin();
-	vector<ImageResItem*>::iterator  iterEnd = m_vImages.end();
-
-	for (; iter != iterEnd; iter++)
-	{
-		ImageResItem* p = *iter;
-		p->ModifyHLS(h,l,s,nFlag);
-	}
+    _MyIter iter = m_mapImages.begin();
+    for (; iter != m_mapImages.end(); iter++)
+    {
+        ImageResItem* p = iter->second;
+        p->ModifyHLS(h,l,s,nFlag);
+    }
 
 	return true;
 }
 
 bool ImageRes::ModifyImageItemAlpha(const String& strID, int nAlphaPercent)
 {
-	vector<ImageResItem*>::iterator  iter = m_vImages.begin();
-	vector<ImageResItem*>::iterator  iterEnd = m_vImages.end();
+    _MyIter iter = m_mapImages.find(strID);
+    if (iter == m_mapImages.end())
+        return false;
 
-	for (; iter != iterEnd; iter++)
-	{
-		ImageResItem* p = *iter;
-		if (p->GetIdRef() == strID)
-		{
-			return p->ModifyAlpha(nAlphaPercent);
-		}
-	}
+    ImageResItem* p = iter->second;
+    return p->ModifyAlpha(nAlphaPercent);
 
 	return false;
 }

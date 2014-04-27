@@ -1,19 +1,18 @@
-// Windows Template Library - WTL version 8.0
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Windows Template Library - WTL version 9.0
+// Copyright (C) Microsoft Corporation, WTL Team. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
 // The use and distribution terms for this software are covered by the
-// Microsoft Permissive License (Ms-PL) which can be found in the file
-// Ms-PL.txt at the root of this distribution.
+// Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.php)
+// which can be found in the file CPL.TXT at the root of this distribution.
+// By using this software in any fashion, you are agreeing to be bound by
+// the terms of this license. You must not remove this notice, or
+// any other, from this software.
 
 #ifndef __ATLTHEME_H__
 #define __ATLTHEME_H__
 
 #pragma once
-
-#ifndef __cplusplus
-	#error ATL requires C++ compilation (use a .cpp suffix)
-#endif
 
 #ifdef _WIN32_WCE
 	#error atltheme.h is not supported on Windows CE
@@ -34,10 +33,14 @@
 #if defined(_WTL_USE_VSSYM32) || (defined(NTDDI_VERSION) && (NTDDI_VERSION >= NTDDI_LONGHORN))
   #include <vssym32.h>
 #else
+  #ifndef TMSCHEMA_H
   #include <tmschema.h>
+  #endif
 #endif
 
+#ifndef _UXTHEME_H_
 #include <uxtheme.h>
+#endif
 #pragma comment(lib, "uxtheme.lib")
 
 // Note: To create an application that also runs on older versions of Windows,
@@ -218,10 +221,15 @@ public:
 		return ::GetThemeBackgroundExtent(m_hTheme, hDC, nPartID, nStateID, pContentRect, pExtentRect);
 	}
 
-	HRESULT GetThemePartSize(HDC hDC, int nPartID, int nStateID, LPRECT pRect, enum THEMESIZE eSize, LPSIZE pSize) const
+	HRESULT GetThemePartSize(HDC hDC, int nPartID, int nStateID, LPCRECT pRect, enum THEMESIZE eSize, LPSIZE pSize) const
 	{
 		ATLASSERT(m_hTheme != NULL);
+#ifdef _WTL_NEW_UXTHEME
 		return ::GetThemePartSize(m_hTheme, hDC, nPartID, nStateID, pRect, eSize, pSize);
+#else // !_WTL_NEW_UXTHEME
+		// Note: The cast to LPRECT is because uxtheme.h incorrectly uses it instead of LPCRECT
+		return ::GetThemePartSize(m_hTheme, hDC, nPartID, nStateID, (LPRECT)pRect, eSize, pSize);
+#endif // !_WTL_NEW_UXTHEME
 	}
 
 	HRESULT GetThemeTextExtent(HDC hDC, int nPartID, int nStateID, LPCWSTR pszText, int nCharCount, DWORD dwTextFlags, LPCRECT  pBoundingRect, LPRECT pExtentRect) const
@@ -1047,6 +1055,11 @@ public:
 	static bool IsRendering(HWND hWnd, HDC hDC)
 	{
 		return (::BufferedPaintRenderAnimation(hWnd, hDC) != FALSE);
+	}
+
+	static HRESULT StopAllAnimations(HWND hWnd)
+	{
+		return ::BufferedPaintStopAllAnimations(hWnd);
 	}
 };
 

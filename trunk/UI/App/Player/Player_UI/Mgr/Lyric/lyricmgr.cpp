@@ -24,7 +24,7 @@ bool CLyricMgr::Initialize()
 {
     HWND hWndParent = GetMainMgr()->GetMainWnd();
     CLyricDlg::CreateInstance(g_pUIApp, &m_pLyricDlg);
-    m_pLyricDlg->Create(g_pUIApp, _T("lyricdlg"), hWndParent);
+    m_pLyricDlg->Create(_T("lyricdlg"), hWndParent);
     m_pLyricDlg->SetLyricMgr(this);
 
     RECT  rc;

@@ -193,7 +193,7 @@ bool CPlayerListMgr::Initialize()
     {
         CPlayListDlg::CreateInstance(g_pUIApp, &m_pPlaylistDlg);
         m_pPlaylistDlg->SetPlayListMgr(this);
-        m_pPlaylistDlg->Create(g_pUIApp, _T("playlistdlg"), GetMainMgr()->GetMainWnd());
+        m_pPlaylistDlg->Create(_T("playlistdlg"), GetMainMgr()->GetMainWnd());
 
         RECT  rc;
         ::GetWindowRect(GetMainMgr()->GetMainWnd(), &rc);

@@ -37,76 +37,51 @@ namespace UI
 
         // 反向动画前，将动画参数进行反转
         virtual void  Reverse() = 0;
-    };
 
-    interface IIntMoveAlgorithm : public IMoveAlgorithm
-    {
-        // t表示从动画开始到现在经过的时间(frame/ms/s)
-        virtual bool OnTick(int t, int* pCurrentValue) = 0;
-    };
-    interface IFloatMoveAlgorithm : public IMoveAlgorithm
-    {
-        virtual bool OnTick(int t, float* pCurrentValue) = 0;
+		// t表示从动画开始到现在经过的时间(frame/ms/s)
+		virtual bool OnTick(int t, float* pCurrentValue) = 0;
     };
 
     // S = VT
-    interface IIntLinearMove : public IIntMoveAlgorithm
-    {
-        virtual void SetParam1(int from, int to, int t) = 0;
-        virtual void SetParam2(int from, int to, float v) = 0;
-        virtual void SetParam3(int from, float v, int t) = 0;
-    };
-    interface IFloatLinearMove : public IFloatMoveAlgorithm
-    {
-        virtual void SetParam1(float from, float to, float t) = 0;
-        virtual void SetParam2(float from, float to, float v) = 0;
-        virtual void SetParam3(float from, float v, float t) = 0;
-    };
-
-    // Vt^2 - Vo^2 = 2as
-    // s = Vot + 1/2at^2
-    // 匀加速或匀减速运动
-    interface IIntAccelerateMove : public IIntMoveAlgorithm
-    {
-        virtual void SetParam1(int from, int to, int t, float Vo) = 0;
-        //virtual void SetParam2(int from, int t, int a, int Vo, int Vt) = 0;
-    };
-    interface IFloatAccelerateMove : public IFloatMoveAlgorithm
-    {
-        virtual void SetParam1(float from, float to, float t, float Vo) = 0;
-    };
-
-    interface IIntEasingMove : public IIntMoveAlgorithm
-    {
-        virtual void SetParam(int from, int to, int t, EaseType eType) = 0;
-    };
-    interface IFloatEasingMove : public IFloatMoveAlgorithm
-    {
-        virtual void SetParam(float from, float to, float t, EaseType eType) = 0;
-    };
-
-
+//     interface ILinearMove : public IMoveAlgorithm
+//     {
+//         virtual void SetParam1(float from, float to, float t) = 0;
+//         virtual void SetParam2(float from, float to, float v) = 0;
+//         virtual void SetParam3(float from, float v, float t) = 0;
+//     };
+//     // Vt^2 - Vo^2 = 2as
+//     // s = Vot + 1/2at^2
+//     // 匀加速或匀减速运动
+//     interface IAccelerateMove : public IMoveAlgorithm
+//     {
+//         virtual void SetParam1(float from, float to, float t, float Vo) = 0;
+//     };
+//     interface IEasingMove : public IMoveAlgorithm
+//     {
+//         virtual void SetParam(float from, float to, float t, EaseType eType) = 0;
+//     };
 
 	interface IIntTimeline : public ITimeline
 	{
 		virtual void   SetOutRef(int* pRef) = 0;
+		virtual void   SetEaseParam(int from, int to, int t, EaseType eType) = 0;
+		virtual void   SetLinerParam1(int from, int to, int t) = 0;
+		virtual void   SetAccelerateParam1(int from, int to, int t, float Vo) = 0;
+		
 	};
-
+	interface IFloatTimeline : public ITimeline
+	{
+		virtual void   SetOutRef(float* pRef) = 0;
+		virtual void   SetEaseParam(float from, float to, float t, EaseType eType) = 0;
+		virtual void   SetLinerParam1(float from, float to, float t) = 0;
+		virtual void   SetAccelerateParam1(float from, float to, float t, float Vo) = 0;
+	};
     interface INoneTimeline : public ITimeline
     {
-
     };
-
 	interface IRectTimeline : public ITimeline
 	{
-// 		virtual void   SetFromTo(LPRECT lprcFrom, LPRECT lprcTo) = 0;
-// 		virtual void   SetFromBy(LPRECT lprcFrom, LPRECT lprcBy) = 0;
 	};
-
-    interface IFloatTimeline : public ITimeline
-    {
-        virtual void   SetOutRef(float* pRef) = 0;
-    };
 
 
     class Storyboard;
@@ -115,22 +90,25 @@ namespace UI
         UI_DECLARE_Ixxx_INTERFACE_Construct2(IStoryboard, Storyboard);
         UI_DECLARE_Ixxx_INTERFACE_CreateImpl(IStoryboard, Storyboard);
 
-        IMessage*  GetNotifyObj();
-        void  SetNotifyObj(IMessage* pNotify);
-        void  SetId(int nID);
-        int   GetId();
-        void    SetWParam(WPARAM wParam);
-        WPARAM  GetWParam();
-        void    SetLParam(LPARAM lParam);
-        LPARAM  GetLParam();
+        IMessage*   GetNotifyObj();
+        void        SetNotifyObj(IMessage* pNotify);
+        void        SetId(int nID);
+        int         GetId();
+        void        SetWParam(WPARAM wParam);
+        WPARAM      GetWParam();
+        void        SetLParam(LPARAM lParam);
+        LPARAM      GetLParam();
 
-        ITimeline*  CreateTimeline(TIMELINE_VALUE_TYPE eType, int nTimelineId, int nMoveAlgo, IMoveAlgorithm** ppMoveAlgo);
+		IIntTimeline*    CreateIntTimeline(int nTimelineId);
+		IFloatTimeline*  CreateFloatTimeline(int nTimelineId);
+		INoneTimeline*   CreateNoneTimeline(int nTimelineId);
+
         ITimeline*  GetTimeline(unsigned int nIndex);
         ITimeline*  FindTimeline(int nTimelineId);
 
-        bool  IsFinish();
-        void  Begin();
-        void  BeginBlock();
+        bool        IsFinish();
+        void        Begin();
+        void        BeginBlock();
     };
 
     class WindowAnimateBase;
@@ -139,7 +117,7 @@ namespace UI
         UI_DECLARE_Ixxx_INTERFACE_Construct2(IWindowAnimateBase, WindowAnimateBase);
         UI_DECLARE_Ixxx_INTERFACE_CreateImpl(IWindowAnimateBase, WindowAnimateBase);
 
-        void   UpdateWindowSourceImage();
+        void        UpdateWindowSourceImage();
     };
 
     // 窗口3D旋转动画

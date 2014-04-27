@@ -41,7 +41,8 @@ GRAPHICS_RENDER_LIBRARY_TYPE  UIParseGraphicsRenderLibraryType(const TCHAR* szTe
 void  WindowRender::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 {
 	const TCHAR*  szText = pMapAttrib->GetAttr(XML_WINDOW_GRAPHICS_RENDER_LIBRARY, true);
-	m_eGRL = UIParseGraphicsRenderLibraryType(szText);
+	if (szText)
+		m_eGRL = UIParseGraphicsRenderLibraryType(szText);
 }
 
 // IRenderTarget* 没有引用计数机制
@@ -78,7 +79,7 @@ void  WindowRender::OnWindowPaint(HDC hDC)
     ::GetClientRect(m_pWindow->m_hWnd, &rcClient);
 	m_pWindow->GetRenderLayer2()->UpdateLayer(NULL);
     
-    Commit(NULL, 0);
+    Commit(hDC, 0);
 }
 
 void  WindowRender::SetCanCommit(bool b)
@@ -93,11 +94,11 @@ bool  WindowRender::CanCommit()
 { 
     return 0 == m_lRefCanCommit; 
 }
-void  WindowRender::Commit(RECT* prc, int nCount)
+void  WindowRender::Commit(HDC hDC, RECT* prc, int nCount)
 {
     if (CanCommit())
     {
-        m_pWindow->CommitDoubleBuffet2Window(NULL, prc, prc?nCount:0);
+        m_pWindow->CommitDoubleBuffet2Window(hDC, prc, prc?nCount:0);
     }
 }
 

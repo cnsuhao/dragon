@@ -32,7 +32,7 @@ public:
     bool  GetRequireAlphaChannel();
     void  SetCanCommit(bool b);
     bool  CanCommit() ;
-    void  Commit(RECT* prc, int nCount=1);
+    void  Commit(HDC hDC, RECT* prc, int nCount=1);
 
 public:
     IWindowRender*  m_pIWindowRender;

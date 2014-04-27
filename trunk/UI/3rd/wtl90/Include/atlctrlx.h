@@ -1,19 +1,18 @@
-// Windows Template Library - WTL version 8.0
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Windows Template Library - WTL version 9.0
+// Copyright (C) Microsoft Corporation, WTL Team. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
 // The use and distribution terms for this software are covered by the
-// Microsoft Permissive License (Ms-PL) which can be found in the file
-// Ms-PL.txt at the root of this distribution.
+// Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.php)
+// which can be found in the file CPL.TXT at the root of this distribution.
+// By using this software in any fashion, you are agreeing to be bound by
+// the terms of this license. You must not remove this notice, or
+// any other, from this software.
 
 #ifndef __ATLCTRLX_H__
 #define __ATLCTRLX_H__
 
 #pragma once
-
-#ifndef __cplusplus
-	#error ATL requires C++ compilation (use a .cpp suffix)
-#endif
 
 #ifndef __ATLAPP_H__
 	#error atlctrlx.h requires atlapp.h to be included first
@@ -567,7 +566,6 @@ public:
 	}
 };
 
-
 class CBitmapButton : public CBitmapButtonImpl<CBitmapButton>
 {
 public:
@@ -754,14 +752,16 @@ __declspec(selectany) struct
 };
 #endif // (WINVER < 0x0500) && !defined(_WIN32_WCE)
 
-#define HLINK_UNDERLINED      0x00000000
-#define HLINK_NOTUNDERLINED   0x00000001
-#define HLINK_UNDERLINEHOVER  0x00000002
-#define HLINK_COMMANDBUTTON   0x00000004
-#define HLINK_NOTIFYBUTTON    0x0000000C
-#define HLINK_USETAGS         0x00000010
-#define HLINK_USETAGSBOLD     0x00000030
-#define HLINK_NOTOOLTIP       0x00000040
+#define HLINK_UNDERLINED           0x00000000
+#define HLINK_NOTUNDERLINED        0x00000001
+#define HLINK_UNDERLINEHOVER       0x00000002
+#define HLINK_COMMANDBUTTON        0x00000004
+#define HLINK_NOTIFYBUTTON         0x0000000C
+#define HLINK_USETAGS              0x00000010
+#define HLINK_USETAGSBOLD          0x00000030
+#define HLINK_NOTOOLTIP            0x00000040
+#define HLINK_AUTOCREATELINKFONT   0x00000080
+#define HLINK_SINGLELINE           0x00000100
 
 // Notes:
 // - HLINK_USETAGS and HLINK_USETAGSBOLD are always left-aligned
@@ -775,7 +775,7 @@ public:
 	LPTSTR m_lpstrHyperLink;
 
 	HCURSOR m_hCursor;
-	HFONT m_hFont;
+	HFONT m_hFontLink;
 	HFONT m_hFontNormal;
 
 	RECT m_rcLink;
@@ -792,16 +792,17 @@ public:
 	bool m_bVisited:1;
 	bool m_bHover:1;
 	bool m_bInternalLinkFont:1;
+	bool m_bInternalNormalFont:1;
 
 
 // Constructor/Destructor
 	CHyperLinkImpl(DWORD dwExtendedStyle = HLINK_UNDERLINED) : 
 			m_lpstrLabel(NULL), m_lpstrHyperLink(NULL),
-			m_hCursor(NULL), m_hFont(NULL), m_hFontNormal(NULL),
+			m_hCursor(NULL), m_hFontLink(NULL), m_hFontNormal(NULL),
 			m_clrLink(RGB(0, 0, 255)), m_clrVisited(RGB(128, 0, 128)),
 			m_dwExtendedStyle(dwExtendedStyle),
 			m_bPaintLabel(true), m_bVisited(false),
-			m_bHover(false), m_bInternalLinkFont(false)
+			m_bHover(false), m_bInternalLinkFont(false), m_bInternalNormalFont(false)
 	{
 		::SetRectEmpty(&m_rcLink);
 	}
@@ -810,8 +811,6 @@ public:
 	{
 		delete [] m_lpstrLabel;
 		delete [] m_lpstrHyperLink;
-		if(m_bInternalLinkFont && m_hFont != NULL)
-			::DeleteObject(m_hFont);
 #if (WINVER < 0x0500) && !defined(_WIN32_WCE)
 		// It was created, not loaded, so we have to destroy it
 		if(m_hCursor != NULL)
@@ -907,17 +906,21 @@ public:
 
 	HFONT GetLinkFont() const
 	{
-		return m_hFont;
+		return m_hFontLink;
 	}
 
 	void SetLinkFont(HFONT hFont)
 	{
-		if(m_bInternalLinkFont && m_hFont != NULL)
+		if(m_bInternalLinkFont)
 		{
-			::DeleteObject(m_hFont);
+			::DeleteObject(m_hFontLink);
 			m_bInternalLinkFont = false;
 		}
-		m_hFont = hFont;
+
+		m_hFontLink = hFont;
+
+		T* pT = static_cast<T*>(this);
+		pT->CalcLabelRect();
 	}
 
 	int GetIdealHeight() const
@@ -928,17 +931,19 @@ public:
 		if(!m_bPaintLabel)
 			return -1;
 
+		UINT uFormat = IsSingleLine() ? DT_SINGLELINE : DT_WORDBREAK;
+
 		CClientDC dc(m_hWnd);
 		RECT rect = { 0 };
 		GetClientRect(&rect);
 		HFONT hFontOld = dc.SelectFont(m_hFontNormal);
 		RECT rcText = rect;
-		dc.DrawText(_T("NS"), -1, &rcText, DT_LEFT | DT_WORDBREAK | DT_CALCRECT);
-		dc.SelectFont(m_hFont);
+		dc.DrawText(_T("NS"), -1, &rcText, DT_LEFT | uFormat | DT_CALCRECT);
+		dc.SelectFont(m_hFontLink);
 		RECT rcLink = rect;
-		dc.DrawText(_T("NS"), -1, &rcLink, DT_LEFT | DT_WORDBREAK | DT_CALCRECT);
+		dc.DrawText(_T("NS"), -1, &rcLink, DT_LEFT | uFormat | DT_CALCRECT);
 		dc.SelectFont(hFontOld);
-		return max(rcText.bottom - rcText.top, rcLink.bottom - rcLink.top);
+		return __max(rcText.bottom - rcText.top, rcLink.bottom - rcLink.top);
 	}
 
 	bool GetIdealSize(SIZE& size) const
@@ -980,37 +985,40 @@ public:
 			pT->CalcLabelParts(lpstrLeft, cchLeft, lpstrLink, cchLink, lpstrRight, cchRight);
 
 			// get label part rects
+			UINT uFormat = IsSingleLine() ? DT_SINGLELINE : DT_WORDBREAK;
+
 			HFONT hFontOld = dc.SelectFont(m_hFontNormal);
 			RECT rcLeft = rcClient;
-			dc.DrawText(lpstrLeft, cchLeft, &rcLeft, DT_LEFT | DT_WORDBREAK | DT_CALCRECT);
+			dc.DrawText(lpstrLeft, cchLeft, &rcLeft, DT_LEFT | uFormat | DT_CALCRECT);
 
-			dc.SelectFont(m_hFont);
+			dc.SelectFont(m_hFontLink);
 			RECT rcLink = { rcLeft.right, rcLeft.top, rcClient.right, rcClient.bottom };
-			dc.DrawText(lpstrLink, cchLink, &rcLink, DT_LEFT | DT_WORDBREAK | DT_CALCRECT);
+			dc.DrawText(lpstrLink, cchLink, &rcLink, DT_LEFT | uFormat | DT_CALCRECT);
 
 			dc.SelectFont(m_hFontNormal);
 			RECT rcRight = { rcLink.right, rcLink.top, rcClient.right, rcClient.bottom };
-			dc.DrawText(lpstrRight, cchRight, &rcRight, DT_LEFT | DT_WORDBREAK | DT_CALCRECT);
+			dc.DrawText(lpstrRight, cchRight, &rcRight, DT_LEFT | uFormat | DT_CALCRECT);
 
 			dc.SelectFont(hFontOld);
 
-			int cyMax = max(rcLeft.bottom, max(rcLink.bottom, rcRight.bottom));
+			int cyMax = __max(rcLeft.bottom, __max(rcLink.bottom, rcRight.bottom));
 			::SetRect(&rcAll, rcLeft.left, rcLeft.top, rcRight.right, cyMax);
 		}
 		else
 		{
 			HFONT hOldFont = NULL;
-			if(m_hFont != NULL)
-				hOldFont = dc.SelectFont(m_hFont);
+			if(m_hFontLink != NULL)
+				hOldFont = dc.SelectFont(m_hFontLink);
 			LPTSTR lpstrText = (m_lpstrLabel != NULL) ? m_lpstrLabel : m_lpstrHyperLink;
 			DWORD dwStyle = GetStyle();
-			int nDrawStyle = DT_LEFT;
+			UINT uFormat = DT_LEFT;
 			if (dwStyle & SS_CENTER)
-				nDrawStyle = DT_CENTER;
+				uFormat = DT_CENTER;
 			else if (dwStyle & SS_RIGHT)
-				nDrawStyle = DT_RIGHT;
-			dc.DrawText(lpstrText, -1, &rcAll, nDrawStyle | DT_WORDBREAK | DT_CALCRECT);
-			if(m_hFont != NULL)
+				uFormat = DT_RIGHT;
+			uFormat |= IsSingleLine() ? DT_SINGLELINE : DT_WORDBREAK;
+			dc.DrawText(lpstrText, -1, &rcAll, uFormat | DT_CALCRECT);
+			if(m_hFontLink != NULL)
 				dc.SelectFont(hOldFont);
 			if (dwStyle & SS_CENTER)
 			{
@@ -1048,6 +1056,8 @@ public:
 	{
 		ATLASSERT(m_hWnd == NULL);
 		ATLASSERT(::IsWindow(hWnd));
+		if(m_hFontNormal == NULL)
+			m_hFontNormal = (HFONT)::SendMessage(hWnd, WM_GETFONT, 0, 0L);
 #if (_MSC_VER >= 1300)
 		BOOL bRet = ATL::CWindowImpl< T, TBase, TWinTraits>::SubclassWindow(hWnd);
 #else // !(_MSC_VER >= 1300)
@@ -1097,6 +1107,28 @@ public:
 		return bRet;
 	}
 
+	void CreateLinkFontFromNormal()
+	{
+		if(m_bInternalLinkFont)
+		{
+			::DeleteObject(m_hFontLink);
+			m_bInternalLinkFont = false;
+		}
+
+		CFontHandle font = (m_hFontNormal != NULL) ? m_hFontNormal : (HFONT)::GetStockObject(SYSTEM_FONT);
+		LOGFONT lf = { 0 };
+		font.GetLogFont(&lf);
+
+		if(IsUsingTagsBold())
+			lf.lfWeight = FW_BOLD;
+		else if(!IsNotUnderlined())
+			lf.lfUnderline = TRUE;
+
+		m_hFontLink = ::CreateFontIndirect(&lf);
+		m_bInternalLinkFont = true;
+		ATLASSERT(m_hFontLink != NULL);
+	}
+
 // Message map and handlers
 	BEGIN_MSG_MAP(CHyperLinkImpl)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
@@ -1142,6 +1174,21 @@ public:
 			m_tip.DestroyWindow();
 			m_tip.m_hWnd = NULL;
 		}
+
+		if(m_bInternalLinkFont)
+		{
+			::DeleteObject(m_hFontLink);
+			m_hFontLink = NULL;
+			m_bInternalLinkFont = false;
+		}
+
+		if(m_bInternalNormalFont)
+		{
+			::DeleteObject(m_hFontNormal);
+			m_hFontNormal = NULL;
+			m_bInternalNormalFont = false;
+		}
+
 		bHandled = FALSE;
 		return 1;
 	}
@@ -1310,12 +1357,28 @@ public:
 
 	LRESULT OnSetFont(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
 	{
+		if(m_bInternalNormalFont)
+		{
+			::DeleteObject(m_hFontNormal);
+			m_bInternalNormalFont = false;
+		}
+
+		bool bCreateLinkFont = m_bInternalLinkFont;
+
 		m_hFontNormal = (HFONT)wParam;
+
+		if(bCreateLinkFont || IsAutoCreateLinkFont())
+			CreateLinkFontFromNormal();
+
+		T* pT = static_cast<T*>(this);
+		pT->CalcLabelRect();
+
 		if((BOOL)lParam)
 		{
 			Invalidate();
 			UpdateWindow();
 		}
+
 		return 0;
 	}
 
@@ -1368,26 +1431,17 @@ public:
 #endif
 		ATLASSERT(m_hCursor != NULL);
 
-		// set font
+		// set fonts
 		if(m_bPaintLabel)
 		{
-			ATL::CWindow wnd = GetParent();
-			m_hFontNormal = wnd.GetFont();
 			if(m_hFontNormal == NULL)
-				m_hFontNormal = (HFONT)::GetStockObject(SYSTEM_FONT);
-			if(m_hFontNormal != NULL && m_hFont == NULL)
 			{
-				LOGFONT lf = { 0 };
-				CFontHandle font = m_hFontNormal;
-				font.GetLogFont(&lf);
-				if(IsUsingTagsBold())
-					lf.lfWeight = FW_BOLD;
-				else if(!IsNotUnderlined())
-					lf.lfUnderline = TRUE;
-				m_hFont = ::CreateFontIndirect(&lf);
-				m_bInternalLinkFont = true;
-				ATLASSERT(m_hFont != NULL);
+				m_hFontNormal = AtlCreateControlFont();
+				m_bInternalNormalFont = true;
 			}
+
+			if(m_hFontLink == NULL)
+				CreateLinkFontFromNormal();
 		}
 
 #ifndef _WIN32_WCE
@@ -1402,11 +1456,9 @@ public:
 			int nLen = GetWindowTextLength();
 			if(nLen > 0)
 			{
-				CTempBuffer<TCHAR, _WTL_STACK_ALLOC_THRESHOLD> buff;
-				LPTSTR lpstrText = buff.Allocate(nLen + 1);
-				ATLASSERT(lpstrText != NULL);
-				if((lpstrText != NULL) && (GetWindowText(lpstrText, nLen + 1) > 0))
-					SetLabel(lpstrText);
+				ATLTRY(m_lpstrLabel = new TCHAR[nLen + 1]);
+				if(m_lpstrLabel != NULL)
+					ATLVERIFY(GetWindowText(m_lpstrLabel, nLen + 1) > 0);
 			}
 		}
 
@@ -1430,20 +1482,15 @@ public:
 		// set link colors
 		if(m_bPaintLabel)
 		{
-			ATL::CRegKey rk;
+			CRegKeyEx rk;
 			LONG lRet = rk.Open(HKEY_CURRENT_USER, _T("Software\\Microsoft\\Internet Explorer\\Settings"));
-			if(lRet == 0)
+			if(lRet == ERROR_SUCCESS)
 			{
 				const int cchValue = 12;
 				TCHAR szValue[cchValue] = { 0 };
-#if (_ATL_VER >= 0x0700)
 				ULONG ulCount = cchValue;
 				lRet = rk.QueryStringValue(_T("Anchor Color"), szValue, &ulCount);
-#else
-				DWORD dwCount = cchValue * sizeof(TCHAR);
-				lRet = rk.QueryValue(szValue, _T("Anchor Color"), &dwCount);
-#endif
-				if(lRet == 0)
+				if(lRet == ERROR_SUCCESS)
 				{
 					COLORREF clr = pT->_ParseColorString(szValue);
 					ATLASSERT(clr != CLR_INVALID);
@@ -1451,14 +1498,9 @@ public:
 						m_clrLink = clr;
 				}
 
-#if (_ATL_VER >= 0x0700)
 				ulCount = cchValue;
 				lRet = rk.QueryStringValue(_T("Anchor Color Visited"), szValue, &ulCount);
-#else
-				dwCount = cchValue * sizeof(TCHAR);
-				lRet = rk.QueryValue(szValue, _T("Anchor Color Visited"), &dwCount);
-#endif
-				if(lRet == 0)
+				if(lRet == ERROR_SUCCESS)
 				{
 					COLORREF clr = pT->_ParseColorString(szValue);
 					ATLASSERT(clr != CLR_INVALID);
@@ -1480,7 +1522,7 @@ public:
 				if(*p == _T(','))
 				{
 					*p = _T('\0');
-					c[i] = T::_xttoi(lpstr);
+					c[i] = MinCrtHelper::_atoi(lpstr);
 					lpstr = &p[1];
 					break;
 				}
@@ -1490,7 +1532,7 @@ public:
 		}
 		if(*lpstr == _T('\0'))
 			return CLR_INVALID;
-		c[2] = T::_xttoi(lpstr);
+		c[2] = MinCrtHelper::_atoi(lpstr);
 
 		return RGB(c[0], c[1], c[2]);
 	}
@@ -1527,15 +1569,17 @@ public:
 			// get label part rects
 			HFONT hFontOld = dc.SelectFont(m_hFontNormal);
 
+			UINT uFormat = IsSingleLine() ? DT_SINGLELINE : DT_WORDBREAK;
+
 			RECT rcLeft = rcClient;
 			if(lpstrLeft != NULL)
-				dc.DrawText(lpstrLeft, cchLeft, &rcLeft, DT_LEFT | DT_WORDBREAK | DT_CALCRECT);
+				dc.DrawText(lpstrLeft, cchLeft, &rcLeft, DT_LEFT | uFormat | DT_CALCRECT);
 
-			dc.SelectFont(m_hFont);
+			dc.SelectFont(m_hFontLink);
 			RECT rcLink = rcClient;
 			if(lpstrLeft != NULL)
 				rcLink.left = rcLeft.right;
-			dc.DrawText(lpstrLink, cchLink, &rcLink, DT_LEFT | DT_WORDBREAK | DT_CALCRECT);
+			dc.DrawText(lpstrLink, cchLink, &rcLink, DT_LEFT | uFormat | DT_CALCRECT);
 
 			dc.SelectFont(hFontOld);
 
@@ -1544,17 +1588,18 @@ public:
 		else
 		{
 			HFONT hOldFont = NULL;
-			if(m_hFont != NULL)
-				hOldFont = dc.SelectFont(m_hFont);
+			if(m_hFontLink != NULL)
+				hOldFont = dc.SelectFont(m_hFontLink);
 			LPTSTR lpstrText = (m_lpstrLabel != NULL) ? m_lpstrLabel : m_lpstrHyperLink;
 			DWORD dwStyle = GetStyle();
-			int nDrawStyle = DT_LEFT;
+			UINT uFormat = DT_LEFT;
 			if (dwStyle & SS_CENTER)
-				nDrawStyle = DT_CENTER;
+				uFormat = DT_CENTER;
 			else if (dwStyle & SS_RIGHT)
-				nDrawStyle = DT_RIGHT;
-			dc.DrawText(lpstrText, -1, &m_rcLink, nDrawStyle | DT_WORDBREAK | DT_CALCRECT);
-			if(m_hFont != NULL)
+				uFormat = DT_RIGHT;
+			uFormat |= IsSingleLine() ? DT_SINGLELINE : DT_WORDBREAK;
+			dc.DrawText(lpstrText, -1, &m_rcLink, uFormat | DT_CALCRECT);
+			if(m_hFontLink != NULL)
 				dc.SelectFont(hOldFont);
 			if (dwStyle & SS_CENTER)
 			{
@@ -1651,23 +1696,25 @@ public:
 			dc.SetBkMode(TRANSPARENT);
 			HFONT hFontOld = dc.SelectFont(m_hFontNormal);
 
+			UINT uFormat = IsSingleLine() ? DT_SINGLELINE : DT_WORDBREAK;
+
 			if(lpstrLeft != NULL)
-				dc.DrawText(lpstrLeft, cchLeft, &rcClient, DT_LEFT | DT_WORDBREAK);
+				dc.DrawText(lpstrLeft, cchLeft, &rcClient, DT_LEFT | uFormat);
 
 			COLORREF clrOld = dc.SetTextColor(IsWindowEnabled() ? (m_bVisited ? m_clrVisited : m_clrLink) : (::GetSysColor(COLOR_GRAYTEXT)));
-			if(m_hFont != NULL && (!IsUnderlineHover() || (IsUnderlineHover() && m_bHover)))
-				dc.SelectFont(m_hFont);
+			if(m_hFontLink != NULL && (!IsUnderlineHover() || (IsUnderlineHover() && m_bHover)))
+				dc.SelectFont(m_hFontLink);
 			else
 				dc.SelectFont(m_hFontNormal);
 
-			dc.DrawText(lpstrLink, cchLink, &m_rcLink, DT_LEFT | DT_WORDBREAK);
+			dc.DrawText(lpstrLink, cchLink, &m_rcLink, DT_LEFT | uFormat);
 
 			dc.SetTextColor(clrOld);
 			dc.SelectFont(m_hFontNormal);
 			if(lpstrRight != NULL)
 			{
 				RECT rcRight = { m_rcLink.right, m_rcLink.top, rcClient.right, rcClient.bottom };
-				dc.DrawText(lpstrRight, cchRight, &rcRight, DT_LEFT | DT_WORDBREAK);
+				dc.DrawText(lpstrRight, cchRight, &rcRight, DT_LEFT | uFormat);
 			}
 
 			if(GetFocus() == m_hWnd)
@@ -1681,21 +1728,22 @@ public:
 			COLORREF clrOld = dc.SetTextColor(IsWindowEnabled() ? (m_bVisited ? m_clrVisited : m_clrLink) : (::GetSysColor(COLOR_GRAYTEXT)));
 
 			HFONT hFontOld = NULL;
-			if(m_hFont != NULL && (!IsUnderlineHover() || (IsUnderlineHover() && m_bHover)))
-				hFontOld = dc.SelectFont(m_hFont);
+			if(m_hFontLink != NULL && (!IsUnderlineHover() || (IsUnderlineHover() && m_bHover)))
+				hFontOld = dc.SelectFont(m_hFontLink);
 			else
 				hFontOld = dc.SelectFont(m_hFontNormal);
 
 			LPTSTR lpstrText = (m_lpstrLabel != NULL) ? m_lpstrLabel : m_lpstrHyperLink;
 
 			DWORD dwStyle = GetStyle();
-			int nDrawStyle = DT_LEFT;
+			UINT uFormat = DT_LEFT;
 			if (dwStyle & SS_CENTER)
-				nDrawStyle = DT_CENTER;
+				uFormat = DT_CENTER;
 			else if (dwStyle & SS_RIGHT)
-				nDrawStyle = DT_RIGHT;
+				uFormat = DT_RIGHT;
+			uFormat |= IsSingleLine() ? DT_SINGLELINE : DT_WORDBREAK;
 
-			dc.DrawText(lpstrText, -1, &m_rcLink, nDrawStyle | DT_WORDBREAK);
+			dc.DrawText(lpstrText, -1, &m_rcLink, uFormat);
 
 			if(GetFocus() == m_hWnd)
 				dc.DrawFocusRect(&m_rcLink);
@@ -1757,32 +1805,16 @@ public:
 		return ((m_dwExtendedStyle & HLINK_NOTOOLTIP) == 0);
 	}
 
-	static int _xttoi(const TCHAR* nptr)
+	bool IsAutoCreateLinkFont() const
 	{
-#ifndef _ATL_MIN_CRT
-		return _ttoi(nptr);
-#else // _ATL_MIN_CRT
-		while(*nptr == _T(' '))   // skip spaces
-			++nptr;
+		return ((m_dwExtendedStyle & HLINK_AUTOCREATELINKFONT) == HLINK_AUTOCREATELINKFONT);
+	}
 
-		int c = (int)(_TUCHAR)*nptr++;
-		int sign = c;   // save sign indication
-		if (c == _T('-') || c == _T('+'))
-			c = (int)(_TUCHAR)*nptr++;   // skip sign
-
-		int total = 0;
-		while((TCHAR)c >= _T('0') && (TCHAR)c <= _T('9'))
-		{
-			total = 10 * total + ((TCHAR)c - _T('0'));   // accumulate digit
-			c = (int)(_TUCHAR)*nptr++;        // get next char
-		}
-
-		// return result, negated if necessary
-		return ((TCHAR)sign != _T('-')) ? total : -total;
-#endif // _ATL_MIN_CRT
+	bool IsSingleLine() const
+	{
+		return ((m_dwExtendedStyle & HLINK_SINGLELINE) == HLINK_SINGLELINE);
 	}
 };
-
 
 class CHyperLink : public CHyperLinkImpl<CHyperLink>
 {
@@ -1905,8 +1937,7 @@ public:
 	HWND Create(HWND hWndParent, UINT nTextID = ATL_IDS_IDLEMESSAGE, DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP, UINT nID = ATL_IDW_STATUS_BAR)
 	{
 		const int cchMax = 128;   // max text length is 127 for status bars (+1 for null)
-		TCHAR szText[cchMax];
-		szText[0] = 0;
+		TCHAR szText[cchMax] = { 0 };
 		::LoadString(ModuleHelper::GetResourceInstance(), nTextID, szText, cchMax);
 		return Create(hWndParent, szText, dwStyle, nID);
 	}
@@ -2239,10 +2270,12 @@ public:
 	int m_cxyHeader;
 	TCHAR m_szTitle[m_cchTitle];
 	DWORD m_dwExtendedStyle;   // Pane container specific extended styles
+	HFONT m_hFont;
+	bool m_bInternalFont;
 
 
 // Constructor
-	CPaneContainerImpl() : m_cxyHeader(0), m_dwExtendedStyle(0)
+	CPaneContainerImpl() : m_cxyHeader(0), m_dwExtendedStyle(0), m_hFont(NULL), m_bInternalFont(false)
 	{
 		m_szTitle[0] = 0;
 	}
@@ -2386,8 +2419,11 @@ public:
 // Message map and handlers
 	BEGIN_MSG_MAP(CPaneContainerImpl)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
+		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_SIZE, OnSize)
 		MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
+		MESSAGE_HANDLER(WM_GETFONT, OnGetFont)
+		MESSAGE_HANDLER(WM_SETFONT, OnSetFont)
 		MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBackground)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
 #ifndef _WIN32_WCE
@@ -2400,11 +2436,44 @@ public:
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
+		if(m_hFont == NULL)
+		{
+			// The same as AtlCreateControlFont() for horizontal pane
+#ifndef _WIN32_WCE
+			LOGFONT lf = { 0 };
+			ATLVERIFY(::SystemParametersInfo(SPI_GETICONTITLELOGFONT, sizeof(LOGFONT), &lf, 0) != FALSE);
+			if(IsVertical())
+				lf.lfEscapement = 900;   // 90 degrees
+			m_hFont = ::CreateFontIndirect(&lf);
+#else // CE specific
+			m_hFont = (HFONT)::GetStockObject(SYSTEM_FONT);
+			if(IsVertical())
+			{
+				CLogFont lf(m_hFont);
+				lf.lfEscapement = 900;   // 90 degrees
+				m_hFont = ::CreateFontIndirect(&lf);
+			}
+#endif // _WIN32_WCE
+			m_bInternalFont = true;
+		}
+
 		T* pT = static_cast<T*>(this);
 		pT->CalcSize();
 
 		if((m_dwExtendedStyle & PANECNT_NOCLOSEBUTTON) == 0)
 			pT->CreateCloseButton();
+
+		return 0;
+	}
+
+	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	{
+		if(m_bInternalFont)
+		{
+			::DeleteObject(m_hFont);
+			m_hFont = NULL;
+			m_bInternalFont = false;
+		}
 
 		return 0;
 	}
@@ -2420,6 +2489,30 @@ public:
 	{
 		if(m_wndClient.m_hWnd != NULL)
 			m_wndClient.SetFocus();
+		return 0;
+	}
+
+	LRESULT OnGetFont(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	{
+		return (LRESULT)m_hFont;
+	}
+
+	LRESULT OnSetFont(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
+	{
+		if(m_bInternalFont)
+		{
+			::DeleteObject(m_hFont);
+			m_bInternalFont = false;
+		}
+
+		m_hFont = (HFONT)wParam;
+
+		T* pT = static_cast<T*>(this);
+		pT->CalcSize();
+
+		if((BOOL)lParam != FALSE)
+			pT->UpdateLayout();
+
 		return 0;
 	}
 
@@ -2619,6 +2712,8 @@ public:
 	{
 		T* pT = static_cast<T*>(this);
 		CFontHandle font = pT->GetTitleFont();
+		if(font.IsNull())
+			font = (HFONT)::GetStockObject(SYSTEM_FONT);
 		LOGFONT lf = { 0 };
 		font.GetLogFont(lf);
 		if(IsVertical())
@@ -2629,13 +2724,13 @@ public:
 		{
 			int cyFont = abs(lf.lfHeight) + m_cxyBorder + 2 * m_cxyTextOffset;
 			int cyBtn = m_cyImageTB + m_cxyBtnAddTB + m_cxyBorder + 2 * m_cxyBtnOffset;
-			m_cxyHeader = max(cyFont, cyBtn);
+			m_cxyHeader = __max(cyFont, cyBtn);
 		}
 	}
 
 	HFONT GetTitleFont() const
 	{
-		return AtlGetDefaultGuiFont();
+		return m_hFont;
 	}
 
 #ifndef _WIN32_WCE
@@ -2670,23 +2765,42 @@ public:
 		}
 		dc.FillRect(&rect, COLOR_3DFACE);
 
-		if(!IsVertical())   // draw title only for horizontal pane container
+		// draw title text
+		dc.SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
+		dc.SetBkMode(TRANSPARENT);
+		T* pT = static_cast<T*>(this);
+		HFONT hFontOld = dc.SelectFont(pT->GetTitleFont());
+#if defined(_WIN32_WCE) && !defined(DT_END_ELLIPSIS)
+		const UINT DT_END_ELLIPSIS = 0;
+#endif // defined(_WIN32_WCE) && !defined(DT_END_ELLIPSIS)
+
+		if(IsVertical())
 		{
-			dc.SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
-			dc.SetBkMode(TRANSPARENT);
-			T* pT = static_cast<T*>(this);
-			HFONT hFontOld = dc.SelectFont(pT->GetTitleFont());
+			rect.top += m_cxyTextOffset;
+			rect.bottom -= m_cxyTextOffset;
+			if(m_tb.m_hWnd != NULL)
+				rect.top += m_cxToolBar;;
+
+			RECT rcCalc = { rect.left, rect.bottom, rect.right, rect.top };
+			int cxFont = dc.DrawText(m_szTitle, -1, &rcCalc, DT_TOP | DT_SINGLELINE | DT_END_ELLIPSIS | DT_CALCRECT);
+			RECT rcText = { 0 };
+			rcText.left = (rect.right - rect.left - cxFont) / 2;
+			rcText.right = rcText.left + (rect.bottom - rect.top);
+			rcText.top = rect.bottom;
+			rcText.bottom = rect.top;
+			dc.DrawText(m_szTitle, -1, &rcText, DT_TOP | DT_SINGLELINE | DT_END_ELLIPSIS);
+		}
+		else
+		{
 			rect.left += m_cxyTextOffset;
 			rect.right -= m_cxyTextOffset;
 			if(m_tb.m_hWnd != NULL)
 				rect.right -= m_cxToolBar;;
-#ifndef _WIN32_WCE
+
 			dc.DrawText(m_szTitle, -1, &rect, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
-#else // CE specific
-			dc.DrawText(m_szTitle, -1, &rect, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
-#endif // _WIN32_WCE
-			dc.SelectFont(hFontOld);
 		}
+
+		dc.SelectFont(hFontOld);
 	}
 
 	// called only if pane is empty
@@ -2974,7 +3088,7 @@ public:
 		LVCompareParam* pParam = NULL;
 		ATLTRY(pParam = new LVCompareParam[nCount]);
 		PFNLVCOMPARE pFunc = NULL;
-		TCHAR pszTemp[pT->m_cchCmpTextMax];
+		TCHAR pszTemp[pT->m_cchCmpTextMax] = { 0 };
 		bool bStrValue = false;
 
 		switch(wType)
@@ -3682,9 +3796,11 @@ public:
 	bool m_bActiveAsDefaultMenuItem:1;
 	bool m_bEmptyMenuItem:1;
 	bool m_bWindowsMenuItem:1;
+	bool m_bNoTabDrag:1;
 	// internal
 	bool m_bTabCapture:1;
 	bool m_bTabDrag:1;
+	bool m_bInternalFont:1;
 
 // Constructor/destructor
 	CTabViewImpl() :
@@ -3702,8 +3818,10 @@ public:
 			m_bActiveAsDefaultMenuItem(false), 
 			m_bEmptyMenuItem(false), 
 			m_bWindowsMenuItem(false), 
+			m_bNoTabDrag(false), 
 			m_bTabCapture(false), 
-			m_bTabDrag(false)
+			m_bTabDrag(false), 
+			m_bInternalFont(false)
 	{
 		m_ptStartDrag.x = 0;
 		m_ptStartDrag.y = 0;
@@ -4187,7 +4305,7 @@ public:
 		{
 			// Append menu items for all pages
 			const int cchPrefix = 3;   // 2 digits + space
-			nMenuItemsCount = min(min(nPageCount, nMenuItemsCount), (int)m_nMenuItemsMax);
+			nMenuItemsCount = __min(__min(nPageCount, nMenuItemsCount), (int)m_nMenuItemsMax);
 			ATLASSERT(nMenuItemsCount < 100);   // 2 digits only
 			if(nMenuItemsCount >= 100)
 				nMenuItemsCount = 99;
@@ -4255,6 +4373,8 @@ public:
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(WM_SIZE, OnSize)
 		MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
+		MESSAGE_HANDLER(WM_GETFONT, OnGetFont)
+		MESSAGE_HANDLER(WM_SETFONT, OnSetFont)
 		NOTIFY_HANDLER(m_nTabID, TCN_SELCHANGE, OnTabChanged)
 		NOTIFY_ID_HANDLER(m_nTabID, OnTabNotification)
 #ifndef _WIN32_WCE
@@ -4289,6 +4409,14 @@ public:
 				il.Destroy();
 		}
 
+		if(m_bInternalFont)
+		{
+			HFONT hFont = m_tab.GetFont();
+			m_tab.SetFont(NULL, FALSE);
+			::DeleteObject(hFont);
+			m_bInternalFont = false;
+		}
+
 		return 0;
 	}
 
@@ -4303,6 +4431,32 @@ public:
 	{
 		if(m_nActivePage != -1)
 			::SetFocus(GetPageHWND(m_nActivePage));
+		return 0;
+	}
+
+	LRESULT OnGetFont(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	{
+		return m_tab.SendMessage(WM_GETFONT);
+	}
+
+	LRESULT OnSetFont(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
+	{
+		if(m_bInternalFont)
+		{
+			HFONT hFont = m_tab.GetFont();
+			m_tab.SetFont(NULL, FALSE);
+			::DeleteObject(hFont);
+			m_bInternalFont = false;
+		}
+
+		m_tab.SendMessage(WM_SETFONT, wParam, lParam);
+
+		T* pT = static_cast<T*>(this);
+		m_cyTabHeight = pT->CalcTabHeight();
+
+		if((BOOL)lParam != FALSE)
+			pT->UpdateLayout();
+
 		return 0;
 	}
 
@@ -4343,7 +4497,7 @@ public:
 // Tab control message handlers
 	LRESULT OnTabLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled)
 	{
-		if(m_tab.GetItemCount() > 1)
+		if(!m_bNoTabDrag && (m_tab.GetItemCount() > 1))
 		{
 			m_bTabCapture = true;
 			m_tab.SetCapture();
@@ -4560,7 +4714,8 @@ public:
 		if(m_tab.m_hWnd == NULL)
 			return false;
 
-		m_tab.SetFont(AtlGetDefaultGuiFont());
+		m_tab.SetFont(AtlCreateControlFont());
+		m_bInternalFont = true;
 
 		m_tab.SetItemExtra(sizeof(TABVIEWPAGE));
 
@@ -4594,6 +4749,8 @@ public:
 	void ShowTabControl(bool bShow)
 	{
 		m_tab.ShowWindow(bShow ? SW_SHOWNOACTIVATE : SW_HIDE);
+		T* pT = static_cast<T*>(this);
+		pT->UpdateLayout();
 	}
 
 	void UpdateLayout()
@@ -4601,11 +4758,15 @@ public:
 		RECT rect;
 		GetClientRect(&rect);
 
+		int cyOffset = 0;
 		if(m_tab.IsWindow() && ((m_tab.GetStyle() & WS_VISIBLE) != 0))
+		{
 			m_tab.SetWindowPos(NULL, 0, 0, rect.right - rect.left, m_cyTabHeight, SWP_NOZORDER);
+			cyOffset = m_cyTabHeight;
+		}
 
 		if(m_nActivePage != -1)
-			::SetWindowPos(GetPageHWND(m_nActivePage), NULL, 0, m_cyTabHeight, rect.right - rect.left, rect.bottom - rect.top - m_cyTabHeight, SWP_NOZORDER);
+			::SetWindowPos(GetPageHWND(m_nActivePage), NULL, 0, cyOffset, rect.right - rect.left, rect.bottom - rect.top - cyOffset, SWP_NOZORDER);
 	}
 
 	void UpdateMenu()
@@ -4811,7 +4972,6 @@ public:
 		::SendMessage(GetParent(), WM_NOTIFY, GetDlgCtrlID(), (LPARAM)&cmi);
 	}
 };
-
 
 class CTabView : public CTabViewImpl<CTabView>
 {

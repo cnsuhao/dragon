@@ -108,7 +108,7 @@ public:
 	 
 	long     GetFontCount();
 	HRESULT  GetFontResItem(long lIndex, IFontResItem** ppResItem);
-	HRESULT  GetFont(BSTR bstrFontID, GRAPHICS_RENDER_LIBRARY_TYPE eRenderType, __out IRenderFont** ppOut);
+	HRESULT  GetFont(const TCHAR* szFontId, GRAPHICS_RENDER_LIBRARY_TYPE eRenderType, __out IRenderFont** ppOut);
 	HRESULT  GetDefaultFont(GRAPHICS_RENDER_LIBRARY_TYPE eRenderType, __out IRenderFont** ppFont);
 	HRESULT  GetFontEx(IRenderFont* pFont, WPARAM w, LPARAM l, GRAPHICS_RENDER_LIBRARY_TYPE eRenderType, __out IRenderFont** ppFont);
 

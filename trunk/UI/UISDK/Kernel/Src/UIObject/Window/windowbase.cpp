@@ -261,7 +261,7 @@ void  WindowBase::PaintWindow(HDC hDC)
     m_pWindowRender->OnWindowPaint(hDC);
 }
 
-bool WindowBase::Create(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent, RECT* prc/*=NULL*/)
+bool WindowBase::Create(const TCHAR* szID, HWND hWndParent, RECT* prc/*=NULL*/)
 {
 	// removed by libo 20120728 允许创建一个空的窗口，例如菜单窗口
 // 	UIASSERT( ID != _T("") );
@@ -271,7 +271,6 @@ bool WindowBase::Create(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndPare
 // 		return false;
 // 	}
 	
-	this->SetUIApplication(pUIApp);
     if (szID)
 	__super::m_strId = szID;   // 提前给id赋值，便于日志输出
 
@@ -316,12 +315,10 @@ bool WindowBase::Create(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndPare
 	return true;
 }
 
-void WindowBase::Attach(IUIApplication* pUIApp, HWND hWnd, const TCHAR* szID)
+void WindowBase::Attach(HWND hWnd, const TCHAR* szID)
 {
 	if (m_hWnd)
 		return;
-
-	this->SetUIApplication(pUIApp);
 
     if (szID)
 	    m_strId = szID;   // 提前给id赋值，便于日志输出
@@ -361,7 +358,7 @@ void WindowBase::EndDialog(INT_PTR nResult)
 	this->m_bEndModal = true;
 	::PostMessage( this->m_hWnd, WM_NULL, 0,0 );
 }
-long WindowBase::DoModal(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndParent )
+long WindowBase::DoModal(HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndParent )
 {
 #if 0
 	UIASSERT( NULL == m_hWnd );
@@ -372,7 +369,8 @@ long WindowBase::DoModal(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID
 	return DialogBox(hResInst, MAKEINTRESOURCE(nResID), hWndParent, (DLGPROC)WindowBase::StartDialogProc);
 #endif
 
-	HWND hWnd = this->DoModeless(pUIApp, hResInst, nResID, szID, hWndParent);
+
+	HWND hWnd = this->DoModeless(hResInst, nResID, szID, hWndParent);
 	if( NULL == hWnd )
 	{
 		return -1;
@@ -385,7 +383,7 @@ long WindowBase::DoModal(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID
 //
 // 创建一个空的模态对话框
 //
-long WindowBase::DoModal(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent, bool canResize)
+long WindowBase::DoModal(const TCHAR* szID, HWND hWndParent, bool canResize)
 {
 
 #if 0
@@ -433,7 +431,7 @@ long WindowBase::DoModal(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndPar
 	GlobalFree(hgbl); 
 	return lRet;
 #endif
-	HWND hWnd = this->DoModeless(pUIApp, szID, hWndParent, canResize);
+	HWND hWnd = this->DoModeless(szID, hWndParent, canResize);
 	if( NULL == hWnd )
 	{
 		return -1;
@@ -520,10 +518,9 @@ BOOL WindowBase::PreTranslateMessage(UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 //     为了解决该问题，为每一个Dialog加上WS_THICKFRAME，同时修改WM_NCHITTEST消息、删除SysMenu中的SC_SIZE.
 ///    因此外部在调用该函数时，需要传递一个canResize标志
 //
-HWND WindowBase::DoModeless(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndOnwer, bool canResize)
+HWND WindowBase::DoModeless(const TCHAR* szID, HWND hWndOnwer, bool canResize)
 {
 	UIASSERT(NULL == m_hWnd);
-	this->SetUIApplication(pUIApp);
 
 	CREATESTRUCT cs;
 	memset(&cs, 0, sizeof(CREATESTRUCT));
@@ -589,10 +586,9 @@ HWND WindowBase::DoModeless(IUIApplication* pUIApp, const TCHAR* szID, HWND hWnd
 	GlobalFree(hgbl); 
 	return m_hWnd;
 }
-HWND WindowBase::DoModeless(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndOnwer)
+HWND WindowBase::DoModeless(HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndOnwer)
 {
 	UIASSERT( NULL == m_hWnd );
-	this->SetUIApplication(pUIApp);
 
 	s_create_wnd_data.AddCreateWndData(&m_thunk.cd, (void*)this);
     if (szID)
@@ -867,7 +863,7 @@ LRESULT  WindowBase::_OnNcHitTest( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
         if (TestStyle(WINDOW_STYLE_DIALOG_NORESIZE))
         {
             LRESULT lr = ::DefWindowProc(m_hWnd, uMsg, wParam, lParam);
-            if (lr >= HTLEFT && lr <= HTTOPRIGHT)
+            if (lr >= HTLEFT && lr <= HTBORDER)  // 用HTTOPRIGHT还有是问题，非得用HTBORDER，为什么
             {
                 lr = HTBORDER;
                 bHandled = TRUE;
@@ -1174,13 +1170,6 @@ HMONITOR  WindowBase::GetPrimaryMonitor()
 // wm_windowposchanging，在该消息中修改大小
 LRESULT WindowBase::_OnGetMinMaxInfo( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
 {
-    long lStyle = GetWindowLong(m_hWnd, GWL_STYLE);
-    if ((lStyle & WS_CAPTION) == WS_CAPTION)
-    {
-        bHandled = FALSE;
-        return 0;
-    }
-
 	bHandled = TRUE;
 	MINMAXINFO* pInfo = (MINMAXINFO*)lParam;
 
@@ -1289,12 +1278,23 @@ LRESULT WindowBase::_OnSyncWindow( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 }
 LRESULT WindowBase::_OnEnterSizeMove( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
 {
+	bHandled = FALSE;
 	SyncWindowHelper<WindowBase>::_OnEnterSizeMove();
+
+	LRESULT lRet = this->m_MgrMouse.HandleMouseMessage(uMsg, wParam, lParam, &bHandled);
+	if (bHandled)
+		return lRet;
+
 	return 0;
 }
 LRESULT WindowBase::_OnExitSizeMove( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
 {
+	bHandled = FALSE;
 	SyncWindowHelper<WindowBase>::_OnExitSizeMove();
+
+	LRESULT lRet = this->m_MgrMouse.HandleMouseMessage(uMsg, wParam, lParam, &bHandled);
+	if (bHandled)
+		return lRet;
 	return 0;
 }	
 

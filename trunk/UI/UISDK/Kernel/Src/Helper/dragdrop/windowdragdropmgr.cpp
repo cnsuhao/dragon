@@ -53,13 +53,6 @@ WindowDragDropMgr::~WindowDragDropMgr()
 void  WindowDragDropMgr::SetWindowBase(WindowBase* p) 
 { 
     m_pWindowBase = p; 
-
-    // TODO:
-    // 放在这里创建m_pDropTargetHelper，会导致窗口创建变慢
-    if (NULL == m_pDropTargetHelper)
-    {
-        ::CoCreateInstance(CLSID_DragDropHelper, NULL, CLSCTX_INPROC, IID_IDropTargetHelper, (void**)&m_pDropTargetHelper);
-    }
 }
 
 void  WindowDragDropMgr::OnWindowDestroy()
@@ -151,6 +144,12 @@ HRESULT STDMETHODCALLTYPE WindowDragDropMgr::DragEnter(IDataObject *pDataObj, DW
     m_pDragingDataObj = pDataObj;
 
     // 如果放在DragEnter时再创建，会导致第一次拖拽进窗口时闪烁一下
+    // 但放在初始化中又会导致窗口创建变慢
+    if (NULL == m_pDropTargetHelper)
+    {
+        ::CoCreateInstance(CLSID_DragDropHelper, NULL, CLSCTX_INPROC, IID_IDropTargetHelper, (void**)&m_pDropTargetHelper);
+    }
+
     if (m_pDropTargetHelper)
     {
         m_pDropTargetHelper->DragEnter(m_pWindowBase->m_hWnd, pDataObj, (POINT*)&pt, DROPEFFECT_NONE/**pdwEffect*/);

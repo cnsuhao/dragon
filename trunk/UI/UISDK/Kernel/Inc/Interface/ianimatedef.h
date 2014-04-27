@@ -9,13 +9,13 @@ namespace UI
     //
     //////////////////////////////////////////////////////////////////////////
 
-    enum TIMELINE_VALUE_TYPE
-    {
-        TV_NONE,
-        TV_INT,
-        TV_FLOAT,
-        TV_RECT,  // not implement
-    };
+//     enum TIMELINE_VALUE_TYPE
+//     {
+//         TV_NONE,
+//         TV_INT,
+//         TV_FLOAT,
+//         TV_RECT,  // not implement
+//     };
 
     enum TIMELINE_TIME_TYPE
     {
@@ -24,12 +24,12 @@ namespace UI
         TT_BY_FRAME,
     };
 
-    enum TIMELINE_MOVE_ALGORITHM
-    {
-        TMA_Linear,      // 匀速
-        TMA_Accelerate,  // 匀加速
-        TMA_Easing,      // 缓动
-    };
+//     enum TIMELINE_MOVE_ALGORITHM
+//     {
+//         TMA_Linear,      // 匀速
+//         TMA_Accelerate,  // 匀加速
+//         TMA_Easing,      // 缓动
+//     };
 
     enum EaseType
     {

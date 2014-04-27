@@ -208,11 +208,6 @@ void NormalTextRender::SetAttribute(SetAttrPrefixData* pData)
 	if (szText)
 	{
 		pColorRes->GetColor(szText, &m_pColorText);
-		if (!m_pColorText)
-		{
-			COLORREF color = Util::TranslateColor(szText);  // 直接翻译，不根据ID去映射
-			m_pColorText = Color::CreateInstance(color);
-		}
 	}
 
     if (szPrefix)

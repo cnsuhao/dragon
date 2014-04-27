@@ -44,7 +44,6 @@ Object::Object()
 	m_pTextRender = NULL;
 	m_pCursor = NULL;
     m_pIMapAttributeRemain = NULL;
-    m_pObject3DWrap = NULL;
     m_pLayoutParam = NULL;
     m_pRenderLayer = NULL;
 }
@@ -56,25 +55,13 @@ Object::~Object(void)
 	if (m_ppOutRef)
 		*m_ppOutRef = NULL;
 
-	if (m_pUIApplication)
-		m_pUIApplication->RemoveUIObject(GetIMessage());
-
     SAFE_RELEASE(m_pIMapAttributeRemain);
     SAFE_RELEASE(m_pLayoutParam);
-// 
-//     if (m_pObject3DWrap)
-//     {
-//         m_pObject3DWrap->EndByDestroy();
-//         SAFE_DELETE(m_pObject3DWrap);
-//     }
 }
 
 HRESULT Object::FinalConstruct(IUIApplication* p)
 {
     m_pUIApplication = p;
-    if (m_pUIApplication)
-        m_pUIApplication->AddUIObject(this->GetIMessage()); 
-
     return S_OK;
 }
 
@@ -1614,7 +1601,7 @@ DWORD  Object::CalcContrastTextColor()
         return 0;
 
     CRect rcLayer;
-    GetVisibleRectInWindow(&rcLayer);
+    GetRectInWindow(&rcLayer, true);
 
     Image  image;
     image.Attach(hBitmap, Image::DIBOR_TOPDOWN);
@@ -1699,28 +1686,6 @@ bool  Object::ReleaseKeyboardCapture()
     return true;
 }
 
-// Object3DWrap*  Object::Begin3D()
-// {
-//     if (m_pObject3DWrap)
-//         return m_pObject3DWrap;
-// 
-//     m_pObject3DWrap = new Object3DWrap(this);
-//     m_pObject3DWrap->Begin();
-// 
-//     return m_pObject3DWrap;
-// }
-// void  Object::End3D()
-// {
-//     if (!m_pObject3DWrap)
-//         return;
-// 
-//     m_pObject3DWrap->End();
-//     SAFE_DELETE(m_pObject3DWrap);
-// }
-// Object3DWrap*  Object::Get3DWrap()
-// {
-//     return m_pObject3DWrap;
-// }
 
 bool  Object::CreateRenderLayer()
 {

@@ -18,7 +18,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)Bin\$(ConfigurationName)\"
+			OutputDirectory="$(SolutionDir)Bin\$(ConfigurationName)\Demo\"
 			IntermediateDirectory="Debug"
 			ConfigurationType="1"
 			CharacterSet="1"
@@ -61,11 +61,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\Demo\$(ProjectName).exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(OutDir)lib\"
+				AdditionalLibraryDirectories="$(OutDir)..\lib\"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)pdb\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)..\pdb\$(TargetName).pdb"
 				SubSystem="2"
 				TargetMachine="1"
 			/>
@@ -93,7 +93,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)Bin\$(ConfigurationName)\"
+			OutputDirectory="$(SolutionDir)Bin\$(ConfigurationName)\Demo\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
@@ -137,11 +137,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\Demo\$(ProjectName).exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(OutDir)lib\"
+				AdditionalLibraryDirectories="$(OutDir)..\lib\"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)pdb\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)..\pdb\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -171,7 +171,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_Clock|Win32"
-			OutputDirectory="$(SolutionDir)Bin\Debug\"
+			OutputDirectory="$(SolutionDir)Bin\Debug\Demo\"
 			IntermediateDirectory="Debug"
 			ConfigurationType="1"
 			CharacterSet="1"
@@ -214,11 +214,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\Demo\$(ProjectName)_Clock.exe"
+				OutputFile="$(OutDir)\$(ProjectName)_Clock.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(OutDir)lib\"
+				AdditionalLibraryDirectories="$(OutDir)..\lib\"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)pdb\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)..\pdb\$(TargetName).pdb"
 				SubSystem="2"
 				TargetMachine="1"
 			/>
@@ -246,7 +246,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_REShadow|Win32"
-			OutputDirectory="$(SolutionDir)Bin\Debug\"
+			OutputDirectory="$(SolutionDir)Bin\Debug\Demo\"
 			IntermediateDirectory="Debug"
 			ConfigurationType="1"
 			CharacterSet="1"
@@ -289,11 +289,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\Demo\$(ProjectName)_REShadow.exe"
+				OutputFile="$(OutDir)\$(ProjectName)_REShadow.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(OutDir)lib\"
+				AdditionalLibraryDirectories="$(OutDir)..\lib\"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)pdb\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)..\pdb\$(TargetName).pdb"
 				SubSystem="2"
 				TargetMachine="1"
 			/>
@@ -321,7 +321,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_Direct2D|Win32"
-			OutputDirectory="$(SolutionDir)Bin\Debug\"
+			OutputDirectory="$(SolutionDir)Bin\Debug\Demo\"
 			IntermediateDirectory="Debug"
 			ConfigurationType="1"
 			CharacterSet="1"
@@ -364,11 +364,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\Demo\$(ProjectName)_Stage3D.exe"
+				OutputFile="$(OutDir)\$(ProjectName)_Stage3D.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(OutDir)lib\"
+				AdditionalLibraryDirectories="$(OutDir)..\lib\"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)pdb\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)..\pdb\$(TargetName).pdb"
 				SubSystem="2"
 				TargetMachine="1"
 			/>
@@ -396,7 +396,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_StageLeaves|Win32"
-			OutputDirectory="$(SolutionDir)Bin\Debug\"
+			OutputDirectory="$(SolutionDir)Bin\Debug\Demo\"
 			IntermediateDirectory="Debug"
 			ConfigurationType="1"
 			CharacterSet="1"
@@ -439,11 +439,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\Demo\$(ProjectName)_Leaves.exe"
+				OutputFile="$(OutDir)\$(ProjectName)_Leaves.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(OutDir)lib\"
+				AdditionalLibraryDirectories="$(OutDir)..\lib\"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)pdb\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)..\pdb\$(TargetName).pdb"
 				SubSystem="2"
 				TargetMachine="1"
 			/>
@@ -471,7 +471,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_Animate|Win32"
-			OutputDirectory="$(SolutionDir)Bin\Debug\"
+			OutputDirectory="$(SolutionDir)Bin\Debug\Demo\"
 			IntermediateDirectory="Debug"
 			ConfigurationType="1"
 			CharacterSet="1"
@@ -514,11 +514,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\Demo\$(ProjectName)_Animate.exe"
+				OutputFile="$(OutDir)\$(ProjectName)_Animate.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(OutDir)lib\"
+				AdditionalLibraryDirectories="$(OutDir)..\lib\"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)pdb\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)..\pdb\$(TargetName).pdb"
 				SubSystem="2"
 				TargetMachine="1"
 			/>
@@ -546,7 +546,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug_RenderLayer|Win32"
-			OutputDirectory="$(SolutionDir)Bin\Debug\"
+			OutputDirectory="$(SolutionDir)Bin\Debug\Demo\"
 			IntermediateDirectory="Debug"
 			ConfigurationType="1"
 			CharacterSet="1"
@@ -589,11 +589,86 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\Demo\$(ProjectName)_RenderLayer.exe"
+				OutputFile="$(OutDir)\$(ProjectName)_RenderLayer.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(OutDir)lib\"
+				AdditionalLibraryDirectories="$(OutDir)..\lib\"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)pdb\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)..\pdb\$(TargetName).pdb"
+				SubSystem="2"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug_Animate2|Win32"
+			OutputDirectory="$(SolutionDir)Bin\Debug\Demo\"
+			IntermediateDirectory="Debug"
+			ConfigurationType="1"
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="$(SolutionDir)"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;DEMO_ANIMATE2"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				UsePrecompiledHeader="2"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				OutputFile="$(OutDir)\$(ProjectName)_Animate2.exe"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="$(OutDir)..\lib\"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(OutDir)..\pdb\$(TargetName).pdb"
 				SubSystem="2"
 				TargetMachine="1"
 			/>
@@ -717,6 +792,14 @@
 						UsePrecompiledHeader="1"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug_Animate2|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\Other\stdafx.h"
@@ -832,6 +915,22 @@
 			</File>
 			<File
 				RelativePath="..\..\Bin\Debug\Demo\Default\renderlayer.xml"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="08. Animate2"
+			>
+			<File
+				RelativePath="..\..\Bin\Debug\Demo\Default\animate2.xml"
+				>
+			</File>
+			<File
+				RelativePath=".\Animate2\AnimateWindow2.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Animate2\AnimateWindow2.h"
 				>
 			</File>
 		</Filter>

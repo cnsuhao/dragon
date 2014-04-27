@@ -27,7 +27,7 @@ bool CMainMgr::Initialize()
 	if (NULL == m_pMainWindow)
 	{
         MainWindow::CreateInstance(g_pUIApp, &m_pMainWindow);
-		m_pMainWindow->Create(g_pUIApp, _T("mainwindow") );
+		m_pMainWindow->Create(_T("mainwindow"));
 	}
 
     bool bRet = ::mp3_init(m_pMainWindow->GetHWND());

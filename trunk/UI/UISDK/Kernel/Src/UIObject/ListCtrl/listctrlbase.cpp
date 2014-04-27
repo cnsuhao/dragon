@@ -386,6 +386,7 @@ bool  ListCtrlBase::_RemoveAllChildItems(ListItemBase* pParent)
     }
 
     pParent->SetChildItem(NULL);
+    pParent->SetLastChildItem(NULL);
     this->SetCalcFirstLastVisibleItemFlag();
     return true;
 }
@@ -424,9 +425,13 @@ bool ListCtrlBase::_RemoveItem(ListItemBase* pItem)
 
     // 自己做为父结点的第一个子结点
     ListItemBase* pParent = pItem->GetParentItem();
-    if (pParent && pParent->GetChildItem() == pItem)
+    if (pParent)
     {
-        pParent->SetChildItem(pItem->GetNextItem());
+        if (pParent->GetChildItem() == pItem)
+            pParent->SetChildItem(pItem->GetNextItem());
+
+        if (pParent->GetLastChildItem() == pItem)
+            pParent->SetLastChildItem(pItem->GetPrevItem());
     }
 
 	if (m_pFirstItem == pItem)
@@ -888,15 +893,29 @@ void  ListCtrlBase::UpdateItemIndex(ListItemBase* pStart)
 
 #else // 树结构版本
 
-    int nTreeIndex = 0;
-    int nLineIndex = 0;
-    ListItemBase* pItem = m_pFirstItem;
+    int nTreeIndex = -1;
+    int nLineIndex = -1;
+    ListItemBase* pItem = pStart;
+    if (NULL == pItem)
+        pItem = m_pFirstItem;
+
+    if (pItem)
+    {
+        ListItemBase*  pPrev = pItem->GetPrevTreeItem();
+        if (pPrev)
+            nTreeIndex = pPrev->GetTreeIndex();
+
+        pPrev = pItem->GetPrevVisibleItem();
+        if (pPrev)
+            nLineIndex = pPrev->GetLineIndex();
+    }
+
     while (pItem)
     {
-        pItem->SetTreeIndex(nTreeIndex++);
+        pItem->SetTreeIndex(++nTreeIndex);
 
         if (pItem->IsVisible())
-            pItem->SetLineIndex(nLineIndex++);
+            pItem->SetLineIndex(++nLineIndex);
         else
             pItem->SetLineIndex(-1);
 
@@ -1371,10 +1390,10 @@ bool ListCtrlBase::InsertItem(ListItemBase*  pItem, ListItemBase* pInsertAfter, 
 	if (false == this->_InsertItem(pItem, pInsertAfter))
 		return false;
 
-//	this->MeasureItem(pItem);
-	this->UpdateItemIndex(pItem);
-
-	// 需要更新Item Rect
+    if (0 == (nAddItemFlags & LISTITEM_OPFLAG_NOUPDATEITEMINDEX))
+    {
+	    this->UpdateItemIndex(pItem);
+    }
 	if (0 == (nAddItemFlags & LISTITEM_OPFLAG_NOUPDATEITEMRECT))
 	{
 		this->UpdateItemRect(pItem, false);
@@ -2232,6 +2251,8 @@ void  ListCtrlBase::_redrawItem(ListItemBase** ppItemArray, int nCount)
         if (ppItemArray[i])
         {
             ObjectClientRect2ObjectRect(this, ppItemArray[i]->GetParentRect(), &prcObjArray[nRealCount]);
+			OutputDebugString(ppItemArray[i]->GetText());
+			OutputDebugString(_T("\r\n"));
             nRealCount++;
         }
     }

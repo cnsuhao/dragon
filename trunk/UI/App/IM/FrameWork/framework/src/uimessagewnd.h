@@ -1,6 +1,4 @@
 #pragma once
-#include <atlbase.h>
-#include <atlwin.h>
 class CFramework;
 
 #define UI_MSG_TASK               (WM_USER)

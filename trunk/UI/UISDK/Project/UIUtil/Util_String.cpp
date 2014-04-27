@@ -287,7 +287,7 @@ COLORREF  TranslateRGB(const TCHAR* szCol, TCHAR szSep)
     return col;
 }
 
-int Letter2Hex(TCHAR c)
+byte Letter2Hex(TCHAR c)
 {
     switch (c)
     {
@@ -339,28 +339,40 @@ COLORREF  TranslateHexColor(const TCHAR* szColor)
 
     int nLength = _tcslen(szColor);
     
-    if (6 == nLength)
+    byte r=0, g=0, b=0, a=0;
+    if (3 == nLength)
     {
-        byte r = (Letter2Hex(szColor[0]) << 4) + Letter2Hex(szColor[1]);
-        byte g = (Letter2Hex(szColor[2]) << 4) + Letter2Hex(szColor[3]);
-        byte b = (Letter2Hex(szColor[4]) << 4) + Letter2Hex(szColor[5]);
+        byte n = Letter2Hex(szColor[0]);
+        r = (n << 4) + n;
 
-        return 0xff|(b<<16)|(g<<8)|r;
+        n = Letter2Hex(szColor[2]);
+        g = (n << 4) + n;
+
+        n = Letter2Hex(szColor[2]);
+        b = (n << 4) + n;
+
+        a = 0xff;
+    }
+    else if (6 == nLength)
+    {
+        r = (Letter2Hex(szColor[0]) << 4) + Letter2Hex(szColor[1]);
+        g = (Letter2Hex(szColor[2]) << 4) + Letter2Hex(szColor[3]);
+        b = (Letter2Hex(szColor[4]) << 4) + Letter2Hex(szColor[5]);
+
+        a = 0xff;
     }
     else if (8 == nLength)
     {
         // AARRGGBB
-        byte a = (Letter2Hex(szColor[0]) << 4) + Letter2Hex(szColor[1]);
-        byte r = (Letter2Hex(szColor[2]) << 4) + Letter2Hex(szColor[3]);
-        byte g = (Letter2Hex(szColor[4]) << 4) + Letter2Hex(szColor[5]);
-        byte b = (Letter2Hex(szColor[6]) << 4) + Letter2Hex(szColor[7]);
-
-        return (a<<24)|(b<<16)|(g<<8)|r;
+        a = (Letter2Hex(szColor[0]) << 4) + Letter2Hex(szColor[1]);
+        r = (Letter2Hex(szColor[2]) << 4) + Letter2Hex(szColor[3]);
+        g = (Letter2Hex(szColor[4]) << 4) + Letter2Hex(szColor[5]);
+        b = (Letter2Hex(szColor[6]) << 4) + Letter2Hex(szColor[7]);
     }
     else
-    {
         return 0;
-    }
+
+    return (a<<24)|(b<<16)|(g<<8)|r;
 }
 
 COLORREF  TranslateColor(const TCHAR* szColor)

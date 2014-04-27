@@ -313,9 +313,8 @@ void QQLoginAccountListBox::HandleItemChanged(
 				(int)_ttoi(pItem->GetAccount()),
 				(WPARAM)pItem);
 
-            UI::IIntLinearMove* pMoveAlgo = NULL;
-            UI::IIntTimeline* pTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(UI::TV_INT, 0, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo);
-            pMoveAlgo->SetParam1(pItem->GetHeight(), nItemLastHeight, 150);
+            UI::IIntTimeline* pTimeline = pStoryboard->CreateIntTimeline(0);
+            pTimeline->SetLinerParam1(pItem->GetHeight(), nItemLastHeight, 150);
             int* pnHeight = NULL;
             pItem->GetHeightRef(&pnHeight);
             pTimeline->SetOutRef(pnHeight);

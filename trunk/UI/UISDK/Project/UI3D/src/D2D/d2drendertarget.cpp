@@ -821,8 +821,8 @@ void  Direct2DRenderTarget::DrawString(IRenderFont* pFont, DRAWTEXTPARAM* pParam
                 D2D1::RectF(
                 (FLOAT)pParam->prc->left, 
                 (FLOAT)pParam->prc->top, 
-                (FLOAT)(pParam->prc->right-pParam->prc->left), 
-                (FLOAT)(pParam->prc->bottom-pParam->prc->top)),
+                (FLOAT)(pParam->prc->right), 
+                (FLOAT)(pParam->prc->bottom)),
                 pTextBrush
                 );
 

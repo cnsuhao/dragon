@@ -132,7 +132,9 @@ private:
 	IImageRes*  m_pIImageRes;
 	SkinRes*  m_pSkinRes;
 
-    vector<ImageResItem*>   m_vImages;
+    typedef  map<String,  ImageResItem*>::iterator  _MyIter;
+    map<String,  ImageResItem*>   m_mapImages;
+    //vector<ImageResItem*>   m_vImages;   // vector的查找效率太低了，因此换用map
 };
 
 }

@@ -65,13 +65,13 @@ IObject*  IWindowBase::GetObjectByPos(IObject* pObjParent, POINT* pt, bool bSkin
 
     return NULL;
 }
-bool  IWindowBase::Create(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent, RECT* prc) {return m_pWindowBaseImpl->Create(pUIApp, szID, hWndParent, prc);}
-void  IWindowBase::Attach(IUIApplication* pUIApp, HWND hWnd, const TCHAR* szID) { m_pWindowBaseImpl->Attach(pUIApp, hWnd, szID); }
+bool  IWindowBase::Create(const TCHAR* szID, HWND hWndParent, RECT* prc) {return m_pWindowBaseImpl->Create(szID, hWndParent, prc);}
+void  IWindowBase::Attach(HWND hWnd, const TCHAR* szID) { m_pWindowBaseImpl->Attach(hWnd, szID); }
 void  IWindowBase::Detach() { m_pWindowBaseImpl->Detach(); }
-long  IWindowBase::DoModal(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent, bool canResize ) { return m_pWindowBaseImpl->DoModal(pUIApp, szID, hWndParent, canResize); }
-long  IWindowBase::DoModal(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndParent) { return m_pWindowBaseImpl->DoModal(pUIApp, hResInst, nResID, szID, hWndParent); }
-HWND  IWindowBase::DoModeless(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent, bool canResize ) { return m_pWindowBaseImpl->DoModeless(pUIApp, szID, hWndParent, canResize); }
-HWND  IWindowBase::DoModeless(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndParent) { return m_pWindowBaseImpl->DoModeless(pUIApp, hResInst, nResID, szID, hWndParent); }
+long  IWindowBase::DoModal(const TCHAR* szID, HWND hWndParent, bool canResize ) { return m_pWindowBaseImpl->DoModal(szID, hWndParent, canResize); }
+long  IWindowBase::DoModal(HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndParent) { return m_pWindowBaseImpl->DoModal(hResInst, nResID, szID, hWndParent); }
+HWND  IWindowBase::DoModeless(const TCHAR* szID, HWND hWndParent, bool canResize ) { return m_pWindowBaseImpl->DoModeless(szID, hWndParent, canResize); }
+HWND  IWindowBase::DoModeless(HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndParent) { return m_pWindowBaseImpl->DoModeless(hResInst, nResID, szID, hWndParent); }
 void  IWindowBase::EndDialog(INT_PTR n) { return m_pWindowBaseImpl->EndDialog(n); }
 
 void  IWindowBase::CommitDoubleBuffet2Window(HDC hDCWnd, RECT* prcCommit, int nRectCount) { m_pWindowBaseImpl->CommitDoubleBuffet2Window(hDCWnd, prcCommit, nRectCount); }

@@ -25,7 +25,7 @@ SystemScrollBar::SystemScrollBar()
 SystemScrollBar::~SystemScrollBar()
 {
 	// 这三个对象会在parent的destroyChildObject中被释放，因此这里只需要置空就行
-	// 但是在ResetAttribute的时候，又必须我们自己释放这三个对象
+	// 但是在ResetAttribute的时候，又必须我们自己释放这个对象
 	m_pBtnLineDownRight = NULL;
 	m_pBtnLineUpLeft = NULL;
 	m_pBtnThumb = NULL;
@@ -42,18 +42,21 @@ HRESULT  SystemScrollBar::FinalConstruct(IUIApplication* p)
     if (FAILED(GetCurMsg()->lRet))
         return GetCurMsg()->lRet;
 
-    IButton::CreateInstance(p, &m_pBtnThumb);
-    if (m_pBtnThumb)
+    if (!m_pBtnThumb)
     {
-        m_pBtnThumb->SetID(XML_SCROLLBAR_THUMB_BUTTON_ATTR_PRIFIX);
-        m_pISystemScrollBar->AddChild(m_pBtnThumb);
-        m_pBtnThumb->SetOutRef((void**)&m_pBtnThumb);
-        m_pBtnThumb->AddHook(m_pISystemScrollBar, 0, ALT_MSG_ID_THUMB_BTN);
+        IButton::CreateInstance(p, &m_pBtnThumb);
+        if (m_pBtnThumb)
+        {
+            m_pBtnThumb->SetID(XML_SCROLLBAR_THUMB_BUTTON_ATTR_PRIFIX);
+            m_pISystemScrollBar->AddChild(m_pBtnThumb);
+            m_pBtnThumb->SetOutRef((void**)&m_pBtnThumb);
+            m_pBtnThumb->AddHook(m_pISystemScrollBar, 0, ALT_MSG_ID_THUMB_BTN);
 
-        m_pBtnThumb->SetButtonStyle(BUTTON_STYLE_HSCROLLTHUMB); // 先随便写一个值，在子类中再设置一次
-        m_pBtnThumb->SetDrawFocusType(BUTTON_RENDER_DRAW_FOCUS_TYPE_NONE);
-        m_pBtnThumb->SetAutoSizeType(BUTTON_RENDER_AUTOSIZE_TYPE_BKIMAGE);
-        m_pBtnThumb->SetTabstop(false);
+            m_pBtnThumb->SetButtonStyle(BUTTON_STYLE_HSCROLLTHUMB); // 先随便写一个值，在子类中再设置一次
+            m_pBtnThumb->SetDrawFocusType(BUTTON_RENDER_DRAW_FOCUS_TYPE_NONE);
+            m_pBtnThumb->SetAutoSizeType(BUTTON_RENDER_AUTOSIZE_TYPE_BKIMAGE);
+            m_pBtnThumb->SetTabstop(false);
+        }
     }
 
     // 默认隐藏，这样才能触发第一次滚动条需要显示的场景
@@ -76,14 +79,29 @@ void  SystemScrollBar::SetIScrollBarMgr(IScrollBarManager* p)
 void  SystemScrollBar::ResetAttribute()
 {
     DO_PARENT_PROCESS(ISystemScrollBar, IControl);
-	SAFE_DELETE_Ixxx(m_pBtnLineDownRight);
-	SAFE_DELETE_Ixxx(m_pBtnLineUpLeft);
-	SAFE_DELETE_Ixxx(m_pBtnThumb);
+// 	SAFE_DELETE_Ixxx(m_pBtnLineDownRight);
+// 	SAFE_DELETE_Ixxx(m_pBtnLineUpLeft);
+//	SAFE_DELETE_Ixxx(m_pBtnThumb);
+
+    if (m_pBtnLineDownRight)
+    {
+        UISendMessage(m_pBtnLineDownRight, UI_WM_RESETATTRIBUTE);
+    }
+    if (m_pBtnLineUpLeft)
+    {
+        UISendMessage(m_pBtnLineUpLeft, UI_WM_RESETATTRIBUTE);
+    }
+    if (m_pBtnThumb)
+    {
+        UISendMessage(m_pBtnThumb, UI_WM_RESETATTRIBUTE);
+    }
 }
 
 void  SystemScrollBar::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 {
     DO_PARENT_PROCESS(ISystemScrollBar, IControl);
+
+	IUIApplication*  pUIApp = m_pISystemScrollBar->GetUIApplication();
 
     bool bNoLineButton = false;
     pMapAttrib->GetAttr_bool(XML_SCROLLBAR_NO_LINEBTN, true, &bNoLineButton);
@@ -96,7 +114,7 @@ void  SystemScrollBar::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 	{
 		if (NULL == m_pBtnLineUpLeft)
 		{
-			IButton::CreateInstance(m_pISystemScrollBar->GetUIApplication(), &m_pBtnLineUpLeft);
+			IButton::CreateInstance(pUIApp, &m_pBtnLineUpLeft);
 			if (m_pBtnLineUpLeft)
 			{
 				m_pBtnLineUpLeft->SetID(XML_SCROLLBAR_LINE_BUTTON1_ATTR_PRIFIX);
@@ -112,7 +130,7 @@ void  SystemScrollBar::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 		}
 		if (NULL == m_pBtnLineDownRight)
 		{
-			IButton::CreateInstance(m_pISystemScrollBar->GetUIApplication(), &m_pBtnLineDownRight);
+			IButton::CreateInstance(pUIApp, &m_pBtnLineDownRight);
 			if (m_pBtnLineDownRight)
 			{
 				m_pBtnLineDownRight->SetID(XML_SCROLLBAR_LINE_BUTTON2_ATTR_PRIFIX);
@@ -127,6 +145,7 @@ void  SystemScrollBar::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 			}
 		}
 	}
+
     if (m_pBtnLineUpLeft)
 	    m_pBtnLineUpLeft->SetAttributeByPrefix(XML_SCROLLBAR_LINE_BUTTON1_ATTR_PRIFIX, pMapAttrib, false, true);
     if (m_pBtnLineDownRight)

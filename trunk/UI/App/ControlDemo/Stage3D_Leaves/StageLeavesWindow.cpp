@@ -175,21 +175,20 @@ void  CStageLeavesWindow::ResetLeaf(UI::IPictureCtrl* pImg)
         // rotate
         {
             // 必须是先加速，然后再减速，这样反复动画才看起来连贯些
-            UI::IFloatEasingMove* pMoveAlgo = NULL;
-            UI::IFloatTimeline* pTimeline = (UI::IFloatTimeline*)pStoryboard->CreateTimeline(UI::TV_FLOAT, 1, UI::TMA_Easing, (UI::IMoveAlgorithm**)&pMoveAlgo);
+            UI::IFloatTimeline* pTimeline = pStoryboard->CreateFloatTimeline(1);
 
             float f50 = 50; 
             float f_50 = -f50;
 
             if (rand()%2)
             {
-                pMoveAlgo->SetParam(f50, f_50, (float)randomInteger(4000, 8000), UI::ease_in_out); 
+                pTimeline->SetEaseParam(f50, f_50, (float)randomInteger(4000, 8000), UI::ease_in_out); 
             }
             else
             {
                 // TODO: 将树叶反向
 
-                pMoveAlgo->SetParam(f_50, f50, (float)randomInteger(4000, 8000), UI::ease_in_out); 
+                pTimeline->SetEaseParam(f_50, f50, (float)randomInteger(4000, 8000), UI::ease_in_out); 
             }
 
             pTimeline->SetAutoReverse(true);
@@ -198,10 +197,9 @@ void  CStageLeavesWindow::ResetLeaf(UI::IPictureCtrl* pImg)
         }
         // drop and fade
         {
-            UI::IFloatLinearMove* pMoveAlgo = NULL;
-            UI::IFloatTimeline* pTimeline = (UI::IFloatTimeline*)pStoryboard->CreateTimeline(UI::TV_FLOAT, 2, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo);
+            UI::IFloatTimeline* pTimeline = pStoryboard->CreateFloatTimeline(2);
 
-            pMoveAlgo->SetParam1(m_fyWorldDropFrom, m_fyWorldDropTo, (float)randomInteger(5000, 11000));  
+            pTimeline->SetLinerParam1(m_fyWorldDropFrom, m_fyWorldDropTo, (float)randomInteger(5000, 11000));  
             pTimeline->SetRepeateCount(-1);
         }
 

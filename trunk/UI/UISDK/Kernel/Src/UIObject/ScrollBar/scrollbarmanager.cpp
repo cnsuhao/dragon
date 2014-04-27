@@ -115,24 +115,36 @@ void  ScrollBarManager::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
     }
     else
     {
-        // 创建滚动条
-        szText = pMapAttrib->GetAttr(XML_HSCROLLBAR_PRIFIX XML_SCROLLBAR_RENDER_TYPE, true);
-        if (szText)
+        if (m_pHScrollBar)
         {
-            IObject*  pObj = NULL;
-            m_pBindObject->GetUIApplication()->CreateInstanceByName(szText, &pObj);
+            IObject* pObj = (IObject*)m_pHScrollBar->QueryInterface(uiiidof(IObject));
             if (pObj)
             {
-                m_pHScrollBar = static_cast<IMessage*>(pObj);
-                m_pBindObject->AddNcChild(pObj);
-                pObj->SetID(XML_HSCROLLBAR_PRIFIX);
-                UISendMessage(m_pHScrollBar, UI_WM_SCROLLBAR_SETISCROLLBARMGR, (WPARAM)m_pIScrollBarManager);
-                pObj->SetAttributeByPrefix(XML_HSCROLLBAR_PRIFIX, pMapAttrib, bReload, true);
+                pObj->SetVisible(false, false, false);  // 由控件重新计算
+                pObj->SetAttributeByPrefix(XML_VSCROLLBAR_PRIFIX, pMapAttrib, bReload, true);
             }
         }
-
-        if (m_pBindObject)
-            m_pBindObject->ModifyStyle(OBJECT_STYLE_HSCROLL, 0, 0);
+        else
+        {
+            // 创建滚动条
+            szText = pMapAttrib->GetAttr(XML_HSCROLLBAR_PRIFIX XML_SCROLLBAR_RENDER_TYPE, true);
+            if (szText)
+            {
+                IObject*  pObj = NULL;
+                m_pBindObject->GetUIApplication()->CreateInstanceByName(szText, &pObj);
+                if (pObj)
+                {
+                    m_pHScrollBar = static_cast<IMessage*>(pObj);
+                    m_pBindObject->AddNcChild(pObj);
+                    pObj->SetID(XML_HSCROLLBAR_PRIFIX);
+                    UISendMessage(m_pHScrollBar, UI_WM_SCROLLBAR_SETISCROLLBARMGR, (WPARAM)m_pIScrollBarManager);
+                    pObj->SetVisible(false, false, false); 
+                    pObj->SetAttributeByPrefix(XML_HSCROLLBAR_PRIFIX, pMapAttrib, bReload, true);
+                }
+            }
+            if (m_pBindObject)
+                m_pBindObject->ModifyStyle(OBJECT_STYLE_HSCROLL, 0, 0);
+        }
     }
 
     if (SCROLLBAR_VISIBLE_NONE == m_evScrollbarVisibleType)
@@ -147,24 +159,37 @@ void  ScrollBarManager::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
     }
     else
     {
-        // 创建滚动条
-        szText = pMapAttrib->GetAttr(XML_VSCROLLBAR_PRIFIX XML_SCROLLBAR_RENDER_TYPE, true);
-        if (szText)
+        if (m_pVScrollBar)
         {
-            IObject*  pObj = NULL;
-            m_pBindObject->GetUIApplication()->CreateInstanceByName(szText, &pObj);
+            IObject* pObj = (IObject*)m_pVScrollBar->QueryInterface(uiiidof(IObject));
             if (pObj)
             {
-                m_pVScrollBar = static_cast<IMessage*>(pObj);
-                m_pBindObject->AddNcChild(pObj);
-                pObj->SetID(XML_VSCROLLBAR_PRIFIX);
-                UISendMessage(m_pVScrollBar, UI_WM_SCROLLBAR_SETISCROLLBARMGR, (WPARAM)m_pIScrollBarManager);
+                pObj->SetVisible(false, false, false);  // 由控件重新计算
                 pObj->SetAttributeByPrefix(XML_VSCROLLBAR_PRIFIX, pMapAttrib, bReload, true);
             }
         }
+        else
+        {
+            // 创建滚动条
+            szText = pMapAttrib->GetAttr(XML_VSCROLLBAR_PRIFIX XML_SCROLLBAR_RENDER_TYPE, true);
+            if (szText)
+            {
+                IObject*  pObj = NULL;
+                m_pBindObject->GetUIApplication()->CreateInstanceByName(szText, &pObj);
+                if (pObj)
+                {
+                    m_pVScrollBar = static_cast<IMessage*>(pObj);
+                    m_pBindObject->AddNcChild(pObj);
+                    pObj->SetID(XML_VSCROLLBAR_PRIFIX);
+                    UISendMessage(m_pVScrollBar, UI_WM_SCROLLBAR_SETISCROLLBARMGR, (WPARAM)m_pIScrollBarManager);
+                    pObj->SetVisible(false, false, false); 
+                    pObj->SetAttributeByPrefix(XML_VSCROLLBAR_PRIFIX, pMapAttrib, bReload, true);
+                }
+            }
 
-        if (m_pBindObject)
-            m_pBindObject->ModifyStyle(OBJECT_STYLE_VSCROLL, 0, 0);
+            if (m_pBindObject)
+                m_pBindObject->ModifyStyle(OBJECT_STYLE_VSCROLL, 0, 0);
+        }
     }
 }
 

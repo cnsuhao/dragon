@@ -32,20 +32,18 @@ void  CAnimateWindow::OnBnClick()
 
     // x
     {
-        UI::IIntLinearMove* pMoveAlgo = NULL;
-        UI::IIntTimeline* pTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(UI::TV_INT, 1, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo);
-        pMoveAlgo->SetParam1(10, 1000, 3000); 
+        UI::IIntTimeline* pTimeline = pStoryboard->CreateIntTimeline(1);
+        pTimeline->SetLinerParam1(10, 1000, 3000); 
         pTimeline->SetTimeType(UI::TT_BY_MS);
-        pTimeline->SetRepeateCount(5);
+        pTimeline->SetRepeateCount(2);
         //pTimeline->SetAutoReverse(true);
     }
     // y
     {
-        UI::IIntEasingMove* pMoveAlgo = NULL;
-        UI::IIntTimeline* pTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(UI::TV_INT, 2, UI::TMA_Easing, (UI::IMoveAlgorithm**)&pMoveAlgo);
-        pMoveAlgo->SetParam(10, 400, 3000, UI::ease_out_bounce); 
+        UI::IIntTimeline* pTimeline = pStoryboard->CreateIntTimeline(2);
+        pTimeline->SetEaseParam(10, 400, 3000, UI::ease_out_bounce); 
         pTimeline->SetTimeType(UI::TT_BY_MS);
-        pTimeline->SetRepeateCount(5);
+        pTimeline->SetRepeateCount(2);
         //pTimeline->SetAutoReverse(true);
     } 
 

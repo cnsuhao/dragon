@@ -3,7 +3,6 @@
 #include "../Other/resource.h"
 #include <time.h>
 #include "UISDK\Control\Inc\Interface\ilabel.h"
-#include "UISDK\Kernel\Inc\Interface\iobject3dwrap.h"
 #include "UISDK\Kernel\Inc\Interface\irenderlayer.h"
 #include "UISDK\Kernel\Inc\Util\iimage.h"
 #include <math.h>

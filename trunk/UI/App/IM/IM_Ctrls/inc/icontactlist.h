@@ -145,7 +145,7 @@ interface IM_CTRLS_API IContactList : public UI::ITreeView
     IContactListGroupItem*  InsertGroup(CONTACTLIST_GROUPITEM_INFO* pInfo);
     IContactListGroupItem*  FindGroup(long lId);
 
-    IContactListContactItem*  InsertContact(CONTACTLIST_CONTACTITEM_INFO* pInfo);
+    IContactListContactItem*  InsertContact(CONTACTLIST_CONTACTITEM_INFO* pInfo, bool bCheckExist);
     IContactListContactItem*  FindContact(long lGroupId, long lId);
     IContactListContactItem*  FindContact(IContactListGroupItem* pGroup, long lId);
 

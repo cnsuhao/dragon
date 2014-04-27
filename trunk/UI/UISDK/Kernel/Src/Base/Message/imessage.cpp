@@ -102,6 +102,15 @@ void  IMessage::ClearHook()
     return m_pMessageImpl->ClearHook(); 
 }
 
+void  IMessage::AddDelayRef(void** pp)
+{
+    return m_pMessageImpl->AddDelayRef(pp);
+}
+void  IMessage::RemoveDelayRef(void** pp)
+{
+    return m_pMessageImpl->RemoveDelayRef(pp);
+}
+
 void*  IMessage::QueryInterface(REFIID iid)
 {
     return (void*)UISendMessage(this, UI_WM_QUERYINTERFACE, (WPARAM)&iid);

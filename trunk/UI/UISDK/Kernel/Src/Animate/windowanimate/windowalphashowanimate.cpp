@@ -59,17 +59,15 @@ bool  WindowAlphaShowAnimate::DoAction(int nId, int nDuration, bool bShow)
     if (NULL == m_pAnimateMgr || NULL == m_pWindow)
         return false;
 
-    IIntLinearMove* pMoveAlgo = NULL;
-    IIntTimeline*  pTimeline = static_cast<IIntTimeline*>(
-        CreateTimeline(TV_INT, 0, TMA_Linear, (IMoveAlgorithm**)&pMoveAlgo));
+    IIntTimeline*  pTimeline = CreateIntTimeline(0);
     if (NULL == pTimeline)
         return false;
 
     m_bShow = bShow;
     if (bShow)
-        pMoveAlgo->SetParam1(0, 255, nDuration);
+        pTimeline->SetLinerParam1(0, 255, nDuration);
     else
-        pMoveAlgo->SetParam1(255, 0, nDuration);
+        pTimeline->SetLinerParam1(255, 0, nDuration);
 
     pTimeline->SetOutRef(&m_pLayeredWindow->m_nSourceConstantAlpha);
 

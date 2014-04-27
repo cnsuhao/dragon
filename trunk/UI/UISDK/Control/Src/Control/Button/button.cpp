@@ -259,6 +259,21 @@ void ButtonBase::OnKeyUp( UINT nChar, UINT nRepCnt, UINT nFlags )
 	}
 }
 
+// 在按下空格后，如果进入拖动窗口状态，将会收不到keyup消息。
+LRESULT  ButtonBase::OnEnterSizeMove(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	SetMsgHandled(FALSE);
+
+	if (m_pIButtonBase->IsEnable())
+	{
+		m_pIButtonBase->clearStateBit(OSB_FORCEPRESS);
+		m_pIButtonBase->ReleaseMouseCapture();
+
+		m_pIButtonBase->UpdateObject();
+	}
+	return 0;
+}
+
 void ButtonBase::SetCheck(int nCheckState)
 {
 	if(nCheckState == BST_CHECKED)

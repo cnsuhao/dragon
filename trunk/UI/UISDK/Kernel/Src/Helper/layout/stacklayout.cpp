@@ -151,10 +151,11 @@ void  StackLayout::Arrange(IObject* pIObjToArrage, bool bUpdate)
         }
 
 		SIZE s;
-		if (bStartToArrange)
+		bool  bFill = pParam->GetConfigLayoutFlags() & LAYOUT_ITEM_ALIGN_FILL ? true:false;
+		if (bStartToArrange || bFill)  // fill mode的子控件会受其它子控件大小改变影响，因此需要每次都判断
 		{
             s = pChild->GetDesiredSize();
-            if (pParam->GetConfigLayoutFlags() & LAYOUT_ITEM_ALIGN_FILL)
+            if (bFill)
             {
                 // 计算出剩下的对象的所需大小
                 Object* pChildTemp = pChild;

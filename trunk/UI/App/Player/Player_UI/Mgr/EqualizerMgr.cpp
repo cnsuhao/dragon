@@ -20,7 +20,7 @@ bool CEqualizerMgr::Initialize()
 {
 	HWND hWndParent = GetMainMgr()->GetMainWnd();
     CEqualizerDlg::CreateInstance(g_pUIApp, &m_pEqualizerDlg);
-	m_pEqualizerDlg->Create(g_pUIApp, _T("equalizerdlg"), hWndParent);
+	m_pEqualizerDlg->Create( _T("equalizerdlg"), hWndParent);
 
 	RECT  rc;
 	::GetWindowRect(hWndParent, &rc);

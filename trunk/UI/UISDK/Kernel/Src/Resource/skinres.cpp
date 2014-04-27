@@ -212,27 +212,26 @@ bool  SkinRes::Load()
     if (m_pDataSource)
         m_pDataSource->Init();
 
-#ifdef _DEBUG  // 加载速度测试
+    // 加载速度测试
     LARGE_INTEGER liPerFreq = {0};
     ::QueryPerformanceFrequency(&liPerFreq);
-
     LARGE_INTEGER liStart = {0};
     ::QueryPerformanceCounter(&liStart);
 
-#endif
     if (parse.ProcessFile(XML_SKIN_XML))
     {
         m_eLoadState = SKIN_RES_LOAD_STATE_LOADED;
     }   
-#ifdef _DEBUG
+
     LARGE_INTEGER liEnd = {0};
     ::QueryPerformanceCounter(&liEnd);
 
     int time = (int)((liEnd.QuadPart - liStart.QuadPart)*1000/liPerFreq.QuadPart);
-    UI_LOG_DEBUG(_T("Load Skin File Cost: %d ms"), time);
+    TCHAR szText[128] = {0};
+    _stprintf(szText, _T("Load Skin File Cost: %d ms\r\n"), time);
+    ::OutputDebugString(szText);
 
-    int xxx = 0;
-#endif
+    UI_LOG_DEBUG(_T("Load Skin File Cost: %d ms"), time);
 
 #if 0
     switch (m_ePacketType)

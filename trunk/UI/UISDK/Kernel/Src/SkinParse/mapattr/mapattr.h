@@ -9,6 +9,7 @@ class CMapAttribute : public IMapAttribute
 {
 public:
     CMapAttribute();
+    ~CMapAttribute();
     CMapAttribute(const CMapAttribute& o);
     
     virtual bool  HasAttrib(const TCHAR* szKey);

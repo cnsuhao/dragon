@@ -18,7 +18,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)Bin\$(ConfigurationName)\"
+			OutputDirectory="$(SolutionDir)Bin\$(ConfigurationName)\UI\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
@@ -61,13 +61,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\UI\$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(OutDir)lib\"
+				AdditionalLibraryDirectories="$(OutDir)..\lib\"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)pdb\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)..\pdb\$(TargetName).pdb"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)lib\$(TargetName).lib"
+				ImportLibrary="$(OutDir)..\lib\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -90,12 +90,12 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetPath) $(OutDir)Demo\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)IM\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)Player\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)HourGlass\$(TargetFileName)&#x0D;&#x0A;"
+				CommandLine="copy $(TargetPath) $(OutDir)..\Demo\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)..\IM\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)..\Player\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)..\HourGlass\$(TargetFileName)&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)Bin\$(ConfigurationName)\"
+			OutputDirectory="$(SolutionDir)Bin\$(ConfigurationName)\UI\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
@@ -139,15 +139,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\UI\$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(OutDir)lib\"
+				AdditionalLibraryDirectories="$(OutDir)..\lib\"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)pdb\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)..\pdb\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(OutDir)lib\$(TargetName).lib"
+				ImportLibrary="$(OutDir)..\lib\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -170,6 +170,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="copy $(TargetPath) $(OutDir)..\Demo\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)..\IM\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)..\Player\$(TargetFileName)&#x0D;&#x0A;copy $(TargetPath) $(OutDir)..\HourGlass\$(TargetFileName)&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -205,6 +206,22 @@
 				<File
 					RelativePath=".\src\D3D\d3d10.fx"
 					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\D3D\d3dapp.cpp"

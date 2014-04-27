@@ -67,10 +67,10 @@ void  SkinManager::SetSkinDirection(const TCHAR* szDir)
     if (strBaseDir[strBaseDir.length()-1] != _T('\\') &&
         strBaseDir[strBaseDir.length()-1] != _T('/'))
     {
-        strBaseDir += _T("\\");
+        strBaseDir.append(_T("\\"));
     }
     String strFind = strBaseDir;
-    strFind += _T("*.*");
+    strFind.append(_T("*.*"));
 
     HANDLE hFind=::FindFirstFile(strFind.c_str(),&finddata);
     if(INVALID_HANDLE_VALUE == hFind)

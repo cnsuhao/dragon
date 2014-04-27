@@ -39,7 +39,7 @@ void  PopupControlWindow::Create(IObject*  pBindObj, IObject* pContentObj, const
 {
     m_pBindObject = pBindObj;
 	m_pContentObj = pContentObj;
-    __super::Create(GetUIApplication(), _T(""), hParentWnd);  // 在创建完panel的layer之后再创建窗口，避免第一次响应_OnSize中没有layout
+    __super::Create(_T(""), hParentWnd);  // 在创建完panel的layer之后再创建窗口，避免第一次响应_OnSize中没有layout
 
     IMapAttribute*  pMapAttrib = NULL;
     pBindObj->GetMapAttribute(&pMapAttrib);

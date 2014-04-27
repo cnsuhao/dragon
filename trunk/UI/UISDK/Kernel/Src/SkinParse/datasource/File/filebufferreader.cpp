@@ -17,7 +17,7 @@ void  FileBufferReader::Release()
 
 int   FileBufferReader::read(char* pread, int nread)
 {
-    return f.read(pread, nread).gcount();
+    return (int)f.read(pread, nread).gcount();
 }
 void  FileBufferReader::seek(int npos, ios_base::seek_dir dir)
 {
@@ -25,7 +25,7 @@ void  FileBufferReader::seek(int npos, ios_base::seek_dir dir)
 }
 int  FileBufferReader::tell()
 {
-    return f.tellg();
+    return (int)f.tellg();
 }
 bool  FileBufferReader::load(const TCHAR* szPath)
 {

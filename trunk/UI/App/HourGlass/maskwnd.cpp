@@ -46,9 +46,8 @@ void  CMaskWnd::OnInitialize()
 		
 		GetUIApplication()->GetAnimateMgr()->SetFps(50);
 		UI::IStoryboard* pStoryboard = GetUIApplication()->GetAnimateMgr()->CreateStoryboard(this, 1);
-		UI::IIntLinearMove* pMoveAlgo = NULL;
-		UI::IIntTimeline* pTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(UI::TV_INT, 1, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo);
-		pMoveAlgo->SetParam1(0, 255, 300);
+		UI::IIntTimeline* pTimeline = pStoryboard->CreateIntTimeline(1);
+		pTimeline->SetLinerParam1(0, 255, 300);
 		pTimeline->SetOutRef(&m_nAlphaBmp);
 		pStoryboard->Begin();
 	}
@@ -84,9 +83,8 @@ void  CMaskWnd::OnTimer(UINT_PTR nIDEvent, LPARAM lParam)
 		KillTimer(GetHWND(), 1);
 
 		UI::IStoryboard* pStoryboard = GetUIApplication()->GetAnimateMgr()->CreateStoryboard(this, 3);
-		UI::IIntLinearMove* pMoveAlgo = NULL;
-		UI::IIntTimeline* pTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(UI::TV_INT, 1, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo);
-		pMoveAlgo->SetParam1(255, 0, 300);
+		UI::IIntTimeline* pTimeline = pStoryboard->CreateIntTimeline(1);
+		pTimeline->SetLinerParam1(255, 0, 300);
 		pTimeline->SetOutRef(&m_nAlphaBmp);
 		pStoryboard->Begin();
 
@@ -155,9 +153,8 @@ void  CMaskWnd::OnSwitchPic()
 
 	UI::IStoryboard* pStoryboard = GetUIApplication()->GetAnimateMgr()->CreateStoryboard(this, 2);
 
-	UI::IIntLinearMove* pMoveAlgoNew = NULL;
-	UI::IIntTimeline* pTimelineNew = (UI::IIntTimeline*)pStoryboard->CreateTimeline(UI::TV_INT, 2, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgoNew);
-	pMoveAlgoNew->SetParam1(0, 255, 300);
+	UI::IIntTimeline* pTimelineNew = pStoryboard->CreateIntTimeline(2);
+	pTimelineNew->SetLinerParam1(0, 255, 300);
 	pTimelineNew->SetOutRef(&m_nAlphaBmp);
 	m_nAlphaBmp = 0;
 

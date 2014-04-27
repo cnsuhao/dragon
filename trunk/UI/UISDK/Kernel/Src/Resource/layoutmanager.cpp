@@ -297,12 +297,13 @@ void  LayoutManager::ReloadChildObjects(Object* pObjParent, IUIElement* pObjElem
     IUIChildNodeEnum*  pEnum = pObjElement->EnumChild();
     IUIElement*  pChildElem = NULL;
 
-    CComBSTR  bstrChildElemTagName;
-    CComBSTR  bstrId;
 
     // 遍历所有子对象
     while (pChildElem = pEnum->NextElement())
     {
+        CComBSTR  bstrChildElemTagName;
+        CComBSTR  bstrId;
+
         Object*  pObj = NULL;
         pChildElem->GetTagName(&bstrChildElemTagName);
         if (0 == bstrChildElemTagName.Length())

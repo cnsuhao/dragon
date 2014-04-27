@@ -24,15 +24,17 @@ public:
         UIMSG_WM_SETATTRIBUTE(SetAttribute)
     UI_END_MSG_MAP_CHAIN_PARENT_Ixxx(IEWrap, IHwndHost)
 
-    void  SetIIEWrap(IIEWrap* p) 
-    { m_pIIEWrap = p; SetIMessageProxy(static_cast<IMessage*>(p)); }
-    IIEWrap*  GetIIEWrap() { return m_pIIEWrap; }
+    void  SetIIEWrap(IIEWrap* p) {
+        m_pIIEWrap = p;
+        SetIMessageProxy(static_cast<IMessage*>(p)); }
+    IIEWrap*  GetIIEWrap() { 
+        return m_pIIEWrap; }
 
 public:
     void OnPaint(IRenderTarget* pRenderTarget, RenderContext* pContext);
 	void  SetAttribute(IMapAttribute* pMatAttrib, bool bReload);
-    IWebBrowser2*  GetWebBrowser2() 
-    { return m_pWebBrowser; }
+    IWebBrowser2*  GetWebBrowser2() { 
+        return m_pWebBrowser; }
 
 	HRESULT  InvokeJsFunction(BSTR bstrFuncName);
 	HRESULT  Navigate(const TCHAR* szUrl);

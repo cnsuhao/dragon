@@ -14,14 +14,19 @@ namespace UI
 	//		m_pFlash->put_ScaleMode(2);
 
 
-#if 0
-	1. site 站点对象是什么?
-		每一个嵌入对象都会对应窗口(Container)中的一个site对象，该site对象为嵌入对象提供位置等信息
-		容器中维护了site列表。
+// 	1. site 站点对象是什么?
+// 		每一个嵌入对象都会对应窗口(Container)中的一个site对象，该site对象为嵌入对象提供位置等信息
+// 		容器中维护了site列表。
+// 
+// 	2. swf一般是不能暂停的
+//
+//  3. 关于flash位置的设置
+//     . 调用SetFlashPos函数
+//     . 要考虑几个因素, (1)-鼠标点击位置 (2)-无效区域位置 (3)控件刷新
+//       如果设置为窗口坐标，则无效区域也是基于窗口的，导致处理OnPaint时还得切换为控件坐标
+//       现直接将flash位置设置为(0, 0, width, height)，鼠标点击时做一次转换
+//
 
-	2. swf一般是不能暂停的
-
-#endif
 	class FlashWrap;
 	class FlashEmbeddingSite : 
 					public IOleClientSite,
@@ -149,18 +154,16 @@ namespace UI
 #pragma endregion
 
 	public:
-		HRGN   GetInvalidateRect(bool bClear);
-		void   SetFlashInvalidateListener(IFlashInvalidateListener* p)
-		{ m_pListener = p; }
+		bool   GetInvalidateRect(bool bClear, RECT* lprc);
+		void   SetFlashInvalidateListener(IFlashInvalidateListener* p){
+			m_pListener = p; }
 
 	private:
 		long         m_lRef;
 		FlashWrap*   m_pFlashWrap;
         IFlashWrap*  m_pIFlashWrap;
-
 		CRect        m_rcInvalidate;
 	public:
-		HRGN         m_hInvalidateRgn;
 		IFlashInvalidateListener*  m_pListener;
 	};
 
@@ -175,6 +178,9 @@ public:
 		UIMSG_WM_REDRAWOBJECT(OnRedrawObject)
 		UIMSG_WM_PAINT(OnPaint)
 		UIMSG_WM_SIZE(OnSize)
+		UIMESSAGE_HANDLER_EX(WM_MOUSEMOVE, OnMouseMsg)
+		UIMESSAGE_HANDLER_EX(WM_LBUTTONDOWN, OnMouseMsg)
+		UIMESSAGE_HANDLER_EX(WM_LBUTTONUP, OnMouseMsg)
         UIMSG_WM_GETDESIREDSIZE(GetDesiredSize)
         UIMSG_WM_QUERYINTERFACE(QueryInterface)
         UIMSG_WM_GETOBJECTINFO(OnGetObjectInfo)
@@ -199,6 +205,7 @@ public:
 	void  ResetAttribute();
 	void  SetAttribute(IMapAttribute* pMapAttr, bool bReload);
 	void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);
+	LRESULT  OnMouseMsg(UINT nMsg, WPARAM wParam, LPARAM lParam);
 
 	void   SetFlashInvalidateListener(IFlashInvalidateListener* p);
 	void   OnPaint(IRenderTarget* pRenderTarget);  // <- 做成public的，便于render layer中直接调用
@@ -222,6 +229,7 @@ protected:
 	FlashEmbeddingSite*  m_pSite;
 	IOleObject*          m_pOleObject;
 	IViewObjectEx*       m_pViewObject;
+	IOleInPlaceObjectWindowless*  m_pWindowless;  // 用于无窗口模式的鼠标交互
 public:
 	IShockwaveFlash*     m_pFlash;
 protected:
@@ -230,7 +238,6 @@ protected:
 	FLASH_WMODE  m_eWMode;
 	int      m_nFlashWidth;
 	int      m_nFlashHeight;
-
 };
 
 struct  FlashPropertyUtil

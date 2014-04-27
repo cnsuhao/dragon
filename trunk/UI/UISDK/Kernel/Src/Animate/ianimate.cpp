@@ -31,10 +31,11 @@ UI_IMPLEMENT_Ixxx_INTERFACE_CreateImpl(IControlAnimateBase, ControlAnimateBase, 
 UI_IMPLEMENT_Ixxx_INTERFACE_Construct2(ISlideAnimate, SlideAnimate)
 UI_IMPLEMENT_Ixxx_INTERFACE_CreateImpl(ISlideAnimate, SlideAnimate, ControlAnimateBase)
 
-ITimeline*  IStoryboard::CreateTimeline(TIMELINE_VALUE_TYPE eType, int nTimelineId, int nMoveAlgo, IMoveAlgorithm** ppMoveAlgo)
-{ return m_pStoryboardImpl->CreateTimeline(eType, nTimelineId, nMoveAlgo, ppMoveAlgo); }
 ITimeline*  IStoryboard::FindTimeline(int nTimelineId)   { return m_pStoryboardImpl->FindTimeline(nTimelineId); }
 ITimeline*  IStoryboard::GetTimeline(unsigned int nIndex){ return m_pStoryboardImpl->GetTimeline(nIndex); }
+IIntTimeline*    IStoryboard::CreateIntTimeline(int nTimelineId)   { return m_pStoryboardImpl->CreateIntTimeline(nTimelineId); }
+IFloatTimeline*  IStoryboard::CreateFloatTimeline(int nTimelineId) { return m_pStoryboardImpl->CreateFloatTimeline(nTimelineId); }
+INoneTimeline*   IStoryboard::CreateNoneTimeline(int nTimelineId)  { return m_pStoryboardImpl->CreateNoneTimeline(nTimelineId); }
 void  IStoryboard::Begin()                               { m_pStoryboardImpl->Begin(); }
 void  IStoryboard::BeginBlock()                          { m_pStoryboardImpl->BeginBlock(); }
 IMessage*  IStoryboard::GetNotifyObj()                   { return m_pStoryboardImpl->GetNotifyObj(); }

@@ -177,8 +177,8 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_APP_TITLE           "ControlDemo"
-    IDC_CONTROLDEMO         "CONTROLDEMO"
+    IDS_APP_TITLE           "uileeihcy Demo"
+    IDC_CONTROLDEMO         "uileeihcy Demo"
 END
 
 #endif    // Chinese (P.R.C.) resources

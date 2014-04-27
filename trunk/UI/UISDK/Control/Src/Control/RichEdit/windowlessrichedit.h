@@ -4,7 +4,8 @@
 #include <RichOle.h>
 #include "UISDK\Control\Src\Control\Caret\caret.h"
 
-#pragma comment(lib, "Riched20.lib")
+//#pragma comment(lib, "Riched20.lib")  // -- vs2012上编译不过
+typedef HRESULT (_stdcall *pfuncCreateTextServices)(IUnknown *punkOuter, ITextHost *pITextHost, IUnknown **ppUnk);
 
 //  RichEdit及其Callback的实现，可以参考MFC CRichEditView
 //  RichEidt的ole view的实现，可以参考ATL插入一个控件对象的实现代码
@@ -94,6 +95,9 @@ class ITextHostImpl : public ITextHost
 public:
 	ITextHostImpl();
 	~ITextHostImpl();
+protected:
+	void Destroy();
+public:
 
 	// ITextHost Interface
 	virtual HDC 		TxGetDC();
@@ -240,7 +244,7 @@ public:
 
 		MESSAGE_HANDLER_EX( WM_KEYDOWN,  OnDefaultHandle )
 		MESSAGE_HANDLER_EX( WM_CHAR,     OnChar )
-		MESSAGE_RANGE_HANDLER_EX( WM_MOUSEFIRST, WM_MOUSELAST, OnDefaultHandle )
+		MESSAGE_RANGE_HANDLER_EX( WM_MOUSEFIRST, WM_MOUSELAST, OnMouseMessage )
 		MESSAGE_HANDLER_EX( WM_VSCROLL,  OnDefaultHandle )
 		MESSAGE_HANDLER_EX( WM_HSCROLL,  OnDefaultHandle )
 
@@ -265,6 +269,7 @@ protected:
 	LRESULT OnPreHandleMsg( HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam );
 	LRESULT OnPostHandleMsg( HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam );
 	BOOL    OnSetCursor(HWND wnd, UINT nHitTest, UINT message);
+	LRESULT OnMouseMessage(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT OnDefaultHandle(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void    OnKillFocus(HWND wndFocus);
     void    OnSetFocus(HWND wndOld);
@@ -295,7 +300,7 @@ public:
 	void  BindControl(RichEdit* p);
 	bool  Create(HWND hWndParent);
 	void  Draw(HDC, bool bDrawShadow);
-	bool  GetInvalidateRect(RECT* prc, bool* pbNeedRedrawScrollbar, bool bClear=true);
+	bool  GetInvalidateRect(RECT* prc, bool* pbNeedRedrawScrollbar, bool bClear);
 	bool  HitTest(POINT pt);
 
     // 基本操作
@@ -381,6 +386,7 @@ protected:
 	void   ReleaseRichEidtDll();
 	static HMODULE  s_RichEditDll;
 	static LONG     s_refDll;
+	static pfuncCreateTextServices  s_funcCreateTextServices;
 public:
 	//RichEdit formats
 	static UINT     s_cfRichTextFormat;      // CLIPFORMAT

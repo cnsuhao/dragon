@@ -12,7 +12,7 @@ namespace UI
 //			事件响应函数的结果返回值作为pMsg->lRet;
 //			如果事件响应函数没有返回值，pMsg->lRet默认为0
 //	remark
-//		想要知道这个消息有没有被处理，可调用IsCurMsgHandled()
+//		想要知道这个消息有没有被处理，可调用IsMsgHandled()
 //
 //  注：对于系统的SendMessage，它的nMsg有范围限制的：
 //     if(Msg&0xFFFE0000)// Msgs (>0xFFFF) are reserved by the system   
@@ -86,8 +86,13 @@ long  UIPostMessage(IUIApplication* pUIApp, UIMSG* pMsg, int nMsgMapID)
 }
 long  UIPostMessage(HWND hForwardMsgWnd, UIMSG* pMsg, int nMsgMapID)
 {
+    if (!pMsg->pMsgTo)
+        return 0;
+
     UIMSG* pCloneMsg = new UIMSG;
     memcpy(pCloneMsg, pMsg, sizeof(UIMSG));
+
+    pMsg->pMsgTo->AddDelayRef((void**)&pCloneMsg->pMsgTo);
     ::PostMessage(hForwardMsgWnd, UI_WM_POSTMESSAGE, (WPARAM)pCloneMsg, (LPARAM)nMsgMapID);
 
     return 0;
@@ -116,6 +121,7 @@ Message::~Message()
 
 	this->ClearNotify();
 	this->ClearHook();
+    this->ResetDelayRef();
 
     if (m_bCreateIMessage)
     {
@@ -430,6 +436,31 @@ void Message::ClearHook( )
 	this->m_lHookMsgMap.clear();
 }
 
+void  Message::AddDelayRef(void** pp)
+{
+    list<void**>::iterator  iter = std::find(m_lDelayRefs.begin(), m_lDelayRefs.end(), pp);
+    if (iter == m_lDelayRefs.end())
+    {
+        m_lDelayRefs.push_back(pp);
+    }
+}
+void  Message::RemoveDelayRef(void** pp)
+{
+    list<void**>::iterator  iter = std::find(m_lDelayRefs.begin(), m_lDelayRefs.end(), pp);
+    if (iter != m_lDelayRefs.end())
+    {
+        m_lDelayRefs.erase(iter);
+    }
+}
+void  Message::ResetDelayRef()
+{
+    list<void**>::iterator  iter = m_lDelayRefs.begin();
+    for (; iter != m_lDelayRefs.end(); iter++)
+    {
+        void** pp = *iter;
+        *pp = NULL;
+    }
+}
 
 //
 //	static 给pParent的子子孙孙对象递归转发消息

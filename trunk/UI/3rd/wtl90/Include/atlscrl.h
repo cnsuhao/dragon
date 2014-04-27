@@ -1,19 +1,18 @@
-// Windows Template Library - WTL version 8.0
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Windows Template Library - WTL version 9.0
+// Copyright (C) Microsoft Corporation, WTL Team. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
 // The use and distribution terms for this software are covered by the
-// Microsoft Permissive License (Ms-PL) which can be found in the file
-// Ms-PL.txt at the root of this distribution.
+// Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.php)
+// which can be found in the file CPL.TXT at the root of this distribution.
+// By using this software in any fashion, you are agreeing to be bound by
+// the terms of this license. You must not remove this notice, or
+// any other, from this software.
 
 #ifndef __ATLSCRL_H__
 #define __ATLSCRL_H__
 
 #pragma once
-
-#ifndef __cplusplus
-	#error ATL requires C++ compilation (use a .cpp suffix)
-#endif
 
 #ifndef __ATLAPP_H__
 	#error atlscrl.h requires atlapp.h to be included first
@@ -29,10 +28,6 @@
 
 #ifndef GET_WHEEL_DELTA_WPARAM
   #define GET_WHEEL_DELTA_WPARAM(wParam)  ((short)HIWORD(wParam))
-#endif
-
-#ifndef WM_MOUSEHWHEEL
-  #define WM_MOUSEHWHEEL                  0x020E
 #endif
 
 
@@ -515,7 +510,7 @@ public:
 				pT->UpdateWindow();
 			}
 		}
-		else		// can't scroll vertically, scroll horizontally
+		else if(m_sizeAll.cx > m_sizeClient.cx)   // can't scroll vertically, scroll horizontally
 		{
 			for(int i = 0; i < zTotal; i += WHEEL_DELTA)
 			{
@@ -1439,7 +1434,7 @@ public:
 		if(fZoomScale <= 0)
 			return;
 
-		fZoomScale = max(fZoomScale, m_fZoomScaleMin);
+		fZoomScale = __max(fZoomScale, m_fZoomScaleMin);
 
 		T* pT = static_cast<T*>(this);
 		POINT pt = { x, y };
@@ -1474,7 +1469,7 @@ public:
 		
 		float fScaleH = (float)(m_sizeClient.cx  + 1) / (float)size.cx;
 		float fScaleV = (float)(m_sizeClient.cy + 1) / (float)size.cy;
-		float fZoomScale = min(fScaleH, fScaleV) * m_fZoomScale;
+		float fZoomScale = __min(fScaleH, fScaleV) * m_fZoomScale;
 		pT->Zoom(pt, fZoomScale);		
 	}
 
@@ -1483,7 +1478,7 @@ public:
 		if(fZoomScale <= 0)
 			return;
 
-		fZoomScale = max(fZoomScale, m_fZoomScaleMin);
+		fZoomScale = __max(fZoomScale, m_fZoomScaleMin);
 
 
 		T* pT = static_cast<T*>(this);
@@ -1567,7 +1562,7 @@ public:
 		}
 		else 
 		{
-			int xMax = max((int)(m_sizeAll.cx - rect.right), 0);
+			int xMax = __max((int)(m_sizeAll.cx - rect.right), 0);
 			if(xOfs > xMax)
 				xOfs = xMax;
 		}
@@ -1579,7 +1574,7 @@ public:
 		}
 		else 
 		{
-			int yMax = max((int)(m_sizeAll.cy - rect.bottom), 0);
+			int yMax = __max((int)(m_sizeAll.cy - rect.bottom), 0);
 			if(yOfs > yMax)
 				yOfs = yMax;
 		}

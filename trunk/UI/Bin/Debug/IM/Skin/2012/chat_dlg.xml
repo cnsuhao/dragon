@@ -32,8 +32,8 @@
 							<CheckButton id="toolbar_btn_font_bold" styleclass="chat.toolbarbtn.check" margin="0,4,0,4" foregnd.render.image="chat.fonttoolbar.bold.icon"/>
 							<CheckButton id="toolbar_btn_font_italic" styleclass="chat.toolbarbtn.check" margin="0,4,0,4" foregnd.render.image="chat.toolbar.italic.icon"/>
 							<CheckButton id="toolbar_btn_font_underline" styleclass="chat.toolbarbtn.check" margin="0,4,0,4" foregnd.render.image="chat.toolbar.underline.icon"/>
-							<ComboBox id="toolbar_combo_font_face" margin="0,1,0,1" width="100" height="20" readonly="1"/>
-							<ComboBox id="toolbar_combo_font_size" margin="0,1,0,1" width="50" height="20" readonly="1"/>
+							<ComboBox id="toolbar_combo_font_face" margin="0,1,0,1" width="100" height="20" readonly="1" popupwnd.graphics="gdiplus" popupwnd.transparent.type="layered"/>
+							<ComboBox id="toolbar_combo_font_size" margin="0,1,0,1" width="50" height="20" readonly="1"  popupwnd.graphics="gdiplus" popupwnd.transparent.type="layered"/>
 							<Button id="toolbar_btn_font_color" width="20" height="20" styleclass="chat.toolbarbtn.check" margin="&quot;0,4,0,4&quot;" foregnd.render.image="chat.toolbar.color.icon"/>
 						</Panel>
 					</Panel>

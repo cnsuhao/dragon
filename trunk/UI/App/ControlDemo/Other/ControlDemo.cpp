@@ -9,7 +9,9 @@
 #include "../Direct2D/Direct2DWindow.h"
 #include "../Stage3D_Leaves/StageLeavesWindow.h"
 #include "../Animate/AnimateWindow.h" 
+#include "../Animate2/AnimateWindow2.h" 
 #include "../RenderLayer/RenderLayer.h"
+#include "UISDK\Control\Inc\Interface\ibutton.h"
 
 #define MAX_LOADSTRING 100
 
@@ -25,6 +27,36 @@ ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+
+class CGraphicsSelectDlg : public UI::IWindow
+{
+public:
+	CGraphicsSelectDlg()
+	{
+		m_eType = UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
+	}
+	UI_BEGIN_MSG_MAP_Ixxx(CGraphicsSelectDlg)
+		UIMSG_BN_CLICKED3(OnClick)
+	UI_END_MSG_MAP_CHAIN_PARENT(UI::IWindow)
+
+public:
+	void  OnClick(IMessage*  pMsgFrom)
+	{
+		UI::IButton*  pBtn = static_cast<UI::IButton*>(pMsgFrom);
+
+		if (0 == _tcscmp(XML_WINDOW_GRAPHICS_RENDER_LIBRARY_GDI, pBtn->GetId()))
+			m_eType = UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDI;
+		else if (0 == _tcscmp(XML_WINDOW_GRAPHICS_RENDER_LIBRARY_GDIPLUS, pBtn->GetId()))
+			m_eType = UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDIPLUS;
+		if (0 == _tcscmp(XML_WINDOW_GRAPHICS_RENDER_LIBRARY_D2D, pBtn->GetId()))
+			m_eType = UI::GRAPHICS_RENDER_LIBRARY_TYPE_DIRECT2D;
+
+		EndDialog(IDOK);
+	}
+
+public:
+	UI::GRAPHICS_RENDER_LIBRARY_TYPE  m_eType;
+};
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
@@ -72,14 +104,14 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
         ClockWindow::CreateInstance(g_pUIApp, &pWnd);
     
         SetWindowPos(g_hWnd, 0, 50, 50, 630, 660, SWP_NOZORDER);
-        pWnd->Attach(g_pUIApp, g_hWnd, _T("clockwin"));
+        pWnd->Attach(g_hWnd, _T("clockwin"));
 
 #elif defined _RESHADOW
         REShadowWindow* pWnd = NULL;
         REShadowWindow::CreateInstance(g_pUIApp, &pWnd);
         SetWindowPos(g_hWnd, 0, 50, 50, 300, 300, SWP_NOZORDER);
 
-        pWnd->Attach(g_pUIApp, g_hWnd, _T("reshadow"));
+        pWnd->Attach(g_hWnd, _T("reshadow"));
 
 #elif defined DEMO_STAGE3D
         UI::UI3D_RegisterUIObject(g_pUIApp);
@@ -88,7 +120,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
         CDirect2DWindow::CreateInstance(g_pUIApp, &pWnd);
         SetWindowPos(g_hWnd, 0, 50, 50, 500, 500, SWP_NOZORDER);
 
-        pWnd->Attach(g_pUIApp, g_hWnd, _T("stage3d"));
+        pWnd->Attach(g_hWnd, _T("stage3d"));
 
 #elif defined DEMO_STAGELEAVES
 		UI::UI3D_RegisterUIObject(g_pUIApp);
@@ -97,36 +129,48 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		CStageLeavesWindow::CreateInstance(g_pUIApp, &pWnd);
 		SetWindowPos(g_hWnd, 0, 50, 0, 610, 860, SWP_NOZORDER);
 
-		pWnd->Attach(g_pUIApp, g_hWnd, _T("stageparticle"));
+		pWnd->Attach(g_hWnd, _T("stageparticle"));
 
 #elif defined DEMO_ANIMATE
         CAnimateWindow* pWnd = NULL;
         CAnimateWindow::CreateInstance(g_pUIApp, &pWnd);
 
-        pWnd->Attach(g_pUIApp, g_hWnd, _T("animate"));
+        pWnd->Attach(g_hWnd, _T("animate"));
         
-#elif defined DEMO_RENDERLAYER
-// 		Cxxx * pWnd = NULL;
-// 		Cxxx::CreateInstance(g_pUIApp, &pWnd);
-// 		pWnd->Create(g_pUIApp, _T("playlistdlg"));
-// 		pWnd->ShowWindow();
-// 		g_pUIApp->MsgHandleLoop();
-// 		pWnd->delete_this();
-// 		g_pUIApp->Release();
-// 		return  0;
+#elif defined DEMO_ANIMATE2
 
+		CGraphicsSelectDlg*  pDlg = NULL;
+		CGraphicsSelectDlg::CreateInstance(g_pUIApp, &pDlg);
+		if (IDCANCEL == pDlg->DoModal(_T("selectgraphicsdlg"), NULL, false))
+		{
+			SAFE_DELETE_Ixxx(pDlg);
+			g_pUIApp->Release();
+			return 0;
+		}
+
+		UI::GRAPHICS_RENDER_LIBRARY_TYPE eType = pDlg->m_eType;
+		SAFE_DELETE_Ixxx(pDlg);
+
+        CAnimateWindow2* pWnd = NULL;
+        CAnimateWindow2::CreateInstance(g_pUIApp, &pWnd);
+        SetWindowPos(g_hWnd, 0, 0, 0, 750, 550, SWP_NOZORDER|SWP_NOMOVE);
+
+		pWnd->GetIWindowRender()->SetGraphicsRenderType(eType);
+        pWnd->Attach(g_hWnd, _T("animate2"));
+
+#elif defined DEMO_RENDERLAYER
         CRenderLayerWindow* pWnd = NULL;
         CRenderLayerWindow::CreateInstance(g_pUIApp, &pWnd);
 
 		SetWindowPos(g_hWnd, 0, 0, 0, 700, 600, SWP_NOMOVE|SWP_NOZORDER);
-        pWnd->Attach(g_pUIApp, g_hWnd, _T("renderlayer"));
+        pWnd->Attach(g_hWnd, _T("renderlayer"));
 #else
 
         CSoft3DRotateWindow* pWnd = NULL;
         CSoft3DRotateWindow::CreateInstance(g_pUIApp, &pWnd);
         
         //SetWindowPos(g_hWnd, 0, 50, 50, 300, 300, SWP_NOZORDER);
-  		pWnd->Attach(g_pUIApp, g_hWnd, _T("mainwindow"));
+  		pWnd->Attach(g_hWnd, _T("mainwindow"));
         
 #endif
 

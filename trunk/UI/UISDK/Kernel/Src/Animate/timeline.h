@@ -15,6 +15,7 @@ namespace UI
     protected:
         ITimelineImpl()
         {
+			m_pMoveAlgorithm = NULL;
             m_nBeginTime = 0;
             m_nFrameElapse = 0;
             m_eTimeType = TT_BY_MS;  // 默认以毫秒为单位
@@ -28,7 +29,10 @@ namespace UI
         }
 
     public:
-        virtual ~ITimelineImpl(){};
+        virtual ~ITimelineImpl()
+		{
+			SAFE_DELETE(m_pMoveAlgorithm);
+		};
         virtual void  Destroy() 
         { 
             delete this; 
@@ -96,6 +100,11 @@ namespace UI
                 return true;
             }
 
+			if (!m_pMoveAlgorithm)
+			{
+				return true;
+			}
+
             m_nFrameElapse ++;
 
             int nTimeElapse = 0;
@@ -116,7 +125,11 @@ namespace UI
 //             TCHAR szText[8];
 //             _stprintf(szText, _T("%d\n"), nTimeElapse);
 //             OutputDebugString(szText);
-            bool bTimelineFinish = OnTick(nTimeElapse);
+
+			float fValue = 0;
+			bool  bTimelineFinish = m_pMoveAlgorithm->OnTick(nTimeElapse, &fValue);
+			this->OnTick(fValue);  // 通知子对象当前的新值
+
             if (bTimelineFinish)
             {
                 if (m_bAutoReverse)
@@ -152,24 +165,57 @@ namespace UI
                     {
                         m_nFlags |= TIMELINE_FLAG_NEED_RESET;  // 下次开始前先重置动画参数
                     }
-                }
-            }
+				}
+			}
 
-            return IsFinish();
-        }
+			return IsFinish();
+		}
 
+		void  OnReverse()
+		{
+			// 将数据进行反向
+			m_pMoveAlgorithm->Reverse();
+		}
 
-    public:
-        // 给子类的虚函数
+	protected:
+		void  _SetEaseParam(float from, float to, float t, EaseType eType)
+		{
+			SAFE_DELETE(m_pMoveAlgorithm);
+			EasingMove* p = new EasingMove;
+			p->SetParam(from, to, t, eType);
+
+			m_pMoveAlgorithm = static_cast<IMoveAlgorithm*>(p);
+		}
+
+		void  _SetLinerParam1(float from, float to, float t)
+		{
+			SAFE_DELETE(m_pMoveAlgorithm);
+			LinearMove* p = new LinearMove;
+			p->SetParam1(from, to, t);
+
+			m_pMoveAlgorithm = static_cast<IMoveAlgorithm*>(p);
+		}
+
+		void  _SetAccelerateParam1(float from, float to, float t, float Vo)
+		{
+			SAFE_DELETE(m_pMoveAlgorithm);
+			AccelerateMove* p = new AccelerateMove;
+			p->SetParam1(from, to, t, Vo);
+
+			m_pMoveAlgorithm = static_cast<IMoveAlgorithm*>(p);
+		}
+
+	public:
+		// 给子类的虚函数
         virtual void  Init() = 0;
-        virtual bool  OnTick(int nTimeElapse) = 0; // 返回动画是否结束(一次，不管reverse和repeate)
-        virtual void  OnReverse() = 0;
+        virtual void  OnTick(float fNewValue) = 0; // 子对象将float值，转换成自己的类型
 
         void  SetAnimateMgrPtr(AnimateManager* p)
         { m_pAnimateMgr = p; }
 
     protected:
         AnimateManager*  m_pAnimateMgr;
+		IMoveAlgorithm*  m_pMoveAlgorithm;
 
         int      m_nBeginTime;   // 记录动画开始时的time tick，当时间到达m_nBeginTime+m_nDuretion时，动画结束。
         int      m_nFrameElapse; // 经历的帧数
@@ -190,18 +236,17 @@ namespace UI
 		IntTimeline();
 		~IntTimeline();
 
-        IIntMoveAlgorithm*  CreateMoveAlgorithm(TIMELINE_MOVE_ALGORITHM eType);
-
         virtual void  GetCurrentValue(void* pOut);
         virtual void  SetOutRef(int* pRef);
+		virtual void  SetEaseParam(int from, int to, int t, EaseType eType);
+		virtual void  SetLinerParam1(int from, int to, int t);
+		virtual void  SetAccelerateParam1(int from, int to, int t, float Vo);
 
 	public:
 		virtual void  Init();
-        virtual bool  OnTick(int nTimeElapse);
-        virtual void  OnReverse();
+        virtual void  OnTick(float fNewValue);
 
 	protected:
-        IIntMoveAlgorithm*  m_pMoveAlgorithm;
 		int     m_nCurValue;
 		int*    m_pOutRef;
 	};
@@ -212,20 +257,28 @@ namespace UI
         FloatTimeline();
         ~FloatTimeline();
 
-        IFloatMoveAlgorithm*  CreateMoveAlgorithm(TIMELINE_MOVE_ALGORITHM eType);
-
         virtual void  GetCurrentValue(void* pOut);
         virtual void  SetOutRef(float* pRef);
+		virtual void  SetEaseParam(float from, float to, float t, EaseType eType);
+		virtual void  SetLinerParam1(float from, float to, float t);
+		virtual void  SetAccelerateParam1(float from, float to, float t, float Vo);
 
     public:
         virtual void  Init();
-        virtual bool  OnTick(int nTimeElapse);
-        virtual void  OnReverse();
+        virtual void  OnTick(float fNewValue);
 
     protected:
-        IFloatMoveAlgorithm*  m_pMoveAlgorithm;
         float     m_fCurValue;
         float*    m_pOutRef;
     };
 
+	// 什么也不做，只是为了维持动画计时器
+	class NoneAnimateTimeline : public ITimelineImpl<INoneTimeline>
+	{
+	public:
+		virtual void  GetCurrentValue(void* ppOut){}
+		virtual void  Init();
+		virtual void  OnTick(float f){};
+		virtual void  OnReverse() {}
+	};
 }

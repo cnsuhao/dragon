@@ -11,6 +11,10 @@ CMapAttribute::CMapAttribute()
     m_lRef = 0;
     m_iterEnum = m_mapAttr.end();
 }
+CMapAttribute::~CMapAttribute()
+{
+
+}
 CMapAttribute::CMapAttribute(const CMapAttribute& o)
 {
     m_mapAttr = o.m_mapAttr;

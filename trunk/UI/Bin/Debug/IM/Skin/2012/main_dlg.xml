@@ -2,7 +2,7 @@
 <skin>
 	<layout>
 		<CustomWindow id="maindlg" graphics="gdiplus" width="290" height="540" minwidth="290" minheight="540" xmaxwidth="553"
-                  text="QQ 2013 V0.9.400" layout.right="30"
+                  text="QQ 2013 V0.10.440" layout.right="30"
                   bkgnd.render.type="image" bkgnd.render.image.drawtype="stretch"
                   bkgnd.render.image="shadow_bkg.png" bkgnd.render.image.9region="10"
                   texture.render.region="6" istransparent="1" font="normal" 

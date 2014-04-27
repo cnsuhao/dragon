@@ -284,6 +284,8 @@ bool ToolTipManager::Show(TOOLTIPITEM* pItemInfo)
 	case TOOLTIP_ACTION_FLAG_NORMAL:
 		{
 			m_nTimerWait2Show = ::SetTimer(NULL, 0, TOOL_TIMER_TIME, /*ToolTipManager::ToolTipManagerTimerProc*/m_thunk.GetTIMERPROC() );
+            if (m_tooltipItem.pNotifyObj)
+                m_tooltipItem.pNotifyObj->AddDelayRef((void**)&m_tooltipItem.pNotifyObj);
 		}
 		break;
 
@@ -308,6 +310,10 @@ bool ToolTipManager::Hide()
 	{
 		m_pToolTipUI->Hide();
 	}
+    
+    if (m_tooltipItem.pNotifyObj)
+        m_tooltipItem.pNotifyObj->RemoveDelayRef((void**)&m_tooltipItem.pNotifyObj);
+
 	memset(&m_tooltipItem, 0, sizeof(TOOLTIPITEM));
 	return true;
 }
@@ -331,8 +337,10 @@ void ToolTipManager::OnTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTim
 		return;
 
     // 有可能对象被删除了
-    if (!m_pUIApplication->IsUIObjectAvailable(m_tooltipItem.pNotifyObj))
+    if (!m_tooltipItem.pNotifyObj)
         return;
+    else
+        m_tooltipItem.pNotifyObj->RemoveDelayRef((void**)&m_tooltipItem.pNotifyObj);
     
 	if (0 == UISendMessage(m_tooltipItem.pNotifyObj, UI_WM_SHOW_TOOLTIP))
 	{

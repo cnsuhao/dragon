@@ -18,7 +18,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)Bin\$(ConfigurationName)\"
+			OutputDirectory="$(SolutionDir)Bin\$(ConfigurationName)\IM\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			UseOfMFC="0"
@@ -62,13 +62,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\IM\$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(OutDir)\lib"
+				AdditionalLibraryDirectories="$(OutDir)..\lib\"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)\pdb\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\..\pdb\$(TargetName).pdb"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)\lib\$(TargetName).lib"
+				ImportLibrary="$(OutDir)\..\lib\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -95,7 +95,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)Bin\$(ConfigurationName)\"
+			OutputDirectory="$(SolutionDir)Bin\$(ConfigurationName)\IM\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
@@ -139,15 +139,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\IM\$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(OutDir)\lib"
+				AdditionalLibraryDirectories="$(OutDir)..\lib\"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)\pdb\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\..\pdb\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(OutDir)\lib\$(TargetName).lib"
+				ImportLibrary="$(OutDir)\..\lib\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool

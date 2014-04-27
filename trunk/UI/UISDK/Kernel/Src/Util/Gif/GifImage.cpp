@@ -1318,13 +1318,13 @@ void GifImageRender::commit(HDC hDC, int x, int y)
 		break;
 	case Gif_Timer_Notify_Post_Thread_Msg:
 		{		
-			// 转发到界面线程
-            UIMSG msg;
-			msg.message = WM_TIMER;
-			msg.wParam = m_notify.notify_ui_msg.nTimerID;
-			msg.lParam = m_notify.notify_ui_msg.lParam;
-			msg.pMsgTo = m_notify.notify_ui_msg.pNotifyMsgObj;
-			UIPostMessage(m_hForwardMsgHWND, &msg);
+			// 转发到界面线程 -- 多线程的UIPostMessage存在问题，AddDelayRef不是线程安全的
+//             UIMSG msg;
+// 			msg.message = WM_TIMER;
+// 			msg.wParam = m_notify.notify_ui_msg.nTimerID;
+// 			msg.lParam = m_notify.notify_ui_msg.lParam;
+// 			msg.pMsgTo = m_notify.notify_ui_msg.pNotifyMsgObj;
+// 			UIPostMessage(m_hForwardMsgHWND, &msg);
 		}
 		break;
 	}

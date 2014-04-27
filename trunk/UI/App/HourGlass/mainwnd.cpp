@@ -29,11 +29,11 @@ void  CMainWnd::OnInitialize()
     m_pLEDCtrl = (UI::ILEDExCtrl*)FindChildObject(_T("led"));
 //    SetWindowPos(GetHWND(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE);
 
-#ifdef _DEBUG
-    SetTotalTime(0,30,00); 
-#else
+// #ifdef _DEBUG
+//     SetTotalTime(0,30,00); 
+// #else
     SetTotalTime(GetConfig()->GetHour(), GetConfig()->GetMinute(), GetConfig()->GetSecond());
-#endif
+// #endif
 
 	GetUIApplication()->GetActiveSkinRes()->ChangeSkinHLS(GetConfig()->GetHls_h(), 0, GetConfig()->GetHls_s(), CHANGE_SKIN_HLS_FLAG_H|CHANGE_SKIN_HLS_FLAG_S);
     UI::ILayeredWindowWrap*  pLayeredWnd = (UI::ILayeredWindowWrap*)UISendMessage(this, UI_WM_QUERYINTERFACE, (WPARAM)&uiiidof(ILayeredWindowWrap));
@@ -81,7 +81,7 @@ void  CMainWnd::OnRing()
 
     CMaskWnd* pMaskWnd = NULL;
     CMaskWnd::CreateInstance(g_pUIApp, &pMaskWnd);
-    pMaskWnd->DoModal(g_pUIApp, _T("mask"), NULL, false);
+    pMaskWnd->DoModal(_T("mask"), NULL, false);
     SAFE_DELETE_Ixxx(pMaskWnd);
 
 	if (!::IsWindow(GetHWND()))
@@ -162,7 +162,7 @@ void  CMainWnd::OnContextMenu(HWND hWnd, POINT point)
     {
         CSettingWnd*  pSettingWnd = NULL;
         CSettingWnd::CreateInstance(g_pUIApp, &pSettingWnd);
-        if (IDOK == pSettingWnd->DoModal(g_pUIApp, _T("Setting"), GetHWND(), false))
+        if (IDOK == pSettingWnd->DoModal(_T("Setting"), GetHWND(), false))
         {
             SetTotalTime(GetConfig()->GetHour(), GetConfig()->GetMinute(), GetConfig()->GetSecond());
         }

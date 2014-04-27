@@ -316,7 +316,18 @@ void  DesktopLayout::Arrange(WindowBase*  pWindow)
 		}
 	}
 
+    CRect  rcClientOld, rcClientNew;
+    GetClientRect(pWindow->m_hWnd, &rcClientOld);
+
 	pWindow->SetObjectPos(x, y, s.cx, s.cy, SWP_NOREDRAW);
+
+    // 解决如果窗口大小没有发生改变，改变窗口没有收到WM_SIZE时，手动布局一次
+    GetClientRect(pWindow->m_hWnd, &rcClientNew);
+    if (rcClientNew.Width() == rcClientOld.Width() &&
+        rcClientNew.Height() == rcClientOld.Height())
+    {
+        pWindow->notify_WM_SIZE(0, rcClientNew.Width(), rcClientNew.Height());
+    }
 
 	// 递归
 	//pWindow->GetLayout()->Arrange(NULL); // <-- SetObjectPos会触发OnSize，在Window的OnSize消息中会进行layout处理，因此这里可以不调用

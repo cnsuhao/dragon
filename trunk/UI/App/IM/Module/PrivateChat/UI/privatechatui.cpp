@@ -170,7 +170,7 @@ long  CPrivateChatUI::OnOpenPrivateChatDlg(IM::OpenPrivateChatDlgReqTask* pTask)
 		CChatDlg::CreateInstance(IM::GetUIApplication(), &p);
 		pInfo->m_pChatDlg = static_cast<CChatDlgBase*>(p);
 		pInfo->m_pChatDlg->SetPrivateChatUI(this);
-		pInfo->m_pChatDlg->Create(IM::GetUIApplication(), _T("chatdlg"));
+		pInfo->m_pChatDlg->Create(_T("chatdlg"));
 	}
 	else
 	{
@@ -178,7 +178,7 @@ long  CPrivateChatUI::OnOpenPrivateChatDlg(IM::OpenPrivateChatDlgReqTask* pTask)
 		CChatDlg2::CreateInstance(IM::GetUIApplication(), &p);
 		pInfo->m_pChatDlg = static_cast<CChatDlgBase*>(p);
 		pInfo->m_pChatDlg->SetPrivateChatUI(this);
-		pInfo->m_pChatDlg->Create(IM::GetUIApplication(), _T("chatdlg2"));
+		pInfo->m_pChatDlg->Create(_T("chatdlg2"));
 	}
 
 
@@ -211,7 +211,7 @@ void  CPrivateChatUI::ShowEmotionDlg( HWND hWnd, POINT pt)
     if (!m_pEmotionDlg)
     {
         EmotionDlg::CreateInstance(IM::GetUIApplication(), &m_pEmotionDlg);
-        m_pEmotionDlg->Create(IM::GetUIApplication(), _T("emotiondlg"));
+        m_pEmotionDlg->Create(_T("emotiondlg"));
         m_pEmotionDlg->SetPrivateChatUI(this);
     }
     m_pEmotionDlg->SetParam(hWnd);

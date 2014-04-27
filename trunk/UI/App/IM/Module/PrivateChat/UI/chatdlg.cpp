@@ -193,12 +193,11 @@ void CChatDlg::OnBnClickAnimate()
 
     UI::IAnimateManager* pAnimateMgr = GetUIApplication()->GetAnimateMgr();
     UI::IStoryboard*  pStoryboard = pAnimateMgr->CreateStoryboard(this, ANIMATE_ID_RIGHT_PANEL);
-    UI::IIntLinearMove* pMoveAlgo = NULL;
-    UI::IIntTimeline* pIntTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(UI::TV_INT, 0, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo);
+    UI::IIntTimeline* pIntTimeline = pStoryboard->CreateIntTimeline(0);
 
 	if (m_eRightPanelState == RIGHT_PANEL_STATE_COLLAPSE)
 	{
-        pMoveAlgo->SetParam1(0, m_nRightPanelConfigWidth, 300);
+        pIntTimeline->SetLinerParam1(0, m_nRightPanelConfigWidth, 300);
 		m_eRightPanelState = RIGHT_PANEL_STATE_ANIMATING_EXPAND;
 
         // -- 有bug，SetWindowPos之后会有残留阴影，无法解决，以后再看。
@@ -220,7 +219,7 @@ void CChatDlg::OnBnClickAnimate()
 	}
 	else
 	{
-        pMoveAlgo->SetParam1(m_nRightPanelConfigWidth, 0, 300);
+        pIntTimeline->SetLinerParam1(m_nRightPanelConfigWidth, 0, 300);
 		m_eRightPanelState = RIGHT_PANEL_STATE_ANIMATING_COLLAPSE;
 	}
 	if (m_pLeftPanel)
@@ -431,6 +430,7 @@ void  CChatDlg::OnComboFontFaceSelChanged(UI::IListItemBase* pOldItem, UI::IList
 
 void  CChatDlg::OnBtnEmotion()
 {
+	return;  // richedit的gif线程还有问题，先屏蔽
     if (m_pBtnEmotion->IsForcePress())
         return;
 

@@ -255,11 +255,11 @@ void  ContactListContactItem::Update(CONTACTLIST_CONTACTITEM_INFO* pInfo)
 
     if (pInfo->nMask & CLCI_MASK_NICKNAME && m_pString_NickName)
     {
-        m_pString_NickName->SetText(pInfo->pszNickName);
+        m_pString_NickName->SetText(pInfo->pszNickName, false);
     }
     if (pInfo->nMask & CLCI_MASK_MOODPHRASE && m_pString_Moodphrase)
     {
-        m_pString_Moodphrase->SetText(pInfo->pszMoodphrase);
+        m_pString_Moodphrase->SetText(pInfo->pszMoodphrase, false);
         m_pString_Moodphrase->AddAttribute(XML_TOOLTIP, pInfo->pszMoodphrase);
     }
     if (pInfo->nMask & CLCI_MASK_PORTRAIT && m_pImage_Portrait && pInfo->pszPortraitPath)

@@ -101,13 +101,13 @@ interface UISDKAPI IWindowBase : public IPanel
     IObject*  GetPressObject();
     IObject*  GetObjectByPos(IObject* pObjParent, POINT* pt, bool bSkinBuilderInvoke=false);
 
-    bool  Create(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent=NULL, RECT* prc=NULL);
-    void  Attach(IUIApplication* pUIApp, HWND hWnd, const TCHAR* szID);
+    bool  Create(const TCHAR* szID, HWND hWndParent=NULL, RECT* prc=NULL);
+    void  Attach(HWND hWnd, const TCHAR* szID);
     void  Detach();
-    long  DoModal(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent, bool canResize);
-    long  DoModal(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndParent);
-    HWND  DoModeless(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent, bool canResize);
-    HWND  DoModeless(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndParent);
+    long  DoModal(const TCHAR* szID, HWND hWndParent, bool canResize);
+    long  DoModal(HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndParent);
+    HWND  DoModeless(const TCHAR* szID, HWND hWndParent, bool canResize);
+    HWND  DoModeless(HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndParent);
     void  EndDialog(INT_PTR);
 
     void  CommitDoubleBuffet2Window(HDC hDCWnd, RECT* prcCommit, int nRectCount=1);

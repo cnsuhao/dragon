@@ -20,7 +20,7 @@ ListItemBase::ListItemBase()
     m_nDepth = 0;
   
     m_pPrev = m_pNext = m_pPrevSelection = m_pNextSelection = NULL;
-    m_pParent = m_pChild = NULL;
+    m_pParent = m_pChild = m_pLastChild = NULL;
 
     m_rcParent.SetRectEmpty();
 
@@ -47,6 +47,7 @@ ListItemBase::~ListItemBase()
         pItem = pNext;
     }
     m_pChild = NULL;
+    m_pLastChild = NULL;
     m_pParent = NULL;
 
     m_pPrev = m_pNext = m_pPrevSelection = m_pNextSelection = NULL;
@@ -78,11 +79,16 @@ void  ListItemBase::AddChildFront(ListItemBase* p)
 	ListItemBase* pOldChild = this->GetChildItem();
 	this->SetChildItem(p);
 	p->SetParentItem(this);
+
 	if (pOldChild)
 	{
 		pOldChild->SetPrevItem(p);
 		p->SetNextItem(pOldChild);
 	}
+    else
+    {
+        this->SetLastChildItem(p);
+    }
 
 }
 void  ListItemBase::AddChild(ListItemBase* p)
@@ -92,6 +98,7 @@ void  ListItemBase::AddChild(ListItemBase* p)
 
 	ListItemBase* pOldLast = this->GetLastChildItem();
 	p->SetParentItem(this);
+
 	if (pOldLast)
 	{
 		pOldLast->SetNextItem(p);
@@ -101,6 +108,7 @@ void  ListItemBase::AddChild(ListItemBase* p)
 	{
 		this->SetChildItem(p);
 	}
+    this->SetLastChildItem(p);
 }
 
 // 将自己（包括自己的子结点）在树结构中移除
@@ -121,6 +129,10 @@ void ListItemBase::RemoveMeInTheTree()
     if (m_pNext)
     {
         m_pNext->m_pPrev = this->m_pPrev;
+    }
+    else
+    {
+        m_pParent->m_pLastChild = this->m_pPrev;
     }
 
     m_pParent = m_pNext = m_pPrev = NULL;
@@ -401,21 +413,24 @@ void  ListItemBase::SetRadioChecked(bool b, bool bNotify)
     }
 }
 
+// 当子结点往多时，采用遍历的方式效率很低
 ListItemBase*  ListItemBase::GetLastChildItem()
 {
-    ListItemBase* pChild = (ListItemBase*)m_pChild;
-    if (NULL == pChild)
-        return NULL;
+    return m_pLastChild;
 
-    if (NULL == pChild->GetNextItem())
-        return (ListItemBase*)pChild;
-
-    while (pChild = pChild->GetNextItem())
-    {
-        if (NULL == pChild->GetNextItem())
-            break;
-    }
-    return (ListItemBase*)pChild;
+//     ListItemBase* pChild = (ListItemBase*)m_pChild;
+//     if (NULL == pChild)
+//         return NULL;
+// 
+//     if (NULL == pChild->GetNextItem())
+//         return (ListItemBase*)pChild;
+// 
+//     while (pChild = pChild->GetNextItem())
+//     {
+//         if (NULL == pChild->GetNextItem())
+//             break;
+//     }
+//     return (ListItemBase*)pChild;
 }
 
 // 判断pChild是否是自己的子结点或者子孙结点
@@ -654,7 +669,7 @@ void ListItemBase::Fire_ClickNotify()
     UIMSG  msg;
     msg.message = UI_WM_NOTIFY;
     msg.nCode   = UI_LCN_CLICK;
-    msg.lParam  = (LPARAM)m_pListCtrlBase->GetPressItem();
+    msg.lParam  = (LPARAM)m_pIListItemBase;
     msg.pMsgFrom = m_pListCtrlBase->GetIMessage();
     m_pListCtrlBase->DoNotify(&msg);
 }

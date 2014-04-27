@@ -320,7 +320,7 @@ FontRes*  IFontRes::GetImpl() { return m_pImpl; }
 
 long     IFontRes::GetFontCount() { return m_pImpl->GetFontCount(); }
 HRESULT  IFontRes::GetFontResItem(long lIndex, IFontResItem** ppResItem) { return m_pImpl->GetFontResItem(lIndex, ppResItem); }
-HRESULT  IFontRes::GetFont(BSTR bstrFontID, GRAPHICS_RENDER_LIBRARY_TYPE eRenderType, __out IRenderFont** ppOut) { return m_pImpl->GetFont(bstrFontID, eRenderType, ppOut); }
+HRESULT  IFontRes::GetFont(const TCHAR* szFontId, GRAPHICS_RENDER_LIBRARY_TYPE eRenderType, __out IRenderFont** ppOut) { return m_pImpl->GetFont(szFontId, eRenderType, ppOut); }
 HRESULT  IFontRes::GetDefaultFont(GRAPHICS_RENDER_LIBRARY_TYPE eRenderType, __out IRenderFont** ppFont) { return m_pImpl->GetDefaultFont(eRenderType, ppFont); }
 HRESULT  IFontRes::GetFontEx(IRenderFont* pFont, WPARAM w, LPARAM l, GRAPHICS_RENDER_LIBRARY_TYPE eRenderType, __out IRenderFont** ppFont) { return m_pImpl->GetFontEx(pFont, w, l, eRenderType, ppFont); }
 

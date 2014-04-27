@@ -478,46 +478,47 @@ bool UIApplication::IsVistaOrWin7etc()
 	return bHighThanVista;
 }
 
-bool UIApplication::IsUIObjectAvailable(IMessage* p)
-{	
-	if (NULL == p)
-		return false;
-
-	list<IMessage*>::iterator iter = std::find(m_aliveUIObject.begin(), m_aliveUIObject.end(), p);
-	if (iter == m_aliveUIObject.end())
-		return false;
-
-	return true;
-}
-HRESULT UIApplication::AddUIObject(IMessage* p)
-{
-	if (NULL == p)
-		return E_INVALIDARG;
-
-	list<IMessage*>::iterator iter = std::find(m_aliveUIObject.begin(), m_aliveUIObject.end(), p);
-	if (iter == m_aliveUIObject.end())
-	{
-		m_aliveUIObject.push_back(p);
-		return S_OK;
-	}
-
-	return E_FAIL;
-}
-HRESULT UIApplication::RemoveUIObject(IMessage* p)
-{
-	if (NULL == p)
-		return E_FAIL;
-
-	list<IMessage*>::iterator iter = std::find(m_aliveUIObject.begin(), m_aliveUIObject.end(), p);
-	if (iter != m_aliveUIObject.end())
-	{
-		m_aliveUIObject.erase(iter);
-		return S_OK;
-	}
-
-
-	return E_FAIL;
-}
+// bool UIApplication::IsUIObjectAvailable(IMessage* p)
+// {	
+// 	if (NULL == p)
+// 		return false;
+// 
+// 	list<IMessage*>::iterator iter = std::find(m_aliveUIObject.begin(), m_aliveUIObject.end(), p);
+// 	if (iter == m_aliveUIObject.end())
+// 		return false;
+// 
+// 	return true;
+// }
+// 
+// AddUIObject在控件增加，尤其是listctrl中时，效率急剧降低
+// HRESULT UIApplication::AddUIObject(IMessage* p)
+// {
+// 	if (NULL == p)
+// 		return E_INVALIDARG;
+// 
+// 	list<IMessage*>::iterator iter = std::find(m_aliveUIObject.begin(), m_aliveUIObject.end(), p);
+// 	if (iter == m_aliveUIObject.end())
+// 	{
+// 		m_aliveUIObject.push_back(p);
+// 		return S_OK;
+// 	}
+// 
+// 	return E_FAIL;
+// }
+// HRESULT UIApplication::RemoveUIObject(IMessage* p)
+// {
+// 	if (NULL == p)
+// 		return E_FAIL;
+// 
+// 	list<IMessage*>::iterator iter = std::find(m_aliveUIObject.begin(), m_aliveUIObject.end(), p);
+// 	if (iter != m_aliveUIObject.end())
+// 	{
+// 		m_aliveUIObject.erase(iter);
+// 		return S_OK;
+// 	}
+// 
+// 	return E_FAIL;
+// }
 
 HRESULT  UIApplication::GetSkinTagParseFunc(const TCHAR* szTag, funcUIParseSkinElement* pFunc)
 {

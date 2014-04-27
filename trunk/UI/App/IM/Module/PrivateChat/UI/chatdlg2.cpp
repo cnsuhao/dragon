@@ -177,6 +177,7 @@ void  CChatDlg2::AdjustIETransMargins()
 
 	RECT  rcMargin = {rc.left, rc.top, rcWnd.Width()-rc.right, rcWnd.Height()-rc.bottom};
 	pAeroTransMode->SetTransparentMargins(&rcMargin);
+	pAeroTransMode->UpdateRgn();
 }
 
 void CChatDlg2::OnSysCommand(UINT nID, CPoint point)
@@ -196,6 +197,7 @@ void  CChatDlg2::OnBtnFont()
         return;
 
     m_pPanelFontToolbar->SetVisible(!m_pPanelFontToolbar->IsMySelfVisible(), true, true);
+	AdjustIETransMargins();
 }
 void  CChatDlg2::OnBtnFontBold()
 {
@@ -306,6 +308,8 @@ void  CChatDlg2::OnComboFontFaceSelChanged(UI::IListItemBase* pOldItem, UI::ILis
 
 void  CChatDlg2::OnBtnEmotion()
 {
+	return;  // richedit的gif线程还有问题，先屏蔽
+
     if (m_pBtnEmotion->IsForcePress())
         return;
 

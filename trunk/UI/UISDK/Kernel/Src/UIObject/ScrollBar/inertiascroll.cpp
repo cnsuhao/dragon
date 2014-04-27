@@ -66,7 +66,7 @@ void  InertiaScroll::AddPower(int zDelta)
     {
         IAnimateManager* pAnimateMgr = m_pUIApplication->GetAnimateMgr();
         m_pAnimateStoryboard = pAnimateMgr->CreateStoryboard(this->GetIMessage());
-        INoneTimeline* pTimeline = (INoneTimeline*)m_pAnimateStoryboard->CreateTimeline(TV_NONE, 0, 0, NULL);
+        INoneTimeline* pTimeline = m_pAnimateStoryboard->CreateNoneTimeline(0);
         m_pAnimateStoryboard->Begin();
 
         if (m_pCallback)

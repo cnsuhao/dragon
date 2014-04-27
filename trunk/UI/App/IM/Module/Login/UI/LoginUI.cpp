@@ -32,7 +32,7 @@ long  CLoginUI::Create()
         CLoginDlg::CreateInstance(IM::GetUIApplication(), &m_pLoginDlg);
         m_pLoginDlg->SetLoginUI(this);
 
-        m_pLoginDlg->Create(IM::GetUIApplication(), _T("logindlg"), NULL);
+        m_pLoginDlg->Create(_T("logindlg"), NULL);
     }
     return 0;
 }

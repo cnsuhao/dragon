@@ -134,10 +134,6 @@ bool     IUIApplication::IsUnderXpOS() { return m_pImpl->IsUnderXpOS(); }
 bool     IUIApplication::IsVistaOrWin7etc() { return m_pImpl->IsVistaOrWin7etc(); }
 bool     IUIApplication::IsAeroEnable() { return DwmHelper::GetInstance()->IsEnable(); }
 
-bool     IUIApplication::IsUIObjectAvailable(IMessage* p) { return m_pImpl->IsUIObjectAvailable(p); }
-HRESULT  IUIApplication::AddUIObject(IMessage* p) { return m_pImpl->AddUIObject(p); }
-HRESULT  IUIApplication::RemoveUIObject(IMessage* p) { return m_pImpl->RemoveUIObject(p); }
-
 HWND     IUIApplication::GetForwardPostMessageWnd() { return m_pImpl->GetForwardPostMessageWnd(); }
 
 }

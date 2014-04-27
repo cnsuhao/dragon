@@ -35,6 +35,7 @@ interface UISDKAPI IListItemBase : public IMessage
     IListItemBase*  GetPrevItem();
     IListItemBase*  GetParentItem();
     IListItemBase*  GetChildItem();
+    IListItemBase*  GetLastChildItem();
     IListItemBase*  GetPrevSelection();
     IListItemBase*  GetNextSelection();
 
@@ -43,7 +44,6 @@ interface UISDKAPI IListItemBase : public IMessage
     IListItemBase*  GetNextTreeItem(); 
     IListItemBase*  GetPrevTreeItem();
 
-    IListItemBase*  GetLastChildItem();
     bool  IsMyChildItem(IListItemBase* pChild, bool bTestGrandChildren);
     bool  HasChild();
 
@@ -51,6 +51,7 @@ interface UISDKAPI IListItemBase : public IMessage
     void  SetPrevItem(IListItemBase* p);
     void  SetParentItem(IListItemBase* p);
     void  SetChildItem(IListItemBase* p);
+    void  SetLastChildItem(IListItemBase* p);
     void  SetNextSelection(IListItemBase* p);
     void  SetPrevSelection(IListItemBase* p);
 	void  AddChild(IListItemBase* p);

@@ -656,7 +656,7 @@ void MainWindow::OnMenuClick(UINT nMenuID)
 			if (NULL == m_pOptionWindow)
 			{
                 COptionWindow::CreateInstance(g_pUIApp, &m_pOptionWindow);
-				m_pOptionWindow->DoModeless(g_pUIApp, g_hInstance, COptionWindow::IDD, _T("OptionWindow"),GetHWND());
+				m_pOptionWindow->DoModeless(g_hInstance, COptionWindow::IDD, _T("OptionWindow"),GetHWND());
 			}
 			m_pOptionWindow->ShowWindow();
 //			win.DoModal(g_hInstance, COptionWindow::IDD, _T("OptionWindow"),GetHWND());

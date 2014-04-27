@@ -257,14 +257,12 @@ void CLoginDlg::OnBtnNetSetCancel()
     p->SetNotifyObj(static_cast<UI::IMessage*>(this));
     p->SetId(TIMELINE_ID_BACK_STEP1);
 
-    UI::IIntAccelerateMove*  pMoveAlgo = NULL;
-    UI::IIntTimeline* pTimelineY = (UI::IIntTimeline*)p->CreateTimeline(UI::TV_INT, 0, UI::TMA_Accelerate, (UI::IMoveAlgorithm**)&pMoveAlgo);
-    pMoveAlgo->SetParam1(360, 270, WINDOW_3D_ROTATE_DURATION, -500/1000.0f);
+    UI::IIntTimeline* pTimelineY = p->CreateIntTimeline(0);
+    pTimelineY->SetAccelerateParam1(360, 270, WINDOW_3D_ROTATE_DURATION, -500/1000.0f);
     pTimelineY->SetOutRef(p->GetRotateYPtr());
 
-    UI::IIntLinearMove* pMoveAlgo2 = NULL;
-    UI::IIntTimeline* pTimelineZ = (UI::IIntTimeline*)p->CreateTimeline(UI::TV_INT, 1, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo2);
-    pMoveAlgo2->SetParam1(0, WINDOW_3D_ROTATE_Z_DEEP, WINDOW_3D_ROTATE_DURATION);
+    UI::IIntTimeline* pTimelineZ = p->CreateIntTimeline(1);
+    pTimelineZ->SetLinerParam1(0, WINDOW_3D_ROTATE_Z_DEEP, WINDOW_3D_ROTATE_DURATION);
 	pTimelineZ->SetOutRef(p->GetOffsetZPtr());
     p->Begin();
 
@@ -284,14 +282,12 @@ void CLoginDlg::OnBtnSet()
     p->SetNotifyObj(static_cast<IMessage*>(this));
     p->SetId(TIMELINE_ID_GO_STEP1);
 
-    UI::IIntAccelerateMove* pMoveAlgo = NULL;
-    UI::IIntTimeline* pTimelineY = (UI::IIntTimeline*)p->CreateTimeline(UI::TV_INT, 0, UI::TMA_Accelerate, (UI::IMoveAlgorithm**)&pMoveAlgo);
-    pMoveAlgo->SetParam1(0, 90, WINDOW_3D_ROTATE_DURATION, 500/1000.0f);
+    UI::IIntTimeline* pTimelineY = p->CreateIntTimeline(0);
+    pTimelineY->SetAccelerateParam1(0, 90, WINDOW_3D_ROTATE_DURATION, 500/1000.0f);
 	pTimelineY->SetOutRef(p->GetRotateYPtr());
 
-    UI::IIntLinearMove* pMoveAlgo2 = NULL;
-    UI::IIntTimeline* pTimelineZ = (UI::IIntTimeline*)p->CreateTimeline(UI::TV_INT, 1, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo2);
-    pMoveAlgo2->SetParam1(0, WINDOW_3D_ROTATE_Z_DEEP, WINDOW_3D_ROTATE_DURATION);
+    UI::IIntTimeline* pTimelineZ = p->CreateIntTimeline(1);
+    pTimelineZ->SetLinerParam1(0, WINDOW_3D_ROTATE_Z_DEEP, WINDOW_3D_ROTATE_DURATION);
 	pTimelineZ->SetOutRef(p->GetOffsetZPtr());
     p->Begin();
 
@@ -518,14 +514,12 @@ void  CLoginDlg::OnAnimateTick_GoStep1(UI::IStoryboard* pStoryboard)
     p->SetNotifyObj(static_cast<IMessage*>(this));
     p->SetId(TIMELINE_ID_GO_STEP2);
 
-    UI::IIntAccelerateMove* pMoveAlgo = NULL;
-    UI::IIntTimeline* pTimelineY = (UI::IIntTimeline*)p->CreateTimeline(UI::TV_INT, 0, UI::TMA_Accelerate, (UI::IMoveAlgorithm**)&pMoveAlgo);
-    pMoveAlgo->SetParam1(270, 360, WINDOW_3D_ROTATE_DURATION, 500/1000.0f);
+    UI::IIntTimeline* pTimelineY = p->CreateIntTimeline(0);
+    pTimelineY->SetAccelerateParam1(270, 360, WINDOW_3D_ROTATE_DURATION, 500/1000.0f);
     pTimelineY->SetOutRef(p->GetRotateYPtr());
 
-    UI::IIntLinearMove* pMoveAlgo2 = NULL;
-    UI::IIntTimeline* pTimelineZ = (UI::IIntTimeline*)p->CreateTimeline(UI::TV_INT, 1, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo2);
-    pMoveAlgo2->SetParam1(WINDOW_3D_ROTATE_Z_DEEP, 0, WINDOW_3D_ROTATE_DURATION);
+    UI::IIntTimeline* pTimelineZ = p->CreateIntTimeline(1);
+    pTimelineZ->SetLinerParam1(WINDOW_3D_ROTATE_Z_DEEP, 0, WINDOW_3D_ROTATE_DURATION);
     pTimelineZ->SetOutRef(p->GetOffsetZPtr());
     p->Begin();
 }
@@ -556,15 +550,13 @@ void  CLoginDlg::OnAnimateTick_BackStep1(UI::IStoryboard* pStoryboard)
     p->SetWParam((WPARAM)p);  // 用于在回翻过程中不断更新动画图片
     p->SetId(TIMELINE_ID_BACK_STEP2);
 
-    UI::IIntAccelerateMove* pMoveAlgo = NULL;
-    UI::IIntTimeline* pTimelineY = (UI::IIntTimeline*)p->CreateTimeline(UI::TV_INT, 0, UI::TMA_Accelerate, (UI::IMoveAlgorithm**)&pMoveAlgo);
-    pMoveAlgo->SetParam1(90, 0, WINDOW_3D_ROTATE_DURATION, -500/1000.0f);
+    UI::IIntTimeline* pTimelineY = p->CreateIntTimeline(0);
+    pTimelineY->SetAccelerateParam1(90, 0, WINDOW_3D_ROTATE_DURATION, -500/1000.0f);
     pTimelineY->SetId(TIMELINE_ID_BACK_STEP2);
     pTimelineY->SetOutRef(p->GetRotateYPtr());
 
-    UI::IIntLinearMove* pMoveAlgo2 = NULL;
-    UI::IIntTimeline* pTimelineZ = (UI::IIntTimeline*)p->CreateTimeline(UI::TV_INT, 1, UI::TMA_Linear, (UI::IMoveAlgorithm**)&pMoveAlgo2);
-    pMoveAlgo2->SetParam1(WINDOW_3D_ROTATE_Z_DEEP, 0, WINDOW_3D_ROTATE_DURATION);
+    UI::IIntTimeline* pTimelineZ = p->CreateIntTimeline(1);
+    pTimelineZ->SetLinerParam1(WINDOW_3D_ROTATE_Z_DEEP, 0, WINDOW_3D_ROTATE_DURATION);
     pTimelineZ->SetOutRef(p->GetOffsetZPtr());
     p->Begin();
 

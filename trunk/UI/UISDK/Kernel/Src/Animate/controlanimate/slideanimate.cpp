@@ -46,11 +46,8 @@ bool  SlideAnimate::Slide(IObject* pObjLeft, IObject* pObjRight, CRect* prcCommi
     m_imageObjRight.Attach(hBitmap2, Image::DIBOR_BOTTOMUP);
     m_imageObjBkgnd.Attach(hBitmapBkgnd, Image::DIBOR_BOTTOMUP);
 
-    IIntLinearMove* pMoveAlgo = NULL;
-    IIntTimeline* pTimeline = (IIntTimeline*)CreateTimeline(
-        TV_INT, 0, TMA_Linear, (IMoveAlgorithm**)&pMoveAlgo);
-   
-    pMoveAlgo->SetParam1(0, prcCommitInWindow->Width(), 300);
+    IIntTimeline* pTimeline = CreateIntTimeline(0);
+	pTimeline->SetEaseParam(0, prcCommitInWindow->Width(), 300, UI::ease);
     this->SetWParam((WPARAM)this);
 
     static SlideAnimateMessageHandler _Handler;

@@ -19,12 +19,10 @@ FlashEmbeddingSite::FlashEmbeddingSite(FlashWrap* p)
     m_pIFlashWrap = p->GetIFlashWrap();
 
 	m_rcInvalidate.SetRectEmpty();
-	m_hInvalidateRgn = NULL;
 	m_pListener = NULL;
 }
 FlashEmbeddingSite::~FlashEmbeddingSite()
 {
-	SAFE_DELETE_GDIOBJECT(m_hInvalidateRgn);
 }
 HRESULT STDMETHODCALLTYPE FlashEmbeddingSite::QueryInterface(REFIID riid, void **ppvObject)
 {
@@ -67,22 +65,27 @@ HRESULT STDMETHODCALLTYPE FlashEmbeddingSite::GetWindow(HWND *phwnd)
 }
 
 
-HRGN FlashEmbeddingSite::GetInvalidateRect(bool bClear)
+bool FlashEmbeddingSite::GetInvalidateRect(bool bClear, RECT* lprc)
 {
-// 	if (::IsRectEmpty(&m_rcInvalidate))
-// 		return false;
-// 
-// 	::CopyRect(lprc, &m_rcInvalidate);
-// 
-// 	if (bClear)
-// 		::SetRectEmpty(&m_rcInvalidate);
-//
-//	return true;
-	return m_hInvalidateRgn;
+	if (::IsRectEmpty(&m_rcInvalidate))
+		return false;
+
+	if (lprc)
+		::CopyRect(lprc, &m_rcInvalidate);
+
+	if (bClear)
+		::SetRectEmpty(&m_rcInvalidate);
+	return true;
 }
 
 HRESULT STDMETHODCALLTYPE FlashEmbeddingSite::InvalidateRect(LPCRECT pRect, BOOL fErase)
 { 
+#if 0
+	HWND hWnd = m_pIFlashWrap->GetHWND();
+	::InvalidateRect(hWnd, pRect, fErase);
+	return 0;
+#endif
+
     if (!m_pIFlashWrap->CanRedraw())
         return S_FALSE;
         
@@ -95,30 +98,12 @@ HRESULT STDMETHODCALLTYPE FlashEmbeddingSite::InvalidateRect(LPCRECT pRect, BOOL
 	if (NULL == m_pFlashWrap)
 		return E_FAIL;
 
-// 	::InvalidateRect(m_pFlashWrap->GetHWND(), pRect, fErase);
-// 	return S_OK;
-
-// 	if (NULL == pRect)
-// 		UI_LOG_DEBUG(_T("null"));
-// 	else
-// 		UI_LOG_DEBUG(_T("%d, %d, %d, %d"), pRect->left, pRect->right, pRect->top, pRect->bottom);
-
-//	this->m_pFlashWrap->UpdateObject();
-
-
 	if (NULL == pRect)
 	{
 	}
 	else
 	{
-		if (NULL == m_hInvalidateRgn)
-			m_hInvalidateRgn = CreateRectRgn(0,0,0,0);
-
-		HRGN hrgnTemp = CreateRectRgnIndirect(pRect);
-		::CombineRgn(m_hInvalidateRgn, m_hInvalidateRgn, hrgnTemp, RGN_OR);
-		SAFE_DELETE_GDIOBJECT(hrgnTemp);
-
-		//m_rcInvalidate.UnionRect(m_rcInvalidate, pRect);
+		m_rcInvalidate.UnionRect(m_rcInvalidate, pRect);
 	}
 
 	UIMSG msg;
@@ -128,33 +113,34 @@ HRESULT STDMETHODCALLTYPE FlashEmbeddingSite::InvalidateRect(LPCRECT pRect, BOOL
 	return S_OK;
 }
 
-// 设置Flash的窗口位置
 HRESULT STDMETHODCALLTYPE FlashEmbeddingSite::GetWindowContext(IOleInPlaceFrame **ppFrame, IOleInPlaceUIWindow **ppDoc,  LPRECT lprcPosRect, LPRECT lprcClipRect,  LPOLEINPLACEFRAMEINFO lpFrameInfo)
 {
-	if (ppFrame)
-		*ppFrame = NULL;
-	if (ppDoc)
-		*ppDoc = NULL;
+	return E_NOTIMPL;  // 设置flash位置直接调用SetFlashPos函数
 
-	CRect rc;
-	m_pIFlashWrap->GetParentRect(&rc);
-
-	if (lprcPosRect)
-	{
-		CopyRect(lprcPosRect, &rc);
-	}
-	if (lprcClipRect)
-	{
-		CopyRect(lprcClipRect, &rc);
-	}
-	if (lpFrameInfo)
-	{
-		lpFrameInfo->fMDIApp = FALSE;
-		lpFrameInfo->hwndFrame = m_pIFlashWrap->GetHWND();
-		lpFrameInfo->haccel = NULL;
-		lpFrameInfo->cAccelEntries = 0;
-	}
-	return S_OK;
+// 	if (ppFrame)
+// 		*ppFrame = NULL;
+// 	if (ppDoc)
+// 		*ppDoc = NULL;
+// 
+//  	CRect rc;
+// 	m_pIFlashWrap->GetRectInLayer(&rc, false);
+// 
+// 	if (lprcPosRect)
+// 	{
+// 		CopyRect(lprcPosRect, &rc);
+// 	}
+// 	if (lprcClipRect)
+// 	{
+// 		CopyRect(lprcClipRect, &rc);
+// 	}
+// 	if (lpFrameInfo)
+// 	{
+// 		lpFrameInfo->fMDIApp = FALSE;
+// 		lpFrameInfo->hwndFrame = m_pIFlashWrap->GetHWND();
+// 		lpFrameInfo->haccel = NULL;
+// 		lpFrameInfo->cAccelEntries = 0;
+// 	}
+// 	return S_OK;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -166,6 +152,7 @@ FlashWrap::FlashWrap()
 	m_pOleObject = NULL;
 	m_pFlash = NULL;
 	m_pViewObject = NULL;
+	m_pWindowless = NULL;
 	m_nFlashWidth = m_nFlashHeight = 0;
 	m_eWMode = FLASH_WMODE_OPAQUE;
 }
@@ -175,6 +162,7 @@ FlashWrap::~FlashWrap()
 	SAFE_RELEASE(m_pOleObject);
 	SAFE_RELEASE(m_pFlash);
 	SAFE_RELEASE(m_pViewObject);
+	SAFE_RELEASE(m_pWindowless);
 }
 HRESULT FlashWrap::FinalConstruct(IUIApplication* p)
 {
@@ -217,6 +205,10 @@ bool FlashWrap::CreateControl()
 
 		hr = m_pOleObject->QueryInterface(__uuidof(IViewObjectEx), (void**)&m_pViewObject);
 		if (FAILED(hr) || NULL == m_pViewObject)	
+			break;
+
+		hr = m_pOleObject->QueryInterface(__uuidof(IOleInPlaceObjectWindowless), (void**)&m_pWindowless);
+		if (FAILED(hr) || NULL == m_pWindowless)	
 			break;
 
 		// 创建站点对象
@@ -265,6 +257,7 @@ bool FlashWrap::CreateControl()
 		SAFE_RELEASE(m_pOleObject);
 		SAFE_RELEASE(m_pFlash);
 		SAFE_RELEASE(m_pViewObject);
+		SAFE_RELEASE(m_pWindowless);
 	}
 
 	return true;
@@ -284,6 +277,7 @@ void FlashWrap::ResetAttribute()
 	SAFE_RELEASE(m_pOleObject);
 	SAFE_RELEASE(m_pFlash);
 	SAFE_RELEASE(m_pViewObject);
+	SAFE_RELEASE(m_pWindowless);
 
 	m_eWMode = FLASH_WMODE_OPAQUE;
 	m_strFlashUri.clear();
@@ -345,22 +339,41 @@ void  FlashWrap::OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData)
 		->AddOption(XML_FLASH_WMODE_TRANSPARENT);
 }
 
+LRESULT  FlashWrap::OnMouseMsg(UINT nMsg, WPARAM wParam, LPARAM lParam)
+{
+	if (!m_pWindowless)
+	{
+		SetMsgHandled(FALSE);
+		return 0;
+	}
+
+	// 将窗口坐标，转换成控件坐标
+	POINT  pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+	m_pIFlashWrap->WindowPoint2ObjectPoint(&pt, &pt, true);
+
+	LRESULT  lr = 0;
+	m_pWindowless->OnWindowMessage(nMsg, wParam, MAKELPARAM(pt.x, pt.y), &lr);
+
+	return lr;
+}
 
 void FlashWrap::OnPaint(IRenderTarget* pRenderTarget)
 {
 	if (NULL == m_pFlash)
 		return;
 
-	HDC hDC = pRenderTarget->GetHDC();  // Flash直接支持原始GDI句柄，并不需要通过Gdiplus来实现
+	HDC hDC = pRenderTarget->GetHDC();
 	DrawFlash(hDC);
+
+	m_pSite->GetInvalidateRect(true, NULL);
 }
 void FlashWrap::DrawFlash(HDC hDC)
 {
 	if (NULL == m_pViewObject)
 		return;
 
-	CRect rc;
-	m_pIFlashWrap->GetClientRectAsWin32(&rc);
+	CRect rc(0, 0, m_pIFlashWrap->GetWidth(), m_pIFlashWrap->GetHeight());
+//	m_pIFlashWrap->GetWindowRect(&rc);
 
 	HRESULT hr = m_pViewObject->Draw(
 				DVASPECT_CONTENT, -1, NULL, NULL, NULL, hDC,
@@ -368,28 +381,11 @@ void FlashWrap::DrawFlash(HDC hDC)
 }
 void FlashWrap::OnRedrawObject()
 {
-	if (NULL == m_pSite->m_hInvalidateRgn)
+	RECT  rc;
+	if (!m_pSite->GetInvalidateRect(true, &rc))
 		return;
 
-	HDC hDC = m_pIFlashWrap->GetRenderLayer2()->GetHDC();
-    if (NULL == hDC)
-        return;
-
-	SaveDC(hDC);   // SetMetaRgn之前必须调用一次，配合restoredc还原metargn
-
-	::SelectClipRgn(hDC, m_pSite->m_hInvalidateRgn);
-	SAFE_DELETE_GDIOBJECT(m_pSite->m_hInvalidateRgn);
-
-	// SetMetaRgn使用当前clip rgn做为meta rgn。
-	// 因为RedrawObject内部刷新一个对象时会重新设置裁剪区域为object区域，
-	// 导致rcInvalidate clip rgn被覆盖。这里借用metargn来完成双重裁剪区域的设置。
-	// PS: GDIPLUS貌似不支持MetaRgn
-
-	::SetMetaRgn(hDC);   
-
-	m_pIFlashWrap->UpdateObject();   
-
-	RestoreDC(hDC,-1);              
+	m_pIFlashWrap->UpdateObjectEx(&rc, 1, true);   
 }
 void FlashWrap::OnSize( UINT nType, int cx, int cy )
 {
@@ -398,8 +394,9 @@ void FlashWrap::OnSize( UINT nType, int cx, int cy )
 
     SetMsgHandled(FALSE);
 
-    CRect rc;
-    m_pIFlashWrap->GetParentRect(&rc);
+//     CRect rc;
+//     m_pIFlashWrap->GetWindowRect(&rc);
+	CRect rc (0, 0, cx, cy);
 	SetFlashPos(&rc);
 }
 

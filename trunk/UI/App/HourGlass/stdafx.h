@@ -21,8 +21,8 @@
 
 
 #include "atlbase.h"
-#include "3rd\wtl80\include\atlapp.h"
-#include "3rd\wtl80\include\atldlgs.h"
+#include "3rd\wtl90\include\atlapp.h"
+#include "3rd\wtl90\include\atldlgs.h"
 
 // “¿¿µø‚
 #include "UISDK\Project\UIUtil\h\util.h"

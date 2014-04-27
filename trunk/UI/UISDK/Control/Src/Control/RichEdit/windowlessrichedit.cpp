@@ -12,6 +12,7 @@
 // 备注：在CreateTextSerives之后，调用QueryInterface获取ITextServices接口时，总是返回E_NOINTERFACE
 //       问题原来是从riched20.lib中的IID_ITextServices，是错误的。
 const IID IID_ITextServices_Fix = { 0x8d33f740, 0xcf58, 0x11ce, {0xa8, 0x9d, 0x00, 0xaa, 0x00, 0x6c, 0xad, 0xc5} };
+const IID IID_ITextHost = { 0x03bc25ff, 0x69bb, 0x25ff, {0x14, 0x0c, 0xbb, 0x69, 0xff, 0x25, 0x24, 0x0c} };
 
 HMODULE WindowlessRichEdit::s_RichEditDll = NULL;
 LONG    WindowlessRichEdit::s_refDll = 0;
@@ -19,6 +20,7 @@ UINT    WindowlessRichEdit::s_cfRichTextFormat = 0;
 UINT    WindowlessRichEdit::s_cfRichTextAndObjects = 0;
 UINT    WindowlessRichEdit::s_cfRichEditOleFormat = 0;
 UINT    WindowlessRichEdit::s_cfUnicodeRichEditOleFormat = 0;
+pfuncCreateTextServices  WindowlessRichEdit::s_funcCreateTextServices = NULL;
 
 WindowlessRichEdit::WindowlessRichEdit()
 {
@@ -49,22 +51,9 @@ WindowlessRichEdit::~WindowlessRichEdit(void)
 	// Revoke our drop target
 	RevokeDragDrop();
 
-	if (m_spTextServices)
-	{
-		m_spTextServices->OnTxInPlaceDeactivate();
-		m_spTextServices.Release();
-		m_spTextServices = NULL;
-	}
-
-// 	for (int i = 0; i < (int)m_vecpUnkOleObject.size(); i++)
-// 	{
-// 		IUnknown* pUnk = m_vecpUnkOleObject[i];
-// 		pUnk->Release();
-// 	}
-//	m_vecpUnkOleObject.clear();
-
-	this->ReleaseRichEidtDll();
 	SAFE_DELETE(m_pOleMgr);
+	__super::Destroy();
+	this->ReleaseRichEidtDll();
 }
 
 //
@@ -129,6 +118,8 @@ bool WindowlessRichEdit::Create(HWND hWndParent)
 {
 	if (NULL == m_pRichEdit)
 		return false;
+	if (NULL == s_funcCreateTextServices)
+		return false;
 
 	LRESULT lr = 0;
 
@@ -148,7 +139,7 @@ bool WindowlessRichEdit::Create(HWND hWndParent)
 	//GdiSetBatchLimit(1);  ///??为什么都会加这么一句代码？
 
 	IUnknown* pUnknown = NULL;
-	HRESULT hr = ::CreateTextServices(NULL, static_cast<ITextHost*>(this), &pUnknown);
+	HRESULT hr = s_funcCreateTextServices(NULL, static_cast<ITextHost*>(this), &pUnknown);
 	if (FAILED(hr))
 		return false;
 
@@ -214,6 +205,7 @@ void WindowlessRichEdit::InitRichEidtDll()
 		s_cfRichTextAndObjects = ::RegisterClipboardFormat(_T("RichEdit Text and Objects"));
 		s_cfRichEditOleFormat = ::RegisterClipboardFormat(_T("UI_RichEdit_Ole_Format"));
 		s_cfUnicodeRichEditOleFormat = ::RegisterClipboardFormat(_T("UI_Unicode_RichEdit_Ole_Format"));
+		s_funcCreateTextServices = (pfuncCreateTextServices)GetProcAddress(s_RichEditDll, "CreateTextServices");
 	}
 	s_refDll++;
 }
@@ -304,6 +296,15 @@ LRESULT WindowlessRichEdit::OnPostHandleMsg( HWND hWnd, UINT Msg, WPARAM wParam,
 	return OnDefaultHandle(Msg, wParam, lParam);
 }
 
+// RichEdit是坐标被设置为(0, 0, width, height)，因此这里需要将窗口坐标转成控件坐标
+LRESULT  WindowlessRichEdit::OnMouseMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	POINT  pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+	m_pRichEdit->GetIRichEdit()->WindowPoint2ObjectPoint(&pt, &pt, true);
+
+	return OnDefaultHandle(uMsg, wParam, MAKELPARAM(pt.x, pt.y));
+}
+
 LRESULT  WindowlessRichEdit::OnDefaultHandle(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     LRESULT lr = 0;
@@ -322,9 +323,10 @@ BOOL WindowlessRichEdit::OnSetCursor(HWND hWnd, UINT nHitTest, UINT message)
 	POINT pt;
 	GetCursorPos(&pt);
 	::ScreenToClient(m_hParentWnd, &pt);
+	m_pRichEdit->GetIRichEdit()->WindowPoint2ObjectClientPoint(&pt, &pt, true);
 
-	if (false == HitTest(pt))
-		return FALSE;
+// 	if (false == HitTest(pt))
+// 		return FALSE;
 
 	RECT  rcClient;
 	this->TxGetClientRect(&rcClient);
@@ -375,8 +377,11 @@ LRESULT WindowlessRichEdit::OnLButtonDown(UINT uMsg, WPARAM wParam, LPARAM lPara
     SetMsgHandled(FALSE);
     if (!m_bFocus)
     {
+		POINT  pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+		m_pRichEdit->GetIRichEdit()->WindowPoint2ObjectPoint(&pt, &pt, true);
+
         m_bFocus = true;
-        OnDefaultHandle(uMsg, wParam, lParam);  // 用于定位新光标位置。直接发送WM_SETFOCUS会导致旧的光标位置显示出来，然后再跑到新位置上去
+        OnDefaultHandle(uMsg, wParam, MAKELPARAM(pt.x, pt.y));  // 用于定位新光标位置。直接发送WM_SETFOCUS会导致旧的光标位置显示出来，然后再跑到新位置上去
         OnDefaultHandle(WM_SETFOCUS, 0, 0);     // 设置焦点，放弃WM_FUCOS消息中的处理
     }
     return 0;
@@ -433,16 +438,6 @@ bool WindowlessRichEdit::HitTest(POINT pt)
 
 LRESULT WindowlessRichEdit::OnChar(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-#ifdef _DEBUG
-// 	IGifOleObject* pGifOleObject = NULL;
-// 	m_vecpUnkOleObject[0]->QueryInterface(IID_IGifOleObject, (void**)&pGifOleObject);
-// 	if (pGifOleObject)
-// 	{
-// 		pGifOleObject->Refresh();
-// 	}
-// 	return 0;
-#endif
-
   	LRESULT lr = 0;
 
 	HRESULT hr = m_spTextServices->TxSendMessage(uMsg, wParam, lParam, &lr);
@@ -539,9 +534,9 @@ HRESULT WindowlessRichEdit::TxGetViewInset(LPRECT prc)
 // @cmember Retrieves the coordinates of a window's client area
 HRESULT WindowlessRichEdit::TxGetClientRect(LPRECT prc)
 {
-	m_pRichEdit->GetIRichEdit()->GetClientRectInWindow((CRect*)prc);
+	m_pRichEdit->GetIRichEdit()->GetClientRectAsWin32((CRect*)prc);
 	
-#if 0 // TODO: delete 
+#if 0
 	// 减去padding的大小，因为padding的已经在richedit中作为inset view rect来实现
 	CRegion4 rPadding;
 	m_pRichEditBase->GetPaddingRegion(&rPadding);
@@ -559,11 +554,11 @@ bool WindowlessRichEdit::GetInvalidateRect(RECT* prc, bool* pbNeedRedrawScrollba
 	if (::IsRectEmpty(&m_rcInvalidate))
 		return false;
 
-	::CopyRect(prc, &m_rcInvalidate);
+	if (prc)
+		::CopyRect(prc, &m_rcInvalidate);
+
 	if (pbNeedRedrawScrollbar)
-	{
 		*pbNeedRedrawScrollbar = m_bNeedRedrawScrollbar;
-	}
 
 	if (bClear)
 	{
@@ -586,10 +581,10 @@ void /*ITextHostImpl*/WindowlessRichEdit::TxInvalidateRect(LPCRECT prc, BOOL fMo
         else
         {
             // 单行模式的拖拽选中会触发该段代码，prc为空
-            CRect rcWnd;
-            m_pRichEdit->GetIRichEdit()->GetWindowRect(&rcWnd);
+            CRect rc;
+			TxGetClientRect(&rc);
 
-            UnionRect(&m_rcInvalidate, &m_rcInvalidate, &rcWnd);
+            UnionRect(&m_rcInvalidate, &m_rcInvalidate, &rc);
         }
 
         UIMSG msg;
@@ -774,7 +769,10 @@ INT ITextHostImpl::TxReleaseDC(HDC hdc)
 //@cmember Send a WM_PAINT to the window
 void ITextHostImpl::TxViewChange(BOOL fUpdate)
 {
-	::UpdateWindow (m_hParentWnd);
+	// TODO: 在update richedit控件时，可能触发TxViewChange，导致又进入WindowBase::OnPaint
+	//       rendertarget被二次begindraw
+
+//	::UpdateWindow (m_hParentWnd);
 }
 
 //
@@ -814,13 +812,8 @@ BOOL WindowlessRichEdit::TxShowCaret(BOOL fShow)
 //@cmember Set the caret position
 BOOL WindowlessRichEdit::TxSetCaretPos(INT x, INT y)
 {
-
     // 有可能是鼠标点击，导致位置修改，这个时候要刷新光标。但如果是TxDraw产生的消息，则不能刷新
-
-    CRect rc;
-    m_pRichEdit->GetIRichEdit()->GetWindowRect(&rc);
-	m_pRichEdit->GetCaret()->SetCaretPos(m_pRichEdit->GetIRichEdit(), x-rc.left, y-rc.top, !m_bDuringTxDraw);
-
+	m_pRichEdit->GetCaret()->SetCaretPos(m_pRichEdit->GetIRichEdit(), x, y, !m_bDuringTxDraw);
 	return TRUE;
 }
 
@@ -1130,7 +1123,19 @@ ITextHostImpl::ITextHostImpl()
 ITextHostImpl::~ITextHostImpl()
 {
 }
-
+void  ITextHostImpl::Destroy()
+{
+	if (m_spOle)
+	{
+		m_spOle.Release();
+	}
+	if (m_spTextServices)
+	{
+		m_spTextServices->OnTxInPlaceDeactivate();
+		m_spTextServices.Release();
+		m_spTextServices = NULL;
+	}
+}
 
 bool ITextHostImpl::SetCharFormatByLogFont(LOGFONT* plf)
 {

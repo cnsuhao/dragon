@@ -9,14 +9,16 @@ BOOL CForwardPostMessageWindow::ProcessWindowMessage(HWND hWnd, UINT uMsg, WPARA
 	if (UI_WM_POSTMESSAGE == uMsg)
 	{
 		UIMSG* pMsg = (UIMSG*)wParam;
-		if (!m_pUIApplication->IsUIObjectAvailable(pMsg->pMsgTo))  // 有可能该对象已被删除
+		if (!pMsg->pMsgTo)  // 有可能该对象已被删除
 		{                                                 
 			delete pMsg;
 			return TRUE;
 		}
 
 		UISendMessage(pMsg, lParam);
+        pMsg->pMsgTo->RemoveDelayRef((void**)&(pMsg->pMsgTo));
 		delete pMsg;
+
 		return TRUE;
 	}
 	else if (WM_DESTROY == uMsg)  // 将剩余未处理完的post消息释放，避免内存泄露
@@ -25,6 +27,8 @@ BOOL CForwardPostMessageWindow::ProcessWindowMessage(HWND hWnd, UINT uMsg, WPARA
 		while (::PeekMessage(&msg, m_hWnd, UI_WM_POSTMESSAGE, UI_WM_POSTMESSAGE, PM_REMOVE))
 		{
 			UIMSG* pMsg = (UIMSG*)msg.wParam;
+            if (pMsg->pMsgTo)
+                pMsg->pMsgTo->RemoveDelayRef((void**)&(pMsg->pMsgTo));
 			delete pMsg;
 		}
 	}

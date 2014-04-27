@@ -157,8 +157,22 @@ ColorResItem* ColorRes::GetColorItem( const String& strID )
 
 void ColorRes::GetColor(const TCHAR* szColorId, Color** pp)
 {
-	if (NULL == szColorId)
+	if (NULL == szColorId || !pp)
 		return;
+
+     // 直接翻译，不根据ID去映射
+    if (szColorId[0] == _T('#'))
+    {
+        COLORREF color = Util::TranslateHexColor(szColorId+1); 
+        *pp = Color::CreateInstance(color);
+        return;
+    }
+    else if (szColorId[0] == _T('0') && szColorId[1] == _T('x'))
+    {
+        COLORREF color = Util::TranslateHexColor(szColorId+2);
+        *pp = Color::CreateInstance(color);
+        return;
+    }
 
 	ColorResItem* pItem = this->GetColorItem(szColorId);
 	if (NULL == pItem)
@@ -169,9 +183,6 @@ void ColorRes::GetColor(const TCHAR* szColorId, Color** pp)
 
 	bool bFirstTimeCreate = false;
     pItem->GetColor(pp, &bFirstTimeCreate);
-	if (NULL == pp)
-		return;
-
 	if (bFirstTimeCreate && pItem->GetUseSkinHLS())
 	{
         // 检查当前皮肤的HLS

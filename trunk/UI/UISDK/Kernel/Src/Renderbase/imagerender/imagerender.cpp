@@ -86,12 +86,6 @@ void ImageRender::SetAttribute(SetAttrPrefixData* pData)
 	if (szText)
     {
 		pColorRes->GetColor((BSTR)szText, &m_pColorBk);
-
-        if (!m_pColorBk)
-        {
-            COLORREF color = Util::TranslateColor(szText);  // 直接翻译，不根据ID去映射
-            m_pColorBk = Color::CreateInstance(color);
-        }
     }
 
     // 拉伸区域
@@ -648,10 +642,8 @@ void  ImageListRender::CreateAnimate(int nFrom, int nTo)
 
     IStoryboard*  pStoryboard = pAnimateMgr->CreateStoryboard(static_cast<IMessage*>(m_pIImageListRender));
 
-    IIntLinearMove* pMoveAlgo = NULL;
-    IIntTimeline* pTimeline = (IIntTimeline*)pStoryboard->CreateTimeline(
-        TV_INT, 0, TMA_Linear, (IMoveAlgorithm**)&pMoveAlgo);
-    pMoveAlgo->SetParam1(nFrom, nTo, 200);
+    IIntTimeline* pTimeline = pStoryboard->CreateIntTimeline(0);
+    pTimeline->SetLinerParam1(nFrom, nTo, 200);
     pStoryboard->Begin();
 }
 

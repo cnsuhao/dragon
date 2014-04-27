@@ -131,13 +131,13 @@ public:
     Object*    GetHoverObject();
     Object*    GetPressObject();
 
-	bool       Create(IUIApplication* pUIApp, const TCHAR* szID,  HWND hWndParent = NULL, RECT* prc = NULL);
-	long       DoModal(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndParent, bool canResize);
-	long       DoModal(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndParent);
-	HWND       DoModeless(IUIApplication* pUIApp, const TCHAR* szID, HWND hWndOnwer, bool canResize);
-	HWND       DoModeless(IUIApplication* pUIApp, HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndOnwer);
+	bool       Create(const TCHAR* szID,  HWND hWndParent = NULL, RECT* prc = NULL);
+	long       DoModal(const TCHAR* szID, HWND hWndParent, bool canResize);
+	long       DoModal(HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndParent);
+	HWND       DoModeless(const TCHAR* szID, HWND hWndOnwer, bool canResize);
+	HWND       DoModeless(HINSTANCE hResInst, UINT nResID, const TCHAR* szID, HWND hWndOnwer);
 	void       EndDialog(INT_PTR);
-	void       Attach(IUIApplication* pUIApp, HWND hWnd, const TCHAR* szID);
+	void       Attach(HWND hWnd, const TCHAR* szID);
 	void       Detach();
 
 	BOOL       IsChildWindow();

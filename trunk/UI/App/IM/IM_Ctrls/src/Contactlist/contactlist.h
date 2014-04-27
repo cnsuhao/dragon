@@ -24,7 +24,7 @@ public:
     IContactListGroupItem*  InsertGroup(CONTACTLIST_GROUPITEM_INFO* pInfo);
     IContactListGroupItem*  FindGroup(long lId);
 
-    IContactListContactItem*  InsertContact(CONTACTLIST_CONTACTITEM_INFO* pInfo);
+    IContactListContactItem*  InsertContact(CONTACTLIST_CONTACTITEM_INFO* pInfo, bool bCheckExist);
     IContactListContactItem*  FindContact(long lGroupId, long lId);
     IContactListContactItem*  FindContact(IContactListGroupItem* pGroup, long lId);
     LRESULT  OnGetLayoutType(UINT uMsg, WPARAM wParam, LPARAM lParam);

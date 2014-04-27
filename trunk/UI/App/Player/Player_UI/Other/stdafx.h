@@ -48,9 +48,9 @@ using namespace std;
 
 #include <atlbase.h>
 #include <atlwin.h>
-#include "3rd\wtl80\include\atlapp.h"
-#include "3rd\wtl80\include\atldlgs.h"
-#include "3rd\wtl80\include\atlctrls.h"
+#include "3rd\wtl90\include\atlapp.h"
+#include "3rd\wtl90\include\atldlgs.h"
+#include "3rd\wtl90\include\atlctrls.h"
 
 
 // “¿¿µø‚

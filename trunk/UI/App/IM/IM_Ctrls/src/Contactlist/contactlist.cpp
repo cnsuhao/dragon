@@ -55,7 +55,8 @@ IContactListGroupItem*  ContactList::FindGroup(long lId)
     return NULL;
 }
 
-IContactListContactItem*  ContactList::InsertContact(CONTACTLIST_CONTACTITEM_INFO* pInfo)
+// 增加一个bCheckExist参数，在没必要的情况下，避免调用FindContact，加快加载速度
+IContactListContactItem*  ContactList::InsertContact(CONTACTLIST_CONTACTITEM_INFO* pInfo, bool bCheckExist)
 {
     if (NULL == pInfo)
         return NULL;
@@ -64,8 +65,11 @@ IContactListContactItem*  ContactList::InsertContact(CONTACTLIST_CONTACTITEM_INF
     if (!pGroup)
         return NULL;
 
-    if (FindContact(pGroup, pInfo->lId))
-        return NULL;
+    if (bCheckExist)
+    {
+        if (FindContact(pGroup, pInfo->lId))
+            return NULL;
+    }
 
     IContactListContactItem*  pItem = NULL;
     IContactListContactItem::CreateInstance(m_pIContactList->GetUIApplication(), &pItem);
@@ -120,10 +124,10 @@ void ContactList::OnDropTargetEvent( UI::DROPTARGETEVENT_TYPE eType, UI::DROPTAR
             ScreenToClient(m_pIContactList->GetHWND(), &pt);
 
             POINT ptClient;
-            m_pIContactList->WindowPoint2ObjectClientPoint(&pt, &ptClient, true);
+            m_pIContactList->WindowPoint2ObjectPoint(&pt, &ptClient, true);
 
             CRect rcClient;
-            m_pIContactList->GetClientRectAsWin32(&rcClient);
+            m_pIContactList->GetClientRect(&rcClient);
             rcClient.DeflateRect(10,10,10,10);
 
             bool bNeedScroll = true;

@@ -4,18 +4,28 @@
 
 namespace UI
 {
+typedef float valueType;
 
 // 动画时，动画算法
 
 // ??
 // 1. 如何判断运动结束
 //    如果指定了时间，就按时间，否则按路程
-//
-//  2. 实现了int之后，如何再实现一个float类型
-//    替换为模板进行实现，避免代码再重写一份一模一样的逻辑
 
-template<class valueType, class InterfaceName>   // <int, IIntLinearMove>; <float, IFloatLinearMove>
-class LinearMove : public InterfaceName
+
+
+class NoneMoveAlogorithm : public IMoveAlgorithm
+{
+public:
+	virtual void  Reverse() {
+
+	}
+	virtual bool OnTick(int t, float* pCurrentValue){ 
+		return false;
+	}
+};
+
+class LinearMove : public IMoveAlgorithm
 {
 public:
     LinearMove()
@@ -168,8 +178,7 @@ public:
 // s = Vot + 1/2at^2
 // a = (2s - 2Vot)/t^2
 // 匀加速或匀减速运动
-template<class valueType, class InterfaceName>
-class AccelerateMove : public InterfaceName
+class AccelerateMove : public IMoveAlgorithm
 {
 public:
     AccelerateMove()
@@ -260,8 +269,7 @@ public:
     CHECK_FINISH_TYPE m_eFinishtType;  
 };
 
-template<class valueType, class InterfaceName>
-class EasingMove : public InterfaceName
+class EasingMove : public IMoveAlgorithm
 {
 public:
     EasingMove()
@@ -335,6 +343,6 @@ public:
     valueType    m_t;
     valueType    m_s;  // m_to - m_from;
 
-    EaseType  m_easetype;
+    EaseType     m_easetype;
 };
 }

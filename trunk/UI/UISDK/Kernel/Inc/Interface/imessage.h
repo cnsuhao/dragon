@@ -57,6 +57,9 @@ public:
     void    RemoveHook(IMessage* pObj );
     void    ClearHook();
 
+    void    AddDelayRef(void** pp);
+    void    RemoveDelayRef(void** pp);
+
     void*   QueryInterface(REFIID iid);
 
 protected:

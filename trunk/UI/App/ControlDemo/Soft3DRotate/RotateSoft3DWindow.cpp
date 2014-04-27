@@ -9,7 +9,6 @@
 #include "UISDK\Control\Inc\Interface\iheaderctrl.h"
 #include "UISDK\Control\Inc\Interface\ipropertyctrl.h"
 #include "UISDK\Control\Inc\Interface\icombobox.h"
-#include "UISDK\Kernel\Inc\Interface\iobject3dwrap.h"
 #include "UISDK\Control\Inc\Interface\ilabel.h"
 
 CSoft3DRotateWindow::CSoft3DRotateWindow()

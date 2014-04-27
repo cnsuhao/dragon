@@ -3,7 +3,6 @@
 #include "UISDK\Kernel\Inc\Interface\ianimate.h"
 #include "UISDK\Kernel\Src\Animate\animatemgr.h"
 #include "timeline.h"
-#include "noneanimatetimeline.h"
 
 Storyboard::Storyboard()
 {
@@ -54,61 +53,49 @@ bool  Storyboard::DestroyTimeline(int nTimelineId)
     return false;
 }
 
-ITimeline*  Storyboard::CreateTimeline(TIMELINE_VALUE_TYPE eType, int nTimelineId, int nMoveAlgo, IMoveAlgorithm** ppMoveAlgo)
+IIntTimeline*  Storyboard::CreateIntTimeline(int nTimelineId)
 {
-    ITimeline* pRet = NULL;
-    switch (eType)
-    {
-    case TV_INT:
-        {
-            IntTimeline* p = new IntTimeline();
-            p->SetAnimateMgrPtr(m_pAnimateMgr);
-            pRet = static_cast<ITimeline*>(p);
+	IntTimeline* p = new IntTimeline();
+	p->SetAnimateMgrPtr(m_pAnimateMgr);
+	
+	p->SetId(nTimelineId);
+	if (false == AddTimeline(p))
+	{
+		SAFE_DELETE(p);
+		return NULL;
+	}
 
-            IIntMoveAlgorithm* pAlgo = p->CreateMoveAlgorithm((TIMELINE_MOVE_ALGORITHM)nMoveAlgo);
-            if (ppMoveAlgo && pAlgo)
-                *ppMoveAlgo = static_cast<IMoveAlgorithm*>(pAlgo);
-        }
-        break;
+	return p;
+}
+IFloatTimeline*  Storyboard::CreateFloatTimeline(int nTimelineId)
+{
+	FloatTimeline* p = new FloatTimeline();
+	p->SetAnimateMgrPtr(m_pAnimateMgr);
 
-    case TV_FLOAT:
-        {
-            FloatTimeline* p = new FloatTimeline();
-            p->SetAnimateMgrPtr(m_pAnimateMgr);
-            pRet = static_cast<ITimeline*>(p);
+	p->SetId(nTimelineId);
+	if (false == AddTimeline(p))
+	{
+		SAFE_DELETE(p);
+		return NULL;
+	}
 
-            IFloatMoveAlgorithm* pAlgo = p->CreateMoveAlgorithm((TIMELINE_MOVE_ALGORITHM)nMoveAlgo);
-            if (ppMoveAlgo && pAlgo)
-                *ppMoveAlgo = static_cast<IMoveAlgorithm*>(pAlgo);
-        }
-        break;
-
-    case TV_NONE:
-        {
-            NoneAnimateTimeline* p = new NoneAnimateTimeline();
-            p->SetAnimateMgrPtr(m_pAnimateMgr);
-            pRet = static_cast<ITimeline*>(p);
-        }
-        break;
-
-    case TV_RECT:
-        {
-        }
-        break;
-    }
-
-    if (pRet)
-    {
-        pRet->SetId(nTimelineId);
-        if (false == AddTimeline(pRet))
-        {
-            SAFE_DELETE(pRet);
-        }
-    }
-
-    return pRet;
+	return p;
 }
 
+INoneTimeline*  Storyboard::CreateNoneTimeline(int nTimelineId)
+{
+	NoneAnimateTimeline* p = new NoneAnimateTimeline();
+	p->SetAnimateMgrPtr(m_pAnimateMgr);
+
+	p->SetId(nTimelineId);
+	if (false == AddTimeline(p))
+	{
+		SAFE_DELETE(p);
+		return NULL;
+	}
+
+	return static_cast<INoneTimeline*>(p);
+}
 void  Storyboard::DestroyAllTimeline()
 {
     TimelineIter iter = m_listTimeline.begin();

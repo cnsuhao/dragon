@@ -396,6 +396,7 @@ bool  IObject::SwapObject(IObject* pObj1, IObject* pObj2)
 }
 
 void  IObject::UpdateObject(bool bUpdateNow) { m_pObjectImpl->UpdateObject(bUpdateNow); }
+void  IObject::UpdateObjectEx(RECT* prcObjArray, int nCount, bool bUpdateNow)  { m_pObjectImpl->UpdateObjectEx(prcObjArray, nCount, bUpdateNow); }
 void  IObject::UpdateObjectBkgnd(bool bUpdateNow) { m_pObjectImpl->UpdateObjectBkgnd(bUpdateNow); }
 void  IObject::UpdateLayout(bool bUpdate) { m_pObjectImpl->UpdateLayout(bUpdate); }
 void  IObject::UpdateMyLayout(bool bUpdate) { m_pObjectImpl->UpdateMyLayout(bUpdate); }
@@ -452,8 +453,8 @@ void  IObject::ClientRect2ObjectRect(const RECT* rcClient, RECT* rcObj)         
 
 bool  IObject::GetScrollOffset(int* pxOffset, int* pyOffset) { return m_pObjectImpl->GetScrollOffset(pxOffset, pyOffset); }
 bool  IObject::GetScrollRange(int* pxRange, int* pyRange)    { return m_pObjectImpl->GetScrollRange(pxRange, pyRange); }
-bool  IObject::GetVisibleRectInWindow(RECT* prc)       { return m_pObjectImpl->GetVisibleRectInWindow(prc); }
-bool  IObject::GetVisibleRectInLayer(RECT* prc)        { return m_pObjectImpl->GetVisibleRectInLayer(prc); }
+bool  IObject::GetRectInWindow(RECT* prc, bool bVisiblePart)       { return m_pObjectImpl->GetRectInWindow(prc, bVisiblePart); }
+bool  IObject::GetRectInLayer(RECT* prc, bool bVisiblePart)        { return m_pObjectImpl->GetRectInLayer(prc, bVisiblePart); }
 bool  IObject::GetVisibleClientRectInLayer(RECT* prc)  { return m_pObjectImpl->GetVisibleClientRectInLayer(prc); }
 
 int  IObject::GetWidth()             { return m_pObjectImpl->GetWidth(); }

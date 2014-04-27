@@ -36,6 +36,8 @@ public:
 		UIMSG_WM_EDITORGETATTRLIST(OnEditorGetAttrList)
         UIMSG_WM_FINALCONSTRUCT( FinalConstruct )
     UIALT_MSG_MAP( BUTTON_VK_SPACE_MOUSECAPTURE_NOTIFY_ID )
+		UIMESSAGE_HANDLER_EX(WM_ENTERSIZEMOVE, OnEnterSizeMove)
+		else
         {
             return TRUE;
         }
@@ -59,6 +61,7 @@ protected:
 	void  OnKillFocus(IObject*);
 	void  OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags );
 	void  OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags );
+	LRESULT  OnEnterSizeMove(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void  ResetAttribute();
     void  SetAttribute(IMapAttribute* pMapAttr, bool bReload);
 	void  OnEditorGetAttrList(EDITORGETOBJECTATTRLISTDATA* pData);

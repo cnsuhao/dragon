@@ -12,8 +12,8 @@ namespace UI
 RichEdit::RichEdit()
 {
     m_pIRichEdit = NULL;
-	m_rcInvalidate.SetRectEmpty();
     m_pMgrScrollBar = NULL;
+	m_bRedrawing = false;
 }
 
 RichEdit::~RichEdit()
@@ -172,77 +172,39 @@ void RichEdit::OnPaint(IRenderTarget*  pRenderTarget, RenderContext* pContext)
 	HDC hDC = pRenderTarget->GetHDC();
 	m_wrapRichEidt.Draw(hDC, m_pIRichEdit->TestStyleEx(RICHEDIT_STYLE_TEXTSHADOW));
   
-    CRect  rcWnd;
-    m_pIRichEdit->GetVisibleRectInLayer(&rcWnd);
-
-	if (m_rcInvalidate.IsRectEmpty())
+	if (pRenderTarget->GetGraphicsRenderLibraryType() != GRAPHICS_RENDER_LIBRARY_TYPE_GDI)
 	{
-        if (pRenderTarget->GetGraphicsRenderLibraryType() != GRAPHICS_RENDER_LIBRARY_TYPE_GDI)
-		{
-			Util::FixAlphaData data = {0};
-			data.hDC = hDC;
-            OffsetRect(&rcWnd, pContext->m_ptBufferOffset.x, pContext->m_ptBufferOffset.y);  // 缓存还有偏移
-			data.lprc = &rcWnd;
-			data.bTopDownDib = TRUE;
-			data.eMode = Util::SET_ALPHA_255_IF_ALPHA_IS_0;
-			Util::FixBitmapAlpha(&data);
-		}
+		Util::FixAlphaData data = {0};
+		data.hDC = pRenderTarget->GetHDC();
+		RECT  rc = pContext->m_rcCurrentClip;
+		OffsetRect(&rc, pContext->m_ptBufferOffset.x, pContext->m_ptBufferOffset.y);  // 缓存还有偏移
+		data.lprc = &rc;
+		data.bTopDownDib = TRUE;
+		data.eMode = Util::SET_ALPHA_255_IF_ALPHA_IS_0;
+		Util::FixBitmapAlpha(&data);
 	}
-	else
-	{
-        // 注：m_rcInvalidate可能过期了，例如窗口在拖拽中，控件的范围变小了，但m_rcInvalidate
-        //     记录的还是上一次的大小。因此在这取一次交集
-        CRect rcFix;
-        rcFix.IntersectRect(&m_rcInvalidate, &rcWnd);
-
-        if (pRenderTarget->GetGraphicsRenderLibraryType() != GRAPHICS_RENDER_LIBRARY_TYPE_GDI)
-		{
-			Util::FixAlphaData data = {0};
-			data.hDC = hDC;
-			data.bTopDownDib = TRUE;
-            OffsetRect(&rcFix, pContext->m_ptBufferOffset.x, pContext->m_ptBufferOffset.y);  // 缓存还有偏移
-			data.lprc = &rcFix;
-			data.eMode = Util::SET_ALPHA_255_IF_ALPHA_IS_0;
-			Util::FixBitmapAlpha(&data);
-		}
-
-		m_rcInvalidate.SetRectEmpty();
-	}
+	m_wrapRichEidt.GetInvalidateRect(NULL, NULL, true);
 }
 
 // 由WindowlessRichEdit::TxInvalidateRect post过来的消息，延迟刷新
 LRESULT RichEdit::OnRedrawObject(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	bool bRedrawScrollbar = false;
-	if (false == m_wrapRichEidt.GetInvalidateRect(&m_rcInvalidate, &bRedrawScrollbar))
+	CRect  rcInvalid(0, 0, 0 ,0);
+	if (false == m_wrapRichEidt.GetInvalidateRect(&rcInvalid, &bRedrawScrollbar, true))
 		return 0;
-
-    HDC hDC = m_pIRichEdit->GetRenderLayer2()->GetHDC();
-    if (NULL == hDC)
-        return 0;
-
-	SaveDC(hDC);   // SetMetaRgn之前必须调用一次，配合restoredc还原metargn
-
-	HRGN hRgn = CreateRectRgnIndirect(&m_rcInvalidate);
-	::SelectClipRgn(hDC, hRgn);
-	SAFE_DELETE_GDIOBJECT(hRgn);
-
-	// SetMetaRgn使用当前clip rgn做为meta rgn。
-	// 因为RedrawObject内部刷新一个对象时会重新设置裁剪区域为object区域，
-	// 导致rcInvalidate clip rgn被覆盖。这里借用metargn来完成双重裁剪区域的设置。
-	// PS: GDIPLUS貌似不支持MetaRgn
-
-	::SetMetaRgn(hDC);   
 
 	if (m_caret.GetCaretType()==CARET_TYPE_API)
 		m_caret.HideCaret(m_pIRichEdit);  // 解决系统光标在输入文字时不显示的问题。加上Hide/Show光标即可跟随输入位置
 
-	m_pIRichEdit->UpdateObject();   
+	m_bRedrawing = true;
+	{
+		m_pIRichEdit->UpdateObjectEx(rcInvalid, 1, true);   
+	}
+	m_bRedrawing = false;
 
 	if (m_caret.GetCaretType()==CARET_TYPE_API)
 		m_caret.ShowCaret(m_pIRichEdit);
-
-	RestoreDC(hDC,-1);     
 
 	if (bRedrawScrollbar)   // 避免每次都刷新滚动条
     {
@@ -285,6 +247,24 @@ void RichEdit::OnKillFocus(IObject* pNewFocusObj)
 		SetMsgHandled(FALSE);
 	}
 }
+
+
+UINT  RichEdit::OnGetDlgCode(LPMSG lpMsg)
+{
+	UINT nRet = DLGC_WANTARROWS;
+	nRet |= DLGC_WANTCHARS|DLGC_WANTALLKEYS;
+
+// 	if (m_pIRichEdit->GetStyleEx() & EDIT_STYLE_WANTTAB)
+// 	{
+// 		if (!Util::IsKeyDown(VK_CONTROL))
+// 		{
+// 			nRet |= DLGC_WANTTAB;
+// 		}
+// 	}
+
+	return nRet;
+}
+
 
 LRESULT RichEdit::OnForwardMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {

@@ -130,9 +130,9 @@ public:
 	bool              IsUnderXpOS();
 	bool              IsVistaOrWin7etc();
 
-	bool              IsUIObjectAvailable(IMessage* p);
-	HRESULT           AddUIObject(IMessage* p);
-	HRESULT           RemoveUIObject(IMessage* p);
+// 	bool              IsUIObjectAvailable(IMessage* p);
+// 	HRESULT           AddUIObject(IMessage* p);
+// 	HRESULT           RemoveUIObject(IMessage* p);
 
 	HWND              GetForwardPostMessageWnd();
 

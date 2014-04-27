@@ -43,6 +43,14 @@ IListItemBase*  IListItemBase::GetChildItem()
 
     return NULL;
 }
+IListItemBase*  IListItemBase::GetLastChildItem()
+{
+    ListItemBase* p = m_pListItemBaseImpl->GetLastChildItem();
+    if (p)
+        return p->GetIListItemBase();
+
+    return NULL;
+}
 IListItemBase*  IListItemBase::GetPrevSelection()
 {
     ListItemBase* p = m_pListItemBaseImpl->GetPrevSelection();
@@ -93,14 +101,6 @@ IListItemBase*  IListItemBase::GetPrevTreeItem()
     return NULL;
 }
 
-IListItemBase*  IListItemBase::GetLastChildItem()
-{
-    ListItemBase* p = m_pListItemBaseImpl->GetLastChildItem();
-    if (p)
-        return p->GetIListItemBase();
-
-    return NULL;
-}
 bool  IListItemBase::IsMyChildItem(IListItemBase* pChild, bool bTestGrandChildren)
 {
     if (NULL == pChild)
@@ -143,6 +143,14 @@ void  IListItemBase::SetChildItem(IListItemBase* p)
         pListItem = p->GetImpl();
 
     m_pListItemBaseImpl->SetChildItem(pListItem);
+}
+void  IListItemBase::SetLastChildItem(IListItemBase* p)
+{
+    ListItemBase* pListItem = NULL;
+    if (p)
+        pListItem = p->GetImpl();
+
+    m_pListItemBaseImpl->SetLastChildItem(pListItem);
 }
 void  IListItemBase::AddChild(IListItemBase* p)
 {

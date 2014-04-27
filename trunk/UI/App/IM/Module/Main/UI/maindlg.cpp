@@ -251,21 +251,23 @@ void  CMainDlg::InitContactList()
     if (!m_pContactList)
         return;
 
+    LARGE_INTEGER liPerFreq = {0};
+    ::QueryPerformanceFrequency(&liPerFreq);
+
+    LARGE_INTEGER liStart = {0};
+    ::QueryPerformanceCounter(&liStart);
+
     CONTACTLIST_GROUPITEM_INFO ginfo = {0};
-    ginfo.lId = 0;
-    ginfo.pszText = _T("我的好友");
     ginfo.nMask = CLGI_MASK_TEXT;
-    m_pContactList->InsertGroup(&ginfo);
-
-    ginfo.lId = 1;
-    ginfo.pszText = _T("我的朋友");
-    m_pContactList->InsertGroup(&ginfo);
-
-
     CONTACTLIST_CONTACTITEM_INFO cInfo;
-    for (int j = 0; j < 2; j++)
+
+    for (int j = 0; j < 10; j++)
     {
-        for (int i = 0; i < 30; i++)
+        ginfo.lId = j;
+        ginfo.pszText = _T("我的朋友[11/500]");
+        m_pContactList->InsertGroup(&ginfo);
+
+        for (int i = 0; i < 500; i++)
         {
             cInfo.lId = i;
             cInfo.lGroupId = j;
@@ -275,17 +277,25 @@ void  CMainDlg::InitContactList()
 
             cInfo.nMask = CLCI_MASK_NICKNAME|CLCI_MASK_MOODPHRASE|CLCI_MASK_PORTRAIT|CLCI_MASK_GRAY_PORTRAIT; 
             cInfo.pszNickName = _T("leeihcy");
-            cInfo.pszMoodphrase = _T("気もち");
+            cInfo.pszMoodphrase = _T("好好学习，天天向上!!");
 
             TCHAR szPath[MAX_PATH] = _T("");
             _stprintf(szPath, _T("head_%d"), (i%8) + 1);
             cInfo.pszPortraitPath = szPath;
 
             cInfo.bGrayPortrait = i > 10 ? true:false;
-            m_pContactList->InsertContact(&cInfo);
+            m_pContactList->InsertContact(&cInfo, false);  // 在初始化中不检查是否有重复项，加快插入速度
         }
     }
     m_pContactList->UpdateItemRect(NULL, true);
+
+    LARGE_INTEGER liEnd = {0};
+    ::QueryPerformanceCounter(&liEnd);
+
+    int time = (int)((liEnd.QuadPart - liStart.QuadPart)*1000/liPerFreq.QuadPart);
+    TCHAR szText[128] = {0};
+    _stprintf(szText, _T("Init ContactList Cost: %d ms\r\n"), time);
+    ::OutputDebugString(szText);
 }
 void  CMainDlg::InitGroupList()
 {
@@ -646,11 +656,8 @@ void  CMainDlg::ShowList(MainDlgListPluginInfo* pListInfo)
     pAnimate2->SetVisible(true, false, false);
 
     UI::IStoryboard* pStoryboard = GetUIApplication()->GetAnimateMgr()->CreateStoryboard(this, 0, (WPARAM)pAnimate1, (LPARAM)pAnimate2);
-    UI::IIntEasingMove* pMoveAlgo = NULL;
-    UI::IIntTimeline* pTimeline = (UI::IIntTimeline*)pStoryboard->CreateTimeline(
-        UI::TV_INT, 0, UI::TMA_Easing, (UI::IMoveAlgorithm**)&pMoveAlgo);
-
-    pMoveAlgo->SetParam(0, m_pPanelList->GetWidth(), 100, UI::ease_out);
+    UI::IIntTimeline* pTimeline = pStoryboard->CreateIntTimeline(0);
+    pTimeline->SetEaseParam(0, m_pPanelList->GetWidth(), 100, UI::ease_out);
     
     if (nIndex2 > nIndex1)
         pStoryboard->SetId(STORYBOARD_ID_SWITCH_LIST_LEFT2RIGHT);

@@ -176,20 +176,18 @@ bool  WindowUpDownAlphaShowAnimate::DoAction(int nId, int nDuration, bool bShow)
     if (0 == nHeight)
         return false;
 
-    IIntLinearMove* pMoveAlgo = NULL;
-    IIntTimeline*  pTimeline = static_cast<IIntTimeline*>(
-        CreateTimeline(TV_INT, 0, TMA_Linear, (IMoveAlgorithm**)&pMoveAlgo));
+    IIntTimeline*  pTimeline = CreateIntTimeline(0);
     if (NULL == pTimeline)
         return false;
 
     m_bShow = bShow;
     if (bShow)
     {
-        pMoveAlgo->SetParam1(-255, nHeight, nDuration); // 第一次响应OnTick的时候可能不是-255，例如-37，导致已经显示了很大一截了。因此将From设大一些
+        pTimeline->SetLinerParam1(-255, nHeight, nDuration); // 第一次响应OnTick的时候可能不是-255，例如-37，导致已经显示了很大一截了。因此将From设大一些
     }
     else
     {
-        pMoveAlgo->SetParam1(nHeight-128, -255, nDuration);
+        pTimeline->SetLinerParam1(nHeight-128, -255, nDuration);
     }
 
     m_nStartLine = m_pLayeredWindow->m_nHeight-1;

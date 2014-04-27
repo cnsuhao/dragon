@@ -35,7 +35,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	GetConfig()->Load();
 
 	CMainWnd::CreateInstance(g_pUIApp, &g_pMainWnd);
-	g_pMainWnd->Create(g_pUIApp, _T("MainWnd"));
+	g_pMainWnd->Create(_T("MainWnd"));
 	g_pMainWnd->ShowWindow();
 
 	g_pUIApp->MsgHandleLoop();

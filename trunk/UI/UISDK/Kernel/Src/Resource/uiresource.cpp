@@ -194,15 +194,12 @@ void  LayoutResItem::SetLastAttr(IMapAttribute* pattr)
 
 LayoutRes::LayoutRes()
 {
-#if 0
     m_pILayoutRes = NULL;
-#endif
 }
 LayoutRes::~LayoutRes()
 {
-#if 0
     SAFE_DELETE(m_pILayoutRes);
-#endif
+
 // 	_MyMapIter iter = m_mapResItem.begin();
 // 	_MyMapIter iterEnd = m_mapResItem.end();
 // 

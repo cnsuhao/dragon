@@ -89,10 +89,6 @@ interface UISDKAPI IUIApplication : IUnknown
     bool     IsVistaOrWin7etc();
     bool     IsAeroEnable();
 
-    bool     IsUIObjectAvailable(IMessage* p);
-    HRESULT  AddUIObject(IMessage* p);
-    HRESULT  RemoveUIObject(IMessage* p);
-
     HWND     GetForwardPostMessageWnd();
 
 private:

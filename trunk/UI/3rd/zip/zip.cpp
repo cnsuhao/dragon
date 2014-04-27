@@ -69,7 +69,7 @@
 typedef unsigned char uch;      // unsigned 8-bit value
 typedef unsigned short ush;     // unsigned 16-bit value
 typedef unsigned long ulg;      // unsigned 32-bit value
-typedef size_t extent;          // file size
+//typedef size_t extent;          // file size
 typedef unsigned Pos;   // must be at least 32 bits
 typedef unsigned IPos; // A Pos is an index in the character window. Pos is used only for parameter passing
 
@@ -563,7 +563,7 @@ typedef struct iztimes {
 typedef struct zlist {
   ush vem, ver, flg, how;       // See central header in zipfile.c for what vem..off are
   ulg tim, crc, siz, len;
-  extent nam, ext, cext, com;   // offset of ext must be >= LOCHEAD
+  size_t nam, ext, cext, com;   // offset of ext must be >= LOCHEAD
   ush dsk, att, lflg;           // offset of lflg must be >= LOCHEAD
   ulg atx, off;
   char name[MAX_PATH];          // File name in zip file
@@ -2020,7 +2020,7 @@ int putcentral(struct zlist far *z, WRITEFUNC wfunc, void *param)
 }
 
 
-int putend(int n, ulg s, ulg c, extent m, char *z, WRITEFUNC wfunc, void *param)
+int putend(int n, ulg s, ulg c, size_t m, char *z, WRITEFUNC wfunc, void *param)
 { // write the end of the central-directory-data to file *f.
   PUTLG(ENDSIG, f);
   PUTSH(0, f);
@@ -2101,7 +2101,7 @@ const ulg crc_table[256] = {
 #define DO4(buf)  DO2(buf); DO2(buf)
 #define DO8(buf)  DO4(buf); DO4(buf)
 
-ulg crc32(ulg crc, const uch *buf, extent len)
+ulg crc32(ulg crc, const uch *buf, size_t len)
 { if (buf==NULL) return 0L;
   crc = crc ^ 0xffffffffL;
   while (len >= 8) {DO8(buf); len -= 8;}

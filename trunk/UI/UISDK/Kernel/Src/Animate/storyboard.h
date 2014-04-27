@@ -21,7 +21,9 @@ public:
     bool  DestroyTimeline(int nTimelineId);
     ITimeline*  GetTimeline(unsigned int nIndex);
     ITimeline*  FindTimeline(int nTimelineId);
-    ITimeline*  CreateTimeline(TIMELINE_VALUE_TYPE eType, int nTimelineId, int nMoveAlgo, IMoveAlgorithm** ppMoveAlgo);
+    IIntTimeline*  CreateIntTimeline(int nTimelineId);
+	IFloatTimeline*  CreateFloatTimeline(int nTimelineId);
+	INoneTimeline*   CreateNoneTimeline(int nTimelineId);
 
     IMessage*  GetNotifyObj();
     void  SetNotifyObj(IMessage* pNotify);

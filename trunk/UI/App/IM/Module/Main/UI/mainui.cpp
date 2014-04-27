@@ -85,7 +85,7 @@ long  CMainUI::Create()
         CMainDlg::CreateInstance(IM::GetUIApplication(), &m_pMainDlg);
         m_pMainDlg->SetMainUI(this);
 
-        m_pMainDlg->Create(IM::GetUIApplication(), _T("maindlg"), NULL);
+        m_pMainDlg->Create(_T("maindlg"), NULL);
 
         if (NULL == m_pSkinUI)
         {

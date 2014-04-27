@@ -12,7 +12,6 @@ interface IRenderBase;
 class UICursor;
 class WindowBase;
 interface ILayoutParam;
-class Object3DWrap;
 class RenderLayer2;
 class WindowRender;
 class Object;
@@ -217,11 +216,14 @@ public:
 	void  GetClientRect( CRect* prc );
 	void  GetClientRectAsWin32(CRect* prc);
 	void  GetClientRectInWindow(CRect* prc);
-
-	bool  GetVisibleRectInWindow(RECT* prc);
-    bool  GetVisibleRectInLayer(RECT* prc);
+	
+	bool  GetRectInLayer(RECT* prc, bool bOnlyVisiblePart);
+	bool  GetRectInWindow(RECT* prc, bool bOnlyVisiblePart);
     bool  GetVisibleClientRectInLayer(RECT* prc);
-    bool  CalcVisibleRectInAncestor(__in Object*  pObjAncestor, __in const RECT* prcObjPart, __out RECT* prcOut);
+	bool  CalcRectInAncestor(__in Object*  pObjAncestor,
+		__in const RECT* prcObjPart, 
+		__in bool bCalcVisible, 
+		__out RECT* prcOut);
 
 	void  SetObjectPos( int x, int y, int cx, int cy, int nFlag=0 );
 	void  SetObjectPos( CRect* prc, int nFlag=0 );
@@ -405,7 +407,6 @@ protected:
     IRenderBase*      m_pForegndRender;        // 前景渲染
     ITextRenderBase*  m_pTextRender;           // 文字渲染
     IUICursor*        m_pCursor;               // 对象的鼠标样式
-    Object3DWrap*     m_pObject3DWrap;         // 3d包装器
     RenderLayer2*     m_pRenderLayer;          // 该对象是否创建了一个layer
     
     void**            m_ppOutRef;              // 为了解决一个类成员对象，有可能被自己的父对象删除后，这个类却不知道，再删除该对象时崩溃了.

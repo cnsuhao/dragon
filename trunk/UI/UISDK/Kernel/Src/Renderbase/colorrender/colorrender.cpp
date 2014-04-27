@@ -121,13 +121,7 @@ void ColorRender::SetAttribute(SetAttrPrefixData* pData)
 	const TCHAR* szText = pMapAttrib->GetAttr(strAttrib.c_str(), pData->bErase);
 	if (szText) 
     { 
-		pColorRes->GetColor((BSTR)szText, &m_pBkColor); 
-
-        if (!m_pBkColor)
-        {
-            COLORREF color = Util::TranslateColor(szText);  // 直接翻译，不根据ID去映射
-            m_pBkColor = Color::CreateInstance(color);
-        }
+		pColorRes->GetColor(szText, &m_pBkColor); 
     }
 
     strAttrib.clear();
@@ -137,12 +131,7 @@ void ColorRender::SetAttribute(SetAttrPrefixData* pData)
     szText = pMapAttrib->GetAttr(strAttrib.c_str(), pData->bErase);
     if (szText)
     {
-        pColorRes->GetColor((BSTR)szText, &m_pBorderColor);
-        if (!m_pBorderColor)
-        {
-            COLORREF color = Util::TranslateColor(szText);
-            m_pBorderColor = Color::CreateInstance(color);
-        }
+        pColorRes->GetColor(szText, &m_pBorderColor);
     }
 
     strAttrib.clear();
@@ -366,12 +355,7 @@ void GradientRender::SetAttribute(SetAttrPrefixData* pData)
 	const TCHAR* szText = pMapAttrib->GetAttr(strAttrib.c_str(), pData->bErase);
 	if (szText)
     {
-		pColorRes->GetColor((BSTR)szText, &m_pColorFrom);
-        if (!m_pColorFrom)
-        {
-            COLORREF color = Util::TranslateColor(szText);  // 直接翻译，不根据ID去映射
-            m_pColorFrom = Color::CreateInstance(color);
-        }
+		pColorRes->GetColor(szText, &m_pColorFrom);
     }
 
 	strAttrib = szPrefix ? szPrefix:_T("");
@@ -379,12 +363,7 @@ void GradientRender::SetAttribute(SetAttrPrefixData* pData)
 	szText = pMapAttrib->GetAttr(strAttrib.c_str(), pData->bErase);
 	if (szText)
     {
-		pColorRes->GetColor((BSTR)szText, &m_pColorTo);
-        if (!m_pColorTo)
-        {
-            COLORREF color = Util::TranslateColor(szText);  // 直接翻译，不根据ID去映射
-            m_pColorTo = Color::CreateInstance(color);
-        }
+		pColorRes->GetColor(szText, &m_pColorTo);
     }
 
     strAttrib = szPrefix ? szPrefix:_T("");
@@ -403,12 +382,7 @@ void GradientRender::SetAttribute(SetAttrPrefixData* pData)
     szText = pMapAttrib->GetAttr(strAttrib.c_str(), pData->bErase);
     if (szText)
     {
-        pColorRes->GetColor((BSTR)szText, &m_pBorderColor);
-        if (!m_pBorderColor)
-        {
-            COLORREF color = Util::TranslateColor(szText);  // 直接翻译，不根据ID去映射
-            m_pBorderColor = Color::CreateInstance(color);
-        }
+        pColorRes->GetColor(szText, &m_pBorderColor);
     }
 
     strAttrib = szPrefix ? szPrefix : _T("");
@@ -548,15 +522,9 @@ void ColorListRender::SetAttribute(SetAttrPrefixData* pData)
 
 		for (int i = 0; i < m_nCount && i < nCount; i++ )
 		{
-			if (! vColors[i].empty())
+			if (!vColors[i].empty())
 			{
-				pColorRes->GetColor((BSTR)vColors[i].c_str(), &m_vBkColor[i]);
-
-                if (!m_vBkColor[i])
-                {
-                    COLORREF color = Util::TranslateColor(szText);  // 直接翻译，不根据ID去映射
-                    m_vBkColor[i] = Color::CreateInstance(color);
-                }
+				pColorRes->GetColor(vColors[i].c_str(), &m_vBkColor[i]);
 			}
 		}
 	}
@@ -577,13 +545,7 @@ void ColorListRender::SetAttribute(SetAttrPrefixData* pData)
 		{
 			if (! vColors[i].empty())
 			{
-				pColorRes->GetColor((BSTR)vColors[i].c_str(), &m_vBorderColor[i]);
-
-                if (!m_vBorderColor[i])
-                {
-                    COLORREF color = Util::TranslateColor(szText);  // 直接翻译，不根据ID去映射
-                    m_vBorderColor[i] = Color::CreateInstance(color);
-                }
+				pColorRes->GetColor(vColors[i].c_str(), &m_vBorderColor[i]);
 			}
 		}
 	}

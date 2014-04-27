@@ -1,19 +1,18 @@
-// Windows Template Library - WTL version 8.0
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Windows Template Library - WTL version 9.0
+// Copyright (C) Microsoft Corporation, WTL Team. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
 // The use and distribution terms for this software are covered by the
-// Microsoft Permissive License (Ms-PL) which can be found in the file
-// Ms-PL.txt at the root of this distribution.
+// Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.php)
+// which can be found in the file CPL.TXT at the root of this distribution.
+// By using this software in any fashion, you are agreeing to be bound by
+// the terms of this license. You must not remove this notice, or
+// any other, from this software.
 
 #ifndef __ATLFIND_H__
 #define __ATLFIND_H__
 
 #pragma once
-
-#ifndef __cplusplus
-	#error ATL requires C++ compilation (use a .cpp suffix)
-#endif
 
 #ifdef _WIN32_WCE
 	#error atlfind.h is not supported on Windows CE
@@ -827,11 +826,17 @@ public:
 		{
 			T* pThisNoConst = const_cast<T*>(pT);
 
-			OSVERSIONINFO ovi = { 0 };
-			ovi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+#ifdef _versionhelpers_H_INCLUDED_
+			OSVERSIONINFOEX ovi = { sizeof(OSVERSIONINFOEX) };
+			ovi.dwPlatformId = VER_PLATFORM_WIN32_WINDOWS;
+			DWORDLONG const dwlConditionMask = ::VerSetConditionMask(0, VER_PLATFORMID, VER_EQUAL);
+			bool bWin9x = (::VerifyVersionInfo(&ovi, VER_PLATFORMID, dwlConditionMask) != FALSE);
+#else // !_versionhelpers_H_INCLUDED_
+			OSVERSIONINFO ovi = { sizeof(OSVERSIONINFO) };
 			::GetVersionEx(&ovi);
 
 			bool bWin9x = (ovi.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS);
+#endif // _versionhelpers_H_INCLUDED_
 			if(bWin9x)
 			{
 				// Windows 95, 98, ME
@@ -853,7 +858,11 @@ public:
 				// Using a shadow buffer uses GetWindowText instead, so it solves
 				// this problem for us (although it makes it a little less efficient).
 
-				if((ovi.dwMajorVersion == 5 && ovi.dwMinorVersion >= 1) || (ovi.dwMajorVersion > 5))
+#ifdef _versionhelpers_H_INCLUDED_
+				if(::IsWindowsXPOrGreater())
+#else // !_versionhelpers_H_INCLUDED_
+				if ((ovi.dwMajorVersion == 5 && ovi.dwMinorVersion >= 1) || (ovi.dwMajorVersion > 5))
+#endif // _versionhelpers_H_INCLUDED_
 				{
 					// We use DLLVERSIONINFO_private so we don't have to depend on shlwapi.h
 					typedef struct _DLLVERSIONINFO_private
@@ -872,8 +881,7 @@ public:
 						LPFN_DllGetVersion fnDllGetVersion = (LPFN_DllGetVersion)::GetProcAddress(hModule, "DllGetVersion");
 						if(fnDllGetVersion != NULL)
 						{
-							DLLVERSIONINFO_private version = { 0 };
-							version.cbSize = sizeof(DLLVERSIONINFO_private);
+							DLLVERSIONINFO_private version = { sizeof(DLLVERSIONINFO_private) };
 							if(SUCCEEDED(fnDllGetVersion(&version)))
 							{
 								if(version.dwMajorVersion >= 6)
@@ -894,7 +902,7 @@ public:
 			}
 		}
 
-		return (pT->m_bShadowBufferNeeded == TRUE);
+		return (pT->m_bShadowBufferNeeded != FALSE);
 	}
 };
 
@@ -963,7 +971,7 @@ public:
 			else
 			{
 				// won't wraparound backwards
-				ft.chrg.cpMin = max(ft.chrg.cpMin, 0);
+				ft.chrg.cpMin = __max(ft.chrg.cpMin, 0);
 			}
 		}
 

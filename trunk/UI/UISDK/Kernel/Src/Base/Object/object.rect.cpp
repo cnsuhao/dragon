@@ -305,34 +305,33 @@ void  Object::WindowRect2ObjectRect(const RECT* rcWindow, RECT* rcObj)
 
 
 // 获取一个对象在窗口上的可视区域。例如用于绘制该对象时的裁剪
-
-bool  Object::GetVisibleRectInWindow(RECT* prc)
+bool  Object::GetRectInWindow(RECT* prc, bool bOnlyVisiblePart)
 {
-	return CalcVisibleRectInAncestor(GetWindowObject(), NULL, prc);
+	return CalcRectInAncestor(GetWindowObject(), NULL, bOnlyVisiblePart, prc);
 }
 
 // 计算对象在层中的位置（不是层缓存中的位置，缓存也可能有偏移）
-bool  Object::GetVisibleRectInLayer(RECT* prc)
+bool  Object::GetRectInLayer(RECT* prc, bool bOnlyVisiblePart)
 {
 	RenderLayer2*  pRenderLayer = GetRenderLayer2();
 	if (!pRenderLayer)
-		return GetVisibleRectInWindow(prc);
+		return GetRectInWindow(prc, bOnlyVisiblePart);
 
-	if (!CalcVisibleRectInAncestor(pRenderLayer->GetCreateObject(), NULL, prc))
-        return false;
+	if (!CalcRectInAncestor(pRenderLayer->GetCreateObject(), NULL, bOnlyVisiblePart, prc))
+		return false;
 
-    return true;
+	return true;
 }
 
 bool  Object::GetVisibleClientRectInLayer(RECT* prc)
 {
     RenderLayer2*  pRenderLayer = GetRenderLayer2();
     if (!pRenderLayer)
-        return GetVisibleRectInWindow(prc);
+        return GetRectInWindow(prc, true);
 
     CRect rcClient;
     this->GetClientRect(&rcClient);
-    if (!CalcVisibleRectInAncestor(pRenderLayer->GetCreateObject(), &rcClient, prc))
+    if (!CalcRectInAncestor(pRenderLayer->GetCreateObject(), &rcClient, true, prc))
         return false;
 
     return true;
@@ -343,7 +342,7 @@ bool  Object::GetVisibleClientRectInLayer(RECT* prc)
 //   [in] 默认是CRect  rcClip(0, 0, GetWidth(), GetHeight());
 //        但为了支持只求Object上的某一部分区域在祖先中的可见区域，增加该参数
 //     
-bool  Object::CalcVisibleRectInAncestor(__in Object*  pObjAncestor, __in const RECT* prcObjPart, __out RECT* prcOut)
+bool  Object::CalcRectInAncestor(__in Object*  pObjAncestor, __in const RECT* prcObjPart, bool bCalcVisible, __out RECT* prcOut)
 {
 	// 从下往上遍历
 	if (!pObjAncestor)
@@ -383,10 +382,13 @@ bool  Object::CalcVisibleRectInAncestor(__in Object*  pObjAncestor, __in const R
         // 转换成在父中的区域
 		Object::ChildRect2ParentRect(pChild, &rcClip, &rcClip);
 
-        // 与父对象进行求交
-		CRect  rcParent(0, 0, pParent->GetWidth(), pParent->GetHeight());
-		if (!::IntersectRect(rcClip, &rcClip, &rcParent))
-			return false;
+		if (bCalcVisible)
+		{
+			// 与父对象进行求交
+			CRect  rcParent(0, 0, pParent->GetWidth(), pParent->GetHeight());
+			if (!::IntersectRect(rcClip, &rcClip, &rcParent))
+				return false;
+		}
 
 		if (pParent == pObjAncestor)
 			break;
@@ -398,7 +400,6 @@ bool  Object::CalcVisibleRectInAncestor(__in Object*  pObjAncestor, __in const R
 	return true;
 }
 
-
 // 测试窗口上的区域与自己的交集
 bool  Object::IntersectWindowRect(const RECT* prcWindow, RECT* prcIntersectWnd, RECT* prcIntersectObj)
 {
@@ -406,7 +407,7 @@ bool  Object::IntersectWindowRect(const RECT* prcWindow, RECT* prcIntersectWnd, 
 
 	// wnd
 	RECT  rcWndMe, rcIntersectWnd;
-	GetVisibleRectInWindow(&rcWndMe);
+	GetRectInWindow(&rcWndMe, true);
 
 	if (!::IntersectRect(&rcIntersectWnd, &rcWndMe, prcWindow))
 		return false;
@@ -681,7 +682,7 @@ void Object::SetObjectPos(int x, int y, int cx, int cy, int nFlag)
         // 刷新移动前的区域位置
         if (!(nFlag & SWP_NOREDRAW))
         {
-            this->GetVisibleRectInWindow(&rcOldVisibleRect);  // 获取下当前会刷新的区域范围，放在后面进行提交
+            this->GetRectInWindow(&rcOldVisibleRect, true);  // 获取下当前会刷新的区域范围，放在后面进行提交
             this->UpdateObjectBkgnd(false);  // 这里不能立即刷新，否则后面再调用UpdateObject可能造成闪烁（移动后的位置有重合的情况下）
         }
     }
@@ -752,7 +753,7 @@ void Object::SetObjectPos(int x, int y, int cx, int cy, int nFlag)
             // 将移动之前的区域数据提交到窗口上，避免闪烁
             this->GetWindowObject()->CommitDoubleBuffet2Window(NULL, &rcOldVisibleRect);
         }
-        else
+        else if (bSize)
         {
             GetRenderLayer2()->SetDirty(true);
         }

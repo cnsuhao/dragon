@@ -82,7 +82,6 @@ void  ContactListGroupItem::OnPaint(UI::IRenderTarget* pRenderTarget)
     if (NULL != m_pTreeView->GetTextRender())
     {
         String  strText = m_pIContactListGroupItem->GetText();
-        strText.append(_T(" [0/0]"));
         m_pTreeView->GetTextRender()->DrawState(pRenderTarget, &rcItem, 0, strText.c_str());
     }
 }

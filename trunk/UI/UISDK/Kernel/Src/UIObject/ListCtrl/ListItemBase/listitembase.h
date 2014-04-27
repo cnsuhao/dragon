@@ -44,6 +44,7 @@ public:
     ListItemBase*  GetPrevItem() { return m_pPrev; }
     ListItemBase*  GetParentItem() { return m_pParent; }
     ListItemBase*  GetChildItem()  { return m_pChild; }
+    ListItemBase*  GetLastChildItem();
     ListItemBase*  GetPrevSelection() { return m_pPrevSelection; }
     ListItemBase*  GetNextSelection() { return m_pNextSelection; }
 
@@ -52,7 +53,6 @@ public:
     ListItemBase*  GetNextTreeItem(); 
     ListItemBase*  GetPrevTreeItem();
 
-    ListItemBase*  GetLastChildItem();
     bool  HasChild() { return NULL != m_pChild; }
     bool  IsMyChildItem(ListItemBase* pChild, bool bTestGrandChildren);
 
@@ -60,6 +60,7 @@ public:
     void  SetPrevItem(ListItemBase* p) { m_pPrev = p; }
     void  SetParentItem(ListItemBase* p) { m_pParent = p; }
     void  SetChildItem(ListItemBase* p)  { m_pChild = p; }
+    void  SetLastChildItem(ListItemBase* p)  { m_pLastChild = p; }
     void  SetNextSelection(ListItemBase* p){ m_pNextSelection = p; }
     void  SetPrevSelection(ListItemBase* p){ m_pPrevSelection = p; }
 	void  AddChild(ListItemBase* p);
@@ -160,6 +161,8 @@ protected:
     ListItemBase*  m_pNext;
     ListItemBase*  m_pParent;
     ListItemBase*  m_pChild;
+    ListItemBase*  m_pLastChild;      // 还是加上了这个字段，用于解决往树结点后添加子结点时效率低的问题
+
     ListItemBase*  m_pNextSelection;  // 下一个被选中的对象(自己已被选中)
     ListItemBase*  m_pPrevSelection;  // 上一个被选中的对象(自己已被选中)
 

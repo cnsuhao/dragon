@@ -113,7 +113,7 @@ void  SkinUI::Show()
     if (NULL == m_pSkinDlg)
     {
         CSkinDlg::CreateInstance(IM::GetUIApplication(), &m_pSkinDlg);
-        m_pSkinDlg->Create(IM::GetUIApplication(), _T("changeskindlg"));
+        m_pSkinDlg->Create(_T("changeskindlg"));
         m_pSkinDlg->SetSkinUI(this);
         m_pSkinDlg->InitData(m_byteAlpha, m_byteTextureAlpha);
 

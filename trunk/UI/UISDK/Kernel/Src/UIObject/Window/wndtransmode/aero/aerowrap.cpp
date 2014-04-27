@@ -165,14 +165,6 @@ void  AeroWindowWrap::Enable(bool b)
 				long lStyle = GetWindowLong(m_hWnd, GWL_STYLE);
 				SetWindowLong(m_hWnd, GWL_STYLE, lStyle|WS_THICKFRAME);
 				SetWindowPos(m_hWnd, 0,0,0,0,0, SWP_NOZORDER|SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE|SWP_FRAMECHANGED);
-
-				DwmHelper* pDwm = DwmHelper::GetInstance();
-				if (pDwm->pDwmSetWindowAttribute)
-				{
-					// 不要绘制系统的边框，但要阴影 
-					BOOL b = FALSE;
-					pDwm->pDwmSetWindowAttribute(m_pWindow->m_hWnd, DWMWA_ALLOW_NCPAINT, &b, sizeof(b));
-				}
 			}
             return;
             // 由外部调用UpdateRgn即可

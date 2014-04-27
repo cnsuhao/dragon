@@ -132,6 +132,7 @@ interface UISDKAPI IObject : public IMessage
     bool  SwapObject(IObject* pObj1, IObject* pObj2);
 
     void  UpdateObject(bool bUpdateNow=true);
+	void  UpdateObjectEx(RECT* prcObjArray, int nCount, bool bUpdateNow);
     void  UpdateObjectBkgnd(bool bUpdateNow);
     void  UpdateLayout(bool bUpdate);    
     void  UpdateMyLayout(bool bUpdate);
@@ -187,8 +188,8 @@ interface UISDKAPI IObject : public IMessage
     void  ClientRect2ObjectRect(const RECT* rcClient, RECT* rcObj);
     bool  GetScrollOffset(int* pxOffset, int* pyOffset);
     bool  GetScrollRange(int* pxRange, int* pyRange);
-    bool  GetVisibleRectInWindow(RECT* prc);
-    bool  GetVisibleRectInLayer(RECT* prc);
+    bool  GetRectInWindow(RECT* prc, bool bOnlyVisiblePart);
+    bool  GetRectInLayer(RECT* prc, bool bOnlyVisiblePart);
     bool  GetVisibleClientRectInLayer(RECT* prc);
 
     int   GetWidth();
