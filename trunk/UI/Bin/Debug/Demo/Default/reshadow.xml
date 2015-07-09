@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<skin>
-  <layout>
-    <Window id="reshadow"  minwidth="200" minheight="200">
-        <RichEdit id="richedit" istransparent="1" layout.left="0" layout.top="0" layout.right="0" layout.bottom="0"></RichEdit>
-    </Window>
-  </layout>
-  
-</skin>

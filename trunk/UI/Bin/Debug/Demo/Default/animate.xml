@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<skin>
-  <layout>
-    <Window id="animate"  minwidth="500" minheight="500">
-      <Button id="button1" layout.left="10" layout.top="10" width="75" height="25" text="button"></Button>
-    </Window>
-  </layout>
-  
-</skin>
