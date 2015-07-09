@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<skin>
+	<layout>
+		<CustomWindow id="DefaultComboBoxDropWnd">
+			<ListBox styleclass="combo.listbox" border="1,1,1,1" bkgnd.render.border="1,1,1,1" foregnd.render.colorlist.count="7" foregnd.render.border.color=";;;;;;" textrender.align="vcenter" textrender.colorlist.count="9" textrender.font="default" itempadding="2,0,2,0" transparent="" />
+		</CustomWindow>
+		<CustomWindow id="DefaultMenu">
+			<Menu styleclass="popup.layout.fill" />
+		</CustomWindow>
+	</layout>
+	<image>
+		<!-- Control Type Icon -->
+		<image id="control_AppWindow">img\ControlIcon\AppWindow.png</image>
+		<image id="control_button">img\ControlIcon\button.png</image>
+		<image id="control_menu">img\ControlIcon\menu.png</image>
+		<image id="control_tooltip">img\ControlIcon\tooltip.png</image>
+		<image id="control_checkbox">img\ControlIcon\checkbox.png</image>
+		<image id="control_combobox">img\ControlIcon\combobox.png</image>
+		<image id="control_groupbox">img\ControlIcon\groupbox.png</image>
+		<image id="control_hscrollbar">img\ControlIcon\hscrollbar.png</image>
+		<image id="control_hyperlink">img\ControlIcon\hyperlink.png</image>
+		<image id="control_image">img\ControlIcon\image.png</image>
+		<image id="control_label">img\ControlIcon\label.png</image>
+		<image id="control_listbox">img\ControlIcon\listbox.png</image>
+		<image id="control_picturebox">img\ControlIcon\picturebox.png</image>
+		<image id="control_radiobutton">img\ControlIcon\radiobutton.png</image>
+		<image id="control_richtextbox">img\ControlIcon\richtextbox.png</image>
+		<image id="control_tabcontrol">img\ControlIcon\tabcontrol.png</image>
+		<image id="control_textbox">img\ControlIcon\textbox.png</image>
+		<image id="control_trackbar">img\ControlIcon\trackbar.png</image>
+		<image id="control_treeview">img\ControlIcon\treeview.png</image>
+		<image id="control_vscrollbar">img\ControlIcon\vscrollbar.png</image>
+		<image id="control_webbrowser">img\ControlIcon\webbrowser.png</image>
+		<image id="control_panel">img\ControlIcon\panel.png</image>
+		<image id="control_progress">img\ControlIcon\progress.png</image>
+		<image id="control_listview">img\ControlIcon\listview.png</image>
+		<!-- Command Button Icon -->
+		<image id="command_save">img\CommandIcon\saveHS.png</image>
+		<image id="command_newwindow">img\CommandIcon\NewWindow.png</image>
+		<image id="command_undo">img\CommandIcon\Edit_UndoHS.png</image>
+		<image id="command_redo">img\CommandIcon\Edit_RedoHS.png</image>
+		<image id="command_preview">img\CommandIcon\preview.png</image>
+		<image id="command_delete_red">img\CommandIcon\delete_red.png</image>
+		<image id="command_movedown">img\CommandIcon\movedown.png</image>
+		<image id="command_moveup">img\CommandIcon\moveup.png</image>
+		<image id="command_movedown2">img\CommandIcon\movedown2.png</image>
+		<image id="command_moveup2">img\CommandIcon\moveup2.png</image>
+		<!-- Common -->
+		<image id="common_tabctrl_border">img\Common\tabctrl_border.png</image>
+		<imagelist id="common_tabctrl_btn_top" count="3">img\Common\tabctrl_btn_top.png</imagelist>
+		<imagelist id="common_tabctrl_btn_bottom" count="3">img\Common\tabctrl_btn_bottom.png</imagelist>
+	</image>
+	<font>
+		<item id="default" facename="宋体" size="9" />
+		<item id="default_bold" facename="宋体" bold="1" size="9" />
+		<item id="default_underline" facename="宋体" underline="1" size="9" />
+	</font>
+	<color>
+		<item id="white">255,255,255,255</item>
+		<item id="black">0,0,0,255</item>
+		<item id="gray">128,128,128,255</item>
+		<item id="listbox.item.bkg">51,153,255,255</item>
+		<item id="dlg_bkg">241,237,237,255</item>
+		<item id="dlg_border">160,160,160,255</item>
+		<item id="firstpagedlgback">171,171,171,255</item>
+		<item id="toolbar_btn_hover_border">10,36,106,255</item>
+		<item id="toolbar_btn_hover_back">182,189,210,255</item>
+		<item id="toolbar_btn_press_border">10,36,106,255</item>
+		<item id="toolbar_btn_press_back">133,146,181,255</item>
+		<item id="link_normal">0,0,255,255</item>
+		<item id="link_hover">255,0,0,255</item>
+		<item id="link_press">255,0,0,255</item>
+	</color>
+	<style>
+		<class id="popup.layout.fill" layout.align="forcedesiredsize" layout.left="0" layout.top="0" layout.right="0" layout.bottom="0" />
+		<class id="combo.listbox" border="1" inherit=".popup.layout.fill" transparent="0" foregnd.render.type="colorlist" foregnd.render.color="white;listbox.item.bkg;listbox.item.bkg;;listbox.item.bkg;listbox.item.bkg;listbox.item.bkg" textrender.type="colorlist" textrender.color="black;white;white;white;white;white;white;white;white" textrender.align="left|vcenter" bkgnd.render.type="color" bkgnd.render.color="white" bkgnd.render.border="1" bkgnd.render.border.color="gray" />
+		<class id="theme_btn" bkgnd.render.type="theme" transparent="1" textrender.type="simple" textrender.font="default" textrender.align="center|vcenter" />
+		<class id="theme_edit" bkgnd.render.type="theme" transparent="1" textrender.type="colorlist" textrender.color="0xF000;0xFFFF" textrender.align="vcenter|singleline" padding="3" />
+		<class id="child_edit" bkgnd.render.type="color" bkgnd.render.color="white" textrender.type="colorlist" textrender.color="0xF000;0xFFFF" textrender.align="vcenter|singleline" />
+		<class id="child_combobox" bkgnd.render.type="color" bkgnd.render.color="white" textrender.type="simple" textrender.font="normal" />
+		<class id="fristpage_hyperlink" visible="hidden" height="20" layout.left="5" layout.right="25" textrender.align="vcenter|endellipsis" textrender.type="fontcolorlist" textrender.color="link_normal;link_hover;link_press" textrender.font="default;default_underline;default_underline" />
+		<class id="firstpage_recentbtn" visible="hidden" width="20" height="20" layout.right="5" inherit=".theme_btn" />
+		<class id="toolbar_btn" width="24" height="24" drawfocus="0" layout.align="vcenter" disable="1" foregnd.render.type="image" iconalign="center" transparent="1" margin="1,0,1,0" bkgnd.render.type="colorlist" bkgnd.render.color=";toolbar_btn_hover_back;toolbar_btn_press_back" bkgnd.render.border.color=";toolbar_btn_hover_border;toolbar_btn_press_border" />
+		<class id="property_dlg_toolbar_btn" drawfocus="0" transparent="1" textrender.align="center|vcenter" margin="1,0,1,0" bkgnd.render.type="colorlist" bkgnd.render.color=";toolbar_btn_hover_back;toolbar_btn_press_back;;toolbar_btn_hover_back;toolbar_btn_press_back;toolbar_btn_press_back;" bkgnd.render.border.color=";toolbar_btn_hover_border;toolbar_btn_press_border;;toolbar_btn_hover_border;toolbar_btn_press_border;toolbar_btn_press_border;" textrender.type="colorlist" textrender.color="black;black;white;black;black;white;white;black" />
+		<class id="tabctrlbtn" padding="10,2,10,2" bkgnd.render.type="imagelist" bkgnd.render.image.9region="3" bkgnd.render.image.drawtype="stretch" />
+		<class id="tabctrlbtn_bottom" bkgnd.render.image="common_tabctrl_btn_bottom" inherit=".tabctrlbtn" />
+		<class id="tabctrlbtn_top" bkgnd.render.image="common_tabctrl_btn_top" inherit=".tabctrlbtn" />
+		<class id="tabctrl_win32" head.layout="win32" bkgnd.render.type="image" bkgnd.render.image.drawtype="stretch" bkgnd.render.image.9region="2" bkgnd.render.image="common_tabctrl_border" contentpanel.padding="3" />
+		<class id="editor_listctrl" bkgnd.render.type="color" bkgnd.render.color="0xFFFFFFFF" foregnd.render.type="colorlist" foregnd.render.color=";;;;0xFFCEEDFA;0xFFCEEDFA;0xFFCEEDFA;;0xFFCEEDFA" foregnd.render.border.color=";0xFF3399FF;;;0xFF3399FF;0xFF3399FF;0xFF3399FF;;0xFF3399FF" foregnd.render.colorlist.count="9" bkgnd.render.border.color="0xFFCCCCCC" bkgnd.render.border="1" border="1" expandicon.render.type="theme.treeview.expandcollpase.icon" />
+		<class id="theme_combo" bkgnd.render.type="theme" padding="3,1,1,1" transparent="1" />
+	</style>
+</skin>
