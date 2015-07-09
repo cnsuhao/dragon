@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<skin>
+	<layout />
+	<image>
+    <!-- 落叶 -->
+    <image path="leaves\textBackground.png" id="leave_text"/>
+    <image path="leaves\backgroundLeaves.jpg" id="leave_bkg"/>
+    <image path="leaves\realLeaf1.png" id="leaf1"/>
+    <image path="leaves\realLeaf2.png" id="leaf2"/>
+    <image path="leaves\realLeaf3.png" id="leaf3"/>
+    <image path="leaves\realLeaf4.png" id="leaf4"/>
+	</image>
+	<font>
+		<item id="default" facename="宋体" size="9" />
+	</font>
+	<color>
+		<item id="white">255,255,255,255</item>
+		<item id="black">0,0,0,255</item>
+	</color>
+  <style>
+    <!-- 落叶 -->
+    <class bkgnd.render.type="image" id="leaves_img" transparent="1" height="100" width="100" layer="1" noclip="1"/>
+  </style>
+	<include>wnd.xml</include>
+</skin>

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<skin>
+	<layout />
+	<image>
+		<image id="test.png" path="test.png" />
+	</image>
+	<font>
+		<item id="default" facename="宋体" size="9" />
+	</font>
+	<color>
+		<item id="white">255,255,255,255</item>
+		<item id="black">0,0,0,255</item>
+	</color>
+	<style />
+	<include>wnd.xml</include>
+</skin>
