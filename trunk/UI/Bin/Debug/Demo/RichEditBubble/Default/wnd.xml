@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<skin>
+	<layout>
+		<Window needalphachannel="1" id="DemoWnd" layer="1" bkgnd.render.type="color" width="300" height="400" bkgnd.render.color="0xFFFFFFFF" font="default" text="RichEdit 气泡会话测试：">
+			<RichEdit id="richedit" bkgnd.render.type="color" width="0" height="0" layout.left="0" layout.top="0" layout.right="0" layout.bottom="0" bkgnd.render.color="0xFFFFFFFF" msgbubble.enable="1" msgbubble.left.image="default_bubble_left" msgbubble.right.image="default_bubble_right" hscrollbar="none" />
+		</Window>
+	</layout>
+</skin>

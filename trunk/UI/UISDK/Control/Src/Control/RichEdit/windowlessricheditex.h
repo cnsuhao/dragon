@@ -49,7 +49,7 @@ protected:
 
 	void  TxSetCursor(HCURSOR hcur, BOOL fText) override;
 
-protected:
+public:
     BubbleManager*  m_pBubbleMgr;
 };
 }

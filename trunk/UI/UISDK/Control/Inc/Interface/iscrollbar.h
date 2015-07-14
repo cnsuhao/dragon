@@ -15,7 +15,7 @@ interface ISystemScrollBar : public IControl
     void  SetIScrollBarMgr(IScrollBarManager* p);
     void  SetAutoSetBindObjFocus(bool b);
     void  SetFloatOnClientRegion(bool b);
-    void  SetKeepHodeNonClientRegion(bool b);
+    void  SetKeepHoldNonClientRegion(bool b);
 };
 
 

@@ -83,7 +83,7 @@ public:
 	void  GetDesiredSize(SIZE* pSize);
     void  SetAutoSetBindObjFocus(bool b);
     void  SetFloatOnClientRegion(bool b);
-    void  SetKeepHodeNonClientRegion(bool b);
+    void  SetKeepHoldNonClientRegion(bool b);
     
 protected:
 	HRESULT  FinalConstruct(IUIApplication* p);

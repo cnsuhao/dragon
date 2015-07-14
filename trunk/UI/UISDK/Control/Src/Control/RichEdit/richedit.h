@@ -1,6 +1,7 @@
 #pragma once
 #include "windowlessricheditex.h"
 #include "UISDK\Control\Inc\Interface\irichedit.h"
+#include "..\ScrollBar\vscrollbar_creator.h"
 
 //
 //	RichEdit编辑框控件
@@ -67,6 +68,9 @@ public:
         UIMSG_WM_GETOBJECTINFO( OnGetObjectInfo ) 
         UIMSG_WM_SERIALIZE( OnSerialize )
         UIMSG_WM_FINALCONSTRUCT( FinalConstruct )
+
+    UIALT_MSG_MAP(UIALT_CALLLESS)
+        UIMSG_WM_CREATEBYEDITOR(OnCreateByEditor)
 	UI_END_MSG_MAP_CHAIN_PARENT_Ixxx(RichEdit, IControl)
 
     void  SetIRichEdit(IRichEdit* p);
@@ -90,6 +94,7 @@ public:
 protected:
     HRESULT  FinalConstruct(IUIApplication* p);
     void  OnSerialize(SERIALIZEDATA* pData);
+    void  OnCreateByEditor(CREATEBYEDITORDATA* pData);
 
 	void  OnInitialize();
 	void  OnEraseBkgnd(IRenderTarget* pRenderTarget);
@@ -112,12 +117,19 @@ protected:
     long  OnRequestAutoSize(RECT* prcRequest);
     void  OnEnChanged(BOOL& bHandled);
 
+private:
+    void  set_bubble_left_image(LPCTSTR);
+    void  set_bubble_right_image(LPCTSTR);
+    LPCTSTR  get_bubble_left_image();
+    LPCTSTR  get_bubble_right_image();
+
 protected:
     IRichEdit*  m_pIRichEdit;
 
 	WindowlessRichEditEx   m_wrapRichEidt;
 	IScrollBarManager*   m_pMgrScrollBar;
-    ISystemVScrollBar*   m_pVScrollBar;
+
+    VScrollbarCreator  m_vscrollbarCreator;
 
     CCaret   m_caret;         // 光标
 	bool   m_bRedrawing;      // 用于区别是外部直接调用的UpdateObject，还是OnRedrawObject调用的UpdateObject
@@ -135,6 +147,7 @@ protected:
 
     // 气泡模式
     bool  m_bBubbleMode;
+    
 };
 
 }

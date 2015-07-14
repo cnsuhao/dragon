@@ -100,6 +100,7 @@ interface UISDKAPI IBoolAttribute
     bool  GetBool();
     bool  GetDefaultBool();
 
+    IBoolAttribute*  ReloadOnChanged();
 private:
     BoolAttribute*  m_pImpl;
 };

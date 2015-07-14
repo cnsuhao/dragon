@@ -107,6 +107,14 @@ void  IRichEdit::GetDefaultCharFormat(CHARFORMAT2* pcf)
 {
     return m_pWindowlessRE->GetDefaultCharFormat(pcf);
 }
+void  IRichEdit::GetDefaultParaFormat(PARAFORMAT2* ppf)
+{
+    return m_pWindowlessRE->CopyDefaultParaFormat(ppf);
+}
+void  IRichEdit::SetDefaultParaFormat(PARAFORMAT2* ppf)
+{
+    return m_pWindowlessRE->SetDefaultParaFormat(ppf);
+}
 void  IRichEdit::SetCharFormatEx(UINT nPart, CHARFORMAT2* pcf)
 {
 	m_pWindowlessRE->SetCharFormatEx(nPart, pcf);

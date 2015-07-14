@@ -218,7 +218,7 @@ void  SystemScrollBar::SetFloatOnClientRegion(bool b)
     else
         m_eScrollBarRegionType = HOLD_ONLY_VISIBLE;
 }
-void  SystemScrollBar::SetKeepHodeNonClientRegion(bool b)
+void  SystemScrollBar::SetKeepHoldNonClientRegion(bool b)
 {
     if (b)
         m_eScrollBarRegionType = KEEP_HOLD;

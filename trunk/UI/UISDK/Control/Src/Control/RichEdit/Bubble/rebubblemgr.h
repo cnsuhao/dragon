@@ -22,6 +22,11 @@ public:
     C9Region*  Get9RegionLeftBubble();
     C9Region*  Get9RegionRightBubble();
 
+    void  SetLeftImageResItem(IImageResItem* p);
+    void  SetRightImageResItem(IImageResItem* p);
+    IImageResItem*  GetLeftImageResItem();
+    IImageResItem*  GetRightImageResItem();
+
     REBubble*  FindBubble(int ncp);
 	bool  IsInBubble(int ncp, __out REBubble** ppBubble);
 
@@ -40,6 +45,10 @@ protected:
 
 private:
 	WindowlessRichEdit*  m_pWindowlessRE;
+
+    IImageResItem*  m_pLeftImageResItem;
+    IImageResItem*  m_pRightImageResItem;
+
 	ImageWrap  m_imageLeftBubble;
 	ImageWrap  m_imageRightBubble;
     C9Region  m_9regionLeftBubble;

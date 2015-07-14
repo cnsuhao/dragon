@@ -220,7 +220,6 @@ bool  WindowlessRichEditEx::ReplaceSelectionEncodeText(LPCTSTR szText, int nSize
     if (!strLineSpacing.empty())
     {
         pf.dwMask |= PFM_LINESPACING;
-        pf.dwMask |= PFM_LINESPACING;
         pf.dyLineSpacing = Util::DXtoHimetricX(_ttoi(strLineSpacing.c_str()));
         pf.bLineSpacingRule = tomLineSpaceExactly;
     }

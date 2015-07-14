@@ -5,6 +5,8 @@
 #include "UISDK\Kernel\Inc\Interface\irenderlayer.h"
 #include "UISDK\Kernel\Inc\Interface\iscrollbarmanager.h"
 #include "UISDK\Control\Src\Control\ScrollBar\systemscrollbar.h"
+#include "UISDK\Kernel\Inc\Interface\iattribute.h"
+#include "Bubble\rebubblemgr.h"
 
 using namespace UI;
 
@@ -24,7 +26,6 @@ RichEdit::RichEdit()
     m_lMultiLineMaxHeight = NDEF;
     m_lMultiLineMinHeight = NDEF;
 
-    m_pVScrollBar = NULL;
     m_bBubbleMode = false;
 }
 
@@ -80,75 +81,36 @@ void  RichEdit::OnSerialize(SERIALIZEDATA* pData)
 	DO_PARENT_PROCESS(IRichEdit, IControl);
     IUIApplication*  pUIApplication = m_pIRichEdit->GetUIApplication();
 
-//     ITextRenderBase* pTextRender = NULL;
-//     pMapAttrib->GetAttr_TextRenderBase(NULL, XML_TEXTRENDER_TYPE, true, pUIApplication, m_pIRichEdit, &pTextRender);
-// 	if (pTextRender)
-// 	{
-//         m_pIRichEdit->SetTextRender(pTextRender);
-//         SAFE_RELEASE(pTextRender);
-// 	}
-// 	else if (NULL == m_pIRichEdit->GetTextRender())
-// 	{
-//         pUIApplication->CreateTextRenderBase(TEXTRENDER_TYPE_SIMPLE, m_pIRichEdit, &pTextRender);
-//         if (pTextRender)
-//         {
-//             SERIALIZEDATA data = {0};
-//             data.pUIApplication = pUIApplication;
-//             data.pMapAttrib = pMapAttrib;
-//             data.szPrefix = NULL;
-//             data.nFlags = SERIALIZEFLAG_LOAD|SERIALIZEFLAG_LOAD_ERASEATTR;
-//             pTextRender->Serialize(&data);
-// 
-//             m_pIRichEdit->SetTextRender(pTextRender);
-//             SAFE_RELEASE(pTextRender);
-//         }
-// 	}
-// 
-// 	if (NULL == m_pIRichEdit->GetBkRender() && !m_pIRichEdit->IsTransparent())  // 如果没有指定为透明属性，则默认用窗口背景色绘制背景
-// 	{
-//         IRenderBase*  pRenderBase = NULL;
-//         pUIApplication->CreateRenderBase(RENDER_TYPE_THEME_SYSCOLOR, m_pIRichEdit, &pRenderBase);
-//         if (pRenderBase)
-//         {
-//             ISysColorRender* pRender = (ISysColorRender*)pRenderBase->QueryInterface(uiiidof(ISysColorRender));
-//             if (pRender)
-//             {
-//                 pRender->SetBkColor(COLOR_BTNFACE);
-//                 m_pIRichEdit->SetBkgndRender(pRenderBase);
-//             }
-//             SAFE_RELEASE(pRenderBase);
-//         }
-// 	}
-
-	m_pMgrScrollBar->Serialize(pData);
-	m_pMgrScrollBar->SetVScrollWheel(10);
-
-	bool bReload = pData->IsReload();
-	IMapAttribute* pMapAttrib = pData->pMapAttrib;
-    if (!m_pMgrScrollBar->GetHScrollBar() && m_pMgrScrollBar->GetScrollBarVisibleType(HSCROLLBAR) != SCROLLBAR_VISIBLE_NONE)
     {
-        ISystemHScrollBar*  p = NULL;
-        ISystemHScrollBar::CreateInstance(pUIApplication, &p);
-        p->SetIScrollBarMgr(m_pMgrScrollBar);
-        m_pIRichEdit->AddNcChild(p);
-        p->SetId(XML_HSCROLLBAR_PRIFIX);
-
-        p->SetAttributeByPrefix(XML_HSCROLLBAR_PRIFIX, pMapAttrib, bReload, true);
-        p->SetVisible(false, false, false);
+        AttributeSerializerWrap as(pData, TEXT("richedit"));
+        as.AddBool(XML_RICHEDIT_MSG_BUBBLE_PREFIX XML_RICHEDIT_MSG_BUBBLE_ENABLE, this,
+            memfun_cast<pfnBoolSetter>(&RichEdit::EnableBubbleMode),
+            memfun_cast<pfnBoolGetter>(&RichEdit::IsBubbleMode))
+            ->ReloadOnChanged();
     }
 
-    if (!m_pMgrScrollBar->GetVScrollBar() && m_pMgrScrollBar->GetScrollBarVisibleType(VSCROLLBAR) != SCROLLBAR_VISIBLE_NONE)
+    if (IsBubbleMode())
     {
-        ISystemVScrollBar*  p = NULL;
-        ISystemVScrollBar::CreateInstance(pUIApplication, &p);
-        p->SetIScrollBarMgr(m_pMgrScrollBar);
-        m_pIRichEdit->AddNcChild(p);
-        p->SetId(XML_VSCROLLBAR_PRIFIX);
+        AttributeSerializerWrap as(pData, TEXT("richedit"));
+        as.AddString(
+            XML_RICHEDIT_MSG_BUBBLE_PREFIX 
+            XML_RICHEDIT_MSG_BUBBLE_LEFT_PREFIX 
+            XML_RICHEDIT_MSG_BUBBLE_IMAGE,
+            this,
+            memfun_cast<pfnStringSetter>(&RichEdit::set_bubble_left_image),
+            memfun_cast<pfnStringGetter>(&RichEdit::get_bubble_left_image));
 
-        p->SetAttributeByPrefix(XML_VSCROLLBAR_PRIFIX, pMapAttrib, bReload, true);
-        p->SetVisible(false, false, false);
-        m_pVScrollBar = p;
+        as.AddString(
+            XML_RICHEDIT_MSG_BUBBLE_PREFIX 
+            XML_RICHEDIT_MSG_BUBBLE_RIGHT_PREFIX 
+            XML_RICHEDIT_MSG_BUBBLE_IMAGE,
+            this,
+            memfun_cast<pfnStringSetter>(&RichEdit::set_bubble_right_image),
+            memfun_cast<pfnStringGetter>(&RichEdit::get_bubble_right_image));
     }
+
+    m_pMgrScrollBar->Serialize(pData);
+    m_pMgrScrollBar->SetVScrollWheel(10);
 }
 
 
@@ -165,7 +127,17 @@ void RichEdit::OnInitialize()
 	}
 
 	m_wrapRichEidt.Create(m_pIRichEdit->GetHWND());
+
+    m_vscrollbarCreator.Initialize(m_pIRichEdit, m_pMgrScrollBar);
 }
+
+void  RichEdit::OnCreateByEditor(CREATEBYEDITORDATA* pData)
+{
+    DO_PARENT_PROCESS_MAPID(IRichEdit, IControl, UIALT_CALLLESS);
+    m_vscrollbarCreator.CreateByEditor(pData, m_pIRichEdit);
+}
+
+
 void RichEdit::OnEraseBkgnd(IRenderTarget*  pRenderTarget)
 {
 	//SetMsgHandled(FALSE);
@@ -437,59 +409,6 @@ int  GetTextBytes(LPCTSTR szText);
 int  GetCharBytes(TCHAR c);
 void  RichEdit::OnEnChanged(BOOL& bHandled)
 {
-#if 0
-    bHandled = FALSE;
-
-    // 在这里处理字符限制的逻辑。原因如下：
-    // 1. 使用微软拼音输入法时，将收不到WM_IME_CHAR和WM_CHAR消息
-    // 2. 使用微软拼音输入法时，EN_UPDATE中会直接收到输入过程（按空格上屏之前）的通知，导致处理失败
-    // 遗留问题：
-    // 到响应EN_CHANGE时，光标已经移动了，所以光标还是会有一些跳跃
-    if (!m_bByteLimit)
-    {
-        bHandled = FALSE;
-        return;
-    }
-
-    String  strText = GetText();
-    long nByte = GetTextBytes(strText);
-
-    if (nByte <= m_lLimitText)
-    {
-        bHandled = FALSE;
-        return;
-    }
-
-    bHandled = TRUE;
-
-    int startSel = -1, endSel=-1;
-    m_wrapRichEidt.GetSel(&startSel, &endSel);
-
-    int nPos = startSel - 1;
-    while (nPos > 0)
-    {
-        if (strText[nPos] >= 0 && strText[nPos] < 0x80)
-            nByte --;
-        else
-            nByte -= 2;
-
-        if (nByte <= m_lLimitText)
-            break;
-
-        nPos--;
-    }
-
-    String strNewText = strText.substr(0, nPos);
-    int nRightCount = strText.GetLength()-startSel;
-    if (nRightCount > 0)
-        strNewText += strText.substr(strText.length() - nRightCount, nRightCount);
-
-    //m_bDisableCaretOP = TRUE;  // 禁用SetText的光标设置
-    SetText(strNewText, false);
-    //m_bDisableCaretOP = FALSE; 
-
-    m_wrapRichEidt.SetSel(nPos, 0);  // 重新设置光标位置
-#endif
 }
 
 HRESULT  RichEdit::OnTxNotify(DWORD iNotify, void* pv, BOOL& bHandled)
@@ -695,16 +614,66 @@ void  RichEdit::EnableBubbleMode(bool b)
 {
     m_bBubbleMode = b;
 
-    if (m_pVScrollBar)
+    if (m_vscrollbarCreator.m_pVScrollBar)
     {
-        m_pVScrollBar->SetKeepHodeNonClientRegion(m_bBubbleMode);
-        m_wrapRichEidt.EnableBubbleMode(b);
+        m_vscrollbarCreator.m_pVScrollBar->SetKeepHoldNonClientRegion(m_bBubbleMode);
     }
+    m_wrapRichEidt.EnableBubbleMode(b);
 }
 bool  RichEdit::IsBubbleMode()
 {
     return m_bBubbleMode;
 }
+
+void  RichEdit::set_bubble_left_image(LPCTSTR szText)
+{
+    if (!m_wrapRichEidt.m_pBubbleMgr)
+        return;
+
+    ISkinRes*  pSkinRes = m_pIRichEdit->GetUIApplication()->GetActiveSkinRes();
+    IImageRes* pImageRes = pSkinRes->GetImageRes();
+    IImageResItem* pItem = pImageRes->GetImageResItem(szText);
+    
+    m_wrapRichEidt.m_pBubbleMgr->SetLeftImageResItem(pItem);
+
+}
+void  RichEdit::set_bubble_right_image(LPCTSTR szText)
+{
+    if (!m_wrapRichEidt.m_pBubbleMgr)
+        return;
+
+    ISkinRes*  pSkinRes = m_pIRichEdit->GetUIApplication()->GetActiveSkinRes();
+    IImageRes* pImageRes = pSkinRes->GetImageRes();
+    IImageResItem* pItem = pImageRes->GetImageResItem(szText);
+
+    m_wrapRichEidt.m_pBubbleMgr->SetRightImageResItem(pItem);
+
+}
+
+LPCTSTR  RichEdit::get_bubble_left_image()
+{
+    if (!m_wrapRichEidt.m_pBubbleMgr)
+        return NULL;
+
+    IImageResItem* pItem = m_wrapRichEidt.m_pBubbleMgr->GetLeftImageResItem();
+    if (!pItem)
+        return NULL;
+
+    return pItem->GetId();
+}
+
+LPCTSTR  RichEdit::get_bubble_right_image()
+{
+    if (!m_wrapRichEidt.m_pBubbleMgr)
+        return NULL;
+
+    IImageResItem* pItem = m_wrapRichEidt.m_pBubbleMgr->GetRightImageResItem();
+    if (!pItem)
+        return NULL;
+
+    return pItem->GetId();
+}
+
 
 // 因为一个窗口中可能共存有多个re，所在不再适合由re自己来注册窗口IDropTarget
 // 统一走uisdk中的window dragdrop mgr，然后将消息转发给re
