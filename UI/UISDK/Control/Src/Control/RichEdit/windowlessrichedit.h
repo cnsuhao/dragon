@@ -193,6 +193,7 @@ public:
     void  ResetSelectionParaFormat();
 
 	void  InitDefaultParaFormat();
+    void  SetDefaultParaFormat(PARAFORMAT2* ppf);
     void  SetDefaultParaAlign(long eAlign/* = PFA_LEFT*/);
 	bool  IsWordWrap() { return m_fWordWrap; }
 	void  SetWordWrap(bool fWordWrap);

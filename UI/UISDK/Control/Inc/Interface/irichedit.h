@@ -57,6 +57,8 @@ interface UICTRLAPI IRichEdit : public IControl
     bool  SetCharFormat(CHARFORMAT2* pcf);
     void  GetDefaultCharFormat(CHARFORMAT2* pcf);
 	void  SetCharFormatEx(UINT nPart, CHARFORMAT2* pcf);
+    void  GetDefaultParaFormat(PARAFORMAT2* ppf);
+    void  SetDefaultParaFormat(PARAFORMAT2* ppf);
 	void  SetSel(int nPos, int nLen);
     void  SelectEnd();
     void  GetSel(int* pnPos, int* pnLen);

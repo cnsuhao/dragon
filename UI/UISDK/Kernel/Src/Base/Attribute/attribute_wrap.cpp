@@ -106,6 +106,12 @@ bool  IBoolAttribute::GetDefaultBool()
     return m_pImpl->GetDefaultBool();
 }
 
+IBoolAttribute*  IBoolAttribute::ReloadOnChanged()
+{
+    m_pImpl->ReloadOnChanged();
+    return this;
+}
+
 //////////////////////////////////////////////////////////////////////////
 IStringAttribute::IStringAttribute(StringAttribute* p)
 {

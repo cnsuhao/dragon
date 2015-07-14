@@ -21,7 +21,7 @@ void  ISystemScrollBar::SetFloatOnClientRegion(bool b)
 {
     m_pSystemScrollBarImpl->SetFloatOnClientRegion(b);
 }
-void  ISystemScrollBar::SetKeepHodeNonClientRegion(bool b)
+void  ISystemScrollBar::SetKeepHoldNonClientRegion(bool b)
 {
-    m_pSystemScrollBarImpl->SetKeepHodeNonClientRegion(b);
+    m_pSystemScrollBarImpl->SetKeepHoldNonClientRegion(b);
 }

@@ -113,6 +113,7 @@ enum SPLITTERBAR_ALIGN
 
 // richedit
 #define XML_RICHEDIT_MSG_BUBBLE_PREFIX        _T("msgbubble.")  // 消息气泡定义
+#define XML_RICHEDIT_MSG_BUBBLE_ENABLE        _T("enable")      // msgbubble.enable 是否启用气泡。只有开启了该项，才能在编辑器中设置气泡image
 #define XML_RICHEDIT_MSG_BUBBLE_LEFT_PREFIX   _T("left.")       // 左侧气泡定义
 #define XML_RICHEDIT_MSG_BUBBLE_RIGHT_PREFIX  _T("right.")      // 右侧气泡定义
 #define XML_RICHEDIT_MSG_BUBBLE_IMAGE         _T("image")       // 气泡背景图片

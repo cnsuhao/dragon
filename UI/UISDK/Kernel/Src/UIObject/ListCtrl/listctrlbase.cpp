@@ -224,17 +224,20 @@ void  ListCtrlBase::OnSerialize(SERIALIZEDATA* pData)
 //         }
 // 	}
 
-    map<int, IListItemTypeShareData*>::iterator iter = m_mapItemTypeShareData.begin();
-    for (; iter != m_mapItemTypeShareData.end(); iter++)
+    if (pData->IsLoad())
     {
-		SERIALIZEDATA data = {0};
-        data.pUIApplication = GetIUIApplication();
-		data.pMapAttrib = pData->pMapAttrib;
-		data.nFlags = SERIALIZEFLAG_LOAD;
-		if (data.IsReload())
-			data.nFlags |= SERIALIZEFLAG_RELOAD;
-		UISendMessage(iter->second, UI_WM_SERIALIZE, (WPARAM)&data);
-        //UISendMessage(iter->second, UI_WM_SETATTRIBUTE, (WPARAM)pMapAttrib, (LPARAM)bReload);
+        map<int, IListItemTypeShareData*>::iterator iter = m_mapItemTypeShareData.begin();
+        for (; iter != m_mapItemTypeShareData.end(); iter++)
+        {
+		    SERIALIZEDATA data = {0};
+            data.pUIApplication = GetIUIApplication();
+		    data.pMapAttrib = pData->pMapAttrib;
+		    data.nFlags = SERIALIZEFLAG_LOAD;
+		    if (data.IsReload())
+			    data.nFlags |= SERIALIZEFLAG_RELOAD;
+		    UISendMessage(iter->second, UI_WM_SERIALIZE, (WPARAM)&data);
+            //UISendMessage(iter->second, UI_WM_SETATTRIBUTE, (WPARAM)pMapAttrib, (LPARAM)bReload);
+        }
     }
 }
 

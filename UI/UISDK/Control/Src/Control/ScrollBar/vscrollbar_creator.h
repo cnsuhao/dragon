@@ -20,8 +20,8 @@ public:
 	virtual void  CreateByEditor(CREATEBYEDITORDATA* pData, IObject* pParent) /*override*/;
 	virtual void  Initialize(IObject* pParent, IScrollBarManager* pMgr) /*override*/;
 	
-private:
-	ISystemVScrollBar*  m_pVScrollbar;
+public:
+	ISystemVScrollBar*  m_pVScrollBar;
 };
 
 }

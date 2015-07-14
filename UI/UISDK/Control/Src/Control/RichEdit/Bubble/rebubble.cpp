@@ -112,6 +112,9 @@ void  REBubble::Draw(HDC hDC, RECT* prcDraw)
         p9Region = m_pBubbleMgr->Get9RegionRightBubble();
     }
 
+    if (pImage->IsNull())
+        return;
+
     pImage->Draw(hDC, 
         prcDraw->left, 
         prcDraw->top, 

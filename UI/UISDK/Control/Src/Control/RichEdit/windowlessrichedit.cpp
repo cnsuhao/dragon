@@ -1569,6 +1569,20 @@ void  ITextHostImpl::CopyDefaultParaFormat(PARAFORMAT2* ppf)
     memcpy(ppf, &m_pf, nSize);
 }
 
+void  ITextHostImpl::SetDefaultParaFormat(PARAFORMAT2* ppf)
+{   
+    if (!ppf)
+        return;
+
+    memcpy(&m_pf, ppf, sizeof(m_pf));
+
+    if (m_spTextServices)
+    {
+        m_spTextServices->OnTxPropertyBitsChange(
+            TXTBIT_PARAFORMATCHANGE, 
+            TXTBIT_PARAFORMATCHANGE);
+    }
+}
 void ITextHostImpl::InitDefaultParaFormat() 
 {	
 	memset(&m_pf, 0, sizeof(m_pf));

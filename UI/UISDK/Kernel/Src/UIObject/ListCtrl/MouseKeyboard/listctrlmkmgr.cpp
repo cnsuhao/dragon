@@ -590,7 +590,7 @@ void  ListCtrlMKMgrBase::OnRemoveItem(ListItemBase* pItem, bool* pbSelChanged)
                 *pbSelChanged = true;
 
             ListItemBase* pSave = pSelItem->GetNextSelection();
-            m_pListCtrlBase->RemoveSelectItem(pItem, false);
+            m_pListCtrlBase->RemoveSelectItem(pSelItem, false);
             pSelItem = pSave;
         }
         else

@@ -10,6 +10,8 @@ using namespace UI;
 BubbleManager::BubbleManager(WindowlessRichEdit*  p)
 {
 	m_pWindowlessRE = p;
+    m_pLeftImageResItem = NULL;
+    m_pRightImageResItem = NULL;
 }
 BubbleManager::~BubbleManager()
 {
@@ -29,54 +31,7 @@ void BubbleManager::Clear()
 
 void  BubbleManager::Init()
 {
-    IRichEdit*         pIRichEdit = m_pWindowlessRE->GetControlPtr();
-    ISkinRes*          pSkinRes = pIRichEdit->GetUIApplication()->GetActiveSkinRes();
-    IImageRes*         pImageRes = pSkinRes->GetImageRes();
-    ISkinDataSource*   pDataSource = pSkinRes->GetDataSource();
-    IMapAttribute*     pMapAttr = NULL;
-
-    String  strLeftBubblePath;
-    String  strRightBubblePath;
-
-    pIRichEdit->GetMapAttribute(&pMapAttr);
-    LPCTSTR  szText = pMapAttr->GetAttr(
-        XML_RICHEDIT_MSG_BUBBLE_PREFIX 
-        XML_RICHEDIT_MSG_BUBBLE_LEFT_PREFIX 
-        XML_RICHEDIT_MSG_BUBBLE_IMAGE, false);
-    if (szText)
-    {
-        IImageResItem*  pItem = pImageRes->GetImageResItem(szText);
-        if (pItem)
-        {
-            strLeftBubblePath.append(pItem->GetPath());
-        }
-    }
-
-    szText = pMapAttr->GetAttr(
-        XML_RICHEDIT_MSG_BUBBLE_PREFIX 
-        XML_RICHEDIT_MSG_BUBBLE_RIGHT_PREFIX 
-        XML_RICHEDIT_MSG_BUBBLE_IMAGE, false);
-    if (szText)
-    {
-        IImageResItem*  pItem = pImageRes->GetImageResItem(szText);
-        if (pItem)
-        {
-            strRightBubblePath.append(pItem->GetPath());
-        }
-    }
-    pMapAttr->Release();
-
-	if (!strLeftBubblePath.empty())
-	{
-		pDataSource->Load_Image(&m_imageLeftBubble, strLeftBubblePath.c_str());
-	}
-	if (!strRightBubblePath.empty())
-	{
-		pDataSource->Load_Image(&m_imageRightBubble, strRightBubblePath.c_str());
-	}
-
-    m_9regionLeftBubble.Set(12,14,12,12);
-    m_9regionRightBubble.Set(12,14,12,12);
+   
 }
 
 REBubble*  BubbleManager::CreateBubble(BubbleType eType, BubbleAlign eAlign, int nStartCP, int nEndCP)
@@ -131,6 +86,60 @@ C9Region*  BubbleManager::Get9RegionLeftBubble()
 C9Region*  BubbleManager::Get9RegionRightBubble()
 {
     return &m_9regionRightBubble;
+}
+void  BubbleManager::SetLeftImageResItem(IImageResItem* p)
+{
+    m_pLeftImageResItem = p;
+
+    IRichEdit*  pIRichEdit = m_pWindowlessRE->GetControlPtr();
+    ISkinRes*   pSkinRes = pIRichEdit->GetUIApplication()->GetActiveSkinRes();
+    ISkinDataSource*   pDataSource = pSkinRes->GetDataSource();
+
+    if (m_pLeftImageResItem)
+    {
+        String strLeftBubblePath(m_pLeftImageResItem->GetPath());
+
+        // TODO: 修改为直接引用ImageResItem中的gdi image
+        if (!strLeftBubblePath.empty())
+            pDataSource->Load_Image(&m_imageLeftBubble, strLeftBubblePath.c_str());
+
+        m_9regionLeftBubble.Set(12,14,12,12);
+    }
+    else
+    {
+        m_imageLeftBubble.Destroy();
+    }
+}
+void  BubbleManager::SetRightImageResItem(IImageResItem* p)
+{
+    m_pRightImageResItem = p;
+
+    IRichEdit*  pIRichEdit = m_pWindowlessRE->GetControlPtr();
+    ISkinRes*   pSkinRes = pIRichEdit->GetUIApplication()->GetActiveSkinRes();
+    ISkinDataSource*   pDataSource = pSkinRes->GetDataSource();
+
+    if (m_pRightImageResItem)
+    {
+        String strRightBubblePath(m_pRightImageResItem->GetPath());
+
+        // TODO: 修改为直接引用ImageResItem中的gdi image
+        if (!strRightBubblePath.empty())
+            pDataSource->Load_Image(&m_imageRightBubble, strRightBubblePath.c_str());
+
+        m_9regionRightBubble.Set(12,14,12,12);
+    }
+    else
+    {
+        m_imageRightBubble.Destroy();
+    }
+}
+IImageResItem*  BubbleManager::GetLeftImageResItem()
+{
+    return m_pLeftImageResItem;
+}
+IImageResItem*  BubbleManager::GetRightImageResItem()
+{
+    return m_pRightImageResItem;
 }
 
 bool  BubbleManager::PreCalcBubblePos()
