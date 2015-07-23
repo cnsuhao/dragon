@@ -15,11 +15,9 @@ public:
     {
         delete this;
     }
-    void  SetDirection(LPCTSTR szDir);
-    void  SetName(LPCTSTR szName);
+    void  SetPath(LPCTSTR szPath);
+    LPCTSTR  GetPath();
 
-    LPCTSTR  GetDirection();
-    LPCTSTR  GetName();
     SKIN_PACKET_TYPE  GetType();
 
     bool  Load_UIDocument(IUIDocument* pDocument, LPCTSTR szPath);
@@ -32,8 +30,7 @@ private:
    // bool  FileDataSource::CalcFilePath(LPCTSTR szData, ISkinRes* pSkinRes, __out String& strLastPath);
 
 private:
-    String  m_strDir;
-    String  m_strName;
+    String  m_strPath;
 };
 
 }

@@ -1688,7 +1688,7 @@ void Edit::OnRButtonDown(UINT nFlags, CPoint point)
 
 void Edit::OnRButtonUp(UINT nFlags, CPoint point)
 {
-	UI::LoadMenuData data = {m_pIEdit->GetUIApplication()};
+	UI::LoadMenuData data = {m_pIEdit->GetSkinRes()};
     IMenu* pMenu = UILoadMenu(&data);
 	if (!pMenu)
 		return;

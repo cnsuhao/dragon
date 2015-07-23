@@ -80,6 +80,7 @@ void ListBox::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
 {
     DO_PARENT_PROCESS(IListBox, IListCtrlBase);
 
+#if 0
     IUIApplication* pUIApplication = m_pIListBox->GetUIApplication();
     IScrollBarManager*  pScrollBarMgr = m_pIListBox->GetIScrollBarMgr();
     if (pScrollBarMgr)
@@ -109,12 +110,13 @@ void ListBox::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
             pScrollBarMgr->SetVScrollWheel(20);
         }
     }
+#endif
 }
 
 IListBoxItem*  ListBox::AddString(LPCTSTR szText, int nAddItemFlags)
 {
     IListBoxItem* pItem = NULL;
-    IListBoxItem::CreateInstance(m_pIListBox->GetUIApplication(), &pItem);
+    IListBoxItem::CreateInstance(m_pIListBox->GetSkinRes(), &pItem);
 
     if (NULL == pItem)
         return NULL;

@@ -11,6 +11,7 @@ Storyboard::Storyboard()
     m_pNotify = NULL;
     m_nID = 0;
     m_pWParam = m_pLParam = 0;
+    m_lDelayBeginTick = 0;
 }
 Storyboard::~Storyboard()
 {
@@ -128,11 +129,43 @@ ITimeline*  Storyboard::FindTimeline(int nTimelineId)
 
 void  Storyboard::Begin()
 {
+    m_lDelayBeginTick = 0;
     m_pAnimateMgr->AddStoryboard(m_pIStoryboard);
 }
 void  Storyboard::BeginBlock()
 {
+    m_lDelayBeginTick = 0;
     m_pAnimateMgr->AddStoryboardBlock(m_pIStoryboard);
+}
+
+// 延迟一段时候后再开始动画。
+void  Storyboard::BeginDelay(long lElapse)
+{
+    // 还需要额外处理的：暂停阶段，不应该向发发送tick通知
+    UIASSERT(0 && TEXT("该功能还没测试过。"));
+
+    m_lDelayBeginTick = GetTickCount() + lElapse;
+    m_pAnimateMgr->AddStoryboard(m_pIStoryboard);
+}
+
+bool  Storyboard::IsDelayWaiting()
+{
+    return m_lDelayBeginTick?true:false;
+}
+void  Storyboard::ClearDelayWaiting()
+{
+    m_lDelayBeginTick = 0;
+}
+
+void  Storyboard::UpdateDelayWaiting()
+{
+    if (!m_lDelayBeginTick)
+        return;
+
+    if (GetTickCount() < m_lDelayBeginTick)
+        return;
+
+    m_lDelayBeginTick = 0;
 }
 
 IMessage*  Storyboard::GetNotifyObj()
@@ -143,7 +176,6 @@ void  Storyboard::SetNotifyObj(IMessage* pNotify)
 {
     m_pNotify = pNotify;
 }
-
 
 // TODO: 优化
 void  Storyboard::OnAnimateStart()

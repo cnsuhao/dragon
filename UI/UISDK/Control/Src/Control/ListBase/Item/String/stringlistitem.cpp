@@ -22,7 +22,7 @@ void  StringListItem::OnInitialize()
         m_pIStringListItem->GetIListCtrlBase()->GetItemTypeShareData(LISTITEM_TYPE_STRING));
     if (NULL == p)
     {
-        IStringListItemShareData::CreateInstance(m_pIStringListItem->GetIListCtrlBase()->GetUIApplication(), &p);
+        IStringListItemShareData::CreateInstance(m_pIStringListItem->GetIListCtrlBase()->GetSkinRes(), &p);
         m_pIStringListItem->GetIListCtrlBase()->SetItemTypeShareData(LISTITEM_TYPE_STRING, p);
     }
     m_pShareData = p->GetImpl();

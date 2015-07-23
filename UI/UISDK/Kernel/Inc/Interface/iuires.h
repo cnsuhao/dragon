@@ -373,18 +373,10 @@ namespace UI
         SkinManager*  GetImpl();
 
         IUIApplication*  GetUIApplication();
-        UINT  GetSkinCount();
-        void  GetSkinDirection(TCHAR*  szOut);
-        ISkinRes*  AddSkin(LPCTSTR szName);
-
-        HRESULT  ChangeSkin(ISkinRes*  pSkinRes, bool bSync=true); 
-        HRESULT  ChangeSkinHLS(short h, short l, short s, int nFlag);
-
-        HRESULT  SetActiveSkin(ISkinRes* pSkin);
-        ISkinRes*  GetActiveSkin();
-        ISkinRes*  GetSkinResByIndex(long lIndex);
-
+        void  ChangeSkinHLS(short h, short l, short s, int nFlag);
         bool  Save(ISkinRes* pSkinRes);
+
+		ISkinRes*  GetSkinResByName(LPCTSTR szName);
 
     private:
         SkinManager*  m_pImpl;

@@ -7,7 +7,7 @@ class ListViewFocusRender : public IThemeRenderBase
 public:
 	ListViewFocusRender();
 	
-    UI_DECLARE_RENDERBASE2(ListViewFocusRender, XML_RENDER_TYPE_THEME, RENDER_TYPE_THEME_LISTVIEW_FOCUS, CONTROL_LISTVIEWCTRL, -1);
+    UI_DECLARE_RENDERBASE2(ListViewFocusRender, XML_RENDER_TYPE_THEME, RENDER_TYPE_THEME_LISTVIEW_FOCUS);
 
     UI_BEGIN_MSG_MAP_Ixxx(ListViewFocusRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(OnDrawState)

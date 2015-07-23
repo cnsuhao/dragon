@@ -62,6 +62,7 @@ public:
     bool  AddChildAfter(IUIElement*  pElem, IUIElement* pInsertAfter);
 	bool  AddChildBefore(LPCTSTR szNodeName, IUIElement* pInsertBefore, IUIElement** pp);
 	bool  AddChildAfter(LPCTSTR szNodeName, IUIElement* pInsertAfter, IUIElement** pp);
+	bool  MoveChildAfterChild(IUIElement* pChild2Move, IUIElement* pChildInsertAfter);
 
 private:
 	long  GetDepth();

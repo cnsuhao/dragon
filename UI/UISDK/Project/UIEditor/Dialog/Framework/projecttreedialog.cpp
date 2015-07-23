@@ -132,13 +132,9 @@ void CProjectTreeDialog::OnInitialize()
         m_pRadioBtnLayout->SetCheck(true, false);
 
 	// 皮肤列表
-	LONG nCount = g_pGlobalData->m_pProjectData->m_pEditSkinMgr->GetSkinCount();
-	for (int i = 0; i < nCount; i++)
-	{
-		ISkinRes* pSkin = g_pGlobalData->m_pProjectData->m_pEditSkinMgr->GetSkinResByIndex(i);
-		if (pSkin)
-		    this->InsertSkinItem(pSkin);
-	}
+	ISkinRes* pSkin = g_pGlobalData->m_pProjectData->m_pEditUIApp->GetDefaultSkinRes();
+	if (pSkin)
+		this->InsertSkinItem(pSkin);
 }
 
 // 加载日志信息
@@ -667,7 +663,7 @@ void  CProjectTreeDialog::InsertWindowItem(
     if (pIcon)
     {
         IImageRender* pImageRender = NULL;
-        IImageRender::CreateInstance(g_pGlobalData->m_pMyUIApp, &pImageRender);  // 没有调用addref，因此不用释放
+        IImageRender::CreateInstance(g_pGlobalData->m_pMyUIApp->GetDefaultSkinRes(), &pImageRender);  // 没有调用addref，因此不用释放
         pImageRender->SetImageDrawType(DRAW_BITMAP_CENTER);
         pImageRender->SetRenderBitmap(pIcon);
         SAFE_RELEASE(pIcon);
@@ -792,7 +788,7 @@ bool CProjectTreeDialog::InsertLayoutChildObjectNode(
         if (pIcon)
         {
             IImageRender* pImageRender = NULL;
-            IImageRender::CreateInstance(g_pGlobalData->m_pMyUIApp, &pImageRender);  // 没有调用addref，因此不用释放
+            IImageRender::CreateInstance(g_pGlobalData->m_pMyUIApp->GetDefaultSkinRes(), &pImageRender);  // 没有调用addref，因此不用释放
             pImageRender->SetImageDrawType(DRAW_BITMAP_CENTER);
             pImageRender->SetRenderBitmap(pIcon);
             SAFE_RELEASE(pIcon);
@@ -871,13 +867,24 @@ LRESULT  CProjectTreeDialog::OnLayoutTreeSelChanged(WPARAM w, LPARAM l)
 	return 0;
 }
 
+LRESULT  CProjectTreeDialog::OnLayoutTreeKeyDown(WPARAM w, LPARAM l)
+{
+	if (w == VK_DELETE)
+	{
+		IListItemBase* pItem = m_pTreeLayout->GetFocusItem();
+		if (pItem)
+			DeleteObjectItem(pItem);
+	}
+	return 0;
+}
+
 LRESULT  CProjectTreeDialog::OnLayoutTreeRClick(WPARAM w, LPARAM l)
 {
-    IListItemBase*  pItem = (IListItemBase*)l;
+    IListItemBase*  pItem = (IListItemBase*)w;
     if (NULL == pItem)
         return 0;
 
-    POINT pt = { GET_X_LPARAM(w), GET_Y_LPARAM(w) };
+    POINT pt = { GET_X_LPARAM(l), GET_Y_LPARAM(l) };
     ::MapWindowPoints(GetHWND(), NULL, &pt, 1);
 
     map<IListItemBase*, LayoutTreeItemData*>::iterator iter = m_mapLayoutTree.find(pItem);
@@ -892,9 +899,11 @@ LRESULT  CProjectTreeDialog::OnLayoutTreeRClick(WPARAM w, LPARAM l)
 #define MENU_ID_LAYOUT_OBJECT_MOVE_TOP     103
 #define MENU_ID_LAYOUT_OBJECT_MOVE_BOTTOM  104
 
-		IMenu* pMenu = NULL;
-		IMenu::CreateInstance(g_pGlobalData->m_pMyUIApp, &pMenu);
-		pMenu->InitDefaultAttrib();
+		UI::LoadMenuData data = {0};
+		data.pSkinRes = GetUIApplication()->GetDefaultSkinRes();
+		IMenu* pMenu = UILoadMenu(&data);
+		if (!pMenu)
+			return 0;
 
 		IListItemBase*  pDeleteMenuItem = pMenu->AppendString(_T("删除"), MENU_ID_LAYOUT_OBJECT_DELETE);
         pMenu->AppendSeparator(-1);
@@ -954,15 +963,17 @@ LRESULT  CProjectTreeDialog::OnLayoutTreeRClick(WPARAM w, LPARAM l)
             }
             break;
 		}
-		SAFE_DELETE_Ixxx(pMenu);
+		UIDestroyMenu(pMenu);
     }
     else if (TREEITEM_DATA_TYPE_LAYOUT_WINDOW == iter->second->GetDataType())
     {
 #define MENU_ID_LAYOUT_WINDOW_DELETE  100
         
-//         IMenu* pMenu = NULL;
-//         IMenu::CreateInstance(g_pGlobalData->m_pMyUIApp, &pMenu);
-//         pMenu->InitDefaultAttrib();
+// 		UI::LoadMenuData data = {0};
+// 		data.pUIApplication = GetUIApplication();
+// 		IMenu* pMenu = UILoadMenu(&data);
+// 		if (!pMenu)
+// 			return 0;
 //         pMenu->AppendString(_T("删除窗口"), MENU_ID_LAYOUT_WINDOW_DELETE);
 //         int nRet = pMenu->TrackPopupMenu(TPM_RETURNCMD, pt.x, pt.y, NULL);
 //         switch (nRet)
@@ -973,7 +984,7 @@ LRESULT  CProjectTreeDialog::OnLayoutTreeRClick(WPARAM w, LPARAM l)
 //             }
 //             break;
 //         }
-//         SAFE_DELETE_Ixxx(pMenu);
+//         UIDestroyMenu(pMenu);
     }
     return 0;
 }

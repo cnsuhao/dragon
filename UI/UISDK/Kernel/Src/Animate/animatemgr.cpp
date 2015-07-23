@@ -230,7 +230,8 @@ void AnimateManager::AddStoryboard(IStoryboard* p)
 	if (NULL == m_hTimer)
 		StartAnimate();
 
-    p->GetImpl()->OnAnimateStart();
+    if (!p->GetImpl()->IsDelayWaiting())
+        p->GetImpl()->OnAnimateStart();
 }
 
 // 阻塞型动画
@@ -458,14 +459,33 @@ void AnimateManager::OnWaitForHandleObjectCallback(HANDLE h, LPARAM l)
 	for (; iter != iterEnd;)
 	{
 		ObjectStoryboard* pObjStoryboard = *iter;
+        int nCount = pObjStoryboard->m_nCount;
 		for (int i = 0; i < pObjStoryboard->m_nCount; i++)
 		{
-			pObjStoryboard->m_pStoryboardList[i]->GetImpl()->OnTick();
+            Storyboard* pStoryboard = pObjStoryboard->m_pStoryboardList[i]->GetImpl();
+
+            // TODO: 将延时的storyboard放到最后面，这样发送UI_WM_ANIMATE_TICK时，只需要调整count值即可
+            if (pStoryboard->IsDelayWaiting())
+            {
+                pStoryboard->UpdateDelayWaiting();
+            
+                if (pStoryboard->IsDelayWaiting())
+                {
+                    nCount--;
+                    continue;
+                }
+                else
+                {
+                    pStoryboard->OnAnimateStart();
+                }
+            }
+
+			pStoryboard->OnTick();
 		}
 
 		// 统一发送消息。有可能一个pNotify添加了多个属性变化的动画，但只能发送一个通知，让它知道所有值的最终结果即可
         // 这样也只用刷新一次
-		if (pObjStoryboard->m_pNotifyObject)
+		if (pObjStoryboard->m_pNotifyObject && nCount > 0)
 		{
 			UISendMessage(pObjStoryboard->m_pNotifyObject, UI_WM_ANIMATE_TICK, (WPARAM)pObjStoryboard->m_nCount, (LPARAM)pObjStoryboard->m_pStoryboardList);
 		}

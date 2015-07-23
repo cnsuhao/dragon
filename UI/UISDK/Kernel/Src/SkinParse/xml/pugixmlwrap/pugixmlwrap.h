@@ -52,6 +52,7 @@ public:
     virtual bool  AddChildAfter(IUIElement*  pElem, IUIElement* pInsertAfter) override;
 	virtual bool  AddChildBefore(LPCTSTR szNodeName, IUIElement* pInsertBefore, IUIElement** pp) override;
 	virtual bool  AddChildAfter(LPCTSTR szNodeName, IUIElement* pInsertAfter, IUIElement** pp) override;
+	virtual bool  MoveChildAfterChild(IUIElement* pChild2Move, IUIElement* pChildInsertAfter) override;
     virtual bool  RemoveChild(IUIElement*) override;
     virtual bool  RemoveSelfInParent() override;
 	virtual bool  FirstChild(IUIElement** ppElem) override;

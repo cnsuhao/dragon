@@ -12,7 +12,7 @@ MsXmlChildNodeEnum::MsXmlChildNodeEnum(IXMLDOMNodeList* p, IUIDocument* pDoc)
 
 bool MsXmlChildNodeEnum::CreateInstance(IXMLDOMNodeList* pNode, IUIDocument* pDoc, MsXmlChildNodeEnum** pp)
 {
-    if (pNode || !pp)
+    if (pNode || !pp) 
         return false;
 
     *pp = new MsXmlChildNodeEnum(pNode, pDoc);
@@ -751,6 +751,20 @@ bool  MsXmlElement::AddChildAfter(LPCTSTR szNodeName, IUIElement* pInsertAfter, 
 
 	if (pp)
 		*pp = pOutElement;
+	return true;
+}
+
+bool  MsXmlElement::MoveChildAfterChild(IUIElement* pChild2Move, IUIElement* pChildInsertAfter)
+{
+	if (!pChild2Move)
+		return false;
+
+	if (!this->RemoveChild(pChild2Move))
+		return false;
+
+	if (!this->AddChildAfter(pChild2Move, pChildInsertAfter))
+		return false;
+
 	return true;
 }
 

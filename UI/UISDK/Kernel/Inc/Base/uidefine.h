@@ -175,34 +175,26 @@ inline CONTROL_TYPE GetObjectExtentType(int type) { return  (CONTROL_TYPE)((type
 #define UI_DECLARE_RENDERBASE(className, xml, rendertype)   \
     static LPCTSTR  GetXmlName() { return xml; }       \
     static int  GetType() { return rendertype; }      \
-    static int  GetControlType() { return -1; }             \
-    static int  GetControlSubType() { return -1; }          \
     UI_DECLARE_QUERY_INTERFACE(className)                   \
     typedef UI::UIObjCreator<I##className> _CreatorClass;
 
 
 // 本宏定义主要是用于theme类型的renderbase，要根据控件类型进行创建
-#define UI_DECLARE_RENDERBASE2(className, xml, rendertype, controltype, subtype) \
+#define UI_DECLARE_RENDERBASE2(className, xml, rendertype) \
     static LPCTSTR  GetXmlName() { return xml; }       \
     static int  GetType() { return rendertype; }      \
-    static int  GetControlType() { return controltype; }    \
-    static int  GetControlSubType() { return subtype; }     \
     typedef UI::UIObjCreator<className> _CreatorClass;  // 注：这里没有用I##className，因为默认这种theme没有Ixxx基类
 
 
 #define UI_DECLARE_TEXTRENDERBASE(className, xml, rendertype) \
     static LPCTSTR  GetXmlName() { return xml; }       \
     static int  GetType() { return rendertype; }      \
-    static int  GetControlType() { return -1; }             \
-    static int  GetControlSubType() { return -1; }          \
     UI_DECLARE_QUERY_INTERFACE(className)                   \
     typedef UI::UIObjCreator<I##className> _CreatorClass;
 
-#define UI_DECLARE_TEXTRENDERBASE2(className, xml, rendertype, controltype, subtype) \
+#define UI_DECLARE_TEXTRENDERBASE2(className, xml, rendertype) \
     static LPCTSTR  GetXmlName() { return xml; }       \
     static int  GetType() { return rendertype; }      \
-    static int  GetControlType() { return controltype; }    \
-    static int  GetControlSubType() { return subtype; }     \
     typedef UI::UIObjCreator<className> _CreatorClass;   // 注：这里没有用I##className，因为默认这种theme没有Ixxx基类
 
 #define REGISTER_UI_OBJECT(pUIApp, category, classname)   \
@@ -217,14 +209,12 @@ inline CONTROL_TYPE GetObjectExtentType(int type) { return  (CONTROL_TYPE)((type
         pUIApp->RegisterUIRenderBaseCreateData(   \
                 classname::GetXmlName(),          \
                 classname::GetType(),             \
-                classname::GetControlType(),      \
                 (UI::pfnUICreateRenderBasePtr)classname::_CreatorClass::UICreateInstance2);
 
 #define REGISTER_UI_TEXTRENDERBASE(pUIApp, classname) \
         pUIApp->RegisterUITextRenderBaseCreateData( \
                 classname::GetXmlName(),          \
                 classname::GetType(),             \
-                classname::GetControlType(),      \
                 (UI::pfnUICreateTextRenderBasePtr)classname::_CreatorClass::UICreateInstance2);
 
 #define REGISTER_UI_LAYOUT(pUIApp, layoutname, layouttype, func) \
@@ -308,7 +298,8 @@ struct DROPTARGETEVENT_DATA
 #define UI_DECLARE_Ixxx_INTERFACE_Construct(interfacename, classname) \
 public:                                    \
     typedef UI::UIObjCreator<interfacename> _CreatorClass; \
-    static void  CreateInstance(UI::IUIApplication* p, interfacename** pp); \
+    static void  CreateInstance(UI::IUIApplication* p, UI::ISkinRes* pSkinRes, interfacename** pp); \
+	static void  CreateInstance(UI::ISkinRes* pSkinRes, interfacename** pp); \
     interfacename();                       \
 protected:                                 \
     ~interfacename();                      \
@@ -370,10 +361,14 @@ public:
         if (m_bCreate##classname##Impl)                     \
             SAFE_DELETE(m_p##classname##Impl);              \
     }                                                       \
-    void  interfacename::CreateInstance(UI::IUIApplication* p, interfacename** pp) \
+	void  interfacename::CreateInstance(UI::IUIApplication* p, UI::ISkinRes* pSkinRes, interfacename** pp) \
     {                                                       \
-        interfacename::_CreatorClass::UICreateInstance(p, pp); \
-    }
+        interfacename::_CreatorClass::UICreateInstance(p, pSkinRes, pp); \
+    }                                                       \
+	void  interfacename::CreateInstance(UI::ISkinRes* pSkinRes, interfacename** pp) \
+	{                                                       \
+		interfacename::_CreatorClass::UICreateInstance(pSkinRes->GetUIApplication(), pSkinRes, pp); \
+	}
 
 // 非UIObject，但也采用pimpl模式(不会被继承)，
 #define UI_IMPLEMENT_Ixxx_INTERFACE_Construct2(interfacename, classname) \

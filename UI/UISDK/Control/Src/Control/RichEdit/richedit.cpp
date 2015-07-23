@@ -630,7 +630,7 @@ void  RichEdit::set_bubble_left_image(LPCTSTR szText)
     if (!m_wrapRichEidt.m_pBubbleMgr)
         return;
 
-    ISkinRes*  pSkinRes = m_pIRichEdit->GetUIApplication()->GetActiveSkinRes();
+    ISkinRes*  pSkinRes = m_pIRichEdit->GetUIApplication()->GetDefaultSkinRes();
     IImageRes* pImageRes = pSkinRes->GetImageRes();
     IImageResItem* pItem = pImageRes->GetImageResItem(szText);
     
@@ -642,7 +642,7 @@ void  RichEdit::set_bubble_right_image(LPCTSTR szText)
     if (!m_wrapRichEidt.m_pBubbleMgr)
         return;
 
-    ISkinRes*  pSkinRes = m_pIRichEdit->GetUIApplication()->GetActiveSkinRes();
+    ISkinRes*  pSkinRes = m_pIRichEdit->GetUIApplication()->GetDefaultSkinRes();
     IImageRes* pImageRes = pSkinRes->GetImageRes();
     IImageResItem* pItem = pImageRes->GetImageResItem(szText);
 

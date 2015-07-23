@@ -25,7 +25,7 @@ void  IconStringListItem::OnInitialize()
 
     if (!p)
     {
-        IIconStringListItemShareData::CreateInstance(pCtrl->GetUIApplication(), &p);
+        IIconStringListItemShareData::CreateInstance(pCtrl->GetSkinRes(), &p);
         pCtrl->SetItemTypeShareData(LISTITEM_TYPE_ICONSTRING, p);
     }
     m_pShareData = p->GetImpl();

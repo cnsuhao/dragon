@@ -91,7 +91,7 @@ void  MenuPopupItem::OnInitialize()
         pListCtrl->GetItemTypeShareData(UI_LISTITEM_TYPE_MENU_POPUP));
     if (NULL == p)
     {
-        IMenuPopupItemShareData::CreateInstance(pListCtrl->GetUIApplication(), &p);
+        IMenuPopupItemShareData::CreateInstance(pListCtrl->GetSkinRes(), &p);
         pListCtrl->SetItemTypeShareData(UI_LISTITEM_TYPE_MENU_POPUP, p);
 
         m_pShareData = p->GetImpl();

@@ -25,9 +25,6 @@ bool  CProjectData::OpenUIProj(const TCHAR* szPath)
     if (0 != _tcscmp(XML_PROJECT_EXT, szExt))
         return false;
 
-    if (!m_uiprojParse.LoadUIProj(szPath))
-        return false;
-
     // 从文件名获取工程名
     TCHAR szName[MAX_PATH] = _T("");
     Util::GetPathFileName(szPath, szName);
@@ -40,13 +37,12 @@ bool  CProjectData::OpenUIProj(const TCHAR* szPath)
     if (!InitEditUIApplication())
         return false;
 
+	if (!m_uiprojParse.LoadUIProj(szPath))
+		return false;
+
     // 注册依赖库
     this->ReRegistUIObject(false);
 
-    if (!Util::GetPathDir(szPath, szDir))
-        return false;
-
-    m_pEditUIApp->SetSkinDirection(szDir);
     return true;
 }
 

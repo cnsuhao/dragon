@@ -19,28 +19,35 @@ IUIApplication::~IUIApplication()
 {
     SAFE_DELETE(m_pImpl);
 }
-UIApplication*  IUIApplication::GetImpl()  { return m_pImpl; }
 
-void  IUIApplication::SetSkinDirection(LPCTSTR szDir)
-{
-    m_pImpl->SetSkinDirection(szDir);
+UIApplication*  IUIApplication::GetImpl() 
+{ 
+	return m_pImpl;
 }
-bool  IUIApplication::LoadSkin(LPCTSTR szSkinName)
+
+ISkinRes*  IUIApplication::LoadSkinRes(LPCTSTR szSkinResPath)
 {
-    return m_pImpl->LoadSkin(szSkinName); 
+    SkinRes* p = m_pImpl->GetSkinMgr().LoadSkinRes(szSkinResPath); 
+	if (p)
+		return p->GetISkinRes();
+	return NULL;
 }
+
 bool  IUIApplication::LogUI(ILog* pLog)
 {
 	return m_pImpl->LogUI(pLog);
 }
+
 bool  IUIApplication::LogUI(LPCTSTR szLogXmlPath)
 {
     return m_pImpl->LogUI(szLogXmlPath);
 }
+
 bool  IUIApplication::GetLog(ILog** ppLog)
 { 
     return m_pImpl->GetLog(ppLog);
 }
+
 HMODULE  IUIApplication::GetUID3DModule()
 { 
     return m_pImpl->GetUID3DModule();
@@ -49,7 +56,6 @@ HMODULE  IUIApplication::GetUID2DModule()
 {
     return m_pImpl->GetUID2DModule();
 }
-
 
 void  IUIApplication::SetDesignMode(bool b)
 {
@@ -69,9 +75,9 @@ IUIEditor*  IUIApplication::GetUIEditorPtr()
     return m_pImpl->GetUIEditorPtr(); 
 }
 
-ISkinManager*       IUIApplication::GetSkinMgr()    
+ISkinManager*  IUIApplication::GetSkinMgr()    
 { 
-    return m_pImpl->GetSkinMgr();
+    return m_pImpl->GetSkinMgr().GetISkinManager();
 }
 ITopWindowManager*  IUIApplication::GetTopWindowMgr()
 {
@@ -91,9 +97,9 @@ IMessageFilterMgr*  IUIApplication::GetMessageFilterMgr()
 	return m_pImpl->GetMessageFilterMgr();
 }
 
-ISkinRes*  IUIApplication::GetActiveSkinRes()
+ISkinRes*  IUIApplication::GetDefaultSkinRes()
 {
-    SkinRes* p = m_pImpl->GetActiveSkinRes(); 
+    SkinRes* p = m_pImpl->GetDefaultSkinRes(); 
 	if (p)
 		return p->GetISkinRes();
 	return NULL;
@@ -200,13 +206,13 @@ bool  IUIApplication::GetControlTagParseFunc(LPCTSTR szTag, pfnParseControlTag* 
     return m_pImpl->GetControlTagParseFunc(szTag, pFunc);
 }
 
-IObject*  IUIApplication::CreateInstanceByName(LPCTSTR szName)
+IObject*  IUIApplication::CreateInstanceByName(LPCTSTR szName, ISkinRes* pISkinRes)
 { 
-    return m_pImpl->CreateInstanceByName(szName); 
+    return m_pImpl->CreateInstanceByName(szName, pISkinRes); 
 }
-bool  IUIApplication::CreateInstanceByClsid(REFCLSID clsid, void** ppOut) 
+IObject*  IUIApplication::CreateInstanceByClsid(REFCLSID clsid, ISkinRes* pISkinRes) 
 { 
-    return m_pImpl->CreateInstanceByClsid(clsid, ppOut);
+    return m_pImpl->CreateInstanceByClsid(clsid, pISkinRes);
 }
 bool  IUIApplication::RegisterUIObjectCreateData(LPCTSTR szName, LPCTSTR szCategory,
     UINT nObjType, REFCLSID guid, pfnUICreateInstancePtr pfun)
@@ -219,10 +225,9 @@ void     IUIApplication::LoadUIObjectListToToolBox()
 }
 
 bool  IUIApplication::RegisterUIRenderBaseCreateData(
-	LPCTSTR szName, int nType, int nControlType,
-	pfnUICreateRenderBasePtr pfunc) 
+	LPCTSTR szName, int nType, pfnUICreateRenderBasePtr pfunc) 
 {
-    return m_pImpl->RegisterUIRenderBaseCreateData(szName, nType, nControlType, pfunc); 
+    return m_pImpl->RegisterUIRenderBaseCreateData(szName, nType, pfunc); 
 }
 bool  IUIApplication::CreateRenderBaseByName(LPCTSTR szName, IObject* pObject, IRenderBase** ppOut)
 {
@@ -243,10 +248,9 @@ void  IUIApplication::EnumRenderBaseName(pfnEnumRenderBaseNameCallback callback,
 
 bool  IUIApplication::RegisterUITextRenderBaseCreateData(
 	LPCTSTR szName, int nType,
-	int nControlType, 
     pfnUICreateTextRenderBasePtr pfunc) 
 { 
-    return m_pImpl->RegisterUITextRenderBaseCreateData(szName, nType, nControlType, pfunc); 
+    return m_pImpl->RegisterUITextRenderBaseCreateData(szName, nType, pfunc); 
 }
 bool  IUIApplication::CreateTextRenderBaseByName(LPCTSTR szName, IObject* pObject, ITextRenderBase** ppOut) 
 {

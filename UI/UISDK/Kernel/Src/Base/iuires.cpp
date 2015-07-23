@@ -651,48 +651,25 @@ IUIApplication*  ISkinManager::GetUIApplication()
 {
     return m_pImpl->GetUIApplication();
 }
-UINT  ISkinManager::GetSkinCount()
+
+void  ISkinManager::ChangeSkinHLS(short h, short l, short s, int nFlag) 
 {
-    return m_pImpl->GetSkinCount(); 
+    m_pImpl->ChangeSkinHLS(h,l,s,nFlag);
 }
-void  ISkinManager::GetSkinDirection(TCHAR*  szOut) 
-{ 
-    m_pImpl->GetSkinDirection(szOut); 
-}
-ISkinRes*  ISkinManager::AddSkin(LPCTSTR  szName) 
-{
-    return m_pImpl->AddSkin(szName); 
-}
-HRESULT  ISkinManager::ChangeSkin(ISkinRes*  pSkinRes, bool bSync)
-{
-    return m_pImpl->ChangeSkin(pSkinRes, bSync);
-}
-HRESULT  ISkinManager::ChangeSkinHLS(short h, short l, short s, int nFlag) 
-{
-    return m_pImpl->ChangeSkinHLS(h,l,s,nFlag);
-}
-HRESULT  ISkinManager::SetActiveSkin(ISkinRes* pSkin) 
-{ 
-    return m_pImpl->SetActiveSkin(pSkin); 
-}
-ISkinRes*  ISkinManager::GetActiveSkin() 
-{
-    SkinRes* p = m_pImpl->GetActiveSkin(); 
-	if (p)
-		return p->GetISkinRes();
-	return NULL;
-}
-ISkinRes*  ISkinManager::GetSkinResByIndex(long lIndex)
-{
-    SkinRes* p = m_pImpl->GetSkinResByIndex(lIndex); 
-    if (p)
-        return p->GetISkinRes();
-    return NULL;
-}
+
 bool  ISkinManager::Save(ISkinRes* pSkinRes) 
 {
     if (NULL == pSkinRes)
         return m_pImpl->Save(NULL);
     else
         return m_pImpl->Save(pSkinRes->GetImpl()); 
+}
+
+ISkinRes*  ISkinManager::GetSkinResByName(LPCTSTR szName)
+{
+	SkinRes* p = m_pImpl->GetSkinResByName(szName);
+	if (p)
+		return p->GetISkinRes();
+
+	return NULL;
 }

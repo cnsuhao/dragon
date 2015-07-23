@@ -28,7 +28,6 @@ struct UIOBJ_CREATE_INFO
 struct UIRENDERBASE_CREATE_INFO
 {
     String  m_strName;    // 存在很多种theme类型，但对应的控件类型不一样
-    int     m_nControlType;
     int     m_nRenderType;
     pfnUICreateRenderBasePtr m_func;
 };
@@ -36,7 +35,6 @@ struct UIRENDERBASE_CREATE_INFO
 struct UITEXTRENDERBASE_CREATE_INFO
 {
     String     m_strName;
-    int        m_nControlType;
     int        m_nRenderType;
     pfnUICreateTextRenderBasePtr m_func;
 };
@@ -60,10 +58,6 @@ public:
 	~UIApplication(void);
     void  x_Init();  // 内部初始化，避免在构造函数中调用太多东西
 
-	// ---------- 
-    void  SetSkinDirection(LPCTSTR szDir);
-    bool  LoadSkin(LPCTSTR szSkinName);
-
 	bool  LogUI(ILog* pLog);
 	bool  LogUI(LPCTSTR szLogXmlPath);
 	bool  GetLog(ILog** ppLog);
@@ -73,7 +67,7 @@ public:
 	void  SetUIEditorPtr(IUIEditor* p) { m_pUIEditor = p; }
 	IUIEditor*  GetUIEditorPtr() { return m_pUIEditor; }
 	
-	ISkinManager*       GetSkinMgr();
+	SkinManager&  GetSkinMgr();
 	ITopWindowManager*  GetITopWindowMgr();
 	TopWindowManager*   GetTopWindowMgr() { return &m_TopWindowMgr; }
 	IAnimateManager*    GetAnimateMgr();
@@ -83,7 +77,7 @@ public:
 	HMODULE             GetUID2DModule();
 	HMODULE             GetUID3DModule();
 
-	SkinRes*            GetActiveSkinRes();
+	SkinRes*            GetDefaultSkinRes();
 	ImageManager*       GetActiveSkinImageMgr();
 	ImageRes*           GetActiveSkinImageRes();
 	CursorRes*          GetActiveSkinCursorRes();
@@ -108,17 +102,17 @@ public:
     bool  GetControlTagParseFunc(LPCTSTR szTag, pfnParseControlTag* pFunc);
 
     bool  RegisterUIObjectCreateData(LPCTSTR szXmlName, LPCTSTR szCategory, UINT nObjType, REFGUID guid, pfnUICreateInstancePtr pfun);
-	IObject*  CreateInstanceByName(LPCTSTR szXmlName);
-    bool  CreateInstanceByClsid(REFCLSID clsid, void** pOut);
+	IObject*  CreateInstanceByName(LPCTSTR szXmlName, ISkinRes*);
+    IObject*  CreateInstanceByClsid(REFCLSID clsid, ISkinRes*);
     void  LoadUIObjectListToToolBox();
 
-    bool  RegisterUIRenderBaseCreateData(LPCTSTR szName, int nType, int nControlType, pfnUICreateRenderBasePtr pfunc);
+    bool  RegisterUIRenderBaseCreateData(LPCTSTR szName, int nType, pfnUICreateRenderBasePtr pfunc);
     bool  CreateRenderBaseByName(LPCTSTR szName, IObject* pObject, IRenderBase** ppOut);
     bool  CreateRenderBase(int nType, IObject* pObject, IRenderBase** ppOut);
     LPCTSTR  GetRenderBaseName(int nType);
     void  EnumRenderBaseName(pfnEnumRenderBaseNameCallback callback, WPARAM wParam, LPARAM lParam);
 
-    bool  RegisterUITextRenderBaseCreateData(LPCTSTR szName, int nType, int nControlType, pfnUICreateTextRenderBasePtr pfunc);
+    bool  RegisterUITextRenderBaseCreateData(LPCTSTR szName, int nType, pfnUICreateTextRenderBasePtr pfunc);
     bool  CreateTextRenderBaseByName(LPCTSTR szName, IObject* pObject, ITextRenderBase** ppOut);
     bool  CreateTextRenderBase(int nType, IObject* pObject, ITextRenderBase** ppOut);
     LPCTSTR  GetTextRenderBaseName(int nType);

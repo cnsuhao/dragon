@@ -56,9 +56,10 @@ void  ComboBoxBase::OnIntialize()
     }
     
     IUIApplication* pUIApp = m_pIComboBoxBase->GetUIApplication();
+	ISkinRes* pSkinRes = m_pIComboBoxBase->GetSkinRes();
     if (!m_pEdit)
     {
-        IEdit::CreateInstance(pUIApp, &m_pEdit);
+        IEdit::CreateInstance(pSkinRes, &m_pEdit);
         m_pEdit->SetId(COMBOBOX_EDIT_ID);
         m_pIComboBoxBase->AddChild(m_pEdit);
 
@@ -69,7 +70,7 @@ void  ComboBoxBase::OnIntialize()
 
     if (!m_pButton)
     {
-        IButton::CreateInstance(pUIApp, &m_pButton);
+        IButton::CreateInstance(pSkinRes, &m_pButton);
         m_pButton->SetId(COMBOBOX_BUTTON_ID);
         m_pIComboBoxBase->AddChild(m_pButton);
 
@@ -481,7 +482,7 @@ PopupListBoxWindow*  ComboBoxBase::GetDropWnd()
 
 	do 
 	{
-		PopupListBoxWindow::CreateInstance(m_pIComboBoxBase->GetUIApplication(), &m_pPopupWnd);
+		PopupListBoxWindow::CreateInstance(m_pIComboBoxBase->GetSkinRes(), &m_pPopupWnd);
 
 		// 指定一个父窗口，而不是采用置顶的方式。避免在EDIT输入中文时，listbox遮挡了输入法窗口
 		if (!m_pPopupWnd->Create(m_strDropWndId.c_str(), m_pIComboBoxBase->GetHWND()))

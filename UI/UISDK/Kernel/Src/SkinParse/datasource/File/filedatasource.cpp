@@ -8,36 +8,26 @@
 namespace UI
 {
 
-void  FileDataSource::SetDirection(LPCTSTR szDir)
+void  FileDataSource::SetPath(LPCTSTR szPath)
 {
-    if (szDir)
-        m_strDir = szDir;
+    if (szPath)
+        m_strPath = szPath;
     else
-        m_strDir.clear();
+        m_strPath.clear();
 
-    int nLength = m_strDir.length();
-    if (nLength > 1)
-    {
-        if (m_strDir[nLength-1] != _T('\\'))
-        {
-            m_strDir.append(_T("\\"));
-        }
-    }
+	int nLength = m_strPath.length();
+	if (nLength > 1)
+	{
+		if (m_strPath[nLength-1] != _T('\\'))
+		{
+			m_strPath.append(_T("\\"));
+		}
+	}
 }
-void  FileDataSource::SetName(LPCTSTR szName)
+
+LPCTSTR  FileDataSource::GetPath()
 {
-    if (szName)
-        m_strName = szName;
-    else
-        m_strName.clear();
-}
-LPCTSTR  FileDataSource::GetDirection()
-{
-    return m_strDir.c_str();
-}
-LPCTSTR  FileDataSource::GetName()
-{
-    return m_strName.c_str();
+    return m_strPath.c_str();
 }
 SKIN_PACKET_TYPE  FileDataSource::GetType()
 {
@@ -48,7 +38,7 @@ bool FileDataSource::Load_UIDocument(IUIDocument* pDocument, LPCTSTR szPath)
     if (NULL == pDocument || NULL == szPath)
         return false;
 
-    String strTemp = m_strDir;
+    String strTemp = m_strPath;
     strTemp.append(szPath);
 
     return pDocument->LoadFile(strTemp.c_str());
@@ -59,7 +49,7 @@ bool  FileDataSource::Load_RenderBitmap(IRenderBitmap* pBitmap, LPCTSTR szPath, 
     if (NULL == pBitmap || NULL == szPath)
         return false;
 
-    String strTemp = m_strDir;
+    String strTemp = m_strPath;
     strTemp.append(szPath);
 
     return pBitmap->LoadFromFile(strTemp.c_str(), bCreateAlphaChannel);
@@ -70,7 +60,7 @@ bool  FileDataSource::Load_Image(ImageWrap* pImage, LPCTSTR szPath)
     if (NULL == pImage || NULL == szPath)
         return false;
 
-    String strTemp = m_strDir;
+    String strTemp = m_strPath;
     strTemp.append(szPath);
 
     pImage->GetImpl()->Load(strTemp.c_str());
@@ -82,7 +72,7 @@ bool  FileDataSource::Load_GdiplusImage(LPCTSTR szPath, GdiplusBitmapLoadWrap* p
     if (NULL == pImage || NULL == szPath)
         return false;
 
-    String strTemp = m_strDir;
+    String strTemp = m_strPath;
     strTemp.append(szPath);
 
     return pImage->LoadFromFile(strTemp.c_str());
@@ -93,7 +83,7 @@ bool  FileDataSource::Load_StreamBuffer(LPCTSTR szPath, IStreamBufferReader** pp
     if (NULL == pp || NULL == szPath)
         return false;
 
-    String strTemp = m_strDir;
+    String strTemp = m_strPath;
     strTemp.append(szPath);
 
     FileBufferReader*  pBuffer = new FileBufferReader;

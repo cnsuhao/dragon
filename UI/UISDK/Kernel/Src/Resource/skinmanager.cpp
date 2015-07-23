@@ -16,7 +16,6 @@ using namespace UI;
 SkinManager::SkinManager()
 {
     m_pISkinManager = NULL;
-	m_pCurActiveSkinRes = NULL;
 	m_bDirty = false;
 
 	m_pUIApplication = NULL;
@@ -53,6 +52,7 @@ void  SkinManager::Destroy()
 }
 
 // 遍历该目录下的皮肤列表
+/* 过期
 void  SkinManager::SetSkinDirection(LPCTSTR szDir)
 {
     if (NULL == szDir || 0 == _tcslen(szDir))
@@ -111,37 +111,6 @@ void  SkinManager::SetSkinDirection(LPCTSTR szDir)
     FindClose(hFind);
 }
 
-
-// 在皮肤目录中添加一个新皮肤 
-ISkinRes*  SkinManager::AddSkin(LPCTSTR  szName)
-{
-    if (NULL == szName)
-        return NULL;
-
-    String  strFilePath = m_strSkinDir;
-    strFilePath.append(_T("\\"));
-    strFilePath.append(szName);
-
-    if (!PathFileExists(strFilePath.c_str()))
-        return NULL;
-
-    SkinRes* p = OnFindSkinInSkinDir(SKIN_PACKET_TYPE_DIR, szName, strFilePath.c_str());
-    if (p)
-        return p->GetISkinRes();
-
-    return NULL;
-}
-
-// 在调用SetSkinDirection后，如果发现一个皮肤文件，则调用该响应函数
-SkinRes*  SkinManager::OnFindSkinInSkinDir(SKIN_PACKET_TYPE eType, LPCTSTR szName, LPCTSTR szPath)
-{
-    SkinRes*  pSkin = new SkinRes(*this);
-    pSkin->SetParam(eType, szName, szPath);
-
-    m_vSkinRes.push_back(pSkin);
-    return pSkin;
-}
-
 void  SkinManager::GetSkinDirection(TCHAR*  szOut)
 {
     if (szOut)
@@ -150,21 +119,35 @@ void  SkinManager::GetSkinDirection(TCHAR*  szOut)
     }
 }
 
-IUIApplication*  SkinManager::GetUIApplication()
+// 在皮肤目录中添加一个新皮肤 
+ISkinRes*  SkinManager::AddSkin(LPCTSTR  szPath)
 {
-	return m_pUIApplication;
+    if (NULL == szPath)
+        return NULL;
+
+    String  strFilePath = m_strSkinDir;
+    strFilePath.append(_T("\\"));
+    strFilePath.append(szPath);
+
+    if (!PathFileExists(strFilePath.c_str()))
+        return NULL;
+
+    SkinRes* p = OnFindSkinInSkinDir(SKIN_PACKET_TYPE_DIR, szPath, strFilePath.c_str());
+    if (p)
+        return p->GetISkinRes();
+
+    return NULL;
 }
 
-void SkinManager::SetUIApplication(IUIApplication* pUIApp)
-{ 
-	m_pUIApplication = pUIApp; 
-	m_SkinBuilderRes.SetUIApplication(pUIApp);
-}
 
-void  ChangeSkinTimerProc(UINT_PTR, TimerItem* pItem)
+// 在调用SetSkinDirection后，如果发现一个皮肤文件，则调用该响应函数
+SkinRes*  SkinManager::OnFindSkinInSkinDir(SKIN_PACKET_TYPE eType, LPCTSTR szPath, LPCTSTR szPath)
 {
-    SkinManager* pThis = (SkinManager*)pItem->wParam;
-    pThis->ChangeSkin((ISkinRes*)pItem->lParam, true);
+    SkinRes*  pSkin = new SkinRes(*this);
+    pSkin->SetParam(eType, szPath, szPath);
+
+    m_vSkinRes.push_back(pSkin);
+    return pSkin;
 }
 
 // 换肤
@@ -205,11 +188,91 @@ HRESULT SkinManager::ChangeSkin(ISkinRes* pISkinRes, bool bSync)
 	return true;
 }
 
-HRESULT SkinManager::ChangeSkinHLS( short h, short l, short s, int nFlag )
+SkinRes*  SkinManager::GetSkinResByIndex(long lIndex)
 {
-	bool bRet = m_pCurActiveSkinRes->ChangeSkinHLS(h,l,s,nFlag);
-	if (false == bRet)
-		return E_FAIL;
+	int nSize = (int)m_vSkinRes.size();
+	if (lIndex < 0 || lIndex >= nSize )
+		return NULL;
+	
+	return m_vSkinRes[lIndex];
+}
+
+//
+//	设置当前的活动皮肤（例如皮肤编辑器中正在编辑的皮肤）
+//
+//	一些GET操作都是默认针对于当前皮肤而言的
+//
+HRESULT SkinManager::SetActiveSkin(ISkinRes* pSkinRes)
+{
+	if (NULL == pSkinRes)
+	{
+		UI_LOG_WARN(_T("SkinManager::SetActiveSkin failed"));
+		return E_INVALIDARG;
+	}
+
+	SkinRes* pSkinRes2 = pSkinRes->GetImpl(); // 内部仍然保存为SkinRes，便于调用
+	m_pCurActiveSkinRes = pSkinRes2;
+	return S_OK;
+}
+
+
+//
+//	获取一个HSKIN对应的在m_vSkinRes中的索引
+//
+//	失败返回-1
+//
+int SkinManager::GetSkinResIndex(SkinRes* pSkinRes)
+{
+	if (NULL == pSkinRes)
+		return -1;
+
+	int nSize = (int)m_vSkinRes.size();
+	if (0 == nSize )
+		return -1;
+
+	for (int i = 0; i < nSize; i++)
+	{
+		if (m_vSkinRes[i] == pSkinRes)
+			return i;
+	}
+
+	return -1;
+}
+
+SkinRes* SkinManager::GetActiveSkin()
+{
+	if (NULL == m_pCurActiveSkinRes)
+		return NULL;
+
+	return m_pCurActiveSkinRes;
+}
+
+*/
+
+IUIApplication*  SkinManager::GetUIApplication()
+{
+	return m_pUIApplication;
+}
+
+void SkinManager::SetUIApplication(IUIApplication* pUIApp)
+{ 
+	m_pUIApplication = pUIApp; 
+	m_SkinBuilderRes.SetUIApplication(pUIApp);
+}
+
+// void  ChangeSkinTimerProc(UINT_PTR, TimerItem* pItem)
+// {
+//     SkinManager* pThis = (SkinManager*)pItem->wParam;
+//     pThis->ChangeSkin((ISkinRes*)pItem->lParam, true);
+// }
+
+void SkinManager::ChangeSkinHLS( short h, short l, short s, int nFlag )
+{
+	vector<SkinRes*>::iterator iter = m_vSkinRes.begin();
+	for (; iter != m_vSkinRes.end(); ++iter)
+	{
+		(*iter)->ChangeSkinHLS(h,l,s,nFlag);
+	}
 
 	// 通知窗口刷新
     ITopWindowManager* pTopWndMgr = m_pUIApplication->GetTopWindowMgr();
@@ -222,76 +285,92 @@ HRESULT SkinManager::ChangeSkinHLS( short h, short l, short s, int nFlag )
     }
 
 	m_bDirty = true;
-	return S_OK;
 }
 
 //
 //	加载皮肤数据
 //
-bool  SkinManager::LoadSkin(LPCTSTR szName)
+SkinRes*  SkinManager::LoadSkinRes(LPCTSTR szPath)
 { 
-	UI_LOG_INFO( _T("\n\n------------  LoadSkin: %s ----------------\n"), szName);
+	if (!szPath)
+		return NULL;
 
-    SkinRes*  pSkinRes = this->GetSkinResByName(szName);
-    if (NULL == pSkinRes)
-    {
-        UI_LOG_WARN(_T("GetSkinRes Failed. Name=%s"), szName);
-        return false;
-    }
-    bool bRet = pSkinRes->Load();
-    if (bRet)
-        m_pCurActiveSkinRes = pSkinRes;
+	UI_LOG_INFO( _T("\n\n------------  LoadSkinRes: %s ----------------\n"), szPath);
 
-    return bRet;
-}
-//	添加一款皮肤到工程当中，返回该皮肤句柄
-//
-//	Parameter
-//		strSkinName
-//			[in]	皮肤名称
-//
-//		strSkinXmlFullPath
-//			[in]	皮肤所对应的ui.xml所在路径
-//
-SkinRes* SkinManager::AddSkinRes(const String& strSkinName, const String& strSkinXmlFullPath)
-{
-#if 0
-	//////////////////////////////////////////////////////////////////////////
-	// 1. 创建ui.xml
+	TCHAR szSkinName[MAX_PATH] = {0};
+	SKIN_PACKET_TYPE eSkinPackageType = SKIN_PACKET_TYPE_DIR;
 
-	ISkinConfigParse* pSkinInfoParse = IParseClassFactory::CreateSkinInfoParseInstance(m_pUIApplication, strSkinXmlFullPath);
-	if (false == pSkinInfoParse->Create() )
+	if (PathIsDirectory(szPath))
 	{
-		UI_LOG_ERROR(_T("SkinManager::AddSkinRes create skininfo failed."));
+		Util::GetPathFileName(szPath, szSkinName);
+		SkinRes* pTest = GetSkinResByName(szSkinName);
+		if (pTest)
+		{
+			UI_LOG_WARN(TEXT("Skin Exist: name=%s"), szSkinName);
+			return pTest;
+		}
+		eSkinPackageType = SKIN_PACKET_TYPE_DIR;
+	}
+	else
+	{
+		TCHAR szExt[MAX_PATH] = _T("");
+		Util::GetPathFileExt(szPath, szExt);
+
+		int nExtLength = 0; 
+
+		// 如果没有带后缀名，尝试一下补个后缀
+		if (!szExt[0])
+		{
+			String strPathTry(szPath);
+			strPathTry.append(TEXT(".") XML_SKIN_PACKET_EXT);
+			if (!PathFileExists(strPathTry.c_str()))
+			{
+				UI_LOG_ERROR(TEXT("Skin File not exist: %s"), strPathTry.c_str());
+				return NULL;
+			}
+		}
+		else if (0 != _tcscmp(szExt, XML_SKIN_PACKET_EXT))
+		{
+			UI_LOG_ERROR(TEXT("Skin File Format Error: %s"), szExt);
+			return NULL;
+		}
+		else
+		{
+			nExtLength = _tcslen(XML_SKIN_PACKET_EXT) + 1;
+		}
+
+		Util::GetPathFileName(szPath, szSkinName);
+		szSkinName[_tcslen(szSkinName)-nExtLength] = 0;
+		SkinRes* pTest = GetSkinResByName(szSkinName);
+		if (pTest)
+		{
+			UI_LOG_WARN(TEXT("Skin Exist: name=%s"), szSkinName);
+			return pTest;
+		}
+
+		eSkinPackageType = SKIN_PACKET_TYPE_ZIP;
+	}
+
+	SkinRes* pSkin = new SkinRes(*this);
+	pSkin->SetParam(eSkinPackageType, szSkinName, szPath);
+	if (!pSkin->Load())
+	{
+		UI_LOG_ERROR(TEXT("Skin load failed: %s"), szPath);
+		SAFE_DELETE(pSkin);
 		return NULL;
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-	// 2. 添加到持久性对象属性中
-
-	SkinDescResItem* pSkinItem = new SkinDescResItem;
-	pSkinItem->SetSkinName(strSkinName);
-	pSkinItem->SetSkinXmlPath(strSkinXmlFullPath);
-
-	m_UISkinDescRes.AddSkinItem(pSkinItem);
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// 3. 初始化皮肤对象
-
-	SkinRes* pSkinRes = new SkinRes(pSkinItem);
-	pSkinRes->SetProjectManager(this);
-	pSkinRes->GetSkinConfigManager()->SetSkinConfigParse(pSkinInfoParse);
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// 4. 添加到运行时对象属性中
-	this->m_vSkinRes.push_back(pSkinRes);
-	return pSkinRes;
-#endif 
-    return 0;
+	m_vSkinRes.push_back(pSkin);
+	return pSkin;
 }
 
+SkinRes*  SkinManager::GetDefaultSkinRes()
+{
+	if (0 == m_vSkinRes.size())
+		return NULL;
+	
+	return m_vSkinRes[0];
+}
 
 //
 //	保存到文件中
@@ -326,46 +405,6 @@ bool SkinManager::Save(SkinRes* pSkinRes)
 	return bRet;
 }
 
-//
-//	获取一个HSKIN对应的在m_vSkinRes中的索引
-//
-//	失败返回-1
-//
-int SkinManager::GetSkinResIndex(SkinRes* pSkinRes)
-{
-	if (NULL == pSkinRes)
-		return -1;
-
-	int nSize = (int)m_vSkinRes.size();
-	if (0 == nSize )
-		return -1;
-
-	for (int i = 0; i < nSize; i++)
-	{
-		if (m_vSkinRes[i] == pSkinRes)
-			return i;
-	}
-
-	return -1;
-}
-
-//
-//	枚举当前工程中的皮肤
-//
-UINT SkinManager::GetSkinCount()
-{
-	return (UINT)m_vSkinRes.size(); 
-}
-
-SkinRes*  SkinManager::GetSkinResByIndex(long lIndex)
-{
-	int nSize = (int)m_vSkinRes.size();
-	if (lIndex < 0 || lIndex >= nSize )
-		return NULL;
-	
-	return m_vSkinRes[lIndex];
-}
-
 SkinRes*  SkinManager::GetSkinResByName(LPCTSTR szName)
 {
     if (NULL == szName)
@@ -380,31 +419,5 @@ SkinRes*  SkinManager::GetSkinResByName(LPCTSTR szName)
     }
 
     return NULL;
-}
-
-//
-//	设置当前的活动皮肤（例如皮肤编辑器中正在编辑的皮肤）
-//
-//	一些GET操作都是默认针对于当前皮肤而言的
-//
-HRESULT SkinManager::SetActiveSkin(ISkinRes* pSkinRes)
-{
-	if (NULL == pSkinRes)
-	{
-		UI_LOG_WARN(_T("SkinManager::SetActiveSkin failed"));
-		return E_INVALIDARG;
-	}
-
-	SkinRes* pSkinRes2 = pSkinRes->GetImpl(); // 内部仍然保存为SkinRes，便于调用
-    m_pCurActiveSkinRes = pSkinRes2;
-	return S_OK;
-}
-
-SkinRes* SkinManager::GetActiveSkin()
-{
-	if (NULL == m_pCurActiveSkinRes)
-		return NULL;
-
-	return m_pCurActiveSkinRes;
 }
 

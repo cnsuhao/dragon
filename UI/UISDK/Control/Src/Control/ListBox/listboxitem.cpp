@@ -28,7 +28,7 @@ void  ListBoxItem::OnInitialize()
 
     if (!pData)
     {
-        IListBoxItemShareData::CreateInstance(pListCtrl->GetUIApplication(), &pData);
+        IListBoxItemShareData::CreateInstance(pListCtrl->GetSkinRes(), &pData);
         m_pShareData = pData->GetImpl();
         pListCtrl->SetItemTypeShareData(IListBoxItem::FLAG, pData);
     }

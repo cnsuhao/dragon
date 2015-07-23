@@ -219,10 +219,6 @@ void TreeView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
         }
         m_pITreeView->Refresh();
     }
-    else
-    {
-        SetMsgHandled(FALSE);  // 其它按钮由基类处理
-    }
 }
 
 
@@ -249,7 +245,7 @@ ITreeItem*  TreeView::InsertNormalItem(
         return NULL;
 
     INormalTreeItem*  pNewItem = NULL;
-    INormalTreeItem::CreateInstance(m_pITreeView->GetUIApplication(), &pNewItem);
+    INormalTreeItem::CreateInstance(m_pITreeView->GetSkinRes(), &pNewItem);
 
     if (pItem->mask & UITVIF_TEXT && NULL != pItem->pszText)
         pNewItem->SetText(pItem->pszText);

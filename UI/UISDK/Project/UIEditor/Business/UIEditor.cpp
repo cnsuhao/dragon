@@ -17,7 +17,11 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 	
 	g_pGlobalData = new CGlobalData;
-	g_pGlobalData->Init();
+	if (!g_pGlobalData->Init())
+	{
+		SAFE_DELETE(g_pGlobalData);
+		return 0;
+	}
 
 	_Module.Init(NULL, hInstance);
 	AtlAxWinInit();   // for webbrowser

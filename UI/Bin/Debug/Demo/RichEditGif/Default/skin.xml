@@ -11,5 +11,10 @@
 		<item id="black">0,0,0,255</item>
 	</color>
 	<style />
+  <layout>
+    <CustomWindow id="DefaultMenu">
+      <Menu/>
+    </CustomWindow>
+  </layout>
 	<include>wnd.xml</include>
 </skin>

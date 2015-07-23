@@ -50,7 +50,7 @@ void  SliderCtrl::OnObjectLoaded()
 	// 兼容没有配置子结点的情况，例如直接创建了一个SliderCtrl Instance
 	if (!m_pButton)
 	{
-		IButton::CreateInstance(m_pISliderCtrl->GetUIApplication(), &m_pButton);
+		IButton::CreateInstance(m_pISliderCtrl->GetSkinRes(), &m_pButton);
 		m_pISliderCtrl->AddChild(m_pButton);
 
         if (NULL == m_pButton->GetBkRender())

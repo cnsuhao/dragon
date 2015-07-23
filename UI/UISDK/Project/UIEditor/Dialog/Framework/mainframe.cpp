@@ -72,7 +72,7 @@ LRESULT CMainFrame::OnCreate( LPCREATESTRUCT lpcs )
     g_pGlobalData->m_pMyUIApp->GetMessageFilterMgr()->AddMessageFilter(this);
 
 	// 显示首页窗口
-    CFirstPageDlg::CreateInstance(g_pGlobalData->m_pMyUIApp, &m_pDlgFirstPage);
+    CFirstPageDlg::CreateInstance(g_pGlobalData->m_pMyUIApp->GetDefaultSkinRes(), &m_pDlgFirstPage);
     m_pDlgFirstPage->SetMainFrame(this);
 	m_pDlgFirstPage->Create(_T("FirstPageDlg"), m_hWnd);
 	m_pDlgFirstPage->ShowWindow();
@@ -81,13 +81,13 @@ LRESULT CMainFrame::OnCreate( LPCREATESTRUCT lpcs )
 	this->ModifyStyle( 0, WS_CLIPCHILDREN );
 
     // 创建工具栏
-	CToolBar::CreateInstance(g_pGlobalData->m_pMyUIApp, &m_pToolBar);
+	CToolBar::CreateInstance(g_pGlobalData->m_pMyUIApp->GetDefaultSkinRes(), &m_pToolBar);
 	m_pToolBar->Create(_T("ToolBar"), m_hWnd);
 	m_pToolBar->ShowWindow();
 	g_pGlobalData->m_pToolBar = m_pToolBar;
 
     // 创建状态栏
-    CStatusBar::CreateInstance(g_pGlobalData->m_pMyUIApp, &m_pStatusBar);
+    CStatusBar::CreateInstance(g_pGlobalData->m_pMyUIApp->GetDefaultSkinRes(), &m_pStatusBar);
     m_pStatusBar->Create(_T("StatusBar"), m_hWnd);
     m_pStatusBar->ShowWindow();
     g_pGlobalData->m_pStatusBar = m_pStatusBar;
@@ -122,7 +122,7 @@ void  CMainFrame::OnNewWindow(UINT,int,HWND)
         return;
 
     CCreateWindowDlg* pDlg = NULL;
-    CCreateWindowDlg::CreateInstance(g_pGlobalData->m_pMyUIApp, &pDlg);
+    CCreateWindowDlg::CreateInstance(g_pGlobalData->m_pMyUIApp->GetDefaultSkinRes(), &pDlg);
     if (IDOK == pDlg->DoModal(_T("createwindowdlg"), m_hWnd, false))
     {
 		SetDirty();
@@ -340,7 +340,7 @@ void  CMainFrame::OnMenuCloseProject(UINT,int,HWND)
 void CMainFrame::OnMenuProjDependsCtrlDll(UINT, int, HWND)
 {   
     CProjectDependsCtrlDllConfigDlg* pDlg = NULL;
-    CProjectDependsCtrlDllConfigDlg::CreateInstance(g_pGlobalData->m_pMyUIApp, &pDlg);
+    CProjectDependsCtrlDllConfigDlg::CreateInstance(g_pGlobalData->m_pMyUIApp->GetDefaultSkinRes(), &pDlg);
 
     pDlg->DoModal(_T("ProjectDependsCtrlDllConfigDlg"), m_hWnd, false);
     SAFE_DELETE_Ixxx(pDlg);
@@ -357,7 +357,7 @@ void CMainFrame::OnMenuToolBox(UINT, int, HWND)
 {
     if (!m_pToolBox)
     {
-        CToolBox::CreateInstance(g_pGlobalData->m_pMyUIApp, &m_pToolBox);
+        CToolBox::CreateInstance(g_pGlobalData->m_pMyUIApp->GetDefaultSkinRes(), &m_pToolBox);
         g_pGlobalData->m_pToolBox = m_pToolBox;
 
         m_pToolBox->Create(_T("ToolBox"), m_hWnd);
@@ -404,7 +404,7 @@ void CMainFrame::_InitOnOpenOrNewProject(const String& strProjPath)
 
 	if (NULL == m_pPanelProjectTree)
 	{
-        CProjectTreeDialog::CreateInstance(g_pGlobalData->m_pMyUIApp, &m_pPanelProjectTree);
+        CProjectTreeDialog::CreateInstance(g_pGlobalData->m_pMyUIApp->GetDefaultSkinRes(), &m_pPanelProjectTree);
         m_pPanelProjectTree->Create(_T("ProjectTreeDialog"), m_hWnd);
         m_pPanelProjectTree->SetMainFrame(this);
 	}
@@ -418,7 +418,7 @@ void CMainFrame::_InitOnOpenOrNewProject(const String& strProjPath)
 		this->GetWindowRect(&rcWindow);
 
         CPropertyDialog::CreateInstance(
-                g_pGlobalData->m_pMyUIApp, 
+                g_pGlobalData->m_pMyUIApp->GetDefaultSkinRes(), 
                 &m_pPropertyDialog);
 		m_pPropertyDialog->DoModeless(
                 _Module.m_hInst, 
@@ -500,7 +500,7 @@ void  CMainFrame::_CloseProject(bool bExit)
         // 显示首页窗口
         if (!m_pDlgFirstPage)
         {
-            CFirstPageDlg::CreateInstance(g_pGlobalData->m_pMyUIApp, &m_pDlgFirstPage);
+            CFirstPageDlg::CreateInstance(g_pGlobalData->m_pMyUIApp->GetDefaultSkinRes(), &m_pDlgFirstPage);
             m_pDlgFirstPage->SetMainFrame(this);
             m_pDlgFirstPage->Create(_T("FirstPageDlg"), m_hWnd);
         }
@@ -525,12 +525,12 @@ void  CMainFrame::_CloseProject(bool bExit)
 
 void CMainFrame::OnMenuNewSkin(UINT,int,HWND)
 {
-	CNewProjectDlg dlg(false);
-	if (IDCANCEL == dlg.DoModal())
-		return;
-
-    ISkinRes* pSkin = g_pGlobalData->m_pProjectData->m_pEditSkinMgr->AddSkin(dlg.m_strSkinName.c_str());
-	m_pPanelProjectTree->InsertSkinItem(pSkin);
+// 	CNewProjectDlg dlg(false);
+// 	if (IDCANCEL == dlg.DoModal())
+// 		return;
+// 
+//     ISkinRes* pSkin = g_pGlobalData->m_pProjectData->m_pEditSkinMgr->AddSkin(dlg.m_strSkinName.c_str());
+// 	m_pPanelProjectTree->InsertSkinItem(pSkin);
 }
 
 void CMainFrame::OnMenuSave(UINT,int,HWND)
@@ -818,7 +818,7 @@ void CMainFrame::SwitchToSkinResPanel(UI_RESOURCE_TYPE nType, ISkinRes* pSkin)
 			CChildFrame* pChildFrame = new CChildFrame(this);    // 自释放,OnFinalMessage
 //			CImageBuildDlg* pView = new CImageBuildDlg;          // 自释放,OnFinalMessage
 			CImageEditorDlg* pView = NULL;
-			CImageEditorDlg::CreateInstance(g_pGlobalData->m_pMyUIApp, &pView);
+			CImageEditorDlg::CreateInstance(g_pGlobalData->m_pMyUIApp->GetDefaultSkinRes(), &pView);
 
             CRect rcClient(0, 0, 500,500);
 			pChildFrame->Create(m_hWndMDIClient);
@@ -985,7 +985,7 @@ void CMainFrame::SwitchToLayoutPanel(LayoutTreeItemData* pData)
 
         CChildFrame* pChildFrame = new CChildFrame(this);    // 自释放,OnFinalMessage
         CLayoutEditorDlg* pView = NULL;
-        CLayoutEditorDlg::CreateInstance(g_pGlobalData->m_pMyUIApp, &pView);
+        CLayoutEditorDlg::CreateInstance(g_pGlobalData->m_pMyUIApp->GetDefaultSkinRes(), &pView);
 
         pChildFrame->Create(m_hWndMDIClient, NULL);
         pView->Create(_T("layoutview"), pChildFrame->m_hWnd);

@@ -37,7 +37,6 @@ BOOL CNewProjectDlg::OnInitDialog(CWindow wndFocus, LPARAM lInitParam)
         SetDlgItemText(IDC_EDIT_NEW_PROJECT_NAME, _T("Test"));
 
         TCHAR  szDir[MAX_PATH] = _T("");
-        g_pGlobalData->m_pProjectData->m_pEditSkinMgr->GetSkinDirection(szDir);
         m_strProjectFolder = szDir;
 
         this->SetWindowText(_T("ÐÂ½¨Æ¤·ô"));

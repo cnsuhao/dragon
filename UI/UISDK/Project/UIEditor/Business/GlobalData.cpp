@@ -72,6 +72,7 @@ CGlobalData::CGlobalData(void)
 	m_pMyUIApp = NULL;
     m_pLog = NULL;
     m_pToolBox = NULL;
+	m_pCmdHistroyMgr = NULL;
 }
 
 CGlobalData::~CGlobalData(void)
@@ -88,7 +89,7 @@ CGlobalData::~CGlobalData(void)
 }
 
 
-void CGlobalData::Init()
+bool CGlobalData::Init()
 {
     CreateUIApplicationInstance(&m_pMyUIApp);     // 加载自己的皮肤
     UICtrl_RegisterUIObject(m_pMyUIApp);
@@ -107,12 +108,12 @@ void CGlobalData::Init()
     TCHAR szPath[MAX_PATH] = _T("");
     UI::Util::GetAppPath_(szPath);
     String str = szPath;
-    str.append(_T("Editor"));
-    m_pMyUIApp->SetSkinDirection(str.c_str());
+    str.append(_T("Editor\\Default"));
 
-    if (FAILED(m_pMyUIApp->LoadSkin(_T("Default"))))
+    if (!m_pMyUIApp->LoadSkinRes(str.c_str()))
     {
         MessageBox(NULL, _T("加载皮肤失败"), _T("Error"), MB_OK|MB_ICONERROR);
+		return false;
     }
 
 	m_pRecentProj = new CRecentProjList;
@@ -120,6 +121,7 @@ void CGlobalData::Init()
 
     // 加载命令历史管理器
     m_pCmdHistroyMgr = new CCommandHistroyMgr;
+	return true;
 }
 
 void CGlobalData::SetStatusText2(const TCHAR* szText)

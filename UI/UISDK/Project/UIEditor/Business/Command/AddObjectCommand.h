@@ -56,7 +56,8 @@ public:
 
         if (NULL == m_pCreateObj)
 		{
-            m_pCreateObj = GetProjectData()->m_pEditUIApp->CreateInstanceByName(m_strObjName.c_str());
+            m_pCreateObj = GetProjectData()->m_pEditUIApp->CreateInstanceByName(
+					m_strObjName.c_str(), m_pParent->GetSkinRes());
 		}
         m_pParent->AddChild(m_pCreateObj);
 

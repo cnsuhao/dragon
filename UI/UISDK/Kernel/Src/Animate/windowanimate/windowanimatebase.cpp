@@ -68,7 +68,10 @@ void  WindowAnimateBase::Initialize()
 
 	// 设置动画参数
     ILayeredAnimateWindow*  pILayeredAnimateWindow = NULL;
-    ILayeredAnimateWindow::CreateInstance(m_pWindow->GetIUIApplication(), &pILayeredAnimateWindow);   
+    ILayeredAnimateWindow::CreateInstance(
+			m_pWindow->GetIUIApplication(),
+			m_pWindow->GetISkinRes(),
+			&pILayeredAnimateWindow);   
 
 	m_pLayeredWindow = pILayeredAnimateWindow->GetImpl();
     m_pLayeredWindow->SetWindowAnimate(this);

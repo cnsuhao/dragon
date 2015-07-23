@@ -10,21 +10,21 @@
 //	双击listctrl
 //		message: UI_WM_NOTIFY
 //		code:    UI_LCN_DBCLICK
-//		wparam:  POINT
-//		lparam:  ListItemBase*
+//		lparam:  POINT
 #define UI_NM_DBCLICK   135311303
 
 //	点击listctrl
 //		message: UI_WM_NOTIFY
 //		code:    UI_LCN_CLICK
-//		lparam:  ListItemBase*
+//		wparam:  IListItemBase*
+//      lparam:  mouse point
 #define UI_NM_CLICK     135311304
 
 //  右击listctrl
 //		message: UI_WM_NOTIFY
 //		code:    UI_NM_RCLICK
-//		wparam:  POINT
-//		lparam:  ListItemBase* 
+//		wparam:  IListItemBase* (有可能为NULL)
+//		lparam:  mouse point
 #define UI_NM_RCLICK     136291126
 
 //  键盘消息

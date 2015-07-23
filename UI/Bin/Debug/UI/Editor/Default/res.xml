@@ -74,8 +74,8 @@
 	<style>
 		<class id="popup.layout.fill" layout.align="forcedesiredsize" layout.left="0" layout.top="0" layout.right="0" layout.bottom="0" />
 		<class id="combo.listbox" border="1" inherit=".popup.layout.fill" transparent="0" foregnd.render.type="colorlist" foregnd.render.color="white;listbox.item.bkg;listbox.item.bkg;;listbox.item.bkg;listbox.item.bkg;listbox.item.bkg" textrender.type="colorlist" textrender.color="black;white;white;white;white;white;white;white;white" textrender.align="left|vcenter" bkgnd.render.type="color" bkgnd.render.color="white" bkgnd.render.border="1" bkgnd.render.border.color="gray" />
-		<class id="theme_btn" bkgnd.render.type="theme" transparent="1" textrender.type="simple" textrender.font="default" textrender.align="center|vcenter" />
-		<class id="theme_edit" bkgnd.render.type="theme" transparent="1" textrender.type="colorlist" textrender.color="0xF000;0xFFFF" textrender.align="vcenter|singleline" padding="3" />
+		<class id="theme_btn" bkgnd.render.type="theme.button" transparent="1" textrender.type="simple" textrender.font="default" textrender.align="center|vcenter" />
+		<class id="theme_edit" bkgnd.render.type="theme.edit" transparent="1" textrender.type="colorlist" textrender.color="0xF000;0xFFFF" textrender.align="vcenter|singleline" padding="3" />
 		<class id="child_edit" bkgnd.render.type="color" bkgnd.render.color="white" textrender.type="colorlist" textrender.color="0xF000;0xFFFF" textrender.align="vcenter|singleline" />
 		<class id="child_combobox" bkgnd.render.type="color" bkgnd.render.color="white" textrender.type="simple" textrender.font="normal" />
 		<class id="fristpage_hyperlink" visible="hidden" height="20" layout.left="5" layout.right="25" textrender.align="vcenter|endellipsis" textrender.type="fontcolorlist" textrender.color="link_normal;link_hover;link_press" textrender.font="default;default_underline;default_underline" />
@@ -87,6 +87,6 @@
 		<class id="tabctrlbtn_top" bkgnd.render.image="common_tabctrl_btn_top" inherit=".tabctrlbtn" />
 		<class id="tabctrl_win32" head.layout="win32" bkgnd.render.type="image" bkgnd.render.image.drawtype="stretch" bkgnd.render.image.9region="2" bkgnd.render.image="common_tabctrl_border" contentpanel.padding="3" />
 		<class id="editor_listctrl" bkgnd.render.type="color" bkgnd.render.color="0xFFFFFFFF" foregnd.render.type="colorlist" foregnd.render.color=";;;;0xFFCEEDFA;0xFFCEEDFA;0xFFCEEDFA;;0xFFCEEDFA" foregnd.render.border.color=";0xFF3399FF;;;0xFF3399FF;0xFF3399FF;0xFF3399FF;;0xFF3399FF" foregnd.render.colorlist.count="9" bkgnd.render.border.color="0xFFCCCCCC" bkgnd.render.border="1" border="1" expandicon.render.type="theme.treeview.expandcollpase.icon" />
-		<class id="theme_combo" bkgnd.render.type="theme" padding="3,1,1,1" transparent="1" />
+		<class id="theme_combo" bkgnd.render.type="theme.combobox.bkg" padding="3,1,1,1" transparent="1" />
 	</style>
 </skin>

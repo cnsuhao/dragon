@@ -143,6 +143,7 @@ public:
     UI_BEGIN_MSG_MAP_Ixxx(CProjectTreeDialog)
         UIMSG_WM_NOTIFY_CODE_FROM(UI_LCN_SELCHANGED, m_pTreeLayout, OnLayoutTreeSelChanged)
         UIMSG_WM_NOTIFY_CODE_FROM(UI_NM_RCLICK, m_pTreeLayout, OnLayoutTreeRClick)
+		UIMSG_WM_NOTIFY_CODE_FROM(UI_NM_KEYDOWN, m_pTreeLayout, OnLayoutTreeKeyDown)
         UIMSG_WM_NOTIFY_CODE_FROM(UI_NM_DBCLICK, m_pTreeResource, OnResourceTreeDBClick)
         UIMSG_BN_CLICKED2( m_pRadioBtnLayout, OnBtnLayout )
         UIMSG_BN_CLICKED2( m_pRadioBtnResource, OnBtnResource )
@@ -178,6 +179,7 @@ public:
 
     LRESULT  OnLayoutTreeSelChanged(WPARAM w, LPARAM l);
     LRESULT  OnLayoutTreeRClick(WPARAM w, LPARAM l);
+	LRESULT  OnLayoutTreeKeyDown(WPARAM w, LPARAM l);
     LRESULT  OnControlDropEvent(WPARAM w, LPARAM l);
     LRESULT  OnResourceTreeDBClick(WPARAM w, LPARAM l);
     void  OnBtnLayout();

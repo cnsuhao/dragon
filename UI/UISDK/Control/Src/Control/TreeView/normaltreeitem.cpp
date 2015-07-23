@@ -35,7 +35,7 @@ void  NormalTreeItem::OnInitialize()
         pListCtrl->GetItemTypeShareData(LISTITEM_TYPE_TREEITEM_NORMAL));
     if (NULL == pData)
     {
-        INormalTreeItemShareData::CreateInstance(pListCtrl->GetUIApplication(), &pData);
+        INormalTreeItemShareData::CreateInstance(pListCtrl->GetSkinRes(), &pData);
         pListCtrl->SetItemTypeShareData(LISTITEM_TYPE_TREEITEM_NORMAL, pData);
         m_pShareData = pData->GetImpl();
 

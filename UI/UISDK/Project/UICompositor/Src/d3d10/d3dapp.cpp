@@ -180,7 +180,7 @@ bool  D3D10App::InitRender()
 		NULL, &m_pEffect, &pCompileBlob, &hCompileResult);
 #else
     // 必须放在 RCDATA 资源当中
-    HRESULT hr = D3DX10CreateEffectFromResource(g_hInstance, MAKEINTRESOURCE(IDR_SHADER_D3D10), 0,
+    HRESULT hr = D3DX10CreateEffectFromResource(g_hInstance, MAKEINTRESOURCE(fx_4_0), 0,
         NULL, NULL, "fx_4_0", dwShaderFlags, 0, m_pDevice, NULL, NULL, &m_pEffect, 
 		&pCompileBlob, &hCompileResult);
 #endif	

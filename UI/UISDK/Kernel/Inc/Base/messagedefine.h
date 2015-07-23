@@ -266,7 +266,7 @@ enum
     //  message : UI_WM_FINALCONSTRUCT
     //  code : NA
     //  wparam : IUIApplication*
-    //  lparam : NA
+    //  lparam : ISkinRes*,对象所属资源包
     //
     UI_WM_FINALCONSTRUCT,
 
@@ -753,8 +753,10 @@ namespace UI
 
 #define UI_BEGIN_MSG_MAP_Ixxx(classname) \
     typedef UI::UIObjCreator<classname> _CreatorClass; \
-    static void  CreateInstance(UI::IUIApplication* p, classname** pp) \
-    { classname::_CreatorClass::UICreateInstance(p, pp); } \
+	static void  CreateInstance(UI::IUIApplication* p, UI::ISkinRes* pSkinRes, classname** pp) \
+    { classname::_CreatorClass::UICreateInstance(p, pSkinRes, pp); } \
+	static void  CreateInstance(UI::ISkinRes* pSkinRes, classname** pp) \
+	{ classname::_CreatorClass::UICreateInstanceBySkinRes(pSkinRes, pp); } \
     virtual BOOL virtualProcessMessage(UI::UIMSG* pMsg, int nMsgMapID, bool bDoHook) \
     { return nvProcessMessage(pMsg, nMsgMapID, bDoHook); } \
     UI_BEGIN_MSG_MAP
@@ -1474,6 +1476,16 @@ namespace UI
     {                                                 \
         SetMsgHandled(TRUE);                          \
         lResult = func((UI::IUIApplication*)wParam);  \
+        if (IsMsgHandled())                           \
+            return TRUE;                              \
+    }
+
+// HRESULT  FinalConstruct(IUIApplication* p, ISkinRes*);
+#define UIMSG_WM_FINALCONSTRUCT2(func)                \
+    if (uMsg == UI_WM_FINALCONSTRUCT)                 \
+    {                                                 \
+        SetMsgHandled(TRUE);                          \
+		lResult = func((UI::IUIApplication*)wParam, (UI::ISkinRes*)lParam);  \
         if (IsMsgHandled())                           \
             return TRUE;                              \
     }

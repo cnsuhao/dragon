@@ -3059,7 +3059,7 @@ HRESULT __stdcall WindowlessRichEdit::GetContextMenu(WORD seltype, LPOLEOBJECT l
 //     DestroyMenu(hMenu);
 // #endif
 
-	UI::LoadMenuData data = {m_pIRichEdit->GetUIApplication()};
+	UI::LoadMenuData data = {m_pIRichEdit->GetSkinRes()};
     IMenu* pMenu = UILoadMenu(&data);
 	if (!pMenu)
 		return E_NOTIMPL;
@@ -3481,22 +3481,29 @@ LRESULT  WindowlessRichEdit::OnUIDropTargetEvent(UINT uMsg, WPARAM wParam, LPARA
     return 0;
 }
 
-// HFONT  WindowlessRichEdit::CreateFontByCharFormat()
-// {
-//     // 直接用整形得到的值与richedit自己算出来的不一样
-//     float f = ((float)m_charFormat.yHeight*96)/1440;
-//     int yHeight = -UI::round(f);
-// 
-//     HFONT hFont = CreateFont(
-//         yHeight,
-//         0, 0, 0,
-//         m_charFormat.dwEffects&CFE_BOLD ? FW_BOLD:FW_NORMAL,
-//         m_charFormat.dwEffects&CFE_ITALIC ? 1:0,
-//         m_charFormat.dwEffects&CFE_UNDERLINE ? 1:0,
-//         m_charFormat.dwEffects&CFE_STRIKEOUT ? 1:0,
-//         ANSI_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,
-//         DEFAULT_QUALITY,DEFAULT_PITCH | FF_SWISS,
-//         m_charFormat.szFaceName);
-// 
-//     return hFont;
-// }
+
+/*
+HFONT  CRichEditWndlessBase::CreateFontByCharFormat()
+{
+    // 直接用整形得到的值与richedit自己算出来的不一样
+    HDC hdc = GetDC(NULL);
+    long nyPerInch = GetDeviceCaps(hdc, LOGPIXELSY);   // DPI
+    ReleaseDC(NULL, hdc);
+
+    float f = ((float)m_charFormat.yHeight*nyPerInch)/1440;
+    int yHeight = -UI::round(f);
+
+    HFONT hFont = CreateFont(
+        yHeight,
+        0, 0, 0,
+        m_charFormat.dwEffects&CFE_BOLD ? FW_BOLD:FW_NORMAL,
+        m_charFormat.dwEffects&CFE_ITALIC ? 1:0,
+        m_charFormat.dwEffects&CFE_UNDERLINE ? 1:0,
+        m_charFormat.dwEffects&CFE_STRIKEOUT ? 1:0,
+        ANSI_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,
+        DEFAULT_QUALITY,DEFAULT_PITCH | FF_SWISS,
+        m_charFormat.szFaceName);
+
+    return hFont;
+}
+*/
