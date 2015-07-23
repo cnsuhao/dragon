@@ -70,6 +70,10 @@ public:
 	SKIN_HLS_INFO*   GetHLSInfo()         { return m_pHLSInfo; }
 	ISkinDataSource*  GetDataSource()     { return m_pDataSource; }
 
+	ImageRes&  GetImageRes();
+	ColorRes&  GetColorRes();
+	FontRes&   GetFontRes();
+
     UINT  GetImageCount()    { return m_mgrImage.GetImageCount(); }
     UINT  GetColorCount()    { return m_mgrColor.GetColorCount(); }
     UINT  GetFontCount()     { return m_mgrFont.GetFontCount(); }

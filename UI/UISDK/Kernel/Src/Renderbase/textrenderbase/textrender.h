@@ -53,8 +53,8 @@ public:
 	void  SetTextRenderType(const TEXTRENDER_TYPE& nType){ m_nTextRenderType = nType ; }
 	TEXTRENDER_TYPE  GetTextRenderType() { return m_nTextRenderType; }
 	
-	IColorRes*  GetActiveSkinColorRes();
-	IFontRes*  GetActiveSkinFontRes();
+	IColorRes*  GetSkinColorRes();
+	IFontRes*  GetSkinFontRes();
 
 	bool  IsThemeRender();
     void  CheckSkinTextureChanged();

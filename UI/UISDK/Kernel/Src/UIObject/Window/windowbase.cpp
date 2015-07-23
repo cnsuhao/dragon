@@ -1901,7 +1901,12 @@ void  WindowBase::SetDefaultRenderFont(LPCTSTR szFontId)
     if (!szFontId)
         return;
 
-	FontRes* pFontRes = GetUIApplication()->GetActiveSkinFontRes();
+	FontRes* pFontRes = NULL;
+	if (m_pSkinRes)
+		pFontRes = &m_pSkinRes->GetFontRes();
+	else if (m_pUIApplication)
+		pFontRes = m_pUIApplication->GetActiveSkinFontRes();
+
 	if (NULL == pFontRes)
 		return;
 

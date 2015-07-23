@@ -72,13 +72,13 @@ RENDER_TYPE  IRenderBase::GetType()
 {
     return m_pRenderBaseImpl->GetRenderType();
 }
-IColorRes*  IRenderBase::GetActiveSkinColorRes()
+IColorRes*  IRenderBase::GetSkinColorRes()
 {
-    return m_pRenderBaseImpl->GetActiveSkinColorRes();
+    return m_pRenderBaseImpl->GetSkinColorRes();
 }
-IImageRes*  IRenderBase::GetActiveSkinImageRes()
+IImageRes*  IRenderBase::GetSkinImageRes()
 {
-    return m_pRenderBaseImpl->GetActiveSkinImageRes();
+    return m_pRenderBaseImpl->GetSkinImageRes();
 }
 
 void  IRenderBase::Serialize(SERIALIZEDATA* pData)

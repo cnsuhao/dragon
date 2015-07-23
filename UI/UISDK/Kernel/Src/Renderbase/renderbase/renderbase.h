@@ -36,8 +36,8 @@ public:
 
 	void  SetRenderType( const RENDER_TYPE& nType ){ m_nRenderType = nType ; }
 	RENDER_TYPE  GetRenderType() { return m_nRenderType; }
-	IColorRes*  GetActiveSkinColorRes();
-	IImageRes*  GetActiveSkinImageRes();
+	IColorRes*  GetSkinColorRes();
+	IImageRes*  GetSkinImageRes();
 	
 	void  _LoadColor(LPCTSTR szColorId, Color*& pColorRef);
 	void  _LoadBitmap(LPCTSTR szBitmapId, IRenderBitmap*& pBitmapRef);
