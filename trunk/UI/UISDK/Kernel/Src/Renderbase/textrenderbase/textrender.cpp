@@ -11,6 +11,7 @@
 #include "UISDK\Kernel\Src\Base\Attribute\flags_attribute.h"
 #include "UISDK\Kernel\Src\Base\Attribute\enum_attribute.h"
 #include "UISDK\Kernel\Src\Base\Attribute\string_attribute.h"
+#include "UISDK\Kernel\Src\Resource\skinres.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                      //
@@ -76,7 +77,7 @@ LPCTSTR  TextRenderBase::GetHaloColorId()
 void  TextRenderBase::_LoadFont(LPCTSTR szFontId, IRenderFont*& pRenderFont)
 {
     SAFE_RELEASE(pRenderFont);
-    IFontRes*  pFontRes = GetActiveSkinFontRes();
+    IFontRes*  pFontRes = GetSkinFontRes();
     if (!szFontId || !pFontRes)
         return;
 
@@ -87,7 +88,7 @@ LPCTSTR  TextRenderBase::_SaveFont(IRenderFont*& pRenderFont)
     if (!pRenderFont)
         return NULL;
 
-    IFontRes* pFontRes = GetActiveSkinFontRes();
+    IFontRes* pFontRes = GetSkinFontRes();
     if (pFontRes)
     {
         LPCTSTR szId = pFontRes->GetRenderFontId(pRenderFont);
@@ -108,7 +109,7 @@ void  TextRenderBase::_LoadDefalutFont(IRenderFont*& pRenderFont)
     }
     else
     {
-        IFontRes* pFontRes = GetActiveSkinFontRes();
+        IFontRes* pFontRes = GetSkinFontRes();
 
         // 可能是没有窗口对象，比如是一个 popup listbox或者menu，窗口还没有创建。获取默认字体
         if (pFontRes && m_pObject)
@@ -122,7 +123,7 @@ void  TextRenderBase::_LoadColor(LPCTSTR szColorId, Color*& pColor)
     if (!szColorId)
         return;
 
-    IColorRes* pColorRes = GetActiveSkinColorRes();
+    IColorRes* pColorRes = GetSkinColorRes();
     if (!pColorRes)
         return;
 
@@ -133,7 +134,7 @@ LPCTSTR  TextRenderBase::_SaveColor(Color*& pColor)
     if (!pColor)
         return NULL;
 
-    IColorRes* pColorRes = GetActiveSkinColorRes();
+    IColorRes* pColorRes = GetSkinColorRes();
     if (pColorRes)
     {
         LPCTSTR szId = pColorRes->GetColorId(pColor);
@@ -161,24 +162,38 @@ SIZE TextRenderBase::GetDesiredSize(LPCTSTR szText, int nLimitWidth)
     return s;
 }
 
-IColorRes*  TextRenderBase::GetActiveSkinColorRes()
+IColorRes*  TextRenderBase::GetSkinColorRes()
 {
-    if (NULL == m_pUIApplication)
-        return NULL;
+	if (m_pObject)
+	{
+		SkinRes* pSkinRes = m_pObject->GetSkinRes();
+		if (pSkinRes)
+			return pSkinRes->GetColorRes().GetIColorRes();
+	}
+	else
+	{
+		if (m_pUIApplication)
+			return m_pUIApplication->GetActiveSkinColorRes();
+	}
 
-	IColorRes* pColorRes = m_pUIApplication->GetActiveSkinColorRes();
-	UIASSERT(NULL != pColorRes);
-	return pColorRes;
+	return NULL;
 }
 
-IFontRes*  TextRenderBase::GetActiveSkinFontRes()
+IFontRes*  TextRenderBase::GetSkinFontRes()
 {
-    if (NULL == m_pUIApplication)
-        return NULL;
+	if (m_pObject)
+	{
+		SkinRes* pSkinRes = m_pObject->GetSkinRes();
+		if (pSkinRes)
+			return pSkinRes->GetFontRes().GetIFontRes();
+	}
+	else
+	{
+		if (m_pUIApplication)
+			return m_pUIApplication->GetActiveSkinFontRes();
+	}
 
-	IFontRes* pFontRes = m_pUIApplication->GetActiveSkinFontRes();
-	UIASSERT(NULL != pFontRes);
-	return pFontRes;
+	return NULL;
 }
 
 bool  TextRenderBase::IsThemeRender() 
@@ -572,7 +587,7 @@ void  ColorListTextRender::LoadColor(LPCTSTR szText)
     if (!szText)
         return ;
     
-    IColorRes* pColorRes = GetActiveSkinColorRes();
+    IColorRes* pColorRes = GetSkinColorRes();
 
     vector<String> vColors;
     UI_Split(szText, XML_MULTI_SEPARATOR, vColors);
@@ -720,7 +735,7 @@ void  FontColorListTextRender::LoadColor(LPCTSTR szText)
     if (0 == m_nCount)
         this->SetCount(nCount); //  如果未显示指定count，则自动取这里的大小
 
-    IColorRes* pColorRes = GetActiveSkinColorRes();
+    IColorRes* pColorRes = GetSkinColorRes();
     if (!pColorRes)
         return;
 
@@ -750,7 +765,7 @@ LPCTSTR  FontColorListTextRender::GetColor()
 
 void  FontColorListTextRender::LoadFont(LPCTSTR szText)
 {
-    IFontRes* pFontRes = GetActiveSkinFontRes();
+    IFontRes* pFontRes = GetSkinFontRes();
 
     if (szText && m_pObject)
     {

@@ -241,3 +241,16 @@ LPCTSTR  SkinRes::GetXmlDocName(IUIDocument* p)
 
 IUIApplication*  SkinRes::GetUIApplication()   { return m_mgrSkinRef.GetUIApplication(); }
 ISkinManager*    SkinRes::GetISkinManager()    { return m_mgrSkinRef.GetISkinManager(); }
+
+ImageRes&  SkinRes::GetImageRes()
+{
+	return m_mgrImage.GetImageRes();
+}
+ColorRes&  SkinRes::GetColorRes()
+{
+	return m_mgrColor.GetColorRes();
+}
+FontRes&  SkinRes::GetFontRes()
+{
+	return m_mgrFont.GetFontRes();
+}

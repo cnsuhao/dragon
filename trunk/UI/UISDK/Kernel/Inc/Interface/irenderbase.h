@@ -71,8 +71,8 @@ interface UISDKAPI IRenderBase : public IMessage
     void  SetType(RENDER_TYPE nType);
     RENDER_TYPE  GetType();
 
-    IColorRes*  GetActiveSkinColorRes();
-    IImageRes*  GetActiveSkinImageRes();
+    IColorRes*  GetSkinColorRes();
+    IImageRes*  GetSkinImageRes();
 
     void  Serialize(SERIALIZEDATA* pData);
     void  DrawState(IRenderTarget*, const CRect* prc, int nState);

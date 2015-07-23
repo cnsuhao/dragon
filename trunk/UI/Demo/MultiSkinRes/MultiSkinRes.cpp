@@ -67,7 +67,11 @@ private:
 	void OnClick()
 	{
 		String skinPath(g_szAppDir);
+#if 0
+		skinPath.append(TEXT("Plugin"));
+#else
 		skinPath.append(TEXT("Plugin.skn"));
+#endif
 		UI::ISkinRes* pPluginSkinRes = g_pUIApplication->LoadSkinRes(skinPath.c_str());
 
 		if (pPluginSkinRes)

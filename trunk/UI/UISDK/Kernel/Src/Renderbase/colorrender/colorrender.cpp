@@ -387,7 +387,7 @@ void  ColorListRender::LoadBkColor(LPCTSTR szText)
     if (!szText)
         return;
 
-    IColorRes* pColorRes = GetActiveSkinColorRes();
+    IColorRes* pColorRes = GetSkinColorRes();
     if (NULL == pColorRes)
         return;
 
@@ -423,7 +423,7 @@ LPCTSTR  ColorListRender::SaveBkColor()
 }
 void  ColorListRender::LoadBorderColor(LPCTSTR szText)
 {
-    IColorRes* pColorRes = GetActiveSkinColorRes();
+    IColorRes* pColorRes = GetSkinColorRes();
     if (NULL == pColorRes)
         return;
 

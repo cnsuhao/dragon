@@ -3,6 +3,7 @@
 #include "UISDK\Kernel\Src\Base\Object\object.h"
 #include "UISDK\Kernel\Src\Base\Attribute\attribute.h"
 #include "UISDK\Kernel\Inc\Interface\iuires.h"
+#include "UISDK\Kernel\Src\Resource\skinres.h"
 #pragma comment(lib, "uxtheme.lib")
 
 using namespace UI;
@@ -16,24 +17,38 @@ RenderBase::RenderBase()
     m_pUIApplication = NULL;
 }
 
-IColorRes*  RenderBase::GetActiveSkinColorRes()
+IColorRes*  RenderBase::GetSkinColorRes()
 {
-    if (NULL == m_pUIApplication)
-        return NULL;
+	if (m_pObject)
+	{
+		SkinRes* pSkinRes = m_pObject->GetSkinRes();
+		if (pSkinRes)
+			return pSkinRes->GetColorRes().GetIColorRes();
+	}
+	else
+	{
+		if (m_pUIApplication)
+			return m_pUIApplication->GetActiveSkinColorRes();
+	}
 
-	IColorRes* pColorRes = m_pUIApplication->GetActiveSkinColorRes();
-	UIASSERT(NULL != pColorRes);
-	return pColorRes;
+	return NULL;
 }
 
-IImageRes*  RenderBase::GetActiveSkinImageRes()
+IImageRes*  RenderBase::GetSkinImageRes()
 {
-	if (NULL == m_pUIApplication)
-		return NULL;
+	if (m_pObject)
+	{
+		 SkinRes* pSkinRes = m_pObject->GetSkinRes();
+		 if (pSkinRes)
+			 return pSkinRes->GetImageRes().GetIImageRes();
+	}
+	else
+	{
+		if (m_pUIApplication)
+			return m_pUIApplication->GetActiveSkinImageRes();
+	}
 
-	IImageRes* pImageRes = m_pUIApplication->GetActiveSkinImageRes();
-	UIASSERT(NULL != pImageRes);
-	return pImageRes;
+	return NULL;
 }
 
 void  RenderBase::CheckThemeChanged()
@@ -50,7 +65,7 @@ void  RenderBase::_LoadColor(LPCTSTR szColorId, Color*& pColorRef)
 	if (!szColorId)
 		return;
 
-	IColorRes* pColorRes = GetActiveSkinColorRes();
+	IColorRes* pColorRes = GetSkinColorRes();
 	if (!pColorRes)
 		return;
 
@@ -61,7 +76,7 @@ LPCTSTR  RenderBase::_GetColorId(Color*& pColorRef)
 	if (!pColorRef)
 		return NULL;
 
-	IColorRes* pColorRes = GetActiveSkinColorRes();
+	IColorRes* pColorRes = GetSkinColorRes();
 	if (pColorRes)
 	{
 		LPCTSTR szId = pColorRes->GetColorId(pColorRef);
@@ -80,19 +95,24 @@ void  RenderBase::_LoadBitmap(LPCTSTR szBitmapId, IRenderBitmap*& pBitmapRef)
 	if (!szBitmapId)
 		return;
 
-	IImageRes* pImageRes = GetActiveSkinImageRes();
-	if (!pImageRes)
-		return;
 
 	if (m_pObject)
 	{
-		pImageRes->GetBitmap(
+		SkinRes* pSkinRes = m_pObject->GetSkinRes();
+		if (!pSkinRes)
+			return;
+
+		pSkinRes->GetImageRes().GetBitmap(
 			szBitmapId, 
 			m_pObject->GetIObject()->GetGraphicsRenderLibraryType(),
 			&pBitmapRef);
 	}
 	else
 	{
+		IImageRes* pImageRes = GetSkinImageRes();
+		if (!pImageRes)
+			return;
+
 		pImageRes->GetBitmap(szBitmapId, UI::GRAPHICS_RENDER_LIBRARY_TYPE_GDI, &pBitmapRef); 
 	}
 }
@@ -102,7 +122,7 @@ LPCTSTR  RenderBase::_GetBitmapId(IRenderBitmap*& pBitmapRef)
 	if (!pBitmapRef)
 		return NULL;
 
-	IImageRes* pImageRes = GetActiveSkinImageRes();
+	IImageRes* pImageRes = GetSkinImageRes();
 	if (!pImageRes)
 		return NULL;
 
