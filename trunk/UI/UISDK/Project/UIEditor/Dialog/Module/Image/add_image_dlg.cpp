@@ -134,7 +134,7 @@ void CAddImageDlg::OnOk( UINT,int,HWND	)
     if (Util::IsFullPath(m_strPath.c_str()))
     {
         TCHAR szRelativePath[MAX_PATH] = _T("");
-        Util::CalcRelativePathToDir(m_pSkin->GetDataSource()->GetDirection(), m_strPath.c_str(), szRelativePath);
+        Util::CalcRelativePathToDir(m_pSkin->GetDataSource()->GetPath(), m_strPath.c_str(), szRelativePath);
         m_strPath = szRelativePath;
     }
 

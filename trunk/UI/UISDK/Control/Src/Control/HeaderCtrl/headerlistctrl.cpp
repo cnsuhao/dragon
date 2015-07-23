@@ -114,23 +114,23 @@ void  HeaderListCtrl::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
         }
     }
 
-    if (NULL == m_pIHeaderListCtrl->GetForeRender())
-    {
-        IRenderBase* pRenderBase = NULL;
-        pUIApp->CreateRenderBase(HEADER_TYPE_THEME_HEADERCTRL_ITEM_BKGND, m_pIHeaderListCtrl, &pRenderBase);
-        if (pRenderBase)
-        {
-            SERIALIZEDATA data = {0};
-            data.pUIApplication = pUIApp;
-            data.pMapAttrib = pMapAttrib;
-            data.szPrefix = XML_BACKGND_RENDER_PREFIX;
-            data.nFlags = SERIALIZEFLAG_LOAD|SERIALIZEFLAG_LOAD_ERASEATTR;
-            pRenderBase->Serialize(&data);
-
-            m_pIHeaderListCtrl->SetForegndRender(pRenderBase);
-            SAFE_RELEASE(pRenderBase);
-        }
-    }
+//     if (NULL == m_pIHeaderListCtrl->GetForeRender())
+//     {
+//         IRenderBase* pRenderBase = NULL;
+//         pUIApp->CreateRenderBase(HEADER_TYPE_THEME_HEADERCTRL_ITEM_BKGND, m_pIHeaderListCtrl, &pRenderBase);
+//         if (pRenderBase)
+//         {
+//             SERIALIZEDATA data = {0};
+//             data.pUIApplication = pUIApp;
+//             data.pMapAttrib = pMapAttrib;
+//             data.szPrefix = XML_BACKGND_RENDER_PREFIX;
+//             data.nFlags = SERIALIZEFLAG_LOAD|SERIALIZEFLAG_LOAD_ERASEATTR;
+//             pRenderBase->Serialize(&data);
+// 
+//             m_pIHeaderListCtrl->SetForegndRender(pRenderBase);
+//             SAFE_RELEASE(pRenderBase);
+//         }
+//     }
 
     ICursorRes* pCursorRes = pUIApp->GetActiveSkinCursorRes();
     if (pCursorRes)
@@ -199,7 +199,7 @@ void  HeaderListCtrl::GetDesiredSize(SIZE* pSize)
 IHeaderListItem* HeaderListCtrl::AddColumn(LPCTSTR szText, int nWidth, int nFormat)
 {
     IHeaderListItem* pItem = NULL;
-    IHeaderListItem::CreateInstance(m_pIHeaderListCtrl->GetUIApplication(), &pItem);
+    IHeaderListItem::CreateInstance(m_pIHeaderListCtrl->GetSkinRes(), &pItem);
 
     if (szText)
         pItem->SetText(szText);
@@ -221,7 +221,7 @@ IHeaderListItem* HeaderListCtrl::AddColumn(LPCTSTR szText, int nWidth, int nForm
 IHeaderListItem* HeaderListCtrl::InsertColumn(int nPos, LPCTSTR szText, int nWidth, int nFormat)
 {
     IHeaderListItem* pItem = NULL;
-    IHeaderListItem::CreateInstance(m_pIHeaderListCtrl->GetUIApplication(), &pItem);
+    IHeaderListItem::CreateInstance(m_pIHeaderListCtrl->GetSkinRes(), &pItem);
 
     if (szText)
         pItem->SetText(szText);

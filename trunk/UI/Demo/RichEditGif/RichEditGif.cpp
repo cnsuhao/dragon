@@ -106,12 +106,13 @@ int APIENTRY _tWinMain(
         _tcscat(szLogXml, TEXT("uilog.xml"));
         g_pUIApplication->LogUI(szLogXml);
 
-        g_pUIApplication->SetSkinDirection(szDir);
-        g_pUIApplication->LoadSkin(TEXT("Default"));
+		String skinPath(szDir);
+		skinPath.append(TEXT("Default"));
+        g_pUIApplication->LoadSkinRes(skinPath.c_str());
     }
 
     DemoWindow* pWnd = NULL;
-    DemoWindow::CreateInstance(g_pUIApplication, &pWnd);
+    DemoWindow::CreateInstance(g_pUIApplication->GetDefaultSkinRes(), &pWnd);
     if (pWnd->Create(TEXT("DemoWnd")))
     {
         pWnd->ShowWindow();

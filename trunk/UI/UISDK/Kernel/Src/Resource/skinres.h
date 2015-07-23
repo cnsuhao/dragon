@@ -89,6 +89,7 @@ private:
     ISkinRes*  m_pISkinRes;
 	SkinManager&  m_mgrSkinRef;
 
+	String  m_strSkinResName;
     ISkinDataSource*  m_pDataSource;
 	ImageManager   m_mgrImage;
 	ColorManager   m_mgrColor;

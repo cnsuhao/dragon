@@ -55,7 +55,7 @@ void  CToolBox::InsertObject(const TCHAR* szName, const TCHAR* szCategory, UINT 
     SAFE_RELEASE(pEnum);
 
     IToolBoxTreeItem* pTreeItem = NULL;
-    IToolBoxTreeItem::CreateInstance(g_pGlobalData->m_pMyUIApp, &pTreeItem);
+    IToolBoxTreeItem::CreateInstance(g_pGlobalData->m_pMyUIApp->GetDefaultSkinRes(), &pTreeItem);
 //    ITreeItem* pTreeItem = m_pTreeView->InsertNormalItem(szName, pParent);
     m_pTreeView->InsertItem(pTreeItem, pParent, UITVI_LAST);
     pTreeItem->SetText(szName);
@@ -66,7 +66,7 @@ void  CToolBox::InsertObject(const TCHAR* szName, const TCHAR* szCategory, UINT 
     if (pIcon)
     {
         IImageRender* pImageRender = NULL;
-        IImageRender::CreateInstance(g_pGlobalData->m_pMyUIApp, &pImageRender);  // 没有调用addref，因此不用释放
+        IImageRender::CreateInstance(g_pGlobalData->m_pMyUIApp->GetDefaultSkinRes(), &pImageRender);  // 没有调用addref，因此不用释放
         pImageRender->SetImageDrawType(DRAW_BITMAP_CENTER);
         pImageRender->SetRenderBitmap(pIcon);
         SAFE_RELEASE(pIcon);

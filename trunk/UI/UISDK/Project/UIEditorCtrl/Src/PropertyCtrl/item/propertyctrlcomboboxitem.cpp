@@ -297,7 +297,7 @@ void  PropertyCtrlComboBoxItem::BeginEdit()
         if (m_bMultiSel)
         {
             IMultiSelComboItem* pMultiSelComboItem = NULL;
-            IMultiSelComboItem::CreateInstance(pListBox->GetUIApplication(), &pMultiSelComboItem);
+            IMultiSelComboItem::CreateInstance(pListBox->GetSkinRes(), &pMultiSelComboItem);
             pListBox->AddItem(pMultiSelComboItem, 0);
             pMultiSelComboItem->SetText(item.strText.c_str());
             pMultiSelComboItem->GetImpl()->SetComboBoxItem(this);

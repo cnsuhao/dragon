@@ -167,7 +167,10 @@ LRESULT CMenuViewDlg::OnPrevViewWindowDestroy(UINT uMsg, WPARAM wParam, LPARAM l
 
 IObject* CMenuViewDlg::CreateObject(const TCHAR* szNodeName, const TCHAR* szNodeID)
 {
-	UI::LoadMenuData data = {g_pGlobalData->m_pProjectData->m_pEditUIApp, 0, szNodeID};
+	UI::LoadMenuData data = {
+		g_pGlobalData->m_pProjectData->m_pEditUIApp->GetDefaultSkinRes(), 
+		0, szNodeID};
+
     m_pMenu = UILoadMenu(&data);
 	if (!m_pMenu)
 	{
@@ -213,7 +216,6 @@ bool CMenuViewDlg::ShowLayoutNode(LayoutTreeItemData* pData)
 	if (NULL == m_pMenu && NULL == pData->m_pObject)
 	{
 		// ´´½¨´°¿Ú
-		g_pGlobalData->m_pProjectData->m_pEditSkinMgr->SetActiveSkin(pData->m_pSkin);
 		pData->m_pObject = this->CreateObject(pData->m_strNodeName.c_str(), pData->m_strNodeID.c_str());
 		if (pData->m_pObject)
 		{

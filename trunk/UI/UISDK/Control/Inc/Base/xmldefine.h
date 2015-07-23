@@ -16,10 +16,30 @@ namespace UI
 #define XML_RENDER_TYPE_THEME_HSCROLLBARBACKGND             TEXT("theme.hscrollbar.bkg")
 #define XML_RENDER_TYPE_THEME_SCROLLBAR_SIZEBOX             TEXT("theme.scrollbar.sizebox")
 
+#define XML_RENDER_TYPE_THEME_BUTTON_BKGND                  TEXT("theme.button")
+#define XML_RENDER_TYPE_THEME_RADIO_BUTTON                  TEXT("theme.radiobutton")
+#define XML_RENDER_TYPE_THEME_CHECK_BUTTON                  TEXT("theme.checkbutton")
+#define XML_RENDER_TYPE_THEME_EDIT_BKGND                    TEXT("theme.edit.bkg")
+#define XML_RENDER_TYPE_THEME_GROUPBOX_BKGND                TEXT("theme.groupbox.bkg")
 #define XML_RENDER_TYPE_THEME_SLIDER_BKG                    TEXT("theme.slider.bkg")
 #define XML_RENDER_TYPE_THEME_SLIDER_BTN_BKG                TEXT("theme.slider.btn.bkg")
+#define XML_RENDER_TYPE_THEME_PROGRESS_FOREGND              TEXT("theme.progress.foregnd")
+#define XML_RENDER_TYPE_THEME_PROGRESS_BKGND                TEXT("theme.progress.bkgnd")
 #define XML_RENDER_TYPE_THEME_COMBOBOX_BUTTON               TEXT("theme.combobox.btn")
+#define XML_RENDER_TYPE_THEME_COMBOBOX_BKGND                TEXT("theme.combobox.bkg")
+#define XML_RENDER_TYPE_THEME_LISTBOX_BKG                   TEXT("theme.listbox.bkg")
 #define XML_RENDER_TYPE_THEME_TREEVIEW_EXPANDCOLLAPSE_ICON  TEXT("theme.treeview.expandcollpase.icon")
+#define XML_RENDER_TYPE_THEME_LISTVIEW_ITEM                 TEXT("theme.listview.item")
+#define XML_RENDER_TYPE_THEME_HEADER_ITEM                   TEXT("theme.header.item")
+#define XML_RENDER_TYPE_THEME_HEADER_BKG                    TEXT("theme.header.bkg")
+#define XML_RENDER_TYPE_THEME_TABCTRL_BUTTON_BKGND          TEXT("theme.tab.button")
+
+#define XML_RENDER_TYPE_THEME_MENU_BKGND                    TEXT("theme.menu.bkg")
+#define XML_RENDER_TYPE_THEME_MENUSEPERATOR                 TEXT("theme.menu.separator")
+#define XML_RENDER_TYPE_THEME_MENUSTRINGITEM                TEXT("theme.menu.stringitem")
+#define XML_RENDER_TYPE_THEME_MENUPOPUPTRIANGLE             TEXT("theme.menu.triangle")
+#define XML_RENDER_TYPE_THEME_MENURADIOICON                 TEXT("theme.menu.radioicon")
+#define XML_RENDER_TYPE_THEME_MENURADIOCHECKICONBK          TEXT("theme.menu.radiocheckicon.bkg")
 
 enum THEME_RENDER_TYPE
 {

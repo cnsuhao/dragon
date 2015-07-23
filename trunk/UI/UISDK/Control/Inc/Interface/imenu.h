@@ -115,7 +115,7 @@ interface UICTRLAPI IMenu : public IListCtrlBase
 
 struct LoadMenuData
 {
-	IUIApplication*  pUIApplication;
+	ISkinRes*  pSkinRes;
 	LPCTSTR  szWndId;
 	LPCTSTR  szMenuId;	
     HWND  hWndParent;

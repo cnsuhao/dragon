@@ -91,7 +91,7 @@ public:
     UI_END_MSG_MAP_CHAIN_PARENT(TabCtrlBase)
 
     void  SetITabCtrl(ITabCtrl* p) { m_pITabCtrl = p; }
-    static PARSE_CONTROL_RETURN UIParseTabCtrlTag(IUIElement*, IUIApplication*  pUIApp, IObject* pParent, IObject** ppOut);
+    static PARSE_CONTROL_RETURN UIParseTabCtrlTag(IUIElement*, ISkinRes*  pSkinRes, IObject* pParent, IObject** ppOut);
     HRESULT  UIParseNewItem(IUIElement* pChildElem);
 
 public:

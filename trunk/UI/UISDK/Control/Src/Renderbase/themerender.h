@@ -8,10 +8,8 @@ class ButtonBkThemeRender : public IThemeRenderBase
 public:
 	ButtonBkThemeRender(){}
     UI_DECLARE_RENDERBASE2(ButtonBkThemeRender, 
-		XML_RENDER_TYPE_THEME, 
-		RENDER_TYPE_THEME_BUTTON_BKGND, 
-		CONTROL_BUTTON, 
-		BUTTON_STYLE_PUSHBUTTON)
+		XML_RENDER_TYPE_THEME_BUTTON_BKGND, 
+		RENDER_TYPE_THEME_BUTTON_BKGND);
 
     UI_BEGIN_MSG_MAP_Ixxx(ButtonBkThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(OnDrawState)
@@ -33,10 +31,8 @@ class RadioButtonThemeRender : public IThemeRenderBase
 {
 public:
     UI_DECLARE_RENDERBASE2(RadioButtonThemeRender,
-		XML_RENDER_TYPE_THEME, 
-		RENDER_TYPE_THEME_RADIO_BUTTON, 
-		CONTROL_RADIOBUTTON, -1)
-
+		XML_RENDER_TYPE_THEME_RADIO_BUTTON, 
+		RENDER_TYPE_THEME_RADIO_BUTTON)
 
     UI_BEGIN_MSG_MAP_Ixxx(RadioButtonThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -59,9 +55,8 @@ class CheckButtonThemeRender : public IThemeRenderBase
 {
 public:
     UI_DECLARE_RENDERBASE2(CheckButtonThemeRender,
-		XML_RENDER_TYPE_THEME,
-		RENDER_TYPE_THEME_CHECK_BUTTON,
-		CONTROL_CHECKBUTTON, -1)
+		XML_RENDER_TYPE_THEME_CHECK_BUTTON,
+		RENDER_TYPE_THEME_CHECK_BUTTON)
 
     UI_BEGIN_MSG_MAP_Ixxx(CheckButtonThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -87,9 +82,8 @@ public:
     EditBkThemeRender()
     {}
     UI_DECLARE_RENDERBASE2(EditBkThemeRender, 
-		XML_RENDER_TYPE_THEME, 
-		RENDER_TYPE_THEME_EDIT_BKGND, 
-		CONTROL_EDIT, -1)
+		XML_RENDER_TYPE_THEME_EDIT_BKGND, 
+		RENDER_TYPE_THEME_EDIT_BKGND)
 
     UI_BEGIN_MSG_MAP_Ixxx(EditBkThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -107,10 +101,8 @@ class GroupBoxBkThemeRender : public IThemeRenderBase
 {
 public:
     UI_DECLARE_RENDERBASE2(GroupBoxBkThemeRender,
-		XML_RENDER_TYPE_THEME, 
-		RENDER_TYPE_THEME_GROUPBOX_BKGND, 
-		CONTROL_GROUPBOX,
-		-1)
+		XML_RENDER_TYPE_THEME_GROUPBOX_BKGND, 
+		RENDER_TYPE_THEME_GROUPBOX_BKGND)
 
     UI_BEGIN_MSG_MAP_Ixxx(GroupBoxBkThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -131,9 +123,8 @@ class ProgressBarBkgndThemeRender : public IThemeRenderBase
 public:
     ProgressBarBkgndThemeRender() { m_pIProgressCtrl = NULL; }
     UI_DECLARE_RENDERBASE2(ProgressBarBkgndThemeRender, 
-		XML_RENDER_TYPE_THEME,
-		RENDER_TYPE_THEME_PROGRESS_BKGND,
-		CONTROL_PROGRESSBAR, -1)
+		XML_RENDER_TYPE_THEME_PROGRESS_BKGND,
+		RENDER_TYPE_THEME_PROGRESS_BKGND)
 
     UI_BEGIN_MSG_MAP_Ixxx(ProgressBarBkgndThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -154,10 +145,8 @@ class ProgressBarForegndThemeRender : public IThemeRenderBase
 public:
     ProgressBarForegndThemeRender() { m_pIProgressCtrl = NULL; }
     UI_DECLARE_RENDERBASE2(ProgressBarForegndThemeRender, 
-		XML_RENDER_TYPE_THEME, 
-		RENDER_TYPE_THEME_PROGRESS_FOREGND,
-		CONTROL_PROGRESSBAR,
-		-1)
+		XML_RENDER_TYPE_THEME_PROGRESS_FOREGND, 
+		RENDER_TYPE_THEME_PROGRESS_FOREGND)
 
     UI_BEGIN_MSG_MAP_Ixxx(ProgressBarForegndThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -183,9 +172,7 @@ public:
     SliderCtrlBkgndThemeRender() { m_pISliderCtrl = NULL; }
     UI_DECLARE_RENDERBASE2(SliderCtrlBkgndThemeRender, 
 		XML_RENDER_TYPE_THEME_SLIDER_BKG, 
-		RENDER_TYPE_THEME_SLIDERCTRL_BKGND, 
-		CONTROL_SLIDERCTRL, 
-		-1)
+		RENDER_TYPE_THEME_SLIDERCTRL_BKGND)
 
     UI_BEGIN_MSG_MAP_Ixxx(SliderCtrlBkgndThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -209,9 +196,7 @@ public:
 		m_pISliderCtrl = NULL; }
     UI_DECLARE_RENDERBASE2(SliderTrackButtonThemeRender, 
 		XML_RENDER_TYPE_THEME_SLIDER_BTN_BKG, 
-		RENDER_TYPE_THEME_SLIDER_TRACK_BUTTON,
-		CONTROL_BUTTON, 
-		BUTOTN_STYLE_SLIDERTRACKBUTTON)
+		RENDER_TYPE_THEME_SLIDER_TRACK_BUTTON)
 
     UI_BEGIN_MSG_MAP_Ixxx(SliderTrackButtonThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -240,10 +225,8 @@ class HeaderCtrlItemBkgndThemeRender : public IThemeRenderBase
 {
 public:
     UI_DECLARE_RENDERBASE2(HeaderCtrlItemBkgndThemeRender, 
-		XML_RENDER_TYPE_THEME, 
-		HEADER_TYPE_THEME_HEADERCTRL_ITEM_BKGND, 
-		CONTROL_HEADERCTRL, 
-		-1)
+		XML_RENDER_TYPE_THEME_HEADER_ITEM, 
+		HEADER_TYPE_THEME_HEADERCTRL_ITEM_BKGND)
 
     UI_BEGIN_MSG_MAP_Ixxx(HeaderCtrlItemBkgndThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -260,10 +243,8 @@ class HeaderCtrlRightBlankThemeRender : public IThemeRenderBase
 {
 public:
     UI_DECLARE_RENDERBASE2(HeaderCtrlRightBlankThemeRender,
-		XML_RENDER_TYPE_THEME,
-		RENDER_TYPE_THEME_HEADERCTRL_RIGHT_BLANK,
-		CONTROL_HEADERCTRL, 
-		-1)
+		XML_RENDER_TYPE_THEME_HEADER_BKG,
+		RENDER_TYPE_THEME_HEADERCTRL_RIGHT_BLANK)
 
     UI_BEGIN_MSG_MAP_Ixxx(HeaderCtrlRightBlankThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -298,9 +279,7 @@ class HScrollBarBkgndThemeRender : public ScrollBarBkgndThemeRender
 public:
     UI_DECLARE_RENDERBASE2(HScrollBarBkgndThemeRender,
 		XML_RENDER_TYPE_THEME_HSCROLLBARBACKGND,
-		RENDER_TYPE_THEME_HSCROLLBARBACKGND,
-		CONTROL_HSCROLLBAR,
-		-1)
+		RENDER_TYPE_THEME_HSCROLLBARBACKGND)
     
     UI_BEGIN_MSG_MAP_Ixxx(HScrollBarBkgndThemeRender)
     UI_END_MSG_MAP_CHAIN_PARENT(ScrollBarBkgndThemeRender)
@@ -312,9 +291,7 @@ class VScrollBarBkgndThemeRender : public ScrollBarBkgndThemeRender
 public:
     UI_DECLARE_RENDERBASE2(VScrollBarBkgndThemeRender, 
 		XML_RENDER_TYPE_THEME_VSCROLLBARBACKGND, 
-		RENDER_TYPE_THEME_VSCROLLBARBACKGND,
-		CONTROL_VSCROLLBAR, 
-		-1)
+		RENDER_TYPE_THEME_VSCROLLBARBACKGND)
 
     UI_BEGIN_MSG_MAP_Ixxx(VScrollBarBkgndThemeRender)
     UI_END_MSG_MAP_CHAIN_PARENT(ScrollBarBkgndThemeRender)
@@ -352,8 +329,7 @@ class ScrollLineUpButtonBkThemeRender : public ScrollLineButtonBkThemeRender
 public:
     UI_DECLARE_RENDERBASE2(ScrollLineUpButtonBkThemeRender, 
 		XML_RENDER_TYPE_THEME_SCROLLBAR_LINE_UP_BUTTON, 
-		RENDER_TYPE_THEME_SCROLLBAR_LINE_UP_BUTTON,
-		CONTROL_BUTTON, -1);
+		RENDER_TYPE_THEME_SCROLLBAR_LINE_UP_BUTTON);
 
 protected:
     virtual int GetThemeStateDisable()   { return ABS_UPDISABLED; }
@@ -368,8 +344,7 @@ class ScrollLineDownButtonBkThemeRender : public ScrollLineButtonBkThemeRender
 public:
     UI_DECLARE_RENDERBASE2(ScrollLineDownButtonBkThemeRender, 
 		XML_RENDER_TYPE_THEME_SCROLLBAR_LINE_DOWN_BUTTON, 
-		RENDER_TYPE_THEME_SCROLLBAR_LINE_DOWN_BUTTON,
-		CONTROL_BUTTON, -1);
+		RENDER_TYPE_THEME_SCROLLBAR_LINE_DOWN_BUTTON);
 
 protected:
     virtual int GetThemeStateDisable()   { return ABS_DOWNDISABLED; }
@@ -384,8 +359,7 @@ class ScrollLineLeftButtonBkThemeRender : public ScrollLineButtonBkThemeRender
 public:
     UI_DECLARE_RENDERBASE2(ScrollLineLeftButtonBkThemeRender, 
 		XML_RENDER_TYPE_THEME_SCROLLBAR_LINE_LEFT_BUTTON,
-		RENDER_TYPE_THEME_SCROLLBAR_LINE_LEFT_BUTTON,
-		CONTROL_BUTTON, -1);
+		RENDER_TYPE_THEME_SCROLLBAR_LINE_LEFT_BUTTON);
 
 protected:
     virtual int GetThemeStateDisable()   { return ABS_LEFTDISABLED; }
@@ -399,8 +373,7 @@ class ScrollLineRightButtonBkThemeRender : public ScrollLineButtonBkThemeRender
 public:
     UI_DECLARE_RENDERBASE2(ScrollLineRightButtonBkThemeRender, 
 		XML_RENDER_TYPE_THEME_SCROLLBAR_LINE_RIGHT_BUTTON, 
-		RENDER_TYPE_THEME_SCROLLBAR_LINE_RIGHT_BUTTON, 
-		CONTROL_BUTTON, -1);
+		RENDER_TYPE_THEME_SCROLLBAR_LINE_RIGHT_BUTTON);
 
 protected:
     virtual int GetThemeStateDisable()   { return ABS_RIGHTDISABLED; }
@@ -438,8 +411,7 @@ class VScrollThumbButtonThemeRender : public ScrollThumbButtonThemeRender
 public:
     UI_DECLARE_RENDERBASE2(VScrollThumbButtonThemeRender,
 		XML_RENDER_TYPE_THEME_VSCROLLBAR_THUMB_BUTTON, 
-		RENDER_TYPE_THEME_VSCROLLBAR_THUMB_BUTTON, 
-		CONTROL_BUTTON, -1);
+		RENDER_TYPE_THEME_VSCROLLBAR_THUMB_BUTTON);
 protected:
 
     virtual int GetGripperType()  { return  SBP_GRIPPERVERT; }
@@ -450,8 +422,7 @@ class HScrollThumbButtonThemeRender : public ScrollThumbButtonThemeRender
 public:
     UI_DECLARE_RENDERBASE2(HScrollThumbButtonThemeRender, 
 		XML_RENDER_TYPE_THEME_HSCROLLBAR_THUMB_BUTTON, 
-		RENDER_TYPE_THEME_HSCROLLBAR_THUMB_BUTTON, 
-		CONTROL_BUTTON, -1);
+		RENDER_TYPE_THEME_HSCROLLBAR_THUMB_BUTTON);
 protected:
 
     virtual int GetGripperType()  { return  SBP_GRIPPERHORZ; }
@@ -464,9 +435,8 @@ class ListboxBkThemeRender : public IThemeRenderBase
 public:
     ListboxBkThemeRender(){};
     UI_DECLARE_RENDERBASE2(ListboxBkThemeRender, 
-		XML_RENDER_TYPE_THEME,
-		RENDER_TYPE_THEME_LISTBOX_BKGND, 
-		CONTROL_LISTBOX, -1);
+		XML_RENDER_TYPE_THEME_LISTBOX_BKG,
+		RENDER_TYPE_THEME_LISTBOX_BKGND);
 
     UI_BEGIN_MSG_MAP_Ixxx(ListboxBkThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -485,9 +455,7 @@ public:
     ComboboxButtonBkThemeRender(){}
     UI_DECLARE_RENDERBASE2(ComboboxButtonBkThemeRender,
 		XML_RENDER_TYPE_THEME_COMBOBOX_BUTTON, 
-		RENDER_TYPE_THEME_COMBOBOX_BUTTON, 
-		CONTROL_BUTTON,
-		BUTTON_STYLE_COMBOBOX);
+		RENDER_TYPE_THEME_COMBOBOX_BUTTON);
 
     UI_BEGIN_MSG_MAP_Ixxx(ComboboxButtonBkThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -509,10 +477,8 @@ class ComboboxBkThemeRender : public IThemeRenderBase
 {
 public:
     UI_DECLARE_RENDERBASE2(ComboboxBkThemeRender, 
-		XML_RENDER_TYPE_THEME,
-		RENDER_TYPE_THEME_COMBOBOX_BKGND,
-		CONTROL_COMBOBOX, 
-		-1);
+		XML_RENDER_TYPE_THEME_COMBOBOX_BKGND,
+		RENDER_TYPE_THEME_COMBOBOX_BKGND);
 
     UI_BEGIN_MSG_MAP_Ixxx(ComboboxBkThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -542,10 +508,8 @@ public:
     MenuBkThemeRender();
 
     UI_DECLARE_RENDERBASE2(MenuBkThemeRender, 
-		XML_RENDER_TYPE_THEME, 
-		RENDER_TYPE_THEME_MENU_BKGND, 
-		CONTROL_MENU, 
-		-1);
+		XML_RENDER_TYPE_THEME_MENU_BKGND, 
+		RENDER_TYPE_THEME_MENU_BKGND);
 
     UI_BEGIN_MSG_MAP_Ixxx(MenuBkThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -566,10 +530,8 @@ class MenuSeperatorThemeRender : public IThemeRenderBase
 {
 public:
     UI_DECLARE_RENDERBASE2(MenuSeperatorThemeRender,
-		XML_RENDER_TYPE_THEME, 
-		RENDER_TYPE_THEME_MENUSEPERATOR,
-		CONTROL_MENU, 
-		-1);
+		XML_RENDER_TYPE_THEME_MENUSEPERATOR, 
+		RENDER_TYPE_THEME_MENUSEPERATOR);
 
     UI_BEGIN_MSG_MAP_Ixxx(MenuSeperatorThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -584,10 +546,8 @@ class MenuStringItemRender : public IThemeRenderBase
 {
 public:
     UI_DECLARE_RENDERBASE2(MenuStringItemRender, 
-		XML_RENDER_TYPE_THEME,
-		RENDER_TYPE_THEME_MENUSTRINGITEM, 
-		CONTROL_MENU, 
-		-1);
+		XML_RENDER_TYPE_THEME_MENUSTRINGITEM,
+		RENDER_TYPE_THEME_MENUSTRINGITEM);
 
     UI_BEGIN_MSG_MAP_Ixxx(MenuStringItemRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -608,10 +568,8 @@ class MenuPopupTriangleRender : public IThemeRenderBase
 {
 public:
     UI_DECLARE_RENDERBASE2(MenuPopupTriangleRender, 
-		XML_RENDER_TYPE_THEME, 
-		RENDER_TYPE_THEME_MENUPOPUPTRIANGLE,
-		CONTROL_MENU,
-		-1);
+		XML_RENDER_TYPE_THEME_MENUPOPUPTRIANGLE, 
+		RENDER_TYPE_THEME_MENUPOPUPTRIANGLE);
 
     UI_BEGIN_MSG_MAP_Ixxx(MenuPopupTriangleRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -632,9 +590,7 @@ class MenuCheckedIconThemeRender : public IThemeRenderBase
 public:
     UI_DECLARE_RENDERBASE2(MenuCheckedIconThemeRender, 
 		XML_RENDER_TYPE_THEME, 
-		RENDER_TYPE_THEME_MENUCHECKICON, 
-		CONTROL_MENU, 
-		-1);
+		RENDER_TYPE_THEME_MENUCHECKICON);
 
     UI_BEGIN_MSG_MAP_Ixxx(MenuCheckedIconThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -653,10 +609,8 @@ class MenuRadioIconThemeRender : public IThemeRenderBase
 {
 public:
     UI_DECLARE_RENDERBASE2(MenuRadioIconThemeRender,
-		XML_RENDER_TYPE_THEME, 
-		RENDER_TYPE_THEME_MENURADIOICON,
-		CONTROL_MENU, 
-		-1);
+		XML_RENDER_TYPE_THEME_MENURADIOICON, 
+		RENDER_TYPE_THEME_MENURADIOICON);
 
     UI_BEGIN_MSG_MAP_Ixxx(MenuRadioIconThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -675,10 +629,8 @@ class MenuRadioCheckIconBkThemeRender : public IThemeRenderBase
 {
 public:
     UI_DECLARE_RENDERBASE2(MenuRadioCheckIconBkThemeRender, 
-		XML_RENDER_TYPE_THEME, 
-		RENDER_TYPE_THEME_MENURADIOCHECKICONBK, 
-		CONTROL_MENU, 
-		-1);
+		XML_RENDER_TYPE_THEME_MENURADIOCHECKICONBK, 
+		RENDER_TYPE_THEME_MENURADIOCHECKICONBK);
 
     UI_BEGIN_MSG_MAP_Ixxx(MenuRadioCheckIconBkThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -697,9 +649,7 @@ public:
 
     UI_DECLARE_TEXTRENDERBASE2(MenuTextThemeRender,
 		XML_RENDER_TYPE_THEME,
-		TEXTRENDER_TYPE_THEME_MENU, 
-		CONTROL_MENU, 
-		-1);
+		TEXTRENDER_TYPE_THEME_MENU);
 
     UI_BEGIN_MSG_MAP_Ixxx(MenuTextThemeRender)
         UIMSG_WM_TEXTRENDERBASE_DRAWSTATE(DrawState)
@@ -730,9 +680,7 @@ public:
 
     UI_DECLARE_TEXTRENDERBASE2(ListViewThemeTextRender, 
 		XML_RENDER_TYPE_THEME, 
-		TEXTRENDER_TYPE_THEME_LISTVIEW,
-		-1, 
-		-1);
+		TEXTRENDER_TYPE_THEME_LISTVIEW);
 
     UI_BEGIN_MSG_MAP_Ixxx(ListViewThemeTextRender)
         UIMSG_WM_TEXTRENDERBASE_DRAWSTATE(DrawState)
@@ -762,9 +710,8 @@ public:
     TabCtrlButtonBkThemeRender();
 
     UI_DECLARE_RENDERBASE2(TabCtrlButtonBkThemeRender,
-		XML_RENDER_TYPE_THEME,
-		RENDER_TYPE_THEME_TABCTRL_BUTTON_BKGND,
-		-1,-1);
+		XML_RENDER_TYPE_THEME_TABCTRL_BUTTON_BKGND,
+		RENDER_TYPE_THEME_TABCTRL_BUTTON_BKGND);
 
     UI_BEGIN_MSG_MAP_Ixxx(TabCtrlButtonBkThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -788,9 +735,8 @@ class ListViewCtrlForeThemeRender : public IThemeRenderBase
 public:
     ListViewCtrlForeThemeRender(){};
     UI_DECLARE_RENDERBASE2(ListViewCtrlForeThemeRender,
-		XML_RENDER_TYPE_THEME, 
-		RENDER_TYPE_THEME_LISTVIEW_ITEM,
-		-1,-1);
+		XML_RENDER_TYPE_THEME_LISTVIEW_ITEM, 
+		RENDER_TYPE_THEME_LISTVIEW_ITEM);
 
     UI_BEGIN_MSG_MAP_Ixxx(ListViewCtrlForeThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)
@@ -808,8 +754,7 @@ public:
 
     UI_DECLARE_RENDERBASE2(TreeViewCtrlExpandCollapseIconThemeRender,
 		XML_RENDER_TYPE_THEME_TREEVIEW_EXPANDCOLLAPSE_ICON,
-		RENDER_TYPE_THEME_TREEVIEW_EXPANDCOLLAPSE_ICON,
-		-1,-1);
+		RENDER_TYPE_THEME_TREEVIEW_EXPANDCOLLAPSE_ICON);
 
     UI_BEGIN_MSG_MAP_Ixxx(TreeViewCtrlExpandCollapseIconThemeRender)
         UIMSG_WM_RENDERBASE_DRAWSTATE(DrawState)

@@ -12,6 +12,7 @@
 namespace UI
 {
 interface IUIApplication;
+interface ISkinRes;
 
 template<class T>
 class UIObjCreator : public T
@@ -25,8 +26,15 @@ public:
 
 	// 每个UI Object 的创建函数，将会被如下方式调用：
 	// (s_UICreateInstancePtr)className::_CreatorClass::UICreateInstance
-	static HRESULT UICreateInstance(IUIApplication* pUIApp, T** pOut)
+	static HRESULT UICreateInstanceBySkinRes(ISkinRes* pSkinRes, T** pOut)
     {
+		UIASSERT(pSkinRes);
+		return UICreateInstance(pSkinRes->GetUIApplication(), pSkinRes, pOut);
+	}
+
+	// 2015.7.18，增加ISkinRes参数。每个对象需要再指定自己属于哪个皮肤包，用于支持多皮肤包模式（插件模式）
+	static HRESULT UICreateInstance(IUIApplication* pUIApp, ISkinRes* pSkinRes, T** pOut)
+	{
         UIASSERT(pUIApp);
 
         UIObjCreator<T>* p = NULL; 
@@ -35,11 +43,11 @@ public:
 
         do 
         {
-            // 在这里添加一个IUIApplication的参数是为了让IControlImpl能够在构造函数中拿到pApp去CreateInstance
+            // 在这里添加一个IUIApplication的参数是为了让IControlImpl能够在构造函数中拿到pApp去CreateInstance子控件
             p = new UIObjCreator<T>;
             p->CreateImpl();
 
-            if (FAILED(UISendMessage(p, UI_WM_FINALCONSTRUCT, (WPARAM)pUIApp)))
+            if (FAILED(UISendMessage(p, UI_WM_FINALCONSTRUCT, (WPARAM)pUIApp, (LPARAM)pSkinRes)))
                 break;
 
             *pOut = static_cast<T*>(p);
@@ -55,6 +63,7 @@ public:
         return hr;
     }
 
+	// 用于renderbase的创建
     static HRESULT UICreateInstance2(T** ppOut)
     {
         if (NULL == ppOut)

@@ -27,7 +27,6 @@ m_oMouseManager(*this)
 	this->m_hWnd = NULL;
 	this->m_oldWndProc = NULL;
 	this->m_pDefaultFont = NULL;
-	this->m_pSkinRes = NULL;
 
 	m_bFirsetEraseBkgnd = true;
 	this->m_bDoModal = false;
@@ -55,9 +54,7 @@ WindowBase::~WindowBase()
 
 HRESULT  WindowBase::FinalConstruct(IUIApplication* p)
 {
-    HRESULT hr = __super::FinalConstruct(p);
-    if (FAILED(hr))
-        return hr;
+    DO_PARENT_PROCESS(IWindowBase, IPanel);
 
     this->m_oMouseManager.SetUIApplication(p);
     this->m_oDragDropManager.SetWindowBase(this);
@@ -105,7 +102,6 @@ void  WindowBase::OnSerialize(SERIALIZEDATA* pData)
 //
 bool WindowBase::CreateUI(LPCTSTR szId)
 {
-	m_pSkinRes = m_pUIApplication->GetActiveSkinRes();
 	if (!m_pSkinRes)
 	{
 		UI_LOG_ERROR(TEXT("未初始化皮肤"));
@@ -1848,11 +1844,6 @@ void*  CREATE_WND_DATA::ExtractCreateWndData()
 void  WindowBase::SetFocusObject(Object* pObj)
 {
     m_oMouseManager.SetFocusObject(pObj);
-}
-
-SkinRes*   WindowBase::GetSkinRes()
-{
-	return m_pSkinRes;
 }
 
 // 获取当前鼠标下的对象 

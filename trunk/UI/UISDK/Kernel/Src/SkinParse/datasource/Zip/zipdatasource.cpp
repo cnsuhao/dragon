@@ -19,47 +19,31 @@ ZipDataSource::~ZipDataSource()
         m_hZip = NULL;
     }
 }
-void  ZipDataSource::SetDirection(LPCTSTR szDir)
-{
-    if (szDir)
-        m_strDir = szDir;
-    else
-        m_strDir.clear();
-}
-void  ZipDataSource::SetName(LPCTSTR szName)
-{
-    if (szName)
-        m_strName = szName;
-    else
-        m_strName.clear();
-}
 SKIN_PACKET_TYPE  ZipDataSource::GetType()
 {
     return SKIN_PACKET_TYPE_ZIP;
 }
 
-LPCTSTR  ZipDataSource::GetDirection()
+void  ZipDataSource::SetPath(LPCTSTR szPath)
 {
-    return m_strDir.c_str();
+	if (szPath)
+		m_strPath = szPath;
+	else
+		m_strPath.clear();
 }
-LPCTSTR  ZipDataSource::GetName()
+LPCTSTR  ZipDataSource::GetPath()
 {
-    return m_strName.c_str();
+	return m_strPath.c_str();
 }
 
 bool  ZipDataSource::Init()
 {
     if (NULL == m_hZip)
     {
-        String  str = m_strDir;
-        str.append(m_strName);
-        str.append(_T("."));
-        str.append(XML_SKIN_PACKET_EXT);
-
-        m_hZip = OpenZip(str.c_str(), NULL);
+        m_hZip = OpenZip(m_strPath.c_str(), NULL);
         if (NULL == m_hZip)
         {
-            UI_LOG_ERROR(_T("OpenZip Failed. file=%s"), str.c_str());
+            UI_LOG_ERROR(_T("OpenZip Failed. file=%s"), m_strPath.c_str());
 			return false;
         }
     }
@@ -68,7 +52,7 @@ bool  ZipDataSource::Init()
 
 bool  ZipDataSource::Load_UIDocument(IUIDocument* pDocument, LPCTSTR szPath)
 {
-    if (!m_hZip || !Init())
+    if (!m_hZip && !Init())
 	{
 		return false;
 	}

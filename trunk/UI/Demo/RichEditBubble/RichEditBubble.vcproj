@@ -61,7 +61,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				LinkIncremental="2"
+				LinkIncremental="1"
 				AdditionalLibraryDirectories="$(SolutionDir)Build\lib\$(ConfigurationName)\"
 				DelayLoadDLLs="uisdk.dll;uictrls.dll;uiutil.dll"
 				GenerateDebugInformation="true"

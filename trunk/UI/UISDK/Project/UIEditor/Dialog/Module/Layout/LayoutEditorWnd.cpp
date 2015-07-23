@@ -178,7 +178,8 @@ LRESULT CLayoutEditorDlg::OnBtnClickPreView(UINT uMsg, WPARAM wParam, LPARAM lPa
 	if (NULL == m_pWindow)
 		return 0;
 	
-	IObject* p = GetEditUIApplication()->CreateInstanceByName(m_pWindow->GetObjectName());
+	IObject* p = GetEditUIApplication()->CreateInstanceByName(
+			m_pWindow->GetObjectName(), m_pWindow->GetSkinRes());
 	if (p)
 	{
         IWindow* pWindow = (IWindow*)p->QueryInterface(uiiidof(IWindow));
@@ -229,9 +230,9 @@ IObject* CLayoutEditorDlg::CreateObject(const TCHAR* szNodeName, const TCHAR* sz
 {
     IObject* p = NULL;
     if (!szNodeName || !szNodeName[0])
-        p = GetEditUIApplication()->CreateInstanceByName(TEXT("Window"));
+        p = GetEditUIApplication()->CreateInstanceByName(TEXT("Window"), NULL);  // TODO:
     else
-        p = GetEditUIApplication()->CreateInstanceByName(szNodeName);
+        p = GetEditUIApplication()->CreateInstanceByName(szNodeName, NULL); // TODO:
 
     if (NULL == p)
         return NULL;
@@ -281,7 +282,6 @@ bool CLayoutEditorDlg::ShowLayoutNode(LayoutTreeItemData* pData)
 	if (NULL == m_pWindow && NULL == pData->m_pObject)
 	{
 		// ´´½¨´°¿Ú
-		GetEditSkinManager()->SetActiveSkin(pData->m_pSkin);
 		pData->m_pObject = this->CreateObject(pData->m_strNodeName.c_str(), pData->m_strNodeID.c_str());
 		if (pData->m_pObject)
 		{

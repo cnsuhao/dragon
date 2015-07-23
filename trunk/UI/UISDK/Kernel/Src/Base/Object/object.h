@@ -43,7 +43,7 @@ public:
 
         UIMSG_WM_QUERYINTERFACE(QueryInterface)
 		UIMSG_WM_SERIALIZE(OnSerialize)
-        UIMSG_WM_FINALCONSTRUCT(FinalConstruct)
+        UIMSG_WM_FINALCONSTRUCT2(FinalConstruct)
         UIMSG_WM_FINALRELEASE(FinalRelease)
     UI_END_MSG_MAP
 
@@ -105,6 +105,8 @@ public:
     LPVOID   GetUserData();
     UIApplication*  GetUIApplication();
     IUIApplication*  GetIUIApplication();
+	SkinRes*  GetSkinRes();
+	ISkinRes*  GetISkinRes();
     void     SetOutRef(void** ppOutRef);
     HRGN     GetRgn();
     int      GetZOrder();
@@ -390,7 +392,7 @@ protected:
     void  OnVisibleChanged(BOOL bVisible, IObject* pObjChanged);
     void  OnRedrawObject();
 
-	HRESULT  FinalConstruct(IUIApplication* p);    
+	HRESULT  FinalConstruct(IUIApplication* p, ISkinRes* pSkinRes);
 	void  FinalRelease();                       
 	void  OnSerialize(SERIALIZEDATA* pData);
 
@@ -414,6 +416,7 @@ protected:
 
     IObject*   m_pIObject;
     UIApplication*   m_pUIApplication;  // 该对象所在的App
+	SkinRes*   m_pSkinRes;              // 2015.7.18 Add. 用于支持多皮肤包共存（插件模式）
 
     String  m_strId;                    // 该对象在XML中的标识
     String  m_strStyleClass;            // 样式配置

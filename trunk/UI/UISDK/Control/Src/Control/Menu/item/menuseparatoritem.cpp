@@ -83,7 +83,7 @@ void  MenuSeparatorItem::OnInitialize()
         pListCtrl->GetItemTypeShareData(UI_LISTITEM_TYPE_MENU_SEPARATOR));
     if (NULL == p)
     {
-        IMenuSeparatorItemShareData::CreateInstance(pListCtrl->GetUIApplication(), &p);
+        IMenuSeparatorItemShareData::CreateInstance(pListCtrl->GetSkinRes(), &p);
         pListCtrl->SetItemTypeShareData(UI_LISTITEM_TYPE_MENU_SEPARATOR, p);
          
         m_pShareData = p->GetImpl();

@@ -58,10 +58,12 @@ void  Menu::destroyAllSubMenu()
     }
 }
 
-PARSE_CONTROL_RETURN  Menu::UIParseMenuTag(IUIElement* pElem, IUIApplication*  pUIApp, IObject* pParent, IObject** ppOut)
+PARSE_CONTROL_RETURN  Menu::UIParseMenuTag(IUIElement* pElem, ISkinRes* pSkinRes, IObject* pParent, IObject** ppOut)
 {
+	IUIApplication* pUIApp = pSkinRes->GetUIApplication();
+
     IMenu*  pIMenu = NULL;
-    IMenu::CreateInstance(pUIApp, &pIMenu);
+    IMenu::CreateInstance(pSkinRes, &pIMenu);
     if (NULL == pIMenu)
         return ParseControl_Failed;
 
@@ -188,7 +190,7 @@ IListItemBase* Menu::LoadMenuItem(IUIElement* pUIElement, LPCTSTR szTagName, IMa
         bool bDisable = false;
 
 		LoadMenuData data = {0};
-		data.pUIApplication = m_pIMenu->GetUIApplication();
+		data.pSkinRes = m_pIMenu->GetSkinRes();
 		
         LPCTSTR szText = NULL;
 		if (szText = pMapAttrib->GetAttr(XML_TEXT, true))
@@ -251,7 +253,7 @@ IMenuStringItem*  Menu::AppendString(LPCTSTR szText, UINT nId)
     }
 
     IMenuStringItem* pItem = NULL;
-    IMenuStringItem::CreateInstance(m_pIMenu->GetUIApplication(), &pItem);
+    IMenuStringItem::CreateInstance(m_pIMenu->GetSkinRes(), &pItem);
 
     if (false == m_pIMenu->AddItem(pItem, LF_NONE))
     {
@@ -268,7 +270,7 @@ IMenuStringItem*  Menu::AppendString(LPCTSTR szText, UINT nId)
 IMenuSeparatorItem*  Menu::AppendSeparator(UINT nId)
 {
     IMenuSeparatorItem* pItem = NULL;
-    IMenuSeparatorItem::CreateInstance(m_pIMenu->GetUIApplication(), &pItem);
+    IMenuSeparatorItem::CreateInstance(m_pIMenu->GetSkinRes(), &pItem);
 
     if (false == m_pIMenu->AddItem(pItem, LF_NONE))
     {
@@ -285,7 +287,7 @@ IMenuSeparatorItem*  Menu::AppendSeparator(UINT nId)
 IMenuPopupItem*  Menu::AppendPopup(LPCTSTR szText, UINT nId, IMenu* pSubMenu)
 {
     IMenuPopupItem* pItem = NULL;
-    IMenuPopupItem::CreateInstance(m_pIMenu->GetUIApplication(), &pItem);
+    IMenuPopupItem::CreateInstance(m_pIMenu->GetSkinRes(), &pItem);
 
     if (false == m_pIMenu->AddItem(pItem, LF_NONE))
     {
@@ -1287,7 +1289,7 @@ extern "C"
 
 	IMenu*  UILoadMenu(LoadMenuData* pData)
 	{
-		if (!pData || !pData->pUIApplication /*|| !pData->szWndId || !pData->szMenuId*/)
+		if (!pData || !pData->pSkinRes /*|| !pData->szWndId || !pData->szMenuId*/)
 			return NULL;
 
 		LPCTSTR szWndId = pData->szWndId;
@@ -1301,7 +1303,7 @@ extern "C"
 		PopupMenuWindow*  pPopupWindow = NULL;
 		do 
 		{
-			PopupMenuWindow::CreateInstance(pData->pUIApplication, &pPopupWindow);
+			PopupMenuWindow::CreateInstance(pData->pSkinRes, &pPopupWindow);
 			// TODO: 这里默认了所有的弹出菜单都是直接置顶的，没有owner窗口。
 			// 原因：在maindlg中保存了一个IMenu，在maindlg销毁时会将所有子窗口也销毁掉，导致menu窗口也被
 			// 销毁，这时再在maindlg的析构中销毁imenu就会成为野指针崩溃

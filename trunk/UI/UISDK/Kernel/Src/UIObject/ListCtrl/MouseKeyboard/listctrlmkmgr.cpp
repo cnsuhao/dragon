@@ -370,6 +370,7 @@ void  ListCtrlMKMgrBase::OnLButtonUp(UIMSG* pMsg)
                 msg.message = UI_WM_NOTIFY;
                 msg.nCode   = UI_NM_CLICK;
                 msg.wParam  = (WPARAM)pSave->GetIListItemBase();
+				msg.lParam  = pMsg->lParam;
                 msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
                 msg.pMsgFrom->DoNotify(&msg);
             }
@@ -396,7 +397,7 @@ void  ListCtrlMKMgrBase::OnLButtonDBClick(UIMSG* pMsg)
         UIMSG  msg;
         msg.message = UI_WM_NOTIFY;
         msg.nCode   = UI_NM_DBCLICK;
-        msg.wParam  = pMsg->lParam;
+        msg.lParam  = pMsg->lParam;
         msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
         msg.pMsgFrom->DoNotify(&msg);
     }
@@ -428,11 +429,12 @@ void  ListCtrlMKMgrBase::OnRButtonDown(UIMSG* pMsg)
 void  ListCtrlMKMgrBase::OnRButtonUp(UIMSG* pMsg)
 {
     BOOL bHandled = FALSE;
-    if (m_pItemRPress)
-    {
-        ListItemBase* pSave = m_pItemRPress;
-        m_pItemRPress = NULL;   // 必须在发通知前先重置。（通知中可能修改该项）
 
+	ListItemBase* pSave = m_pItemRPress;
+	m_pItemRPress = NULL;   // 必须在发通知前先重置。（通知中可能修改该项）
+
+    if (pSave)
+    {
         UISendMessage(pSave->GetIListItemBase(), WM_RBUTTONUP, pMsg->wParam, pMsg->lParam, 0, 0, 0, &bHandled);
     }
     if (!bHandled)
@@ -440,11 +442,14 @@ void  ListCtrlMKMgrBase::OnRButtonUp(UIMSG* pMsg)
         UIMSG  msg;
         msg.message = UI_WM_NOTIFY;
         msg.nCode   = UI_NM_RCLICK;
-        msg.wParam  = pMsg->lParam;
+		if (pSave)
+			msg.wParam = (WPARAM)pSave->GetIListItemBase();
+        msg.lParam  = pMsg->lParam;
         msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
         msg.pMsgFrom->DoNotify(&msg);
     }
 }
+
 void  ListCtrlMKMgrBase::OnSetFocus(UIMSG* pMsg)
 {
     if (m_pItemFocus)

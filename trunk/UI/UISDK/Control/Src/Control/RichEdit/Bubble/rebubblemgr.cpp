@@ -92,7 +92,7 @@ void  BubbleManager::SetLeftImageResItem(IImageResItem* p)
     m_pLeftImageResItem = p;
 
     IRichEdit*  pIRichEdit = m_pWindowlessRE->GetControlPtr();
-    ISkinRes*   pSkinRes = pIRichEdit->GetUIApplication()->GetActiveSkinRes();
+    ISkinRes*   pSkinRes = pIRichEdit->GetUIApplication()->GetDefaultSkinRes();
     ISkinDataSource*   pDataSource = pSkinRes->GetDataSource();
 
     if (m_pLeftImageResItem)
@@ -115,7 +115,7 @@ void  BubbleManager::SetRightImageResItem(IImageResItem* p)
     m_pRightImageResItem = p;
 
     IRichEdit*  pIRichEdit = m_pWindowlessRE->GetControlPtr();
-    ISkinRes*   pSkinRes = pIRichEdit->GetUIApplication()->GetActiveSkinRes();
+    ISkinRes*   pSkinRes = pIRichEdit->GetUIApplication()->GetDefaultSkinRes();
     ISkinDataSource*   pDataSource = pSkinRes->GetDataSource();
 
     if (m_pRightImageResItem)

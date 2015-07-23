@@ -37,7 +37,9 @@ void  CCreateWindowDlg::OnInitialize()
 
     if (m_pComboSkinList)
     {
-        UINT nSkinCount = g_pGlobalData->m_pProjectData->m_pEditSkinMgr->GetSkinCount();
+		UIASSERT(0);
+#if 0
+        UINT nSkinCount = g_pGlobalData->m_pProjectData->m_pEditSkinMgr->GetSkinResCount();
         for (UINT i = 0; i < nSkinCount; i++)
         {
             ISkinRes* pSkin = g_pGlobalData->m_pProjectData->m_pEditSkinMgr->GetSkinResByIndex(i);
@@ -62,6 +64,7 @@ void  CCreateWindowDlg::OnInitialize()
             }
         }
         m_pComboSkinList->SetCurSel(0);
+#endif
     }
 
 }

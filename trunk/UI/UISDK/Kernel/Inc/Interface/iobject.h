@@ -83,6 +83,7 @@ interface UISDKAPI IObject : public IMessage
 
     void  SetOutRef(void** ppOutRef);
     IUIApplication* GetUIApplication();
+	ISkinRes*  GetSkinRes();
     
     void  InitDefaultAttrib();
     void  SetObjectPos(int x, int y, int cx, int cy, int nFlag=0);

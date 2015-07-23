@@ -83,9 +83,11 @@ void  SystemScrollBar::OnInitialize()
 		m_pBtnThumb = (IButton*)pObj->QueryInterface(uiiidof(IButton));
 
 	IUIApplication* pUIApp = m_pISystemScrollBar->GetUIApplication();
+	ISkinRes* pSkinRes = m_pISystemScrollBar->GetSkinRes();
+
     if (!m_pBtnThumb)
     {
-        IButton::CreateInstance(pUIApp, &m_pBtnThumb);
+        IButton::CreateInstance(pSkinRes, &m_pBtnThumb);
 		m_pBtnThumb->SetId(SCROLLBAR_THUMB_ID);
 		m_pISystemScrollBar->AddChild(m_pBtnThumb);
 

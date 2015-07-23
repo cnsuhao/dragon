@@ -789,7 +789,7 @@ bool ListItemBase::CreateRootPanel()
     IUIApplication*  pUIApp = m_pListCtrlBase->GetIListCtrlBase()->GetUIApplication();
 
     IListItemRootPanel* p = NULL;
-    IListItemRootPanel::CreateInstance(pUIApp, &p);
+    IListItemRootPanel::CreateInstance(pUIApp, m_pListCtrlBase->GetISkinRes(), &p);
     if (NULL == p)
         return false;
 

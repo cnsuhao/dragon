@@ -6,10 +6,12 @@
 #include "UISDK/Kernel/Inc/Interface/ianimate.h"
 
 
-PARSE_CONTROL_RETURN  TabCtrl::UIParseTabCtrlTag(IUIElement* pElement, IUIApplication*  pUIApp, IObject* pParent, IObject** ppOut)
+PARSE_CONTROL_RETURN  TabCtrl::UIParseTabCtrlTag(IUIElement* pElement, ISkinRes*  pSkinRes, IObject* pParent, IObject** ppOut)
 {
+	IUIApplication* pUIApp = pSkinRes->GetUIApplication();
+
     ITabCtrl*  pTabCtrl = NULL;
-    ITabCtrl::CreateInstance(pUIApp, &pTabCtrl);
+    ITabCtrl::CreateInstance(pSkinRes, &pTabCtrl);
     *ppOut = static_cast<IObject*>(pTabCtrl);
 
     TabCtrl* pImpl = pTabCtrl->GetImpl();
@@ -143,12 +145,13 @@ HRESULT  TabCtrlBase::FinalConstruct(IUIApplication* p)
     if (FAILED(lRet))
         return lRet;
 
+	UIASSERT(0 && TEXT("TODO: 这块写的不好，而且也不要放在FinalContruct中创建"))
     IMapAttribute*  pMapAttrib = NULL;
 
     UICreateIMapAttribute(&pMapAttrib);
 
-    IPanel::CreateInstance(p, &m_pPanelHead);
-    IPanel::CreateInstance(p, &m_pPanelContent);
+    IPanel::CreateInstance(p->GetDefaultSkinRes(), &m_pPanelHead);
+    IPanel::CreateInstance(p->GetDefaultSkinRes(), &m_pPanelContent);
 
 	SERIALIZEDATA data = {0};
     data.pUIApplication = p;
@@ -527,7 +530,7 @@ TabCtrl::~TabCtrl()
 void  TabCtrl::AddItem(LPCTSTR  szText, IObject* pContentObj)
 {
     IButton*  pBtn = NULL;
-    IButton::CreateInstance(m_pITabCtrl->GetUIApplication(), &pBtn);
+    IButton::CreateInstance(m_pITabCtrl->GetSkinRes(), &pBtn);
 
     IMapAttribute*  pMapAttrib = NULL;
     UICreateIMapAttribute(&pMapAttrib);

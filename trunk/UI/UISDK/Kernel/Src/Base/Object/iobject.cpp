@@ -66,6 +66,10 @@ IUIApplication* IObject::GetUIApplication()
 {
 	return m_pObjectImpl->GetIUIApplication();
 }
+ISkinRes*  IObject::GetSkinRes()
+{
+	return m_pObjectImpl->GetISkinRes();
+}
 void  IObject::SetOutRef(void** ppOutRef)                  
 {
 	m_pObjectImpl->SetOutRef(ppOutRef); 

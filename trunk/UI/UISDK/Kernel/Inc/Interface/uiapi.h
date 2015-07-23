@@ -17,7 +17,7 @@ interface ILayout;
 interface IBuffer;
 
 // UI对象创建函数
-typedef  HRESULT (*pfnUICreateInstancePtr)(IUIApplication* pUIApp, void** pOut);
+typedef  HRESULT (*pfnUICreateInstancePtr)(IUIApplication* pUIApp, ISkinRes* pSkinRes, void** pOut);
 typedef  HRESULT (*pfnUICreateRenderBasePtr)(void** ppOut);
 typedef  HRESULT (*pfnUICreateTextRenderBasePtr)(void** ppOut);
 typedef  HRESULT (*pfnParseSkinTag)(IUIElement*, ISkinRes* pSkinRes);
@@ -38,7 +38,7 @@ enum  PARSE_CONTROL_RETURN
 	ParseControl_LoadObject,   // 创建对象并加载其属性，但处没处理子结点
 	ParseControl_LoadDescendants,  // 加载自己和所有子结点的属性
 };
-typedef  PARSE_CONTROL_RETURN (*pfnParseControlTag)(IUIElement*, IUIApplication*, IObject* pObjParent, IObject**);
+typedef  PARSE_CONTROL_RETURN (*pfnParseControlTag)(IUIElement*, ISkinRes*, IObject* pObjParent, IObject**);
 
 // 外部UI对象注册入口，由外部DLL实现该导出函数
 #define FUN_RegisterUIObject_NAME  "RegisterUIObject"

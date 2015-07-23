@@ -32,6 +32,7 @@ interface IUIElement
 	virtual bool  AddChildAfter(LPCTSTR szNodeName, IUIElement* pInsertAfter, IUIElement** pp) = 0;
     virtual bool  RemoveChild(IUIElement*) = 0;
 	virtual bool  RemoveSelfInParent() = 0;
+	virtual bool  MoveChildAfterChild(IUIElement* pChild2Move, IUIElement* pChildInsertAfter) = 0;
 	virtual bool  FirstChild(IUIElement** ppElem) = 0;
 	virtual bool  FindChild(LPCTSTR szChildName, IUIElement** ppElem) = 0;
     virtual IUIChildNodeEnum*  EnumChild() = 0;  // ×¢£ºÐèÒªRelease

@@ -159,10 +159,15 @@ bool  CUIEditor::AddObjectRes(EditorAddObjectResData* pData)
 {
 	if (!pData || !pData->pParentObj || !pData->pParentXml)
 		return false;
-	if (!pData->pUIApp->CreateInstanceByClsid(pData->objiid, pData->ppCreateObj))
-		return false;
 
-	IObject* pObj = (IObject*)*pData->ppCreateObj;
+
+	IObject* pObj = pData->pUIApp->CreateInstanceByClsid(
+			pData->objiid, 
+			pData->pParentObj->GetSkinRes());
+	if (!pObj)
+		return false;
+	
+	*pData->ppCreateObj = pObj;
 	IUIElement* pXml = NULL;
 
 	if (pData->bNcChild)

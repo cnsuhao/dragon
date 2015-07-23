@@ -133,7 +133,7 @@ void  MenuStringItem::OnInitialize()
         pListCtrl->GetItemTypeShareData(UI_LISTITEM_TYPE_MENU_STRING));
     if (NULL == p)
     {
-        IMenuStringItemShareData::CreateInstance(pListCtrl->GetUIApplication(), &p);
+        IMenuStringItemShareData::CreateInstance(pListCtrl->GetSkinRes(), &p);
         pListCtrl->SetItemTypeShareData(UI_LISTITEM_TYPE_MENU_STRING, p);
 
         m_pShareData = p->GetImpl();

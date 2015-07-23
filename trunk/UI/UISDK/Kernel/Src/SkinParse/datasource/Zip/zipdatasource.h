@@ -20,12 +20,10 @@ public:
         delete this;
     }
 
-    void  SetDirection(LPCTSTR szDir);
-    void  SetName(LPCTSTR szName);
-    SKIN_PACKET_TYPE  GetType();
+    void  SetPath(LPCTSTR szPath);
+	LPCTSTR  GetPath();
 
-    LPCTSTR  GetDirection();
-    LPCTSTR  GetName();
+    SKIN_PACKET_TYPE  GetType();
 
     bool  Load_UIDocument(IUIDocument* pDocument, LPCTSTR szPath);
     bool  Load_RenderBitmap(IRenderBitmap* pBitmap, LPCTSTR szPath, bool bCreateAlphaChannel);
@@ -38,8 +36,7 @@ private:
 	bool  Init();
 
 private:
-    String  m_strDir;
-    String  m_strName;
+    String  m_strPath;
 
     HZIP  m_hZip;
 };

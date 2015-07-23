@@ -43,7 +43,7 @@ void  PropertyCtrlItemBase::OnInitialize()
 
     if (!pData)
     {
-        IPropertyCtrlItemBaseShareData::CreateInstance(pListCtrl->GetUIApplication(), &pData);
+        IPropertyCtrlItemBaseShareData::CreateInstance(pListCtrl->GetSkinRes(), &pData);
         pListCtrl->SetItemTypeShareData(IPropertyCtrlItemBaseShareData::FLAG, pData);
 
         m_pBaseShareData = pData->GetImpl();

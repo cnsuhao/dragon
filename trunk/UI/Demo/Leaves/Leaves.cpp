@@ -160,7 +160,7 @@ private:
         //////////////////////////////////////////////////////////////////////////
         // 1. 设置树叶图片
         {
-            const TCHAR* szSkinResPath = g_pUIApplication->GetActiveSkinRes()->GetPath();
+            const TCHAR* szSkinResPath = g_pUIApplication->GetDefaultSkinRes()->GetPath();
             UI::IImageRes* pImgRes = g_pUIApplication->GetActiveSkinImageRes();
             UI::GRAPHICS_RENDER_LIBRARY_TYPE  eGrphicsType = this->GetIWindowRender()->GetGraphicsRenderType();
 
@@ -304,8 +304,9 @@ int APIENTRY _tWinMain(
 		_tcscat(szLogXml, TEXT("uilog.xml"));
 		g_pUIApplication->LogUI(szLogXml);
 
-		g_pUIApplication->SetSkinDirection(szDir);
-		g_pUIApplication->LoadSkin(TEXT("Default"));
+		String skinPath(szDir);
+		skinPath.append(TEXT("Default"));
+		g_pUIApplication->LoadSkinRes(skinPath.c_str());
 	}
 
 #if 1  // 启用硬件合成 
@@ -313,7 +314,7 @@ int APIENTRY _tWinMain(
 #endif
 
 	DemoWindow* pWnd = NULL;
-	DemoWindow::CreateInstance(g_pUIApplication, &pWnd);
+	DemoWindow::CreateInstance(g_pUIApplication->GetDefaultSkinRes(), &pWnd);
 	if (pWnd->Create(TEXT("DemoWnd")))
 	{
 		pWnd->ShowWindow();

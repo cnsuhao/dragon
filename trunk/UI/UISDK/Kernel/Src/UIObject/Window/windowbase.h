@@ -129,7 +129,6 @@ public:
 public:
 	operator   HWND() const;
     HWND       GetHWND();
-	SkinRes*   GetSkinRes();
 
     Object*    GetHoverObject();
     Object*    GetPressObject();
@@ -261,7 +260,6 @@ protected:
     WindowDragDropMgr      m_oDragDropManager;   // 拖拽管理器
 	WindowMouseMgr         m_oMouseManager;      // 鼠标消息处理器
     WindowRender           m_oWindowRender;      // 多层渲染V2
-	SkinRes*               m_pSkinRes;           // 创建该窗口资源所用的SkinRes
 
 	bool  m_bDoModal;           // 模态窗口数据
 	bool  m_bEndModal;

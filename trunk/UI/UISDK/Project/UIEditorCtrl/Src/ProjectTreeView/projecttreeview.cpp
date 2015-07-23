@@ -44,7 +44,7 @@ void  ProjectTreeView::SetAttribute(IMapAttribute* pMapAttr, bool bReload)
 ISkinTreeViewItem*  ProjectTreeView::InsertSkinItem(const TCHAR* szText, IListItemBase* pParent, IListItemBase* pInsertAfter, int nInsertFlags)
 {
     ISkinTreeViewItem*  pNewItem = NULL;
-    ISkinTreeViewItem::CreateInstance(m_pIProjectTreeView->GetUIApplication(), &pNewItem);
+    ISkinTreeViewItem::CreateInstance(m_pIProjectTreeView->GetSkinRes(), &pNewItem);
     pNewItem->SetText(szText);
     pNewItem->SetTextRender(&m_pSkinItemText);
 
@@ -61,7 +61,7 @@ ISkinTreeViewItem*  ProjectTreeView::InsertSkinItem(const TCHAR* szText, IListIt
 IControlTreeViewItem*  ProjectTreeView::InsertControlItem(const TCHAR* szText, IListItemBase* pParent, IListItemBase* pInsertAfter, int nInsertFlags)
 {
     IControlTreeViewItem*  pNewItem = NULL;
-    IControlTreeViewItem::CreateInstance(m_pIProjectTreeView->GetUIApplication(), &pNewItem);
+    IControlTreeViewItem::CreateInstance(m_pIProjectTreeView->GetSkinRes(), &pNewItem);
     pNewItem->SetText(szText);
 
     bool bRet = m_pIProjectTreeView->InsertItem(pNewItem, pParent, pInsertAfter, nInsertFlags);

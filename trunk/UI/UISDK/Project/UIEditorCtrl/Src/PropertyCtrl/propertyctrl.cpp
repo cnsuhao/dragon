@@ -270,7 +270,7 @@ IPropertyCtrlGroupItem*  PropertyCtrl::InsertGroupItem(
         LISTITEM_OPFLAGS nInsertFlags)
 {
     IPropertyCtrlGroupItem*  pItem = NULL;
-    IPropertyCtrlGroupItem::CreateInstance(m_pIPropertyCtrl->GetUIApplication(), &pItem);
+    IPropertyCtrlGroupItem::CreateInstance(m_pIPropertyCtrl->GetSkinRes(), &pItem);
 
     if (false == m_pIPropertyCtrl->InsertItem(pItem, pParent, pInsertAfter, nInsertFlags))
     {
@@ -300,7 +300,7 @@ IPropertyCtrlEditItem*  PropertyCtrl::InsertEditProperty(
 
 
     IPropertyCtrlEditItem*  pItem = NULL;
-    IPropertyCtrlEditItem::CreateInstance(m_pIPropertyCtrl->GetUIApplication(), &pItem);
+    IPropertyCtrlEditItem::CreateInstance(m_pIPropertyCtrl->GetSkinRes(), &pItem);
     PropertyCtrlEditItem*  pImpl = pItem->GetImpl();
 
     pItem->SetText(pInfo->szText);
@@ -388,7 +388,7 @@ IPropertyCtrlLongItem*  PropertyCtrl::InsertLongProperty(
         LISTITEM_OPFLAGS nInsertFlags)
 {
     IPropertyCtrlLongItem*  pItem = NULL;
-    IPropertyCtrlLongItem::CreateInstance(m_pIPropertyCtrl->GetUIApplication(), &pItem);
+    IPropertyCtrlLongItem::CreateInstance(m_pIPropertyCtrl->GetSkinRes(), &pItem);
 
     if (false == m_pIPropertyCtrl->InsertItem(pItem, pParentItem, pInsertAfter, nInsertFlags))
     {
@@ -413,7 +413,7 @@ IPropertyCtrlBoolItem*  PropertyCtrl::InsertBoolProperty(
         LISTITEM_OPFLAGS nInsertFlags)
 {
     IPropertyCtrlBoolItem*  pItem = NULL;
-    IPropertyCtrlBoolItem::CreateInstance(m_pIPropertyCtrl->GetUIApplication(), &pItem);
+    IPropertyCtrlBoolItem::CreateInstance(m_pIPropertyCtrl->GetSkinRes(), &pItem);
 
     if (false == m_pIPropertyCtrl->InsertItem(pItem, pParentItem, pInsertAfter, nInsertFlags))
     {
@@ -449,7 +449,7 @@ IPropertyCtrlComboBoxItem*  PropertyCtrl::InsertComboBoxProperty(
 
 
 	IPropertyCtrlComboBoxItem*  pItem = NULL;
-	IPropertyCtrlComboBoxItem::CreateInstance(m_pIPropertyCtrl->GetUIApplication(), &pItem);
+	IPropertyCtrlComboBoxItem::CreateInstance(m_pIPropertyCtrl->GetSkinRes(), &pItem);
    
 	if (false == m_pIPropertyCtrl->InsertItem(pItem, pParentItem, pInsertAfter, nInsertFlags))
 	{
@@ -495,7 +495,7 @@ IPropertyCtrlButtonItem*   PropertyCtrl::InsertButtonProperty(
 
 
 	IPropertyCtrlButtonItem*  pItem = NULL;
-	IPropertyCtrlButtonItem::CreateInstance(m_pIPropertyCtrl->GetUIApplication(), &pItem);
+	IPropertyCtrlButtonItem::CreateInstance(m_pIPropertyCtrl->GetSkinRes(), &pItem);
     PropertyCtrlButtonItem*  pImpl = pItem->GetImpl();
 
 	pItem->SetText(szText);
@@ -515,7 +515,7 @@ IPropertyCtrlButtonItem*   PropertyCtrl::InsertButtonProperty(
 IPropertyCtrlAdditionItem*  PropertyCtrl::AddAdditionItem(LISTITEM_OPFLAGS nFlags)
 {
 	IPropertyCtrlAdditionItem*  pItem = NULL;
-	IPropertyCtrlAdditionItem::CreateInstance(m_pIPropertyCtrl->GetUIApplication(), &pItem);
+	IPropertyCtrlAdditionItem::CreateInstance(m_pIPropertyCtrl->GetSkinRes(), &pItem);
 
 	if (false == m_pIPropertyCtrl->AddItem(pItem, nFlags))
 	{

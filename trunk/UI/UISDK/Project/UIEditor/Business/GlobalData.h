@@ -18,7 +18,7 @@ public:
 	CGlobalData(void);
 	~CGlobalData(void);
 
-	void  Init();
+	bool  Init();
     void  SetStatusText2(const TCHAR* szText);
     bool  OpenUIProj(const TCHAR*  szProjPath);
     bool  CloseUIProj();

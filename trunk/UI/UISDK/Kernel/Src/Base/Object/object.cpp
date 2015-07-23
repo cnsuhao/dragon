@@ -39,6 +39,7 @@ Object::Object()
 	m_nStyle2 = 0;
 	m_pUserData = NULL;
 	m_pUIApplication = NULL;
+	m_pSkinRes = NULL;
 	m_ppOutRef = NULL;
     m_lzOrder = 0;
 
@@ -69,9 +70,19 @@ Object::~Object(void)
 	SAFE_RELEASE(m_pAccessible);
 }
 
-HRESULT Object::FinalConstruct(IUIApplication* p)
+HRESULT Object::FinalConstruct(IUIApplication* p, ISkinRes* pSkinRes)
 {
     m_pUIApplication = p->GetImpl();
+
+	if (pSkinRes)
+	{
+		m_pSkinRes = pSkinRes->GetImpl();
+	}
+	else
+	{
+		UIASSERT(m_pUIApplication);
+		m_pSkinRes = m_pUIApplication->GetDefaultSkinRes();
+	}
     return S_OK;
 }
 
@@ -1404,10 +1415,9 @@ void  Object::InitDefaultAttrib()
     // ½âÎöÑùÊ½
     if (m_pUIApplication)
     {
-        SkinRes* pSkinRes = m_pUIApplication->GetActiveSkinRes();
-        if (pSkinRes)
+        if (m_pSkinRes)
         {
-			pSkinRes->GetStyleManager().ParseStyle(pMapAttrib);
+			m_pSkinRes->GetStyleManager().ParseStyle(pMapAttrib);
         }
     }
 
@@ -1445,6 +1455,16 @@ IUIApplication*  Object::GetIUIApplication()
     if (m_pUIApplication)
         return m_pUIApplication->GetIUIApplication();
     return NULL;
+}
+SkinRes*  Object::GetSkinRes()
+{
+	return m_pSkinRes;
+}
+ISkinRes*  Object::GetISkinRes()
+{
+	if (m_pSkinRes)
+		return m_pSkinRes->GetISkinRes();
+	return NULL;
 }
 
 HRGN  Object::GetRgn()

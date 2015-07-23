@@ -129,8 +129,7 @@ public:
             pInsertAfterElement = GetUIEditor()->GetObjectXmlElem(pObjAfter);
         }
 
-        pParentElement->RemoveChild(pElement);
-        pNewParentElement->AddChildAfter(pElement, pInsertAfterElement);
+        pNewParentElement->MoveChildAfterChild(pElement, pInsertAfterElement);
 
         // 2. µ÷Õûproject treeÎ»ÖÃ
         IListItemBase*  pListItem = GetUIEditor()->GetObjectHTREEITEM(pObject);

@@ -217,6 +217,37 @@ bool  PugiXmlElement::AddChildAfter(IUIElement*  pElem, IUIElement* pInsertAfter
 	return m_node.insert_copy_after(pElement->m_node, pElementInsertAfter->m_node).empty() ? false:true;
 }
 
+
+bool  PugiXmlElement::MoveChildAfterChild(IUIElement* pChild2Move, IUIElement* pChildInsertAfter)
+{
+	if (!pChild2Move)
+		return false;
+
+	PugiXmlElement* _pChild2Move = static_cast<PugiXmlElement*>(pChild2Move);
+
+	if (pChildInsertAfter)
+	{
+		PugiXmlElement* _pChildInsertAfter = static_cast<PugiXmlElement*>(pChildInsertAfter);
+		pugi::xml_node new_node = m_node.insert_copy_after(_pChild2Move->m_node, _pChildInsertAfter->m_node);
+		if (new_node.empty())
+			return false;
+
+		m_node.remove_child(_pChild2Move->m_node);
+		_pChild2Move->m_node = new_node;
+	}
+	else
+	{
+		pugi::xml_node new_node = m_node.prepend_copy(_pChild2Move->m_node);
+		if (new_node.empty())
+			return false;
+
+		m_node.remove_child(_pChild2Move->m_node);
+		_pChild2Move->m_node = new_node;
+	}
+
+	return true;
+}
+
 // 如果为空，则表示插在最后面
 bool  PugiXmlElement::AddChildBefore(LPCTSTR szNodeName, IUIElement* pInsertBefore, IUIElement** pp)
 {

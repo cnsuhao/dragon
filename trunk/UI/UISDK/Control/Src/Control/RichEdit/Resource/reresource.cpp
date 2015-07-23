@@ -43,7 +43,7 @@ bool  ResBase::LoadImage(LPCTSTR szId, ImageWrap* pImage)
     if (!g_pResUIApp || !szId || !pImage)
         return false;
 
-    ISkinRes*  pSkinRes = g_pResUIApp->GetActiveSkinRes();
+    ISkinRes*  pSkinRes = g_pResUIApp->GetDefaultSkinRes();
     if (!pSkinRes)
         return false;
 
@@ -67,7 +67,7 @@ bool  ResBase::LoadGdiplusBitmap(LPCTSTR szId, GdiplusBitmapLoadWrap* pBitmap)
     if (!g_pResUIApp || !szId || !pBitmap)
         return false;
 
-    ISkinRes*  pSkinRes = g_pResUIApp->GetActiveSkinRes();
+    ISkinRes*  pSkinRes = g_pResUIApp->GetDefaultSkinRes();
     if (!pSkinRes)
         return false;
 

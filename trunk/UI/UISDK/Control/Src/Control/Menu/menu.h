@@ -47,7 +47,7 @@ public:
     UI_END_MSG_MAP_CHAIN_PARENT_Ixxx(Menu, IListCtrlBase)
 
 public:
-    static PARSE_CONTROL_RETURN UIParseMenuTag(IUIElement*, IUIApplication*  pUIApp, IObject* pParent, IObject** ppOut);
+    static PARSE_CONTROL_RETURN UIParseMenuTag(IUIElement*, ISkinRes*  pUIApp, IObject* pParent, IObject** ppOut);
     void  OnNewChildElement(IUIElement* pUIElement);
 
 public:

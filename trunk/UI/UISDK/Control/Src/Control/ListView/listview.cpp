@@ -87,19 +87,26 @@ void ListView::UpdateHeaderCtrlPos()
 			nHeaderCtrlHeight = m_pHeaderCtrl->GetDesiredSize().cy;
 		}
 
-		REGION4 rListViewNonClient;
 		REGION4 rListViewBorder;
 		REGION4 rHeaderMargin;
-		m_pIListView->GetNonClientRegion(&rListViewNonClient);
+        REGION4 rExtNonClient = {0};
+        m_pIListView->GetExtNonClientRegion(&rExtNonClient);
 		m_pIListView->GetBorderRegion(&rListViewBorder);
 		m_pHeaderCtrl->GetMarginRegion(&rHeaderMargin);
 
 		m_pHeaderCtrl->SetObjectPos(
 			rHeaderMargin.left + rListViewBorder.left,
 			rHeaderMargin.top + rListViewBorder.top, 
-			m_pIListView->GetWidth() - (rHeaderMargin.left+rHeaderMargin.right+rListViewNonClient.left+rListViewNonClient.right),
+			m_pIListView->GetWidth() 
+                - (rHeaderMargin.left+rHeaderMargin.right) 
+                - (rListViewBorder.left+rListViewBorder.right)
+                - rExtNonClient.right,
             nHeaderCtrlHeight, 
             SWP_NOREDRAW|SWP_FORCESENDSIZEMSG);
+
+        // 设置header占用的nc区域，用于listitem的偏移量绘制
+        rExtNonClient.top = nHeaderCtrlHeight;
+        m_pIListView->SetExtNonClientRegion(&rExtNonClient);
 
         // TODO: 在这里设置一次是为了解决listview第一次显示时，headerctrl没有通知listview totalwidth的问题
         //       关键是headerctrl不知道第一次如何去通知。外部插入一列后，不一定就会updateitemrect
@@ -193,7 +200,7 @@ int  ListView::GetColumnCount()
 IListViewItemBase*  ListView::AddTextItem(LPCTSTR szText, int nAddFlag)
 {
     IListViewItemBase* pItem = NULL;
-    IListViewItemBase::CreateInstance(m_pIListView->GetUIApplication(), &pItem);
+    IListViewItemBase::CreateInstance(m_pIListView->GetSkinRes(), &pItem);
 	if (szText)
 	{
 		pItem->SetText(szText);
@@ -206,7 +213,7 @@ IListViewItemBase*  ListView::AddTextItem(LPCTSTR szText, int nAddFlag)
 IListViewItemBase*  ListView::InsertTextItem(int nIndex, LPCTSTR szText, int nInsertFlag)
 {
     IListViewItemBase* pItem = NULL;
-    IListViewItemBase::CreateInstance(m_pIListView->GetUIApplication(), &pItem);
+    IListViewItemBase::CreateInstance(m_pIListView->GetSkinRes(), &pItem);
 
 	if (szText)
 	{

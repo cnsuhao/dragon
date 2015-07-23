@@ -40,29 +40,27 @@ ISkinRes*  SkinRes::GetISkinRes()
 
 void  SkinRes::SetParam(SKIN_PACKET_TYPE eType, LPCTSTR szName, LPCTSTR szPath)
 {
+	m_strSkinResName.clear();
     SAFE_DELETE(m_pDataSource);
-    CreateDataSourceInstance(eType, &m_pDataSource);
-    m_pDataSource->SetDirection(szPath);
-    m_pDataSource->SetName(szName);
-}
 
+    CreateDataSourceInstance(eType, &m_pDataSource);
+    m_pDataSource->SetPath(szPath);
+	if (szName)
+		m_strSkinResName = szName;
+}
 
 LPCTSTR  SkinRes::GetName()
 { 
-    if (NULL == m_pDataSource)
-        return NULL;
-
-    return m_pDataSource->GetName(); 
+    return m_strSkinResName.c_str();
 }
+
 LPCTSTR  SkinRes::GetPath() 
 { 
     if (NULL == m_pDataSource)
         return NULL;
 
-    return m_pDataSource->GetDirection(); 
+    return m_pDataSource->GetPath(); 
 }
-
-// 重新从Temp文件中读取数据
 
 bool  SkinRes::Load()
 {

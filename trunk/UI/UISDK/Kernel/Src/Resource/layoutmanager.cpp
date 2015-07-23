@@ -236,7 +236,7 @@ IObject*  LayoutManager::ParseElement(IUIElement* pUIElement, IObject* pParent)
     // 将标签名转化为类
 	PARSE_CONTROL_RETURN eParseRet = ParseControl_CreateObject;
 
-    IObject* pIObject = pUIApp->CreateInstanceByName(bstrTagName);
+    IObject* pIObject = pUIApp->CreateInstanceByName(bstrTagName, m_pSkinRes->GetISkinRes());
     if (NULL == pIObject)
     {
         // 尝试寻找该Tag是否被注册了
@@ -244,7 +244,7 @@ IObject*  LayoutManager::ParseElement(IUIElement* pUIElement, IObject* pParent)
         pUIApp->GetControlTagParseFunc(bstrTagName, &func);
         if (func)
         {
-            eParseRet = func(pUIElement, pUIApp, pParent, &pIObject);
+            eParseRet = func(pUIElement, m_pSkinRes->GetISkinRes(), pParent, &pIObject);
 			if (eParseRet == ParseControl_Failed)
             {
                 UI_LOG_ERROR(_T("Parse Object:  %s Failed."), (BSTR)bstrTagName);    
@@ -265,25 +265,13 @@ IObject*  LayoutManager::ParseElement(IUIElement* pUIElement, IObject* pParent)
 
 	if (eParseRet < ParseControl_LoadObject)
 	{
-		// 在AddChild之前获取其z order，以便排序
-// 		CComBSTR  bstrZ;
-// 		if (pUIElement->GetAttrib(XML_ZORDER, &bstrZ))
-// 			pObj->SetZorderDirect(_wtoi(bstrZ));
-//
-// 		if (pParent)
-// 		{
-// 			// 区分nc child
-// 			CComBSTR  bNcChild;
-// 			pUIElement->GetAttrib(XML_ISNCCHILD, &bNcChild);
-// 
-// 			if (bNcChild && IsTrue(bNcChild))
-// 				pParent->AddNcChild(pIObject);
-// 			else
-// 				pParent->AddChild(pIObject);
-// 		}
-
-		// 自己的属性
-		pIObject->LoadAttributeFromXml(pUIElement, false);
+        // 先单方面设置下父对象，用于font/bitmap创建时，获取到window的graphics type
+        pObj->SetParentObjectDirect(pParent->GetImpl());  
+        {
+            // 自己的属性
+		    pObj->LoadAttributeFromXml(pUIElement, false);
+        }
+        pObj->SetParentObjectDirect(NULL);
 		
 		// 先加载属性，获取到zorder、ncchild属性之后，再addchild
 		if (pParent)
@@ -385,7 +373,7 @@ void  LayoutManager::ReloadChildObjects(Object* pObjParent, IUIElement* pObjElem
             // 直接添加这个对象
             // 将标签名转化为类
 
-            IObject* pIObject = pUIApp->CreateInstanceByName(bstrChildElemTagName);
+            IObject* pIObject = pUIApp->CreateInstanceByName(bstrChildElemTagName, m_pSkinRes->GetISkinRes());
             if (NULL == pIObject)
             {
                 UI_LOG_ERROR(_T("CreateObject Failed. name=%s"), (BSTR)bstrChildElemTagName);

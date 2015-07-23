@@ -2,6 +2,9 @@
 #include "uiprojparse.h"
 #include "Business/Project/DependsCtrlDll/dependsctrldll.h"
 #define XML_DependsCtrlDll  _T("DependsCtrlDll")
+#define XML_SKINLIST        _T("SkinList")
+#define XML_SKINRES         _T("SkinRes")
+#define XML_SKINRES_PATH    _T("path")
 
 
 CUIProjParse::CUIProjParse()

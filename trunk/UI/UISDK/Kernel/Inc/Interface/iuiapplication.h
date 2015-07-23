@@ -27,8 +27,7 @@ interface UISDKAPI IUIApplication : IUnknown
     virtual ~IUIApplication();
     UIApplication*  GetImpl();
 
-    void  SetSkinDirection(LPCTSTR szDir);
-    bool  LoadSkin(LPCTSTR szSkinName);
+    ISkinRes*  LoadSkinRes(LPCTSTR szSkinName);
 
 	bool  LogUI(ILog* pLog);
 	bool  LogUI(LPCTSTR szLogXmlPath);
@@ -47,7 +46,7 @@ interface UISDKAPI IUIApplication : IUnknown
     IWaitForHandlesMgr*  GetWaitForHandlesMgr();
     IMessageFilterMgr*  GetMessageFilterMgr();
 
-    ISkinRes*       GetActiveSkinRes();
+    ISkinRes*       GetDefaultSkinRes();
     IImageManager*  GetActiveSkinImageMgr();
     IImageRes*      GetActiveSkinImageRes();
     ICursorRes*     GetActiveSkinCursorRes();
@@ -66,18 +65,18 @@ interface UISDKAPI IUIApplication : IUnknown
     bool  GetSkinTagParseFunc(LPCTSTR szTag, pfnParseSkinTag* pFunc);
     bool  GetControlTagParseFunc(LPCTSTR szTag, pfnParseControlTag* pFunc);
     
-    IObject*  CreateInstanceByName(LPCTSTR szName);
-    bool  CreateInstanceByClsid(REFCLSID clsid, void** pOut);
+    IObject*  CreateInstanceByName(LPCTSTR szName, ISkinRes* pISkinRes);
+    IObject*  CreateInstanceByClsid(REFCLSID clsid, ISkinRes* pISkinRes);
     bool  RegisterUIObjectCreateData(LPCTSTR szName, LPCTSTR szCategory, UINT nObjType, REFCLSID guid, pfnUICreateInstancePtr pfunc);
     void  LoadUIObjectListToToolBox();
 
-    bool  RegisterUIRenderBaseCreateData(LPCTSTR szName, int nType, int nControlType, pfnUICreateRenderBasePtr pfunc);
+    bool  RegisterUIRenderBaseCreateData(LPCTSTR szName, int nType, pfnUICreateRenderBasePtr pfunc);
     bool  CreateRenderBaseByName(LPCTSTR szName, IObject* pObject, IRenderBase** ppOut);
     bool  CreateRenderBase(int nType, IObject* pObject, IRenderBase** ppOut);
     LPCTSTR  GetRenderBaseName(int nType);
     void  EnumRenderBaseName(pfnEnumRenderBaseNameCallback callback, WPARAM wParam, LPARAM lParam);
 
-    bool  RegisterUITextRenderBaseCreateData(LPCTSTR szName, int nType, int nControlType, pfnUICreateTextRenderBasePtr pfunc);
+    bool  RegisterUITextRenderBaseCreateData(LPCTSTR szName, int nType, pfnUICreateTextRenderBasePtr pfunc);
     bool  CreateTextRenderBaseByName(LPCTSTR szName, IObject* pObject, ITextRenderBase** ppOut);
     bool  CreateTextRenderBase(int nType, IObject* pObject, ITextRenderBase** ppOut);
     void  EnumTextRenderBaseName(pfnEnumTextRenderBaseNameCallback callback, WPARAM wParam, LPARAM lParam);

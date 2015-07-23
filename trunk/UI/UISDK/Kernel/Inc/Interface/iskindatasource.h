@@ -32,11 +32,8 @@ interface IStreamBufferReader;
 interface ISkinDataSource : public IRootInterface
 {
     virtual void  Release() = 0;
-    virtual void  SetDirection(LPCTSTR szDir) = 0;
-    virtual void  SetName(LPCTSTR szName) = 0;
-
-    virtual LPCTSTR  GetDirection() = 0;
-    virtual LPCTSTR  GetName() = 0;
+    virtual void  SetPath(LPCTSTR szPath) = 0;
+    virtual LPCTSTR  GetPath() = 0;
     virtual SKIN_PACKET_TYPE  GetType() = 0;
 
     virtual bool  Load_UIDocument(IUIDocument* pDocument, LPCTSTR szPath) = 0;

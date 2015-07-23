@@ -143,18 +143,6 @@ UIApplication::~UIApplication(void)
     OleUninitialize();
 }
 
-
-void  UIApplication::SetSkinDirection(LPCTSTR szDir)
-{
-    m_skinMgr.SetSkinDirection(szDir);
-}
-
-bool  UIApplication::LoadSkin(LPCTSTR szSkinName)
-{
-	return m_skinMgr.LoadSkin(szSkinName);
-}
-
-
 // 外部调用，共享日志指针
 bool  UIApplication::LogUI(ILog* pLog)
 {
@@ -242,9 +230,9 @@ HRESULT UIApplication::UseInnerTooltipsUI(LPCTSTR szWndID)
     return 0;
 }
 
-ISkinManager* UIApplication::GetSkinMgr()
+SkinManager& UIApplication::GetSkinMgr()
 {
-	return m_skinMgr.GetISkinManager();
+	return m_skinMgr;
 }
 
 ITopWindowManager* UIApplication::GetITopWindowMgr()
@@ -257,14 +245,14 @@ IAnimateManager* UIApplication::GetAnimateMgr()
 	return m_pAnimateMgr->GetIAnimateManager();
 }
 
-SkinRes* UIApplication::GetActiveSkinRes()
+SkinRes* UIApplication::GetDefaultSkinRes()
 {
-	return m_skinMgr.GetActiveSkin();
+	return m_skinMgr.GetDefaultSkinRes();
 }
 
 ImageManager*  UIApplication::GetActiveSkinImageMgr()
 {
-	SkinRes* pSkinRes = GetActiveSkinRes();
+	SkinRes* pSkinRes = GetDefaultSkinRes();
 	if (NULL == pSkinRes)
 		return NULL;
 
@@ -296,7 +284,7 @@ GifRes*  UIApplication::GetActiveSkinGifRes()
 }
 FontManager*  UIApplication::GetActiveSkinFontMgr()
 {
-	SkinRes* pSkinRes = GetActiveSkinRes();
+	SkinRes* pSkinRes = GetDefaultSkinRes();
 	if (NULL == pSkinRes)
 		return NULL;
 
@@ -312,7 +300,7 @@ FontRes*  UIApplication::GetActiveSkinFontRes()
 }
 ColorManager*  UIApplication::GetActiveSkinColorMgr()
 {
-	SkinRes* pSkinRes = GetActiveSkinRes();
+	SkinRes* pSkinRes = GetDefaultSkinRes();
 	if (NULL == pSkinRes)
 		return NULL;
 
@@ -329,7 +317,7 @@ ColorRes*  UIApplication::GetActiveSkinColorRes()
 }
 StyleManager*  UIApplication::GetActiveSkinStyleMgr()
 {
-	SkinRes* pSkinRes = GetActiveSkinRes();
+	SkinRes* pSkinRes = GetDefaultSkinRes();
 	if (NULL == pSkinRes)
 		return NULL;
 
@@ -347,7 +335,7 @@ StyleRes*  UIApplication::GetActiveSkinStyleRes()
 
 LayoutManager*  UIApplication::GetActiveSkinLayoutMgr()
 {
-	SkinRes* pSkinRes = GetActiveSkinRes();
+	SkinRes* pSkinRes = GetDefaultSkinRes();
 	if (NULL == pSkinRes)
 		return NULL;
 
@@ -698,27 +686,25 @@ void  UIApplication::RestoreRegisterUIObject()
     RegisterDefaultUIObject();
 }
 
-IObject* UIApplication::CreateInstanceByName(LPCTSTR szXmlName)
+IObject* UIApplication::CreateInstanceByName(LPCTSTR szXmlName, ISkinRes* pSkinRes)
 {
 	if (!szXmlName)
 		return NULL;
 
 	pfnUICreateInstancePtr  funcptr;
 	if (false == this->GetUICreateInstanceFuncPtr(szXmlName, &funcptr))
+	{
+		UI_LOG_ERROR(_T("GetUICreateInstanceFuncPtr Failed. name=%s"), szXmlName);
 		return false;
+	}
 
     IObject* pReturn = NULL;
-	/*HRESULT hr = */funcptr(m_pUIApplication, (void**)&pReturn);
+	funcptr(m_pUIApplication, pSkinRes, (void**)&pReturn);
 	return pReturn;
 }
 
-bool UIApplication::CreateInstanceByClsid(REFCLSID clsid, void** pOut)
+IObject* UIApplication::CreateInstanceByClsid(REFCLSID clsid, ISkinRes* pSkinRes)
 {
-    if (NULL == pOut)
-        return false;
-
-    *pOut = NULL;
-
     pfnUICreateInstancePtr  funcptr;
     if (false == this->GetUICreateInstanceFuncPtr(clsid, &funcptr))
     {
@@ -727,14 +713,15 @@ bool UIApplication::CreateInstanceByClsid(REFCLSID clsid, void** pOut)
         UI_LOG_ERROR(_T("%s GetUICreateInstanceFuncPtr Failed. clsid=%s"), lpstr);
         CoTaskMemFree(lpstr);
 
-        return false;
+        return NULL;
     }
 
-    HRESULT hr = funcptr(m_pUIApplication, (void**)pOut);
-	return SUCCEEDED(hr) ? true:false;
+	IObject* pReturn = NULL;
+    funcptr(m_pUIApplication, pSkinRes, (void**)&pReturn);
+	return pReturn;
 }
 
-bool  UIApplication::RegisterUIRenderBaseCreateData(LPCTSTR bstrName, int nType, int nControlType, pfnUICreateRenderBasePtr pfunc)
+bool  UIApplication::RegisterUIRenderBaseCreateData(LPCTSTR bstrName, int nType, pfnUICreateRenderBasePtr pfunc)
 {
     if (NULL == bstrName || NULL == pfunc)
         return false;
@@ -745,10 +732,9 @@ bool  UIApplication::RegisterUIRenderBaseCreateData(LPCTSTR bstrName, int nType,
     pInfo->m_func = pfunc;
     pInfo->m_nRenderType = nType;
     pInfo->m_strName = strName;
-    pInfo->m_nControlType = nControlType;
     m_vecUIRenderBaseCreateData.push_back(pInfo);
 
-    UI_LOG_DEBUG(_T("%s, type=%d, ctrl=%d @ 0x%08X"), bstrName, nType, nControlType, pfunc);
+    UI_LOG_DEBUG(_T("%s, type=%d, ctrl=%d @ 0x%08X"), bstrName, nType, pfunc);
     return true;
 }
 bool  UIApplication::CreateRenderBaseByName(LPCTSTR strName, IObject* pObject, IRenderBase** ppOut)
@@ -766,19 +752,19 @@ bool  UIApplication::CreateRenderBaseByName(LPCTSTR strName, IObject* pObject, I
         if (pData->m_strName != strName)
             continue;
 
-        if (-1 != pData->m_nControlType)
-        {
-            if (pObject->GetObjectExtentType() != pData->m_nControlType)
-                continue;
-        }
-
-		// 废弃
-//         if (-1 != pData->m_nControlSubType)
-//         {
-//             int  nStylyEx = pObject->GetStyleEx();
-//             if (GETCONTROLSUBTYPE(nStylyEx) != pData->m_nControlSubType)
-//                 continue;
-//         }
+        // 废弃
+//      if (-1 != pData->m_nControlType)
+//      {
+//          if (pObject->GetObjectExtentType() != pData->m_nControlType)
+//              continue;
+//      }
+// 		
+//      if (-1 != pData->m_nControlSubType)
+//      {
+//          int  nStylyEx = pObject->GetStyleEx();
+//          if (GETCONTROLSUBTYPE(nStylyEx) != pData->m_nControlSubType)
+//              continue;
+//      }
 
         HRESULT hr = pData->m_func((void**)ppOut);
         if (SUCCEEDED(hr) && NULL != *ppOut)
@@ -858,21 +844,20 @@ void  UIApplication::EnumRenderBaseName(pfnEnumRenderBaseNameCallback callback, 
     }
 }
 
-bool  UIApplication::RegisterUITextRenderBaseCreateData(LPCTSTR bstrName, int nType, int nControlType, pfnUICreateTextRenderBasePtr pfunc)
+bool  UIApplication::RegisterUITextRenderBaseCreateData(LPCTSTR szName, int nType, pfnUICreateTextRenderBasePtr pfunc)
 {
-    if (NULL == bstrName || NULL == pfunc)
+    if (NULL == szName || NULL == pfunc)
         return false;
 
-    String strName(bstrName);
+    String strName(szName);
 
     UITEXTRENDERBASE_CREATE_INFO* pInfo = new UITEXTRENDERBASE_CREATE_INFO;
     pInfo->m_func = pfunc;
     pInfo->m_nRenderType = nType;
     pInfo->m_strName = strName;
-    pInfo->m_nControlType = nControlType;
     m_vecUITextRenderBaseCreateData.push_back(pInfo);
 
-    UI_LOG_DEBUG(_T("%s   @ 0x%08X"), bstrName,  pfunc);
+    UI_LOG_DEBUG(_T("%s   @ 0x%08X"), szName,  pfunc);
     return true;
 }
 bool  UIApplication::CreateTextRenderBaseByName(LPCTSTR bstrName, IObject* pObject, ITextRenderBase** ppOut)
@@ -890,19 +875,18 @@ bool  UIApplication::CreateTextRenderBaseByName(LPCTSTR bstrName, IObject* pObje
         if (pData->m_strName != bstrName)
             continue;
 
-        if (-1 != pData->m_nControlType)
-        {
-            if (pObject->GetObjectExtentType() != pData->m_nControlType)
-                continue;
-        }
-
-		// 废弃
-//         if (-1 != pData->m_nControlSubType)
-//         {
-//             int  nStylyEx = pObject->GetStyleEx();
-//             if (GETCONTROLSUBTYPE(nStylyEx) != pData->m_nControlSubType)
-//                 continue;
-//         }
+        // 废弃
+//      if (-1 != pData->m_nControlType)
+//      {
+//          if (pObject->GetObjectExtentType() != pData->m_nControlType)
+//              continue;
+//      }
+//      if (-1 != pData->m_nControlSubType)
+//      {
+//          int  nStylyEx = pObject->GetStyleEx();
+//          if (GETCONTROLSUBTYPE(nStylyEx) != pData->m_nControlSubType)
+//              continue;
+//      }
 
         HRESULT hr = pData->m_func((void**)ppOut);
         if (SUCCEEDED(hr) && NULL != *ppOut)

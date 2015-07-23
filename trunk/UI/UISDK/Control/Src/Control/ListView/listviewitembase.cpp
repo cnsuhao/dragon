@@ -48,7 +48,7 @@ void  ListViewItemBase::OnInitialize()
 
     if (NULL == pData)
     {
-        IListViewItemBaseShareData::CreateInstance(pCtrl->GetUIApplication(), &pData);
+        IListViewItemBaseShareData::CreateInstance(pCtrl->GetSkinRes(), &pData);
         m_pShareData = pData->GetImpl();
         pCtrl->SetItemTypeShareData(LISTITEM_TYPE_LISTVIEWITEMBASE, pData);
 
