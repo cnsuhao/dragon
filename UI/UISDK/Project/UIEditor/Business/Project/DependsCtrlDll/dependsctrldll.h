@@ -19,5 +19,4 @@ public:
 
 public:
     vector<DependsCtrlDllItem*>  m_vStrDlls;
-    bool  m_bDirty;
 };

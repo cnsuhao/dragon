@@ -13,13 +13,12 @@ public:
     void  Unload();
     void  Save();
 
-    const TCHAR*  GetUIProjPath()
-    {
-        return m_strPath.c_str();
-    }
+	void  SetDirty(bool b);
+    LPCTSTR  GetUIProjPath();
 
 private:
     String   m_strPath;
     CMarkup  m_xml;
     
+	bool  m_bDirty;
 };

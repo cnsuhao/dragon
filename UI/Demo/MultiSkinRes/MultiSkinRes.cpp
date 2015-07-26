@@ -78,7 +78,7 @@ private:
 		{
 			DemoWindow* pWnd = NULL;
 			DemoWindow::CreateInstance(pPluginSkinRes, &pWnd);
-			pWnd->DoModal(TEXT("DemoWnd"),GetHWND(), false);
+			pWnd->DoModal(TEXT("PluginWnd"),GetHWND(), false);
 			SAFE_DELETE_Ixxx(pWnd);
 		}
 	}
@@ -102,9 +102,7 @@ int APIENTRY _tWinMain(
                        int       nCmdShow)
 {
 	GetModuleFileName(GetModuleHandle(NULL), g_szAppDir, MAX_PATH);
-	TCHAR* p = _tcsrchr(g_szAppDir, '\\');
-	if(p != NULL)
-		*(p+1) = 0;
+	_tcsrchr(g_szAppDir, '\\')[1] = 0;
 
     {
         TCHAR szUIDllPath[MAX_PATH] = {0};

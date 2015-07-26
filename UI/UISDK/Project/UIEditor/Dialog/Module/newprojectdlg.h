@@ -18,7 +18,7 @@ public:
         COMMAND_ID_HANDLER_EX( IDCANCEL, OnCancel )
         COMMAND_ID_HANDLER_EX( IDC_BUTTON_BROWSE, OnBrowse )
         COMMAND_HANDLER_EX( IDC_EDIT_NEW_SKIN_NAME, EN_CHANGE, OnEnChange_NewSkinName )
-        END_MSG_MAP()
+	END_MSG_MAP()
 
 public:
     void   OnClose();

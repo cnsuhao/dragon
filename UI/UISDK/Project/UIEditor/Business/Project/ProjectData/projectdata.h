@@ -13,16 +13,17 @@ public:
     bool  OpenUIProj(const TCHAR* szPath);
     bool  ReRegistUIObject(bool bResotre);  
 
-    const TCHAR*  GetProjName()
-    {
-        return m_strName.c_str();
-    }
+    LPCTSTR  GetProjName();
+	void  AddSkinResPath(LPCTSTR szPath);
+// 	uint  GetSkinResPathCount();
+// 	LPCTSTR  GetSkinResPathByIndex(uint);
 
 protected:
     bool  InitEditUIApplication();
 
 public:
     String  m_strName;   // 从m_strPath中获取文件名，得到工程名
+//	vector<String>    m_vSkinResPath;  // 皮肤资源包
 
     CUIEditor         m_uieditor;
     IUIApplication*   m_pEditUIApp;  // 正在编辑的皮肤

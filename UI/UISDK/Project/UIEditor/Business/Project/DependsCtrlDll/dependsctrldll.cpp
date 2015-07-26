@@ -4,7 +4,6 @@
 
 CDependsCtrlDllMgr::CDependsCtrlDllMgr()
 {
-    m_bDirty = false;
 }
 
 CDependsCtrlDllMgr::~CDependsCtrlDllMgr()
@@ -40,7 +39,7 @@ bool CDependsCtrlDllMgr::AddCtrlDll(const TCHAR* szAbsolutePath)
 
     m_vStrDlls.push_back(pItem);
     
-    m_bDirty = true;
+    GetProjectData()->m_uiprojParse.SetDirty(true);
     return true;
 }
 
@@ -58,7 +57,7 @@ bool CDependsCtrlDllMgr::DelCtrlDll(const TCHAR* szPath)
             SAFE_DELETE(pItem);
 
             m_vStrDlls.erase(iter);
-            m_bDirty = true;
+            GetProjectData()->m_uiprojParse.SetDirty(true);
             return true;
         }
     }
@@ -91,7 +90,8 @@ void  CDependsCtrlDllMgr::OnLoadItem(const TCHAR* szPath)
     if (!PathFileExists(pNewItem->strAbsolutePath.c_str()))
     {
         delete pNewItem;
-        m_bDirty = true;
+
+		GetProjectData()->m_uiprojParse.SetDirty(true);
         return;
     }
     m_vStrDlls.push_back(pNewItem);

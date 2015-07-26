@@ -132,9 +132,10 @@ void CProjectTreeDialog::OnInitialize()
         m_pRadioBtnLayout->SetCheck(true, false);
 
 	// 皮肤列表
-	ISkinRes* pSkin = g_pGlobalData->m_pProjectData->m_pEditUIApp->GetDefaultSkinRes();
-	if (pSkin)
-		this->InsertSkinItem(pSkin);
+	ISkinManager* pSkinMgr = GetEditSkinManager();
+	uint nCount = pSkinMgr->GetSkinResCount();
+	for (uint i = 0; i < nCount; i++)
+		this->InsertSkinItem(pSkinMgr->GetSkinResByIndex(i));
 }
 
 // 加载日志信息
@@ -486,9 +487,6 @@ void CProjectTreeDialog::InsertSkinItem(ISkinRes* pSkin)
                 pTreeItemData->m_pListItem = pSkinTreeItemLayout;
                 m_mapLayoutTree[pSkinTreeItemLayout] = pTreeItemData;
             }
-
-            // 加载皮肤下面的窗口数据
-            pSkin->Load();
 
             ILayoutWindowNodeList* pWindowArray = NULL;
             if (pSkin->GetLayoutManager()->LoadWindowNodeList(&pWindowArray))

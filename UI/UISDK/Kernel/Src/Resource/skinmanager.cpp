@@ -302,7 +302,17 @@ SkinRes*  SkinManager::LoadSkinRes(LPCTSTR szPath)
 
 	if (PathIsDirectory(szPath))
 	{
-		Util::GetPathFileName(szPath, szSkinName);
+		// 从路径中获取皮肤名。
+		TCHAR szDir[MAX_PATH] = {0};
+		_tcscpy(szDir, szPath);
+		int nLength = _tcslen(szDir);
+		if (nLength < 1)
+			return NULL;
+
+		// 如果最后一个字符是 \，删除。
+		if (szDir[nLength-1] == TEXT('\\'))
+			szDir[nLength-1] = 0;
+		Util::GetPathFileName(szDir, szSkinName);
 		SkinRes* pTest = GetSkinResByName(szSkinName);
 		if (pTest)
 		{
@@ -421,3 +431,14 @@ SkinRes*  SkinManager::GetSkinResByName(LPCTSTR szName)
     return NULL;
 }
 
+uint  SkinManager::GetSkinResCount()
+{
+	return m_vSkinRes.size();
+}
+SkinRes*  SkinManager::GetSkinResByIndex(uint i)
+{
+	if (i >= m_vSkinRes.size())
+		return NULL;
+
+	return m_vSkinRes[i];
+}

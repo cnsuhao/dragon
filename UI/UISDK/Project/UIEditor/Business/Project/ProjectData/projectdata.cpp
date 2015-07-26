@@ -91,3 +91,30 @@ bool  CProjectData::ReRegistUIObject(bool bResotre)
     }
     return true;
 }
+
+LPCTSTR  CProjectData::GetProjName()
+{
+	return m_strName.c_str();
+}
+
+void  CProjectData::AddSkinResPath(LPCTSTR szPath)
+{
+	if (szPath)
+	{
+	//	m_vSkinResPath.push_back(String(szPath));
+		m_pEditUIApp->LoadSkinRes(szPath);
+	}
+}
+// 
+// uint  CProjectData::GetSkinResPathCount()
+// {
+// 	return m_vSkinResPath.size();
+// }
+// 
+// LPCTSTR  CProjectData::GetSkinResPathByIndex(uint nIndex)
+// {
+// 	if (nIndex >= m_vSkinResPath.size())
+// 		return NULL;
+// 
+// 	return m_vSkinResPath[nIndex].c_str();
+// }

@@ -673,3 +673,16 @@ ISkinRes*  ISkinManager::GetSkinResByName(LPCTSTR szName)
 
 	return NULL;
 }
+
+uint  ISkinManager::GetSkinResCount()
+{
+	return m_pImpl->GetSkinResCount();
+}
+ISkinRes*  ISkinManager::GetSkinResByIndex(uint i)
+{
+	SkinRes* p = m_pImpl->GetSkinResByIndex(i);
+	if (p)
+		return p->GetISkinRes();
+
+	return NULL;
+}

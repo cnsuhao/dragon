@@ -119,8 +119,12 @@ void CNewProjectDlg::OnOk( UINT,int,HWND )
         SaveTemplateResFileTo(m_strUIProjPath.c_str(), IDR_TEMPLATE_UIPROJ, _T("TEMPLATE"));
     }
 
+	if (GetProjectData())
+		GetProjectData()->m_uiprojParse.SetDirty(true);
+
     this->EndDialog(IDOK);
 }
+
 void CNewProjectDlg::OnCancel( UINT,int,HWND )
 {
     this->EndDialog(IDCANCEL);

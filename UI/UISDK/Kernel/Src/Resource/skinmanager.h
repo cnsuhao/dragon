@@ -45,6 +45,8 @@ public:
 	SkinRes*  LoadSkinRes(LPCTSTR szPath);
 	SkinRes*  GetDefaultSkinRes();
 	SkinRes*  GetSkinResByName(LPCTSTR szName);
+	uint  GetSkinResCount();
+	SkinRes*  GetSkinResByIndex(uint i);
 
 	bool  Save(SkinRes* pSkinRes=NULL);
     void  ChangeSkinHLS( short h, short l, short s, int nFlag );

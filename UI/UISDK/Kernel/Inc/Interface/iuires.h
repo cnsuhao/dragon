@@ -376,6 +376,8 @@ namespace UI
         void  ChangeSkinHLS(short h, short l, short s, int nFlag);
         bool  Save(ISkinRes* pSkinRes);
 
+		uint  GetSkinResCount();
+		ISkinRes*  GetSkinResByIndex(uint i);
 		ISkinRes*  GetSkinResByName(LPCTSTR szName);
 
     private:
