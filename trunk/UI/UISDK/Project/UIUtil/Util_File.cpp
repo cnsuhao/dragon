@@ -436,9 +436,9 @@ BOOL GetPathDir( LPCTSTR szPath, TCHAR* szOutDir )
 		return FALSE;
 
 #ifdef _UNICODE
-	*p = _T('');
+	*(p+1) = _T('');
 #else
-	*p = 0;
+	*(p+1) = 0;
 #endif
 	_tcscpy( szOutDir, szCopy );
 	return TRUE;

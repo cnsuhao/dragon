@@ -290,7 +290,14 @@ void CMainFrame::OnMenuNewProject(UINT,int,HWND)
 
     if (g_pGlobalData->OpenUIProj(dlg.m_strUIProjPath.c_str()))
     {
+		// 加载刚创建的皮肤
+		GetEditUIApplication()->LoadSkinRes(dlg.m_strSkinFolder.c_str());
+
         _InitOnOpenOrNewProject(dlg.m_strUIProjPath.c_str());
+
+		// 创建第一个工程时，强制保存uiproj文件
+		GetProjectData()->m_uiprojParse.SetDirty(true);
+		GetProjectData()->m_uiprojParse.Save();
     }
 }
 
@@ -345,12 +352,9 @@ void CMainFrame::OnMenuProjDependsCtrlDll(UINT, int, HWND)
     pDlg->DoModal(_T("ProjectDependsCtrlDllConfigDlg"), m_hWnd, false);
     SAFE_DELETE_Ixxx(pDlg);
 
-    // 更新数据，保存uiproj
-    if (GetProjDependsCtrlDllMgr()->m_bDirty)
-    {
-        GetProjectData()->ReRegistUIObject(true);
-        GetProjectData()->m_uiprojParse.Save();
-    }
+    // 更新数据
+	GetProjectData()->ReRegistUIObject(true);
+	SetDirty();
 }
 
 void CMainFrame::OnMenuToolBox(UINT, int, HWND)
@@ -553,6 +557,8 @@ void CMainFrame::DoSave()
 	if (false == g_pGlobalData->m_pProjectData->m_pEditSkinMgr->Save(NULL))
         return;
 
+	GetProjectData()->m_uiprojParse.Save();
+
     TCHAR  szText[320] = _T("");
     ::GetWindowText(m_hWnd, szText, 300);
     int nLength = _tcslen(szText);
@@ -725,7 +731,6 @@ void  CMainFrame::SetDirty()
         m_pToolBar->OnDirtyChanged(true);
 
     m_bDirty = true;
-    
 }
 
 LRESULT CMainFrame::OnEraseBkgnd( HDC hDC )

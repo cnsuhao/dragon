@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <uiproj>
-
-<DependsCtrlDll>
-<item>..\..\UI\UICtrls.dll</item>
-</DependsCtrlDll>
+  <SkinList>
+    <SkinRes path="Default"/>
+    <SkinRes path="Plugin.skn"/>
+  </SkinList>
+  <DependsCtrlDll>
+    <item>..\..\UI\UICtrls.dll</item>
+  </DependsCtrlDll>
 </uiproj>

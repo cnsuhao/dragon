@@ -230,9 +230,9 @@ IObject* CLayoutEditorDlg::CreateObject(const TCHAR* szNodeName, const TCHAR* sz
 {
     IObject* p = NULL;
     if (!szNodeName || !szNodeName[0])
-        p = GetEditUIApplication()->CreateInstanceByName(TEXT("Window"), NULL);  // TODO:
+        p = GetEditUIApplication()->CreateInstanceByName(TEXT("Window"), m_pSkin); 
     else
-        p = GetEditUIApplication()->CreateInstanceByName(szNodeName, NULL); // TODO:
+        p = GetEditUIApplication()->CreateInstanceByName(szNodeName, m_pSkin);
 
     if (NULL == p)
         return NULL;

@@ -281,9 +281,7 @@ int APIENTRY _tWinMain(
 
 	TCHAR szDir[MAX_PATH] = {0};
 	GetModuleFileName(GetModuleHandle(NULL), szDir, MAX_PATH);
-	TCHAR* p = _tcsrchr(szDir, '\\');
-	if(p != NULL)
-		*(p+1) = 0;
+	_tcsrchr(szDir, '\\')[1] = 0;
 
 	{
 		TCHAR szUIDllPath[MAX_PATH] = {0};
