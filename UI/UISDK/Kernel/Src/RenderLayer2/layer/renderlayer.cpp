@@ -571,18 +571,25 @@ void  RenderLayer::Compositor2Gpu(GpuLayerCommitContext context)
 {
     if (m_pGpuTexture)
     {
+		// 将layer限制在其parent object(不是parent layer)的范围之内
+		if (m_pObjCreate->GetParentObject())
+		{
+			RECT rcClip;
+			m_pObjCreate->GetParentObject()->GetVisibleClientRectInLayer(&rcClip);
+			context.ClipRect(&rcClip);
+		}
 		RECT rcWnd;
 		m_pObjCreate->GetWindowRect(&rcWnd);
 		context.SetOffset(rcWnd.left, rcWnd.top);
-
+        context.MultiAlpha(GetOpacity());
 		m_pGpuTexture->Compositor(&context, m_pTransform2);
     }
 
-    _ChildIter iter = m_vecChild.begin();
-    for (iter ; iter != m_vecChild.end(); ++iter)
-    {
-        (*iter)->Compositor2Gpu(context);
-    }
+	_ChildIter iter = m_vecChild.begin();
+	for (iter ; iter != m_vecChild.end(); ++iter)
+	{
+		(*iter)->Compositor2Gpu(context);
+	}
 }
 
 // 窗口开启/禁用硬件合成

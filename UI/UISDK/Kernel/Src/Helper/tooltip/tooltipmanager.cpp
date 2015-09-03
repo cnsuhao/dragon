@@ -288,7 +288,8 @@ bool ToolTipManager::Show(TOOLTIPITEM* pItemInfo)
 	{
 	case TOOLTIP_ACTION_FLAG_NORMAL:
 		{
-            m_timeout.Start(TOOL_TIMER_TIME);
+			m_timeout.SetParam(TIMEOUT_DELAY_SHOW);
+            m_timeout.Start(TOOLTIP_DELAY_SHOW_TIME);
 
             if (m_tooltipItem.pNotifyObj)
                 m_tooltipItem.pNotifyObj->AddDelayRef((void**)&m_tooltipItem.pNotifyObj);
@@ -328,6 +329,12 @@ void ToolTipManager::OnTimeout(long lId, WPARAM wParam, LPARAM lParam)
 	if (NULL == m_pToolTipUI)
 		return;
 
+	if (lId == TIMEOUT_AUTO_HIDE)
+	{
+		Hide();
+		return;
+	}
+
     // 直接模式
     if (!m_tooltipItem.strContent.empty())
     {
@@ -337,6 +344,8 @@ void ToolTipManager::OnTimeout(long lId, WPARAM wParam, LPARAM lParam)
         m_pToolTipUI->Show(NULL);
         m_tooltipItem.Reset();
 
+		m_timeout.SetParam(TIMEOUT_AUTO_HIDE);
+		m_timeout.Start(TOOLTIP_AUTO_HIDE_TIME);
         return;
     }
 
@@ -355,6 +364,9 @@ void ToolTipManager::OnTimeout(long lId, WPARAM wParam, LPARAM lParam)
                 )
         {
 		    m_pToolTipUI->Show(NULL);
+
+			m_timeout.SetParam(TIMEOUT_AUTO_HIDE);
+			m_timeout.Start(TOOLTIP_AUTO_HIDE_TIME);
         }
 	}
     m_tooltipItem.Reset();

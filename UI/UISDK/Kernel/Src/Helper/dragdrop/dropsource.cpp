@@ -18,25 +18,26 @@ void  CreateDropSourceInstance(IDropSource**  pp)
 CDropSource::CDropSource()
 {
     m_lRef = 0;
+    m_pDragFeedback = NULL;
 }
 CDropSource::~CDropSource()
 {
-
+    m_pDragFeedback = NULL;
 }
 
 
 HRESULT STDMETHODCALLTYPE CDropSource::QueryInterface(REFIID riid, void **ppvObject)
 { 
-    if (IsEqualIID(riid, IID_IUnknown))
-    {
-        AddRef();
-        *ppvObject = static_cast<IUnknown*>(this);
-        return S_OK;
-    }
-    else if (IsEqualIID(riid, IID_IDropSource))
+    if (IsEqualIID(riid, IID_IUnknown) || IsEqualIID(riid, IID_IDropSource))
     {
         AddRef();
         *ppvObject = static_cast<IDropSource*>(this);
+        return S_OK;
+    }
+    else if (IsEqualIID(riid, IID_IDropSourceEx))
+    {
+        AddRef();
+        *ppvObject = static_cast<IDropSourceEx*>(this);
         return S_OK;
     }
 
@@ -88,8 +89,24 @@ HRESULT STDMETHODCALLTYPE CDropSource::QueryContinueDrag(BOOL fEscapePressed, DW
 //  Returns DRAGDROP_S_USEDEFAULTCURSORS if dragging is in progress, NOERROR if it is not.
 HRESULT STDMETHODCALLTYPE CDropSource::GiveFeedback(DWORD dwEffect)
 {
+    // 通知 CDragFeedback 更新当前文本
+    if (m_pDragFeedback)
+    {
+        HRESULT hr = m_pDragFeedback->GiveFeedback(dwEffect);
+        if (SUCCEEDED(hr))
+            return hr;
+    }
+
     return DRAGDROP_S_USEDEFAULTCURSORS;
 }
 
+void  CDropSource::SetDragFeedback(IDragFeedback* p) 
+{
+    m_pDragFeedback = p;
+}
+IDragFeedback*  CDropSource::GetDragFeedback()
+{
+    return m_pDragFeedback;
+}
 
 }

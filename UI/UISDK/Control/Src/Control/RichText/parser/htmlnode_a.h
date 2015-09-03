@@ -27,9 +27,7 @@ public:
 
 private:
 	RichTextObjectModel::LinkUnit*  m_pLinkUnit;
+    String  m_strId;
 };
-
-
-
 
 }

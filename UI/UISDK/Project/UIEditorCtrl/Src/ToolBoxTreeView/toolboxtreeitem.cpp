@@ -53,7 +53,7 @@ void  ToolBoxTreeItem::DoDrag(POINT point)
     IDropSource*  pDropSource = NULL;
     IDragSourceHelper2*  pDragSourceHelper = NULL;
 
-    UI::CreateDataObjectInstance(&pDataObject, NULL);
+    UI::CreateDataObjectInstance(&pDataObject);
     UI::CreateDropSourceInstance(&pDropSource);
     ::CoCreateInstance(CLSID_DragDropHelper, NULL, CLSCTX_INPROC, IID_IDragSourceHelper2, (void**)&pDragSourceHelper);
 

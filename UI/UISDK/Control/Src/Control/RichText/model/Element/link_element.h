@@ -23,9 +23,9 @@ public:
 
 	IRichTextLinkUnit*  GetIRichTextLinkUnit() {
 		return &m_oIRichTextLinkUnit; }
-
-	void  SeId(long lId);
-	long  GetId();
+    
+    void  SetId(LPCTSTR szId);
+    LPCTSTR  GetId();
 
 	void  SetToolTip(LPCTSTR);
 	void  SetWParam(WPARAM);
@@ -41,7 +41,7 @@ public:
 
 protected:
 	IRichTextLinkUnit  m_oIRichTextLinkUnit;
-    long  m_lId;
+    String  m_strId;
 
 	String  m_strToolTip;
 	WPARAM  m_wParam;

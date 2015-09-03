@@ -11,10 +11,10 @@ namespace UI
     };
 
 	// 实现IDataObject对象，用于WindowlessRichEdit::GetClipboardData
-	class OleDataObject : public IDataObject
+	class OleDataObject : public IDataObject, public IDataObjectEx
 	{
 	public:
-		OleDataObject(IDataObjectSource* pDataObjectSource);
+		OleDataObject();
 		~OleDataObject();
 
 		// IUnknown  Interface
@@ -34,11 +34,18 @@ namespace UI
 		virtual  HRESULT STDMETHODCALLTYPE EnumDAdvise(IEnumSTATDATA **ppenumAdvise);
 #pragma endregion
 
+#pragma region // IDataObjectEx
+        virtual void  SetSource(IDataObjectSource* p) override;
+        virtual void  SetDragFeedback(IDragFeedback* p) override;
+        virtual IDragFeedback*  GetDragFeedback() override;
+#pragma endregion
+
 	protected:
 		list<OleDataObjectItem*>   m_list;
 		long     m_dwRef;
 //		/*IMarshal*/IUnknown* m_pMarshal;
-        IDataObjectSource*  m_pDataObjectSource;
+        IDataObjectSource*  m_pDataObjectSource;  // 延迟数据提供者
+        IDragFeedback*  m_pDragFeedback;  // 拖拽时回执显示（如文本），仅GET/SET用
 
 		friend class IEnumFORMATETCImpl;
 	};

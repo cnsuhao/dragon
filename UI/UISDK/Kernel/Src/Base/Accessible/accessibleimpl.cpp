@@ -21,7 +21,7 @@ AccessibleImpl::~AccessibleImpl()
 
 HRESULT AccessibleImpl::QueryInterface(
 		REFIID riid, void **ppvObj)
-{
+{   
 	*ppvObj = NULL;
 
 	if (IsEqualIID(riid, IID_IUnknown))
@@ -29,7 +29,7 @@ HRESULT AccessibleImpl::QueryInterface(
 		*ppvObj = static_cast<IUnknown*>(this);
 		AddRef();
 	}
-	else if (IsEqualIID(riid, IID_IDispatch))
+	else if (IsEqualIID(riid, IID_IDispatch)) 
 	{
 		*ppvObj = static_cast<IDispatch*>(this);
 		AddRef();

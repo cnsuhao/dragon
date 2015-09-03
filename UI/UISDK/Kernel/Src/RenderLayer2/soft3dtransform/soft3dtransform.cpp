@@ -144,13 +144,13 @@ void  Transform3D::Update()
 	if (m_perspective > 0)
 		m_matrix.Perspective(m_perspective);
 
+	// 旋转
+	if (m_xRotate != 0 || m_yRotate != 0 || m_zRotate != 0)
+		m_matrix.Rotate(m_xRotate, m_yRotate, m_zRotate);
+
 	// 移动
 	m_matrix.Translate(m_xPos, m_yPos, m_zPos);
 
-	// 旋转
-	if (m_xRotate != 0 || m_yRotate != 0 || m_zRotate != 0)
- 		m_matrix.Rotate(m_xRotate, m_yRotate, m_zRotate);
-	
 	// 缩放
 	if (m_xScale != 1 && m_yScale != 1 && m_zScale != 1)
 		m_matrix.Scale(m_xScale, m_yScale, m_zScale);

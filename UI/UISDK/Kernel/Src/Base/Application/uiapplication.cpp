@@ -140,7 +140,7 @@ UIApplication::~UIApplication(void)
     }
 
     //	::CoUninitialize(); // do not call CoInitialize, CoInitializeEx, or CoUninitialize from the DllMain function. 
-    OleUninitialize();
+	OleUninitialize();
 }
 
 // 外部调用，共享日志指针

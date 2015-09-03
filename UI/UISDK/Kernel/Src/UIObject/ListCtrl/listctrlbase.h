@@ -344,9 +344,11 @@ protected:
     void  update_mouse_mgr_type();
 
 protected:
+	friend class  ListCtrlMouseMgr;
+	friend class  ListItemBase;
+
     IListCtrlBase*  m_pIListCtrlBase;
-    
-    friend class  ListCtrlMouseMgr;
+
     ListCtrlMKMgrBase*    m_pMKMgr;
 
     ListCtrlLayoutMgr     m_MgrLayout;      // 布局对象

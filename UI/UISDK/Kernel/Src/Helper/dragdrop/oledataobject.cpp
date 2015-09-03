@@ -4,12 +4,12 @@
 namespace UI
 {
 
-void  CreateDataObjectInstance(IDataObject**  pp, IDataObjectSource* pDataObjectSource)
+void  CreateDataObjectInstance(IDataObject**  pp)
 {
     if (NULL == pp)
         return;
 
-    OleDataObject* p = new OleDataObject(pDataObjectSource);
+    OleDataObject* p = new OleDataObject();
     *pp = static_cast<IDataObject*>(p);
     p->AddRef();
 }
@@ -17,20 +17,21 @@ void  CreateDataObjectInstance(IDataObject**  pp, IDataObjectSource* pDataObject
 BOOL _AfxCopyStgMedium(CLIPFORMAT cfFormat, LPSTGMEDIUM lpDest, LPSTGMEDIUM lpSource);
 void _AfxOleCopyFormatEtc(LPFORMATETC petcDest, LPFORMATETC petcSrc);
 
-OleDataObject::OleDataObject(IDataObjectSource* pDataObjectSource)
+OleDataObject::OleDataObject()
 {
 	m_dwRef = 0;
-    m_pDataObjectSource = pDataObjectSource;
-
+    m_pDataObjectSource = NULL;
+    m_pDragFeedback = NULL;
 //	m_pMarshal = NULL;
 //	::CoCreateFreeThreadedMarshaler(static_cast<IUnknown*>(this), &m_pMarshal);
 }
 OleDataObject::~OleDataObject()
 {
-	if (m_pDataObjectSource)
-	{
-		m_pDataObjectSource->OnDataRelease(static_cast<IDataObject*>(this));
-	}
+    if (m_pDataObjectSource)
+    {
+        m_pDataObjectSource->OnDataRelease(static_cast<IDataObject*>(this));
+        m_pDataObjectSource = NULL;
+    }
 
 	list<OleDataObjectItem*>::iterator iter = m_list.begin();
 	list<OleDataObjectItem*>::iterator iterEnd = m_list.end();
@@ -47,7 +48,6 @@ OleDataObject::~OleDataObject()
 
         SAFE_DELETE(pItem); 
 	}
-	
 //	SAFE_RELEASE(m_pMarshal);
 }
 
@@ -60,6 +60,10 @@ HRESULT STDMETHODCALLTYPE OleDataObject::QueryInterface(REFIID riid,void **ppvOb
 	{
 		*ppvObject = static_cast<IDataObject*>(this);
 	}
+    else if (::IsEqualIID(IID_IDataObjectEx,riid))
+    {
+        *ppvObject = static_cast<IDataObjectEx*>(this);
+    }
 // 	else if (::IsEqualIID(riid, IID_IMarshal) && NULL != m_pMarshal)
 // 	{
 // 		//*ppvObject = m_pMarshal;
@@ -88,6 +92,20 @@ ULONG   STDMETHODCALLTYPE OleDataObject::Release(void)
 	return m_dwRef;
 }
 
+void  OleDataObject::SetSource(IDataObjectSource* p)
+{
+    m_pDataObjectSource = p;
+}
+
+void OleDataObject::SetDragFeedback(IDragFeedback* p)
+{
+    m_pDragFeedback = p;
+}
+IDragFeedback*  OleDataObject::GetDragFeedback()
+{
+    return m_pDragFeedback;
+}
+
 // 注：如果其它程序粘贴的话，该函数可能在其它线程中被调用
 //     但从目前来看，SetData/GetData好像不会同时发生，因此没有添加同步机制
 HRESULT STDMETHODCALLTYPE OleDataObject::GetData(FORMATETC *pformatetcIn, STGMEDIUM *pmedium)
@@ -114,12 +132,12 @@ HRESULT STDMETHODCALLTYPE OleDataObject::GetData(FORMATETC *pformatetcIn, STGMED
                     return DV_E_FORMATETC;
 
                 if (!m_pDataObjectSource->OnRenderData(
-						static_cast<IDataObject*>(this),
-						&pItem->formatetc, 
-						&pItem->stgmedium))
-				{
+                        static_cast<IDataObject*>(this),
+                        &pItem->formatetc, 
+                        &pItem->stgmedium))
+                {
                     return DV_E_FORMATETC;
-				}
+                }
             }
 
 			_AfxCopyStgMedium(pformatetcIn->cfFormat, pmedium, &pItem->stgmedium);
@@ -168,9 +186,9 @@ HRESULT STDMETHODCALLTYPE OleDataObject::SetData(FORMATETC *pformatetc, STGMEDIU
 	if (NULL == pformatetc || NULL == pmedium)
 		return E_INVALIDARG;
 
-    if (pformatetc->tymed != pmedium->tymed && 
+	if (pformatetc->tymed != pmedium->tymed && 
         pmedium->tymed != TYMED_NULL) // 不是延迟提交
-        return E_INVALIDARG;
+		return E_INVALIDARG;
 
 	HRESULT hr = this->QueryGetData(pformatetc);
 	if (SUCCEEDED(hr))

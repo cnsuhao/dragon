@@ -1180,6 +1180,14 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\Control\Src\Control\RichText\model\style.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Control\Src\Control\RichText\model\style.h"
+							>
+						</File>
+						<File
 							RelativePath="..\..\Control\Src\Control\RichText\model\unit.cpp"
 							>
 						</File>

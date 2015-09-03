@@ -141,9 +141,6 @@ void  Storyboard::BeginBlock()
 // 延迟一段时候后再开始动画。
 void  Storyboard::BeginDelay(long lElapse)
 {
-    // 还需要额外处理的：暂停阶段，不应该向发发送tick通知
-    UIASSERT(0 && TEXT("该功能还没测试过。"));
-
     m_lDelayBeginTick = GetTickCount() + lElapse;
     m_pAnimateMgr->AddStoryboard(m_pIStoryboard);
 }

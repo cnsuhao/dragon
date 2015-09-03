@@ -15,13 +15,15 @@
 using namespace UI;
 using namespace UI::RichTextObjectModel;
 
-#define DEFAULT_LINESPACE    5  // 5px
+#define DEFAULT_LINESPACE  0
 
 Doc::Doc() : m_mkmgr(this)
 {
 	memset(&m_defaultcf, 0, sizeof(m_defaultcf));
 	memset(&m_defaultcf_link, 0, sizeof(m_defaultcf_link));
 	memset(&m_defaultpf, 0, sizeof(m_defaultpf));
+    m_defaultpf.lLineSpace = DEFAULT_LINESPACE;
+
 	m_ePageMode = /*SingleLine*/MultiLine;
 	m_pFirstPage = NULL;
     SetRectEmpty(&m_rcInvalidInDoc);
@@ -40,7 +42,6 @@ Doc::~Doc()
 void  Doc::Init(IRichText* pRichText)
 {
     m_pIRichText = pRichText;
-	m_defaultpf.lLineSpace = DEFAULT_LINESPACE;
 
 	if (pRichText)
 		m_mkmgr.SetUIApplication(pRichText->GetUIApplication());
@@ -558,4 +559,9 @@ void  Doc::CreateDefaultLinkFont()
 	m_defaultcf_link.bTextColor = true;
 
 	FontCache::Instance().GetFont(&m_defaultcf_link);
+}
+
+const Style&  Doc::GetStyle()
+{
+    return m_richtextStyle;
 }

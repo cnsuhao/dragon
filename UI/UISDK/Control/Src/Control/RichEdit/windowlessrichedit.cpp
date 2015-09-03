@@ -196,9 +196,10 @@ bool WindowlessRichEdit::Create(HWND hWndParent)
  	if (pOle)
  	{
  		m_spOle = pOle;
-         pOle->QueryInterface(__uuidof(ITextDocument2), (void**)&m_spTextDoc);
+        GUID guid = __uuidof(ITextDocument2);
+        pOle->QueryInterface(guid, (void**)&m_spTextDoc);
  
-         SAFE_RELEASE(pOle);
+        SAFE_RELEASE(pOle);
  	}
  	RESendMessage(EM_SETOLECALLBACK, 0, (LPARAM)static_cast<IRichEditOleCallback*>(this));
     ModifyEventMask(ENM_CHANGE, 0);

@@ -2,19 +2,20 @@
 #include "smoothscroll.h"
 #include "UISDK\Kernel\Inc\Interface\ianimate.h"
 
+#define BOUNCE_EDGE_DURATION  200
+#define SCROLL_DURATION  600
+
 SmoothScroll::SmoothScroll()
 {
     m_pCallback = NULL;
     m_pUIApplication = NULL;
 
     m_bEnable = true;
-    m_eMouseWheelDir = DOWN;
+    m_eMouseWheelDir = MOUSEWHEEL_DOWN;
     m_pAnimateStoryboard = NULL;
 
-	m_nScrollDistance = 0;
-    m_nPrevScrollDistance = 0;
 	m_nStep = 200;
-	m_nDuration = 600;
+	m_nMaxBounceEdge = 50;
 }
 SmoothScroll::~SmoothScroll()
 {
@@ -44,13 +45,14 @@ bool  SmoothScroll::IsScrolling()
     return m_pAnimateStoryboard == NULL ? false:true;
 }
 
-// nViewPage: 当前页面的范围。一次mousewheel滚动范围最好不好起过一屏，否则会导致几个列表项总是滚不到
+// nViewPage: 当前页面的范围。一次mousewheel滚动范围最好不好起过一屏，
+// 否则会导致几个列表项总是滚不到
 void  SmoothScroll::AddPower(int zDelta, int nViewPage)
 {
     if (0 == zDelta) 
         return;
 
-	MOUSEWHEEL_DIR eDir = zDelta < 0 ? DOWN:UP;
+	MOUSEWHEEL_DIR eDir = zDelta < 0 ? MOUSEWHEEL_DOWN:MOUSEWHEEL_UP;
     if (m_eMouseWheelDir != eDir && IsScrolling())
         StopScroll();
 
@@ -63,11 +65,30 @@ void  SmoothScroll::AddPower(int zDelta, int nViewPage)
         nStep = min(m_nStep, nViewPage);
 
 	// 上次剩余的加上本次新加的
-    m_nScrollDistance = (m_nScrollDistance - m_nPrevScrollDistance) + nMouseWheelDelta * nStep;
-	m_nPrevScrollDistance = 0;
+    int nTotalDistance = nMouseWheelDelta * nStep;
+	if (m_pAnimateStoryboard && 
+		m_pAnimateStoryboard->GetId() == ScrollAnimate)
+	{
+		int nPrevTotalDistance = m_pAnimateStoryboard->GetWParam();
+		int nPrevScrolledDistance = m_pAnimateStoryboard->GetLParam();
+		nTotalDistance += nPrevTotalDistance - nPrevScrolledDistance;
+	}
 
 	bool bIsScrolling = IsScrolling();
-    CreateAnimate();
+	if (m_pAnimateStoryboard && 
+		m_pAnimateStoryboard->GetId() == BouncyEdgeAnimate_Out)
+	{
+		CreateBouncyEdgeOutAnimate(nTotalDistance);
+	}
+	else if (m_pAnimateStoryboard && 
+		m_pAnimateStoryboard->GetId() == BouncyEdgeAnimate_Back)
+	{
+		CreateBouncyEdgeOutAnimate(nTotalDistance);
+	}
+	else
+	{
+		CreateScrollAnimate(nTotalDistance);
+	}
 
 	// 是第一次开始滚动
     if (!bIsScrolling && m_pCallback)
@@ -76,7 +97,7 @@ void  SmoothScroll::AddPower(int zDelta, int nViewPage)
     }
 }
 
-void  SmoothScroll::CreateAnimate()
+void  SmoothScroll::CreateScrollAnimate(uint nPower)
 {
 	if (!m_pUIApplication)
 		return;
@@ -87,21 +108,114 @@ void  SmoothScroll::CreateAnimate()
 
 #define EASETYPE  ease_out_sine
 
+	IIntTimeline*  pTimeline = NULL;
     if (m_pAnimateStoryboard)
 	{ 
 		// 当前正在滚动中，直接重置滚动参数
-		IIntTimeline* pTimeline = static_cast<IIntTimeline*>(m_pAnimateStoryboard->FindTimeline(0));
-		pTimeline->SetEaseParam(0, m_nScrollDistance, m_nDuration, EASETYPE);  
+		pTimeline = static_cast<IIntTimeline*>(
+				m_pAnimateStoryboard->FindTimeline(0));
 	}
 	else
 	{
 		IAnimateManager*  pAnimateMgr = m_pUIApplication->GetAnimateMgr();
-		m_pAnimateStoryboard = pAnimateMgr->CreateStoryboard(this->GetIMessage());
-		IIntTimeline*  pTimeline = m_pAnimateStoryboard->CreateIntTimeline(0);
-		pTimeline->SetEaseParam(0, m_nScrollDistance, m_nDuration, EASETYPE);
+		m_pAnimateStoryboard = pAnimateMgr->CreateStoryboard(
+				this->GetIMessage(), 
+				ScrollAnimate);
+
+		pTimeline = m_pAnimateStoryboard->CreateIntTimeline(0);
 		m_pAnimateStoryboard->Begin();
 	}
 
+	// 记录
+	m_pAnimateStoryboard->SetWParam(nPower);
+	m_pAnimateStoryboard->SetLParam(0);
+	pTimeline->SetEaseParam(
+		0,
+		nPower, 
+		SCROLL_DURATION,
+		EASETYPE);  
+}
+
+// m_eMouseWheelDir中包含了方向
+void  SmoothScroll::CreateBouncyEdgeOutAnimate(uint nPower)
+{
+	int bounce_from = 0;
+
+	int bounce_height = nPower/10;
+	if (bounce_height > m_nMaxBounceEdge)
+		bounce_height = m_nMaxBounceEdge;
+
+	if (bounce_height <= 0)
+		return;
+
+	IIntTimeline* pTimeline = NULL;
+	int nDuration = BOUNCE_EDGE_DURATION;
+
+	if (m_pAnimateStoryboard)
+	{ 
+		m_pAnimateStoryboard->SetId(BouncyEdgeAnimate_Out);
+		pTimeline = static_cast<IIntTimeline*>(
+			m_pAnimateStoryboard->FindTimeline(0));
+
+		// 计算从当前位置到最高点，所需要的动画时长。
+		// dpercent = sin(tpercent)
+		// tpercent = asin(dpercent)
+		// tpercent = asin(bounce_from/bounce_height)
+		// duration = (1-tpercent)*full_duration
+		if (m_pCallback)
+		{
+			bounce_from = abs(
+				m_pCallback->SmoothScroll_GetScrolledBounceHeight());
+		}
+		nDuration = round(
+			(1 - asin((float)bounce_from/(float)bounce_height))*nDuration);
+	}
+	else
+	{
+		IAnimateManager*  pAnimateMgr = m_pUIApplication->GetAnimateMgr();
+		m_pAnimateStoryboard = pAnimateMgr->CreateStoryboard(
+				this->GetIMessage(), BouncyEdgeAnimate_Out);
+
+		pTimeline = m_pAnimateStoryboard->CreateIntTimeline(0);
+		m_pAnimateStoryboard->Begin();
+	}
+
+	pTimeline->SetEaseParam(
+		bounce_from,
+		bounce_height,
+		nDuration,
+		ease_out); 
+}
+
+void  SmoothScroll::CreateBouncyEdgeBackAnimate()
+{
+	DestroyAnimate();
+
+	IAnimateManager*  pAnimateMgr = m_pUIApplication->GetAnimateMgr();
+	m_pAnimateStoryboard = pAnimateMgr->CreateStoryboard(
+		this->GetIMessage(), BouncyEdgeAnimate_Back);
+
+	IIntTimeline* pTimeline = m_pAnimateStoryboard->CreateIntTimeline(0);
+
+	int bouncy_height = m_nMaxBounceEdge;
+	if (m_pCallback)
+	{
+		bouncy_height = m_pCallback->
+			SmoothScroll_GetScrolledBounceHeight();
+
+		if (bouncy_height < 0)
+		{
+			UIASSERT(m_eMouseWheelDir == MOUSEWHEEL_UP);
+			bouncy_height = -bouncy_height;
+		}
+	}
+
+	pTimeline->SetEaseParam(
+		bouncy_height,
+		0,
+		BOUNCE_EDGE_DURATION,
+		ease_out); 
+	m_pAnimateStoryboard->Begin();
 }
 
 void  SmoothScroll::DestroyAnimate()
@@ -129,9 +243,6 @@ void  SmoothScroll::StopScroll()
 // 2. 动画结束触发
 void  SmoothScroll::OnScrollStop()
 {
-	m_nScrollDistance = 0;
-	m_nPrevScrollDistance = 0;
-
 	if (m_pCallback)
 	{
 		m_pCallback->SmoothScroll_Stop();
@@ -141,33 +252,60 @@ void  SmoothScroll::OnScrollStop()
 void  SmoothScroll::OnAnimateTick(int nCount, IStoryboard** ppArray)
 {
     UIASSERT(nCount == 1 && ppArray[0] == m_pAnimateStoryboard);
-	bool bFinish = m_pAnimateStoryboard->IsFinish();
+	long  lAnimateId = m_pAnimateStoryboard->GetId();
+	bool  bBouncyEdgeAnimate = 
+			(lAnimateId == BouncyEdgeAnimate_Out ||
+			lAnimateId == BouncyEdgeAnimate_Back);
 
+	if (bBouncyEdgeAnimate)
+		OnTick_BounceEdgeAnimate();
+	else
+		OnTick_ScrollAnimate();
+}
+
+void  SmoothScroll::OnTick_ScrollAnimate()
+{
+	bool bFinish = m_pAnimateStoryboard->IsFinish();
 	do 
 	{
 		int nCurValue = 0;
 		m_pAnimateStoryboard->GetTimeline(0)->GetCurrentValue(&nCurValue);
 
-		// 本次需要滚动的距离
-		int nScrollNow = nCurValue - m_nPrevScrollDistance;
-		m_nPrevScrollDistance = nCurValue;
+		int  nScrolledDistance = m_pAnimateStoryboard->GetLParam();
+		m_pAnimateStoryboard->SetLParam(nCurValue);
 
+		// 偏移量
+		int nScrollNow = nCurValue - nScrolledDistance;
 		if (0 == nScrollNow)
 			break;
-
-		if (m_eMouseWheelDir == UP)
-			nScrollNow = -nScrollNow;
 
 		SmoothScrollResult lResult = INERTIA_SCROLL_STOP;
 		if (m_pCallback)
 		{
-			lResult = m_pCallback->SmoothScroll_Scroll(nScrollNow, false);
+			lResult = m_pCallback->SmoothScroll_Scroll(
+				m_eMouseWheelDir, nScrollNow);
 		}
 
-		if (INERTIA_SCROLL_STOP == lResult || INERTIA_SCROLL_OVERFLOW == lResult)
+		if (INERTIA_SCROLL_STOP == lResult)
 		{
+			int nRemainDistance = 0;
+			if (m_pAnimateStoryboard && m_pAnimateStoryboard->GetId() == ScrollAnimate)
+			{
+				int nTotalDistance = m_pAnimateStoryboard->GetWParam();
+				int nScrolledDistance = m_pAnimateStoryboard->GetLParam();
+				nRemainDistance = nTotalDistance - nScrolledDistance;
+			}
+
 			StopScroll();
+			if (nRemainDistance > 0)
+			{
+				// bouncy animate
+				CreateBouncyEdgeOutAnimate(nRemainDistance);
+			}
 			break;
+		}
+		else if (INERTIA_SCROLL_BOUNCE_EDGE == lResult)
+		{
 		}
 	}
 	while (0);
@@ -175,8 +313,39 @@ void  SmoothScroll::OnAnimateTick(int nCount, IStoryboard** ppArray)
 	if (bFinish)
 	{
 		m_pAnimateStoryboard = NULL;
-
 		OnScrollStop();
 	}
+}
 
+void  SmoothScroll::OnTick_BounceEdgeAnimate()
+{
+	bool bFinish = m_pAnimateStoryboard->IsFinish();
+	do 
+	{
+		int nScrollNow = 0;
+		m_pAnimateStoryboard->GetTimeline(0)->GetCurrentValue(&nScrollNow);
+
+		// 本次需要滚动的距离,绝对值
+		SmoothScrollResult lResult = INERTIA_SCROLL_STOP;
+		if (m_pCallback)
+		{
+			lResult = m_pCallback->SmoothScroll_BounceEdge(
+				m_eMouseWheelDir, nScrollNow);
+		}
+	}
+	while (0);
+
+	if (bFinish)
+	{
+		if (m_pAnimateStoryboard->GetId() == BouncyEdgeAnimate_Out)
+		{
+			m_pAnimateStoryboard = NULL;
+			CreateBouncyEdgeBackAnimate();
+		}
+		else 
+		{
+			m_pAnimateStoryboard = NULL;
+			OnScrollStop();
+		}
+	}
 }

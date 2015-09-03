@@ -3,7 +3,9 @@
 namespace UI
 {
 
-class CDropSource : public IDropSource
+class CDropSource : 
+        public IDropSource,
+        public IDropSourceEx
 {
 public:
     CDropSource();
@@ -20,8 +22,13 @@ public:
     virtual HRESULT STDMETHODCALLTYPE QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState);
     virtual HRESULT STDMETHODCALLTYPE GiveFeedback(DWORD dwEffect);
 
+    // IDropSourceEx
+    virtual void  SetDragFeedback(IDragFeedback* p) override;
+    virtual IDragFeedback*  GetDragFeedback() override;
+
 protected:
     ULONG  m_lRef;
+    IDragFeedback*  m_pDragFeedback;
 };
 
 }

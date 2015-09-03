@@ -211,9 +211,17 @@ void  REOleManager::CreateDataObject(IDataObject** pp)
 // 	p->AddRef();
 
 	IDataObject* pDataObj = NULL;
-	UI::CreateDataObjectInstance(&pDataObj, static_cast<IDataObjectSource*>(this));
+	UI::CreateDataObjectInstance(&pDataObj);
 	if (!pDataObj)
 		return;
+
+    IDataObjectEx* pDataObjectEx = NULL;
+    pDataObj->QueryInterface(IID_IDataObjectEx, (void**)&pDataObjectEx);
+    if (pDataObjectEx)
+    {
+        pDataObjectEx->SetSource(static_cast<IDataObjectSource*>(this));
+        pDataObjectEx->Release();
+    }
 
 	m_setDataObject.insert(pDataObj);
 	*pp = pDataObj;

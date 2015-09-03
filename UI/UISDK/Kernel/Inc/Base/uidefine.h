@@ -265,12 +265,14 @@ enum DROPTARGETEVENT_TYPE
     _DragLeave,
     _Drop,
 };
+interface IDragFeedback;
 struct DROPTARGETEVENT_DATA
 {
     IDataObject*  pDataObj;
     DWORD         grfKeyState;
     POINTL        pt;
     DWORD*        pdwEffect;
+    IDragFeedback*  pDragFeedback;
 };
 
 }

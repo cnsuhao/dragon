@@ -23,21 +23,17 @@ private, virtual   Ixxx::virtualProcessMessage      £ºÎ¨Ò»Ò»¸öĞéº¯Êı£¬ÓÃÓÚ¸÷¸ö½Ó
 public:            Ixxx::nvProcessMessage           £ºÓÃÓÚÔÚ×ÓÀàÖĞÖ±½Óµ÷ÓÃÏàÓ¦¸¸ÀàµÄ·½·¨£¬¶øÕâ¸öÌØĞÔ±»¶àÌ¬¸ø»ÙÁË£¬Òò´ËÁíÍâÔö¼ÓÁËÒ»¸öº¯Êı
 public:            xxx::innerVirtualProcessMessage  £ºÓÃÓÚÄÚ²¿ÀàÖ±½Ó´ÓMessageÅÉÉúÊ±µÄÏûÏ¢Ó³Éä
 public:            xxx::nvProcessMessage            : UI_BEGIN_MESSAGEÖĞµÄº¯Êı£¬ÓÉIxxx¸ºÔğµ÷ÓÃ£¬ÄÚ²¿»áÔÙµ÷ÓÃxxProcessMessage·½·¨
-public:            xxx::xxProcessMessage            : ÕæÕıµÄswitch/case·ÖÖ§ÅĞ¶Ï
 
-Ixxx::xProcessMessageºÍxxx::xProcessMessage±£³ÖÍ¬ÃûÊÇÎªÁËÔÚUI_CHAIN_MSG_MAPµÄÊ±ºò¼´¿ÉÒÔ´«Ixxx£¬Ò²¿ÉÒÔ´«xxx
+Ixxx::nvProcessMessageºÍxxx::nvProcessMessage±£³ÖÍ¬ÃûÊÇÎªÁËÔÚUI_CHAIN_MSG_MAPµÄÊ±ºò¼´¿ÉÒÔ´«Ixxx£¬Ò²¿ÉÒÔ´«xxx
 
 
 2. Ã»·¨ÊµÏÖ¿ç¹ıÒ»¸ö¸¸Àà£¬µ÷ÓÃ¸¸¸¸ÀàµÄ·½·¨¡£ÀıÈç£ºButton::ProcessMessage Òªµ÷ÓÃObject::ProcessMessage£¬ÖĞ¼ä¸ôÁËÒ»¸öControl::PorcessMessage£¬
    ÔõÃ´°ì£¿
-   20130321.09.26 ÔÙÔö¼ÓÁËÒ»¸öxProcessMessage·ÇĞéº¯Êı£¬ÕâÑù¾ÍÄÜÍ¨¹ıÖ¸ÕëÖ±½Óµ÷ÓÃÏàÓ¦ÀàµÄ·½·¨ÁË
+   20130321.09.26 ÔÙÔö¼ÓÁËÒ»¸önvProcessMessage·ÇĞéº¯Êı£¬ÕâÑù¾ÍÄÜÍ¨¹ıÖ¸ÕëÖ±½Óµ÷ÓÃÏàÓ¦ÀàµÄ·½·¨ÁË
    
 ÒÅÁôÎÊÌâ£º
    
    
-3. ÓÉÓÚĞÂ¼Ü¹¹ÖĞÉ¾³ıÁËm_mapAttribute±äÁ¿£¬Òò´ËÏñgridlayoutÖĞµÄÒ»Ğ©²ÎÊıÈçºÎ»ñÈ¡ĞèÒªÖØĞÂÉè¼Æ    
-   fix. Ôö¼ÓÁËÒ»¸ölayoutparam
-
 4. ¸÷¸öÄ£¿éÖ®¼äÈçºÎ±ÜÃâÏûÏ¢¶¨ÒåµÄÖµÖØ¸´ÁË£¿ÀıÈçÄ£¿éA¶¨Òå UI_WM_CLICK1  2001;  Ä£¿éB¶¨Òå UI_WM_CLICK2 2001;£¬Õâ¾Í³öÏÖÎÊÌâÁË
    fix. ÓÃÊ±¼ä½øĞĞ¶¨Òå£¬Èç 130312112£¬±íÊ¾13Äê10ÔÂ31ÈÕ21µã12·Ö
 
@@ -45,10 +41,5 @@ Ixxx::xProcessMessageºÍxxx::xProcessMessage±£³ÖÍ¬ÃûÊÇÎªÁËÔÚUI_CHAIN_MSG_MAPµÄÊ±º
 
 6. ILayoutÈçºÎÀ©Õ¹
 
-8. RenderOffsetClipHelper±»µ¼³öÁË£¬µ«Ã»·ÅÔÚincÄ¿Â¼ÏÂ£¬ĞèÒª´¦Àí
-   fix. RenderContext£¬²»ĞèÒªµ¼³ö
-    
-    
-    
 Ò»Ğ©ÓĞÓÃµÄ´úÂë£º
     http://tortoisesvn.googlecode.com/svn/trunk/src/Utils

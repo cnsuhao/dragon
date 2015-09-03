@@ -2,6 +2,7 @@
 #include "UISDK\Control\Inc\Interface\irichtext.h"
 #include "Element\text_element.h"
 #include "..\helper\mousekeymanager.h"
+#include "style.h"
 
 // richtext对象模型：
 // 内容对象  
@@ -47,6 +48,7 @@ public:
 	RichTextMKMgr*  GetMKMgr();
     PageMode  GetPageMode();
 	IMessage*  GetIMessageObj();
+    const Style&  GetStyle();
 
 	void  Render2DC(HDC hDC, POINT pt);
     void  LayoutAll(uint nControlWidth, uint nControlHeight);
@@ -95,6 +97,7 @@ private:
 	RichTextCharFormat  m_defaultcf;  
 	RichTextCharFormat  m_defaultcf_link;  
 	RichTextParaFormat  m_defaultpf;
+    Style  m_richtextStyle; 
 
 	Page*  m_pFirstPage;
 	PageMode  m_ePageMode;

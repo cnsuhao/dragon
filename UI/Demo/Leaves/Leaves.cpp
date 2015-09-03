@@ -22,7 +22,7 @@
 UI::IUIApplication*  g_pUIApplication = NULL;
 
 // 树叶数量
-#define LEAVES_COUNT  5
+#define LEAVES_COUNT  30
 #define TIMELINE_INDEX_DROPFADE  0
 #define TIMELINE_INDEX_ROTATE    1
 
@@ -111,34 +111,22 @@ private:
             {
                 UI::IRenderLayerTransform3D*  pTransform3d = pLayer->GetTransform3D(true);
                 pTransform3d->translate3d((float)pImg->GetConfigLeft(), fDrop, 0);
-                pTransform3d->rotate3d(0, 0, fAngle);
-            }
+				pTransform3d->rotate3d(0, 0, fAngle);
+                
 
-            //         int  nTop = (int)fDrop;
-            //         float fOffset = fDrop - (float)nTop;
-            // 
-            //         pImg->SetConfigTop(nTop);
-            //         if (pLayer)
-            //         {
-            //             pLayer->SetPosFloatDeviation(0, fOffset);
-            // 
-            //             if (fDrop > m_fyWolrdDropToFade)
-            //             {
-            //                 float fAlpha = 1-(fDrop - m_fyWolrdDropToFade)/m_fyWolrdDropFadeHeight;
-            //                 pLayer->SetOpacity(round(255*fAlpha));
-            //             }
-            //             else
-            //             {
-            //                 pLayer->SetOpacity(255);
-            //             }
-            //         }
-            // 
-            //         if (pLayer)
-            //         {
-            //             float fAngle = 0.f;
-            //             ((UI::IFloatTimeline*)pStory->GetTimeline(TIMELINE_INDEX_ROTATE))->GetCurrentValue(&fAngle);
-            //             pLayer->Rotate2D(fAngle);
-            //         }
+                if (fDrop > m_fyWolrdDropToFade)
+                {
+                    float fAlpha = 1-(fDrop - m_fyWolrdDropToFade)/m_fyWolrdDropFadeHeight;
+                    pLayer->SetOpacity(round(255*fAlpha));
+                }
+                else
+                {
+                    pLayer->SetOpacity(255);
+                }
+            }
+			if (pStory->IsFinish())
+			{
+			}
         }
 
         if (IsHardComposite())
@@ -152,6 +140,10 @@ private:
 	}
 
 private:
+	LRESULT  OnResetLeaf(WPARAM wParam, LPARAM lParam)
+	{
+		return 0;
+	}
     void  reset_leaf(UI::IPictureCtrl* pImg)
     {
         if (!pImg)
@@ -185,10 +177,9 @@ private:
         {
             //pImg->SetConfigTop(randomInteger(0, 400));  // 测试
             pImg->SetConfigTop(-100);
-            pImg->SetConfigLeft(random_integer(0, 400));
-
-            pImg->SetConfigTop(100);
-            pImg->SetConfigLeft(100);
+			int nxPos = random_integer(0, 300);
+			UI_LOG_DEBUG(TEXT("xPos=%d"), nxPos);
+            pImg->SetConfigLeft(nxPos);
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -202,8 +193,8 @@ private:
                 UI::IFloatTimeline* pTimeline = pStoryboard->CreateFloatTimeline(TIMELINE_INDEX_DROPFADE);
                 //pTimeline->SetTimeType(UI::TT_BY_FRAME);
 
-                pTimeline->SetLinerParam1(m_fyWorldDropFrom, m_fyWorldDropTo, (float)random_integer(5000, 11000));  
-                pTimeline->SetRepeateCount(-1);
+                pTimeline->SetLinerParam1(m_fyWorldDropFrom, m_fyWorldDropTo, random_float(5000, 11000));  
+				pTimeline->SetRepeateCount(-1);
             }
 
             // rotate
@@ -213,24 +204,20 @@ private:
                 //pTimeline->SetTimeType(UI::TT_BY_FRAME);
 
 #define PI ((float)3.141592654f)
-                // float f50 = 50;           // 软件使用了角度
-                float f50 = 50 /** PI / 180*/;   // 硬件加速使用了弧度
+                float f50 = 50;
                 float f_50 = -f50;
 
-                if (rand()%2)
+                if (rand() & 0x00000001)
                 {
-                    pTimeline->SetEaseParam(f50, f_50, (float)random_integer(4000, 8000), UI::ease_in_out); 
+                    pTimeline->SetEaseParam(f50, f_50, random_float(4000, 8000), UI::ease_in_out); 
                 }
                 else
                 {
-                    // TODO: 将树叶反向
-
-                    pTimeline->SetEaseParam(f_50, f50, (float)random_integer(4000, 8000), UI::ease_in_out); 
+                    pTimeline->SetEaseParam(f_50, f50, random_float(4000, 8000), UI::ease_in_out); 
                 }
 
                 pTimeline->SetAutoReverse(true);
-                pTimeline->SetRepeateCount(-1);
-                //TODO: pImg->GetRenderLayer2()->SetRotateCenterPos(UI::ROTATE_CENTER_TOPLEFT, 0, 0);
+				pTimeline->SetRepeateCount(-1);
 
                 UI::IRenderLayerTransform3D*  pTransform3d = pImg->GetRenderLayer2()->GetTransform3D(true);
                 pTransform3d->set_transform_rotate_origin(
@@ -238,8 +225,7 @@ private:
                     UI::TRANSFORM_ROTATE_ORIGIN_TOP, 0, 0);
             }
 
-
-            pStoryboard->Begin();
+            pStoryboard->BeginDelay(random_integer(0, 5000));
         }
     }
 

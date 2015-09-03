@@ -451,14 +451,18 @@ struct OWNERDRAWSTRUCT
 #define UI_WM_UNINITPOPUPCONTROLWINDOW  147301647
 #define UI_WM_POPUPWINDOWDESTROY        147301648
 
+// 返回值：滚动达到边缘，需要进行边缘回弹动画
+#define GESTURE_RETURN_NEED_BOUNCE_EDGE  2
+
 // 触摸消息：平移
 // wParam: MAKEWPARAM(xOffset, yOffset)
-// lParam: 
-// return: 1已处理， 0未处理
+// lParam: UI::GESTUREINFO*
+// return: HANDLED | GESTURE_RETURN_NEED_BOUNCE_EDGE
 #define UI_WM_GESTURE_PAN  151221941
+
 // wParam: MAKEWPARAM(xOffset, yOffset)
-// lParam: 
-// return: 1已处理， 0未处理
+// lParam: UI::GESTUREINFO*
+// return: HANDLED | GESTURE_RETURN_NEED_BOUNCE_EDGE2
 #define UI_WM_GESTURE_PRESSANDTAP  151221942
 
 //
@@ -643,7 +647,7 @@ namespace UI
 // WPARAM: IUIAccessibleCreator*
 #define UI_WM_CREATE_ACCESSIBLE  155042030
 
-// void  OnCreateAccessible(IRenderTarget* pRenderTarget)
+// void  OnCreateAccessible(IUIAccessibleCreator* p)
 #define UIMSG_CREATE_ACCESSIBLE(func)                 \
     if (uMsg == UI_WM_CREATE_ACCESSIBLE)              \
     {                                                 \

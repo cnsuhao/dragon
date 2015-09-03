@@ -26,6 +26,8 @@ public:
 
     void  OnRemoveAll();
     void  OnRemoveItem(ListItemBase* pItem, bool* pbSelChanged);
+	void  OnHideItem(ListItemBase* pItem);
+	void  OnDisableItem(ListItemBase* pItem);
 
     ListItemBase*  GetPressItem() 
     {
@@ -76,6 +78,9 @@ protected:
     void  OnLButtonDBClick(UIMSG* pMsg);
     void  OnRButtonDown(UIMSG* pMsg);
     void  OnRButtonUp(UIMSG* pMsg);
+    void  OnMButtonDBClick(UIMSG* pMsg);
+    void  OnMButtonDown(UIMSG* pMsg);
+    void  OnMButtonUp(UIMSG* pMsg);
     void  OnSetFocus(UIMSG* pMsg);
     void  OnKillFocus(UIMSG* pMsg);
     bool  OnSetCursor(UIMSG* pMsg);
@@ -92,6 +97,17 @@ protected:
     bool  OnItemKeyMsg(UIMSG* pMsg, ListItemBase* pItem);
 
     void  FireHoverItemChanged(ListItemBase*  pOldValue);
+	
+	enum ITEM_STATE_CHANGE_TYPE
+	{
+		ITEM_REMOVED,
+		ITEM_HIDE,
+		ITEM_DISABLED
+	};
+	void  on_item_state_changed(
+			ListItemBase* pItem,
+			ITEM_STATE_CHANGE_TYPE eType, 
+			bool* pbSelChanged);
 
 protected:
     Object*   m_pObjHover;
@@ -102,6 +118,7 @@ protected:
     ListItemBase*   m_pItemPress;
     ListItemBase*   m_pItemFocus;
     ListItemBase*   m_pItemRPress;
+    ListItemBase*   m_pItemMPress;
 //    ListItemBase*   m_pItemSelected;  -- 历史原因，该字体暂时仍然放在listctrl中进行维护
 //                                      -- 等mk改造完成之后再进行调整。
 	bool  m_bKeepHoverWhenPress;  // 当按下时，鼠标移动不切换hoveritem。默认为true，特殊值如Menu为false

@@ -3,7 +3,8 @@
 #include "UISDK\Kernel\Src\UIObject\Window\windowbase.h"
 #include <ShlGuid.h>
 
-
+// 1. 要实现新的拖拽样式，调用SHDoDragDrop，并传递NULL给IDropSource *pdsrc。
+//   
 // #if 1 // -- 最终还是没有实现文字显示，TMD 2013.6.19
 //     {
 //         FORMATETC fmte = {(CLIPFORMAT)RegisterClipboardFormat(CFSTR_DROPDESCRIPTION), NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
@@ -177,7 +178,18 @@ HRESULT  WindowDragDropMgr::DragMove(IDataObject *pDataObj,
                                      DWORD grfKeyState, POINTL pt, DWORD *pdwEffect)
 {
     Object*  pHoverObj = GetHoverObject2Drop();
-    DROPTARGETEVENT_DATA data = {m_pDragingDataObj, grfKeyState, pt, pdwEffect};
+
+    IDragFeedback* pFeedback = NULL;
+    {
+        IDataObjectEx* pDataObjEx = NULL;
+        pDataObj->QueryInterface(IID_IDataObjectEx, (void**)&pDataObjEx);
+        if (pDataObjEx)
+        {
+            pFeedback = pDataObjEx->GetDragFeedback();
+            pDataObjEx->Release();
+        }
+    }
+    DROPTARGETEVENT_DATA data = {m_pDragingDataObj, grfKeyState, pt, pdwEffect, pFeedback};
 
     if (m_pObjHover != pHoverObj)
     {

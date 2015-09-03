@@ -5,7 +5,8 @@
 
 namespace UI
 {
-#define TOOL_TIMER_TIME    600
+#define TOOLTIP_DELAY_SHOW_TIME    600
+#define TOOLTIP_AUTO_HIDE_TIME    (GetDoubleClickTime()*10)
 #define TOOLTIP_MAX_WIDTH  500/*256*/
 
 
@@ -53,6 +54,11 @@ protected:
 	ToolTipItem        m_tooltipItem;     // 当前正在显示或者正在等待显示的提示条信息
     UIApplication*     m_pUIApplication;
 
+	enum TIMEOUT_TYPE
+	{
+		TIMEOUT_DELAY_SHOW,  // 延时显示
+		TIMEOUT_AUTO_HIDE,   // 提示条显示时间，然后自动隐藏
+	};
     CTimeout   m_timeout;
 };
 

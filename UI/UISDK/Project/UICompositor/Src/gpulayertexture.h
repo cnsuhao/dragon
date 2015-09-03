@@ -123,11 +123,13 @@ protected:
 //             int xSrc, int ySrc);
     void  oStretchBlt(
             RECTF* prcLocal,
-            RECTF* prcTexture);
+            RECTF* prcTexture,
+            float fAlpha);
     void  oStretchBltMatrix(
             D3DXMATRIX* pMatrix, 
             RECTF* prcLocal,
-            RECTF* prcTexture);
+            RECTF* prcTexture,
+            float fAlpha);
 
 protected:
     IGpuLayerTexture  m_IGpuLayerTexture;

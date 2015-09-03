@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "D3DApp.h"
+#include "other\resource.h"
 
 using namespace UI;
 
@@ -88,6 +89,29 @@ HRESULT CreateD3DDevice(
 			D3D10_1_SDK_VERSION,
 			&pDevice
 			);
+
+		/* 应用程序请求的操作依赖于已缺失或不匹配的 SDK 组件。
+
+		 Windows 8 users: If you upgrade to Windows 8.1, remember that all 
+		 attempts to use D3Dxx_CREATE_DEVICE_DEBUG will fail until you 
+		 upgrade the Developer Runtime. You can do this by installing VS 
+		 2013, the standalone Windows 8.1 SDK, or by installing the VS 2013 
+		 Remote Debugging Tools. If you are missing the updated SDK Debug 
+		 Layers, you should see the following message in your debug output:
+
+         D3D11CreateDevice: Flags (0x2) were specified which require the
+		 D3D11 SDK Layers for Windows 10, but they are not present on
+		 the system.
+		 These flags must be removed, or the Windows 10 SDK must be
+		 installed.
+		 Flags include: D3D11_CREATE_DEVICE_DEBUG
+
+		*/
+		if (hr == 0x887a002d && flags & D3D10_CREATE_DEVICE_DEBUG) 
+		{
+			flags &= ~D3D10_CREATE_DEVICE_DEBUG;
+			return CreateD3DDevice(pAdapter, driverType, false, ppDevice);
+		}
 
 		if (SUCCEEDED(hr))
 		{

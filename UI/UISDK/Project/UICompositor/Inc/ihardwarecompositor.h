@@ -9,6 +9,8 @@
 #define UICOMPOSITOR_API __declspec(dllimport)
 #endif
 
+interface ID3D10Device;
+
 namespace UI
 {
 interface IGpuLayerTexture;
@@ -36,13 +38,19 @@ public:
 	GpuLayerCommitContext();
 	~GpuLayerCommitContext();
 
-	void  OffsetBy(int x, int y);
 	void  SetOffset(int x, int y);
+	void  ClipRect(RECT* prc);
+	void  SetClipRect(RECT* prc);
 	void  MultiMatrix(float* matrix16);
+    void  MultiAlpha(byte alpha);
 
+	void  UpdateScissorRect(ID3D10Device* pDevice);
 public:
 	int  m_xOffset;
 	int  m_yOffset;
+
+	RECT  m_rcClip;
+    float  m_fAlpha;
 
 	bool   m_bTransformValid;
 	float  m_matrixTransform[4][4];

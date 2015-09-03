@@ -407,7 +407,8 @@ void ScrollBarManager::SmoothScroll_Stop()
     pWindow->GetMouseMgr()->ReleaseMouseCapture(m_pIScrollBarManager);
     pWindow->GetMouseMgr()->ReleaseKeyboardCapture(m_pIScrollBarManager);
 
-    // 给窗口重新发送一个MOUSEMOVE消息，刷新当前hover对象(TODO: 不应该发送了，会导致滚动不连贯，但如何更新hoveritem)
+    // 给窗口重新发送一个MOUSEMOVE消息，刷新当前hover对象(TODO: 不应该发送
+	// 了，会导致滚动不连贯，但如何更新hoveritem)
     POINT pt = {0, 0};
     ::GetCursorPos(&pt);
     ::MapWindowPoints(NULL, pWindow->m_hWnd, &pt, 1);
@@ -417,7 +418,8 @@ void ScrollBarManager::SmoothScroll_Stop()
     NotifyStateChanged(OSB_HOVER);
 }
 
-SmoothScrollResult ScrollBarManager::SmoothScroll_Scroll(int nDeltaPos, bool bAllowOverflow)
+SmoothScrollResult ScrollBarManager::SmoothScroll_Scroll(
+		MOUSEWHEEL_DIR eDir, uint nDeltaPos)
 {
     SmoothScrollResult bResult = INERTIA_SCROLL_CONTINUE;
 	if (nDeltaPos == 0)
@@ -425,48 +427,83 @@ SmoothScrollResult ScrollBarManager::SmoothScroll_Scroll(int nDeltaPos, bool bAl
 
     int nOldPos = m_vScrollInfo.nPos;
     int nNewPos = nOldPos;
-    if (bAllowOverflow)
-    {
-        SetVScrollPosIgnoreBoundLimit(m_vScrollInfo.nPos + nDeltaPos);
-        nNewPos = m_vScrollInfo.nPos;
 
-        if (nNewPos < 0       ||
-            nNewPos > (m_vScrollInfo.nRange-m_vScrollInfo.nPage))
-        {
-            bResult = INERTIA_SCROLL_OVERFLOW;
-        }
-    }
-    else
-    {
-        SetVScrollPos(m_vScrollInfo.nPos + nDeltaPos);
+	if (eDir == MOUSEWHEEL_UP)
+		SetVScrollPos(m_vScrollInfo.nPos - nDeltaPos);
+	else if (eDir == MOUSEWHEEL_DOWN)
+		SetVScrollPos(m_vScrollInfo.nPos + nDeltaPos);
 
-        nNewPos = m_vScrollInfo.nPos;
-        if (nNewPos == nOldPos ||
-            nNewPos == 0       ||
-            nNewPos == (m_vScrollInfo.nRange-m_vScrollInfo.nPage))
-        {
-            bResult = INERTIA_SCROLL_STOP;
-        }
-    }
+	int nMaxPos = GetVScrollMaxPos();
+	nNewPos = m_vScrollInfo.nPos;
+
+	// 有可能处于bounce edge动画中，因此判断是否STOP时应该多判断一下
+	if (nNewPos == nOldPos ||
+		(nOldPos > 0 && nNewPos == 0) ||  
+		(nOldPos <nMaxPos && nNewPos == nMaxPos))
+	{
+		bResult = INERTIA_SCROLL_STOP;
+	}
 
     BOOL  bHandled = FALSE;
     UISendMessage(m_pBindObject, UI_WM_INERTIAVSCROLL, 
         nOldPos, nNewPos, 0, NULL, 0, &bHandled);
 
+	 // 防止有些控件没有处理该消息导致显示不正确
     if (!bHandled)
-        m_pBindObject->UpdateObject();  // 防止有些控件没有处理该消息导致显示不正确
+        m_pBindObject->UpdateObject(); 
 
     return bResult;
 }
 
-void  ScrollBarManager::SetScrollBarVisibleType(SCROLLBAR_DIRECTION_TYPE eDirType, SCROLLBAR_VISIBLE_TYPE eVisType)
+SmoothScrollResult ScrollBarManager::SmoothScroll_BounceEdge(
+		MOUSEWHEEL_DIR eDir, uint nBounceHeight)
+{
+	int nOldPos = m_vScrollInfo.nPos;
+	
+	if (eDir == MOUSEWHEEL_UP)
+	{
+	    SetVScrollPosIgnoreBoundLimit(-(int)nBounceHeight);
+	}
+	else
+	{
+		SetVScrollPosIgnoreBoundLimit(
+			m_vScrollInfo.nRange - m_vScrollInfo.nPage + nBounceHeight);
+	}
+
+	BOOL  bHandled = FALSE;
+	UISendMessage(m_pBindObject, UI_WM_INERTIAVSCROLL, 
+		nOldPos, m_vScrollInfo.nPos, 0, NULL, 0, &bHandled);
+
+	// 防止有些控件没有处理该消息导致显示不正确
+	if (!bHandled)
+		m_pBindObject->UpdateObject(); 
+
+	return INERTIA_SCROLL_CONTINUE;
+}
+
+int  ScrollBarManager::SmoothScroll_GetScrolledBounceHeight()
+{
+	if (m_vScrollInfo.nPos < 0)
+		return m_vScrollInfo.nPos;
+
+	int nMaxPos = GetVScrollMaxPos();
+	if (m_vScrollInfo.nPos > nMaxPos)
+		return m_vScrollInfo.nPos - nMaxPos;
+
+	return 0;
+}
+
+void  ScrollBarManager::SetScrollBarVisibleType(
+		SCROLLBAR_DIRECTION_TYPE eDirType, 
+		SCROLLBAR_VISIBLE_TYPE eVisType)
 {
     if(HSCROLLBAR==eDirType)
         m_ehScrollbarVisibleType = eVisType;
     else 
         m_evScrollbarVisibleType = eVisType; 
 }
-SCROLLBAR_VISIBLE_TYPE  ScrollBarManager::GetScrollBarVisibleType(SCROLLBAR_DIRECTION_TYPE eType)
+SCROLLBAR_VISIBLE_TYPE  ScrollBarManager::GetScrollBarVisibleType(
+		SCROLLBAR_DIRECTION_TYPE eType)
 {
     if(HSCROLLBAR==eType)
         return m_ehScrollbarVisibleType;
@@ -808,7 +845,10 @@ int   ScrollBarManager::GetVScrollPos()
 {
     return m_vScrollInfo.nPos;
 }
-
+int   ScrollBarManager::GetVScrollMaxPos()
+{
+	return m_vScrollInfo.nRange-m_vScrollInfo.nPage;
+}
 void  ScrollBarManager::GetScrollPage(int* pX, int* pY)
 {
     if (pX)

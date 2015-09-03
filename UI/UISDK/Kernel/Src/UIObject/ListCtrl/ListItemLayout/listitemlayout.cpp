@@ -360,6 +360,119 @@ void  ListCtrlItemFixHeightFlowLayout::Measure(SIZE* pSize)
     UIASSERT(0);
 }
 
+
+
+
+void  ListCtrlItemVariableHeightFlowLayout::CurrentLineItems::AddItem(ListItemBase* p, int w, int h)
+{
+    if (m_nxCursor + w > m_nCtrlWidth && m_nxCursor != 0)
+    {
+        CommitLine();
+    }
+
+    ListItemData item = {0};
+    item.pItem = p;
+    item.x = m_nxCursor;
+    item.w = w;
+
+    m_vecItems.push_back(item);
+    m_nxCursor += w + m_hSpace;
+    if (h > m_nMaxHeight)
+        m_nMaxHeight = h;
+}
+
+void  ListCtrlItemVariableHeightFlowLayout::CurrentLineItems::AddSingleLineItem(ListItemBase* pItem, int h)
+{
+    this->CommitLine();
+
+    RECT rc = {0, m_nyCursor, m_nCtrlWidth, m_nyCursor + h};
+    pItem->SetParentRect(&rc);
+
+    m_nyCursor += h + m_vSpace;
+    m_nxCursor = 0;
+}
+
+// in: 当前行的起始高度
+// out: 返回下一行的超始高度
+void ListCtrlItemVariableHeightFlowLayout::CurrentLineItems::CommitLine()
+{
+    size_t  size = m_vecItems.size();
+    if (size <= 0)
+        return;
+
+    m_nContentHeight = m_nyCursor+m_nMaxHeight;
+
+    for (size_t i = 0; i < size; i++)
+    {
+        ListItemData& item = m_vecItems[i];
+        RECT rc = {item.x, m_nyCursor, item.x+item.w, m_nContentHeight};
+        item.pItem->SetParentRect(&rc);
+    }
+
+    m_vecItems.clear();
+    m_nyCursor += m_nMaxHeight + m_vSpace;
+    m_nxCursor = 0;
+    m_nMaxHeight = 0;
+}
+
+void  ListCtrlItemVariableHeightFlowLayout::Arrange(IListItemBase* pStartToArrange, SIZE* pSizeContent)
+{
+    CRect  rcClient;
+    m_pIListCtrlBase->GetObjectClientRect(&rcClient);
+    int  nItemSpace = (int)UISendMessage(m_pIListCtrlBase, UI_LCM_LAYOUT_GET_ITEMSPACE, 0,0,0,0,UI_MSGMAPID_LC_LAYOUT);
+    int  nLineSpace = (int)UISendMessage(m_pIListCtrlBase, UI_LCM_LAYOUT_GET_LINESPACE, 0,0,0,0,UI_MSGMAPID_LC_LAYOUT);
+
+    CurrentLineItems  lineop;   // 记录一行的信息
+    lineop.SetHSpace(nItemSpace);
+    lineop.SetVSpace(nLineSpace);
+    lineop.SetCtrlWidth(rcClient.Width());
+
+    IListItemBase* pIItem = m_pIListCtrlBase->FindVisibleItemFrom(pStartToArrange);
+    if (NULL == pIItem)
+        return;    
+
+    ListItemBase* pItem = pIItem->GetImpl();
+    ListItemBase* pPrevItem = pItem->GetPrevVisibleItem();
+    if (pPrevItem) 
+    {
+        RECT rc;
+        pPrevItem->GetParentRect(&rc);
+        lineop.SetXYCursor(rc.right+nItemSpace, rc.top);
+    }
+
+    while (pItem)
+    {
+        SIZE sizeItem = {0};
+        pItem->GetIListItemBase()->GetDesiredSize(&sizeItem);
+
+        //         if (sizeItem.cx == UI_LISTCTRL_LAYOUT_HORZ_REMAINLINE)  // 填满当前行
+        //         {
+        //             UIASSERT(0 && "todo:");
+        //         }
+        //         else 
+        if (sizeItem.cx == UI_LISTCTRL_LAYOUT_HORZ_SINGLELINE)  // 另起一行，填满
+        {
+            lineop.AddSingleLineItem(pItem, sizeItem.cy);
+        }
+        else
+        {
+            lineop.AddItem(pItem, sizeItem.cx, sizeItem.cy);
+        }
+
+        pItem = pItem->GetNextVisibleItem();
+    }
+
+    // 剩余部分
+    lineop.CommitLine();
+
+    lineop.GetContentSize(pSizeContent);
+}
+
+void  ListCtrlItemVariableHeightFlowLayout::Measure(SIZE* pSize)
+{
+    UIASSERT(0);
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 IListCtrlLayout*  CreateListCtrlLayout(int nType, IListCtrlBase* p)
@@ -384,4 +497,5 @@ IListCtrlLayout*  CreateListCtrlLayout(int nType, IListCtrlBase* p)
 
     return pLayout;
 }
+
 }

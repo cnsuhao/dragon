@@ -1396,7 +1396,6 @@ LRESULT  WindowBase::_OnGetObject( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 		return 0;
 
 	IAccessible *pAccessible = NULL;
-	//CreateWindowAccessible(*this, &pAccessible);
 	this->CreateAccesible(&pAccessible);
 	if (pAccessible)
 	{
