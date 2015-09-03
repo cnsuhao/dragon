@@ -72,8 +72,7 @@ interface UICTRLAPI IRichTextLinkUnit
 {
 public:
 	IRichTextLinkUnit(RichTextObjectModel::LinkUnit* p);
-
-	long  GetId();
+    LPCTSTR  GetId();
 
 private:
 	RichTextObjectModel::LinkUnit*  m_pImpl;

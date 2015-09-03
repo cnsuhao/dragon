@@ -438,13 +438,19 @@ void  SystemScrollBar::OnPaint(IRenderTarget*)
     if (!m_pMgrScrollBar)
         return;
 
-	if (m_nOldRange != m_pMgrScrollBar->GetScrollRange(GetDirType()) ||
-		m_nOldPage != m_pMgrScrollBar->GetScrollPage(GetDirType())   ||
-		m_nOldPos != m_pMgrScrollBar->GetScrollPos(GetDirType()))
+	int nNewRange = m_pMgrScrollBar->GetScrollRange(GetDirType());
+	int nNewPage = m_pMgrScrollBar->GetScrollPage(GetDirType());
+	int nNewPos = m_pMgrScrollBar->GetScrollPos(GetDirType());
+
+	if (m_nOldRange != nNewRange ||
+		m_nOldPage != nNewPage ||
+		m_nOldPos != nNewPos)
 	{
 		bool bNeedUpdateThumbButtonSize = false;
-		if (m_nOldRange != m_pMgrScrollBar->GetScrollRange(GetDirType()) ||
-			m_nOldPage != m_pMgrScrollBar->GetScrollPage(GetDirType()) )
+		if (m_nOldRange != nNewRange ||
+			m_nOldPage != nNewPage ||
+			nNewPos < 0 ||
+			(nNewPos > nNewRange-nNewPage))
 		{
 			bNeedUpdateThumbButtonSize = true;
 		}
@@ -660,6 +666,12 @@ bool  SystemScrollBar::CalcThumbButtonPos(bool bNeedUpdateThumbButtonSize)
 	float nRange = (float)m_pMgrScrollBar->GetScrollRange(GetDirType());
 	float nPage = (float)m_pMgrScrollBar->GetScrollPage(GetDirType());
 
+	// bounce edge
+	if (nPos < 0)
+		nRange += abs(nPos);
+	else if (nPos > nRange-nPage)
+		nRange += nPos-(nRange-nPage);
+
 	int nNewSize = 0;
 	if (bNeedUpdateThumbButtonSize)
 	{
@@ -687,6 +699,11 @@ bool  SystemScrollBar::CalcThumbButtonPos(bool bNeedUpdateThumbButtonSize)
             nNewSize = rcChannel.Height();
 
 		int nThumbBtnPos = (int)(nPos / (nRange-nPage) * (float)(rcChannel.Height() - nNewSize)) + rcChannel.top;
+
+		// bounce edge
+		if (nThumbBtnPos < rcChannel.top)
+			nThumbBtnPos = rcChannel.top;
+
 		this->m_pBtnThumb->SetObjectPos(rcChannel.left, nThumbBtnPos, rcChannel.Width(), nNewSize, SWP_NOREDRAW);
 	}
 	else
@@ -695,6 +712,11 @@ bool  SystemScrollBar::CalcThumbButtonPos(bool bNeedUpdateThumbButtonSize)
             nNewSize = rcChannel.Width();
 
 		int nThumbBtnPos = (int)(nPos / (nRange-nPage) * (float)(rcChannel.Width() - nNewSize)) + rcChannel.left;
+		
+		// bounce edge
+		if (nThumbBtnPos < rcChannel.left)
+			nThumbBtnPos = rcChannel.left;
+
 		this->m_pBtnThumb->SetObjectPos(nThumbBtnPos, rcChannel.top, nNewSize, rcChannel.Height(), SWP_NOREDRAW);
 	}
 	return true;
@@ -736,10 +758,17 @@ int   SystemScrollBar::CalcThumbButtonSize()
 	CRect rcChannel;
 	this->CalcChannelRect(&rcChannel);
 
+	float nPos = (float)m_pMgrScrollBar->GetScrollPos(GetDirType());
 	float nPage = (float)m_pMgrScrollBar->GetScrollPage(GetDirType());
 	float nRange = (float)m_pMgrScrollBar->GetScrollRange(GetDirType());
 	if (0 == nRange)
 		return -1;
+
+	// bounce edge
+	if (nPos < 0)
+		nRange += abs(nPos);
+	else if (nPos > nRange-nPage)
+		nRange += nPos-(nRange-nPage);
 
 	if (GetDirType() == VSCROLLBAR)
 	{

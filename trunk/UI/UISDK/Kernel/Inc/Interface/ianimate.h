@@ -108,9 +108,10 @@ namespace UI
         ITimeline*  GetTimeline(unsigned int nIndex);
         ITimeline*  FindTimeline(int nTimelineId);
 
-        bool        IsFinish();
-        void        Begin();
-        void        BeginBlock();
+        bool  IsFinish();
+        void  Begin();
+        void  BeginBlock();
+        void  BeginDelay(long lElapse);
     };
 
     class WindowAnimateBase;

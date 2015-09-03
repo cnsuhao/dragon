@@ -20,6 +20,7 @@ m_oWindow(o)
 	m_pObjPress = NULL;
 	m_pObjHover = NULL;
     m_pObjRPress = NULL;
+    m_pObjMPress = NULL;
     m_pObjGesture = NULL;
     m_pObjDefault = NULL;
     m_pObjOriginDefault = NULL;
@@ -133,6 +134,14 @@ void WindowMouseMgr::OnObjectRemoveInd(Object* pObj)
 		m_pObjPress = NULL;
         m_bMouseMoveReady = FALSE;
 	}
+    if (m_pObjRPress == pObj || pObj->IsMyChild(m_pObjRPress, true))
+    {
+        m_pObjRPress = NULL;
+    }
+    if (m_pObjMPress == pObj || pObj->IsMyChild(m_pObjMPress, true))
+    {
+        m_pObjMPress = NULL;
+    }
     if (m_pObjGesture == pObj || pObj->IsMyChild(m_pObjGesture, true))
     {
         m_pObjGesture = NULL;
@@ -467,6 +476,16 @@ LRESULT WindowMouseMgr::HandleMouseMessage(UINT msg, WPARAM w, LPARAM l, BOOL* p
 		return this->OnLButtonDBClick(w,l, pbHandled);
 		break;
 
+    case WM_MBUTTONDBLCLK:
+        return this->OnMButtonDBClick(w,l);
+        break;
+    case WM_MBUTTONDOWN:
+        return this->OnMButtonDown(w, l);
+        break;
+    case WM_MBUTTONUP:
+        return this->OnMButtonUp(w, l);
+        break;
+
     case WM_MOUSEWHEEL:
         return this->OnMouseWheel(w,l);  // 该消息可能需要上抛给主窗口处理
 	}
@@ -588,15 +607,19 @@ Object*  WindowMouseMgr::GetGestureTargetObject(POINT ptScreen, WPARAM wParam)
 
 BOOL  WindowMouseMgr::OnGesture(LPARAM lParam)
 {
-    static POINT lastPoint;
-    static ULONGLONG lastArguments;
+	// 本次消息通知滚动距离
+	static POINT lastPoint = {0};
+	// 这一次手势到目前为止的总滚动距离
+	static SIZE overpan = {0};
+	static ULONGLONG lastArguments = 0;
 
+	HWND hWnd = m_oWindow.GetHWND();
     UI::HGESTUREINFO  hGestureInfo = (UI::HGESTUREINFO)lParam;
 
     UI::GESTUREINFO gi = {0}; 
     gi.cbSize = sizeof(UI::GESTUREINFO);
     GetGestureInstance()->pGetGestureInfo(hGestureInfo, &gi);
-
+	
     BOOL bHandled = FALSE;
 
     bool bFirstGesture = (gi.dwFlags&GF_BEGIN) ? true:false;
@@ -606,29 +629,53 @@ BOOL  WindowMouseMgr::OnGesture(LPARAM lParam)
     case GID_PAN:
 	case GID_PRESSANDTAP:
         {
+			UINT msg = UI_WM_GESTURE_PAN;
+			if (gi.dwID == GID_PRESSANDTAP)				
+				msg = UI_WM_GESTURE_PRESSANDTAP;	
+
+			int xOffset = 0;
+			int yOffset = 0;
+
             if (bFirstGesture)
             {
                 POINT pt = {gi.ptsLocation.x, gi.ptsLocation.y};
-                MapWindowPoints(NULL, m_oWindow.m_hWnd, &pt, 1);
                 m_pObjGesture = GetGestureTargetObject(pt, (WPARAM)&gi);
-
-                if (m_pObjGesture)
-                    bHandled = TRUE;
             }
-            else if (m_pObjGesture)
-            {
-                int xOffset = (gi.ptsLocation.x - lastPoint.x);
-                int yOffset = (gi.ptsLocation.y - lastPoint.y);
-				
-				UINT msg = UI_WM_GESTURE_PAN;
-				if (gi.dwID == GID_PRESSANDTAP)				
-					msg = UI_WM_GESTURE_PRESSANDTAP;			
+			else
+			{
+				xOffset = (gi.ptsLocation.x - lastPoint.x);
+				yOffset = (gi.ptsLocation.y - lastPoint.y);
+			}
 
-                if (1 == UISendMessage(m_pObjGesture->GetIMessage(),
-							msg,
-							MAKEWPARAM((short)xOffset, (short)yOffset)))
-				{
+			if (bFirstGesture)
+			{
+				GetGestureInstance()->pBeginPanningFeedback(hWnd);
+				overpan.cx = overpan.cy = 0;
+			}
+			else if (bLastGesture)
+			{
+				GetGestureInstance()->pEndPanningFeedback(hWnd, TRUE);
+				overpan.cx = overpan.cy = 0;
+			}
+
+			overpan.cx += xOffset;
+			overpan.cy += yOffset;
+
+			if (m_pObjGesture)
+            {
+                long lRet = UISendMessage(
+					m_pObjGesture->GetIMessage(),
+					msg,
+					MAKEWPARAM((short)xOffset, (short)yOffset),
+					(LPARAM)&gi);
+
+				if (lRet > 0)
 					bHandled = TRUE;
+
+				if (lRet == GESTURE_RETURN_NEED_BOUNCE_EDGE)
+				{
+					GetGestureInstance()->pUpdatePanningFeedback(
+						hWnd, 0, overpan.cy, gi.dwFlags & GF_INERTIA);
 				}
 
                 if (bLastGesture)
@@ -638,10 +685,10 @@ BOOL  WindowMouseMgr::OnGesture(LPARAM lParam)
         break;
     }
 
-    //Remember last values for delta calculations
-    lastPoint.x = gi.ptsLocation.x;
-    lastPoint.y = gi.ptsLocation.y;
-    lastArguments = gi.ullArguments;
+	//Remember last values for delta calculations
+	lastPoint.x = gi.ptsLocation.x;
+	lastPoint.y = gi.ptsLocation.y;
+	lastArguments = gi.ullArguments;
 
     GetGestureInstance()->pCloseGestureInfoHandle(hGestureInfo);
     return bHandled;
@@ -776,9 +823,6 @@ LRESULT WindowMouseMgr::OnRButtonDown( WPARAM w,LPARAM l )
         HandleMouseMessage(WM_MOUSEMOVE, 0, l, NULL);
     }
 
-//     Object* p = m_pObjPress;
-//     if (NULL == p)
-//         p = m_pObjHover;
     Object* p = m_pObjHover;
     if (NULL == p)
         return 0;
@@ -810,6 +854,43 @@ LRESULT WindowMouseMgr::OnRButtonUp( WPARAM w,LPARAM l )
 // 		return ::UISendMessage(m_pObjHover, WM_RBUTTONUP, w, l);
 // 	}
 	return 0;
+}
+
+LRESULT  WindowMouseMgr::OnMButtonDown(WPARAM w,LPARAM l)
+{
+    if (FALSE == this->m_bMouseMoveReady)
+        HandleMouseMessage(WM_MOUSEMOVE, 0, l, NULL);
+
+    if (m_pObjHover)
+    {
+        m_pObjMPress = m_pObjHover;
+        m_oWindow.GetIUIApplication()->HideToolTip();
+        ::UISendMessage(m_pObjMPress, WM_MBUTTONDOWN, w, l);
+    }
+
+    return 0;
+}
+LRESULT  WindowMouseMgr::OnMButtonDBClick(WPARAM w,LPARAM l)
+{
+    if (FALSE == this->m_bMouseMoveReady)
+        HandleMouseMessage(WM_MOUSEMOVE, 0, l, NULL);
+
+    if (m_pObjHover)
+    {
+        m_pObjMPress = m_pObjHover;
+        m_oWindow.GetIUIApplication()->HideToolTip();
+        ::UISendMessage(m_pObjMPress, WM_MBUTTONDBLCLK, w, l);
+    }
+    return 0;
+}
+LRESULT  WindowMouseMgr::OnMButtonUp(WPARAM w,LPARAM l)
+{
+    if (m_pObjMPress)
+    {
+        ::UISendMessage(m_pObjMPress, WM_MBUTTONUP, w, l);
+        m_pObjMPress = 0;
+    }
+    return 0;
 }
 
 // 该函数同时还支撑着WM_CANCELMODE的作用

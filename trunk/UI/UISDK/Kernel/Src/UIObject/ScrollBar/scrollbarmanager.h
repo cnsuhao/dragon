@@ -85,6 +85,7 @@ public:
     int   GetScrollPos(SCROLLBAR_DIRECTION_TYPE eDirType);
     int   GetHScrollPos();
     int   GetVScrollPos();
+	int   GetVScrollMaxPos();
 
     void  GetScrollPage(int* pX, int* pY);
     int   GetScrollPage(SCROLLBAR_DIRECTION_TYPE eDirType);
@@ -148,8 +149,11 @@ protected:
     LRESULT  OnCaptureStopInertiaScroll(UINT uMsg, WPARAM, LPARAM);
     virtual  void SmoothScroll_Start();
     virtual  void SmoothScroll_Stop();
-    virtual  SmoothScrollResult SmoothScroll_Scroll(
-			int nDeltaPos, bool bAllowOverflow);
+	virtual  SmoothScrollResult SmoothScroll_Scroll(
+				MOUSEWHEEL_DIR eDir, uint nDeltaPos);
+	virtual  SmoothScrollResult SmoothScroll_BounceEdge(
+				MOUSEWHEEL_DIR eDir, uint nBounceHeight);
+	virtual  int  SmoothScroll_GetScrolledBounceHeight();
 
 private:
     IScrollBarManager*  m_pIScrollBarManager;

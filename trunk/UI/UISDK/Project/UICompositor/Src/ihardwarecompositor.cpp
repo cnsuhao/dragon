@@ -121,6 +121,9 @@ GpuLayerCommitContext::GpuLayerCommitContext()
 	m_xOffset = 0;
 	m_yOffset = 0;
 
+	SetRectEmpty(&m_rcClip);
+
+    m_fAlpha = 1.0f;
 	m_bTransformValid = false;
 	memset(&m_matrixTransform, 0, sizeof(m_matrixTransform));
 	m_matrixTransform[0][0]
@@ -135,16 +138,46 @@ GpuLayerCommitContext::~GpuLayerCommitContext()
 
 }
 
-void  GpuLayerCommitContext::OffsetBy(int x, int y)
-{
-	m_xOffset += x;
-	m_yOffset += y;
-}
+// void  GpuLayerCommitContext::OffsetBy(int x, int y)
+// {
+// 	m_xOffset += x;
+// 	m_yOffset += y;
+// }
 
 void  GpuLayerCommitContext::SetOffset(int x, int y)
 {
 	m_xOffset = x;
 	m_yOffset = y;
+}
+
+void  GpuLayerCommitContext::ClipRect(RECT* prc)
+{
+	if (!prc)
+		return;
+
+	IntersectRect(&m_rcClip, prc, &m_rcClip);
+}
+
+void  GpuLayerCommitContext::SetClipRect(RECT* prc)
+{
+	if (prc)
+		CopyRect(&m_rcClip, prc);
+	else
+		SetRectEmpty(&m_rcClip);
+}
+
+void  GpuLayerCommitContext::MultiAlpha(byte alpha)
+{
+    if (alpha == 255)
+        return;
+
+    if (alpha == 0)
+    {
+        m_fAlpha = 0;
+        return;
+    }
+
+    m_fAlpha *= alpha/255.0f;
 }
 
 void  GpuLayerCommitContext::MultiMatrix(float* matrix16)
@@ -159,6 +192,19 @@ void  GpuLayerCommitContext::MultiMatrix(float* matrix16)
 	memcpy(&m_matrixTransform, &mat1, sizeof(mat1));
 	
 	m_bTransformValid = true;
+}
+
+void  GpuLayerCommitContext::UpdateScissorRect(ID3D10Device* pDevice)
+{
+	if (!pDevice)
+		return;
+
+	D3D10_RECT rects[1];
+	rects[0].left = m_rcClip.left;
+	rects[0].right = m_rcClip.right;
+	rects[0].top = m_rcClip.top;
+	rects[0].bottom = m_rcClip.bottom;
+	pDevice->RSSetScissorRects(1, rects);
 }
 
 //////////////////////////////////////////////////////////////////////////

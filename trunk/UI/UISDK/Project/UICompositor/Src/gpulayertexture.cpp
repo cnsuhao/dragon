@@ -340,12 +340,9 @@ void  GpuLayerTexture::Compositor(GpuLayerCommitContext* pContext, IRenderLayerT
     rcTexture.top    = (float)0;
     rcTexture.bottom = (float)1;
 
+	pContext->UpdateScissorRect(g_pD3D10App->m_pDevice);
     if (pContext->m_bTransformValid || pTransform)
     {
-		D3D10_VIEWPORT vp = {0};
-		UINT nCount = 1;
-		g_pD3D10App->m_pDevice->RSGetViewports(&nCount, &vp);
-
 		Hard3DTransform* pHard3dTransform = static_cast<Hard3DTransform*>(pTransform);
         pHard3dTransform->set_pos(pContext->m_xOffset, pContext->m_yOffset);
 
@@ -358,7 +355,8 @@ void  GpuLayerTexture::Compositor(GpuLayerCommitContext* pContext, IRenderLayerT
         oStretchBltMatrix(
             &matrix, 
             &rcLocal,
-            &rcTexture);
+            &rcTexture,
+            pContext->m_fAlpha);
     }
     else
     {
@@ -368,7 +366,7 @@ void  GpuLayerTexture::Compositor(GpuLayerCommitContext* pContext, IRenderLayerT
         rcLocal.right = (float)(pContext->m_xOffset+m_size.cx);
         rcLocal.bottom = (float)(pContext->m_yOffset+m_size.cy);
 
-        oStretchBlt(&rcLocal, &rcTexture);
+        oStretchBlt(&rcLocal, &rcTexture, pContext->m_fAlpha);
     }
 }
 
@@ -377,14 +375,14 @@ void  GpuLayerTexture::Compositor(GpuLayerCommitContext* pContext, IRenderLayerT
 //     oStretchBlt((float)xDest, (float)yDest, (float)m_size.cx, (float)m_size.cy, xSrc, ySrc, m_size.cx, m_size.cy);
 // }
 
-void   GpuLayerTexture::oStretchBlt(RECTF* prcLocal, RECTF* prcTexture)
+void   GpuLayerTexture::oStretchBlt(RECTF* prcLocal, RECTF* prcTexture, float fAlpha)
 {
     HRESULT hr = 0;
     hr = g_pD3D10App->m_pFxTexture10->SetResource(m_pShaderResourceView);
-    g_pD3D10App->ApplyTechnique(g_pD3D10App->m_pTechDrawTexture, prcLocal, prcTexture, 1.0f);
+    g_pD3D10App->ApplyTechnique(g_pD3D10App->m_pTechDrawTexture, prcLocal, prcTexture, fAlpha);
 
-    g_pD3D10App->m_pFxTexture10->SetResource(NULL);
-    g_pD3D10App->m_pTechDrawTexture->GetPassByIndex( 0 )->Apply( 0 );
+//     g_pD3D10App->m_pFxTexture10->SetResource(NULL);
+//     g_pD3D10App->m_pTechDrawTexture->GetPassByIndex( 0 )->Apply( 0 );
 
 
 #if 0  // 透视投影的代码，按比例设置大小。改成正交投影就没这么麻烦了
@@ -418,7 +416,8 @@ void   GpuLayerTexture::oStretchBlt(RECTF* prcLocal, RECTF* prcTexture)
  void  GpuLayerTexture::oStretchBltMatrix(
             D3DXMATRIX* pMatrix, 
             RECTF* prcLocal,
-            RECTF* prcTexture)
+            RECTF* prcTexture,
+            float fAlpha)
  {
      if (!pMatrix)
          return;
@@ -428,10 +427,10 @@ void   GpuLayerTexture::oStretchBlt(RECTF* prcLocal, RECTF* prcTexture)
 	 hr = g_pD3D10App->m_pFxMatrix->SetMatrix((float*)pMatrix);
 
      g_pD3D10App->ApplyTechnique(g_pD3D10App->m_pTechDrawTextureMatrix, 
-		    prcLocal, prcTexture, 1.0f);
+		    prcLocal, prcTexture, fAlpha);
 
-     g_pD3D10App->m_pFxTexture10->SetResource(NULL);
-     g_pD3D10App->m_pTechDrawTexture->GetPassByIndex( 0 )->Apply( 0 );
+//      g_pD3D10App->m_pFxTexture10->SetResource(NULL);
+//      g_pD3D10App->m_pTechDrawTexture->GetPassByIndex( 0 )->Apply( 0 );
 }
 
 #if 0

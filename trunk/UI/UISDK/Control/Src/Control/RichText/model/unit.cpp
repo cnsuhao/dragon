@@ -36,6 +36,11 @@ void  Unit::Release_Element()
     m_pFirstElement = NULL;
 }
 
+Doc*  Unit::GetDoc()
+{
+    return m_pDoc;
+}
+
 Element*  Unit::GetFirstElement()
 {
     return m_pFirstElement;

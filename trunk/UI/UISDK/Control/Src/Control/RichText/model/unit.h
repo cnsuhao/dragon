@@ -33,6 +33,7 @@ public:
 	virtual LPCTSTR  GetToolTipText() { return NULL; }
 
 public:
+    Doc*  GetDoc();
     void  Release_Element();
     Element*  AppendElement();
     void  AppendElement2(Element* p);

@@ -399,7 +399,7 @@ COLORREF  TranslateColor(LPCTSTR szColor)
     else if (szColor[0] == _T('0') && szColor[1] == _T('x'))
         return TranslateHexColor(szColor+2);
     else
-        return TranslateColor(szColor);
+        return TranslateHexColor(szColor);
 }
 
 bool  TranslateRECT(LPCTSTR szRect, RECT* pRect, TCHAR szSep)

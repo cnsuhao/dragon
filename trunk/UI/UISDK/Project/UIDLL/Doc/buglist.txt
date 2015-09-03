@@ -41,24 +41,10 @@
 
 184. 20130108 14:28 listctrlbase 的focus item逻辑，拖拽滚动的逻辑，连续两个SELECTED ITEM之间横线互融合的问题
 
-185. 20130116 16:19 为headctrl增加min max width限制 
-
-196. 20130301 9:05 mp3扩展id3v2  mp3时间读取 mp3图片读取
-
-198. 20130305 15:03 mp3播放时突然停止，然后播放下一曲的问题没有解决，又出现了
-
-204. 2013.6.10 16：43 listctrl中的item如何支持动态换肤？
-     如果对item也调用reset/set attr的话将导致效率太低。目前的考虑是对ITEM不支持换肤，ITEM尽量去引用
-     listctrlbase或者itemtypesharedata中的数据，这两个支持换肤
-207. 2013.6.12 9:57 listitembase可以调用setattribute，那么如何实现它的换肤？
-
 211. 2013.7.10 22:52 将一个只会触发一次的消息的msgmapid改为一个宏，这样应该就能加快消息响应的速度了,
      如UI_WM_INITIALIZE, UI_WM_PRECREATEWINDOW, UI_WM_FINALCREATE等等
 
-216. 2013.8.19 22:44 Player 在打开OptionDlg和视觉效果combobox下拉列表后换肤出现崩溃。资源又出问题了，对于不换肤的窗口     
 218. 2013.11.02 18:45 zip皮肤格式下面ico无法显示
-219. 2013.11.07 23:25 IM Chat Dlg右侧隐藏后无法拖拽 + 最大化后没占满全屏。  想个办法绕过去
-222. 2013.12.27 9:30 hourglass mainwnd，快速多次右击，有机率出现两个菜单
 
 223. 2014.4.2 renderlayer effect filter设计
     -- 目前还想不出一个好的设计方案，暂时搁置
@@ -68,7 +54,6 @@
      // CalcDesiredSize，是在已知父对象大小的情况下，例如 layout.left=0, layout.right=0场景，
      // CalcDesiredSize将不会发送 UI_WM_GETDESIREDSIZE消息
        
-  
 225. uieditor:
      2015.3.31     
      . image/color/font attriubte实现按钮点击，切换到图片选择

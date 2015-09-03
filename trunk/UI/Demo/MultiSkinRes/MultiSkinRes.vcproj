@@ -239,6 +239,18 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Skin"
+			>
+			<File
+				RelativePath="..\..\Bin\Debug\Demo\MultiSkinRes\Default\skin.xml"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Bin\Debug\Demo\MultiSkinRes\Default\wnd.xml"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath=".\MultiSkinRes.cpp"
 			>

@@ -179,7 +179,11 @@ void  WindowRender::HardComposite()
         {
             RenderLayer*  pRootLayer = m_pWindow->GetRenderLayer2();
 
-            GpuLayerCommitContext context;
+			RECT rcClip;
+			::GetClientRect(m_pWindow->GetHWND(), &rcClip);
+
+			GpuLayerCommitContext context;
+			context.SetClipRect(&rcClip);
             pRootLayer->Compositor2Gpu(context);
             m_pHardwareComposition->EndCommit();
         }

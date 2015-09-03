@@ -43,7 +43,7 @@ IRichTextLinkUnit::IRichTextLinkUnit(RichTextObjectModel::LinkUnit* p)
 {
 	m_pImpl = p;
 }
-long  IRichTextLinkUnit::GetId()
+LPCTSTR  IRichTextLinkUnit::GetId()
 {
 	return m_pImpl->GetId();
 }

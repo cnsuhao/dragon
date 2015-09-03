@@ -396,6 +396,11 @@ void  ListItemBase::SetVisible(bool b, bool bNotify)
     else
         m_nItemState |= OSB_UNVISIBLE;
 
+	if (!b && m_pListCtrlBase && m_pListCtrlBase->m_pMKMgr)
+	{
+		m_pListCtrlBase->m_pMKMgr->OnHideItem(this);
+	}
+
     if (bNotify && m_nItemState != nOld)
     {
         UIMSG  msg;
@@ -430,6 +435,11 @@ void  ListItemBase::SetDisable(bool b, bool bNotify)
         m_nItemState |= OSB_DISABLE;
     else
         m_nItemState &= ~OSB_DISABLE;
+
+	if (b && m_pListCtrlBase && m_pListCtrlBase->m_pMKMgr)
+	{
+		m_pListCtrlBase->m_pMKMgr->OnDisableItem(this);
+	}
 
     if (bNotify && m_nItemState != nOld)
     {
@@ -475,18 +485,15 @@ void  ListItemBase::SetRadioChecked(bool b, bool bNotify)
     }
 }
 
-// 可选的优化先比可focus更高，设置了可选，则也设置上可focus
 void  ListItemBase::SetSelectable(bool b)
 {
     if (b)
     {
         m_itemStyle.bNotSelectable = false;
-        m_itemStyle.bNotFocusable = false;
     }
     else
     {
         m_itemStyle.bNotSelectable = true;
-        m_itemStyle.bNotFocusable = true;
     }
 }
 bool  ListItemBase::IsSelectable()
@@ -502,7 +509,10 @@ bool  ListItemBase::IsFocusable()
 {   
     return !m_itemStyle.bNotFocusable;
 }
-
+bool  ListItemBase::CanFocus()
+{
+	return IsFocusable() && IsVisible() && !IsDisable();
+}
 bool  ListItemBase::IsDragDropHover()
 {
     return m_nItemState&OSB_DRAGDROPHOVER ? true:false;
@@ -738,7 +748,7 @@ ListItemBase*  ListItemBase::GetNextFocusableItem()
 
     while (pTreeItem = pTreeItem->GetNextVisibleItem())
     {
-        if (pTreeItem->IsFocusable())
+        if (pTreeItem->CanFocus())
             return pTreeItem;
     }
 
@@ -750,7 +760,7 @@ ListItemBase*  ListItemBase::GetPrevFocusableItem()
 
     while (pTreeItem = pTreeItem->GetPrevVisibleItem())
     {
-        if (pTreeItem->IsFocusable())
+        if (pTreeItem->CanFocus())
             return pTreeItem;
     }
 
@@ -1147,6 +1157,7 @@ void  ListItemBase::ModifyStyle(ListItemStyle* pAdd, ListItemStyle* pRemove)
     MODIFY(bOwnerDraw);
     MODIFY(bNoChildIndent);
     MODIFY(bFloat);
+	MODIFY(bDelayRemoving);
 }
 
 bool  ListItemBase::TestStyle(const ListItemStyle& s)
@@ -1159,6 +1170,7 @@ bool  ListItemBase::TestStyle(const ListItemStyle& s)
     TEST(bOwnerDraw);
     TEST(bNoChildIndent);
     TEST(bFloat);
+	TEST(bDelayRemoving);
 
     return true;
 }

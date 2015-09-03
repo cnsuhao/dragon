@@ -3,7 +3,7 @@
 #include "movealgo.h"
 #include "UISDK\Kernel\Src\Util\Stopwatch\stopwatch.h"
 
-// 2014.2.20  TODO: 增加repeat delay功能。每一次循环时可以延时一段时间，但要加这个的话，还得加一个动画状态功能，以后再加
+// 2014.2.20  TODO: 增加repeat delay功能。每一次循环时可以延时一段时间
 
 namespace UI
 {

@@ -51,6 +51,7 @@ struct ListItemStyle
     bool  bNoChildIndent:1;  // 该结点不计算缩进
     bool  bFloat:1;          // 该ITEM正在浮动（不受滚动偏移量影响），如浮动组头
     bool  bOwnerDraw:1;      // 是否将item的绘制消息先发送ListCtrl; ControlStyle中的ownerdraw表示发送给外部窗口
+	bool  bDelayRemoving:1;  // 正在延时删除中，不要再调用其它相关操作
 
     // Not Implement: 
     // bool  bNotArrage:1;      // 不参与列表布局。纯粹的浮动元素

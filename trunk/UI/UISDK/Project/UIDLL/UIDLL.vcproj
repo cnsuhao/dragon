@@ -655,6 +655,14 @@
 											UsePrecompiledHeader="0"
 										/>
 									</FileConfiguration>
+									<FileConfiguration
+										Name="Release|Win32"
+										>
+										<Tool
+											Name="VCCLCompilerTool"
+											UsePrecompiledHeader="0"
+										/>
+									</FileConfiguration>
 								</File>
 								<File
 									RelativePath="..\..\..\3rd\pugixml\pugixml.hpp"
@@ -1939,7 +1947,11 @@
 						Name="dragdrop"
 						>
 						<File
-							RelativePath="..\..\Kernel\Src\Helper\dragdrop\dragimagewnd.cpp"
+							RelativePath="..\..\Kernel\Src\Helper\dragdrop\dragfeedback.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Kernel\Src\Helper\dragdrop\dragfeedback.h"
 							>
 						</File>
 						<File

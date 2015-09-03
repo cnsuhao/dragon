@@ -68,14 +68,15 @@ namespace UI
 		void  RemoveStoryboard(IStoryboard* p);
         void  RemoveStroyboard(int nId);
 		void  CheckFinishFlag();
+        void  Sort();
 		int   FindStoryboard(int nId);
         IStoryboard*   FindStoryboard2(int nId);
-        void  SetNeedCheckFinishFlag(bool b)
-                { m_bNeedCheckFinish = b; }
+        void  SetNeedCheckFinishFlag(bool b){ 
+                m_bNeedCheckFinish = b; }
 
 		IMessage*      m_pNotifyObject;  // 有可能为NULL
-		IStoryboard**  m_pStoryboardList;
-		int            m_nCount;
+		IStoryboard**  m_pStoryboardList; // 数组。里面的元素按照storyboard是否已经开始运行排序。
+		uint           m_nCount;
 
     private:
         bool   m_bNeedCheckFinish;         // 如果有一个storyboard结束了，将设置该标识。在OnWaitForHandleObjectCallback中将检查该标识

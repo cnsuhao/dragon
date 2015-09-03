@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "htmlnode_a.h"
+#include "..\model\Element\link_element.h"
 
 HtmlNode_A::HtmlNode_A()
 {
@@ -17,6 +18,8 @@ HtmlNode* HtmlNode_A::CreateInstance(HtmlParser* pParser)
 void  HtmlNode_A::SetLinkUnit(RichTextObjectModel::LinkUnit* p)
 {
 	m_pLinkUnit = p;
+    if (m_pLinkUnit)
+        m_pLinkUnit->SetId(m_strId.c_str());
 }
 RichTextObjectModel::LinkUnit*  HtmlNode_A::GetLinkUnit()
 {
@@ -35,5 +38,9 @@ void  HtmlNode_A::ParseTag(PARSETAGDATA* pData)
 		// 没有闭合，放入堆栈中，等待下一个</a>
 		if (!pData->bEndBacklash)
 			m_pHtmlParser->AddNode(this);
+
+        PARSETAGDATA::_Iter iter = pData->mapProp.find(TEXT("id"));
+        if (iter != pData->mapProp.end())
+            m_strId = iter->second;
 	}
 }

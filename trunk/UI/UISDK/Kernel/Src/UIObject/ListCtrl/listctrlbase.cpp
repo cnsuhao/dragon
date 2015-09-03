@@ -12,6 +12,8 @@
 #include "UISDK\Kernel\Src\UIObject\ListCtrl\MouseKeyboard\menumkmgr.h"
 #include "UISDK\Kernel\Src\RenderLayer2\layer\windowrender.h"
 #include "UISDK\Kernel\Src\RenderLayer2\layer\renderlayer.h"
+#include "UISDK\Kernel\Src\Base\Application\uiapplication.h"
+#include "..\..\Util\Gesture\gesturehelper.h"
 using namespace UI;
 
 
@@ -290,12 +292,25 @@ void  ListCtrlBase::DelayRemoveItem(ListItemBase* pItem, int nRemoveFlag)
     if (NULL == pUIApplication)
         return;
 
-    ListCtrlStyle s = {0};
-    s.destroying = 1;
-    if (TestListCtrlStyle(&s))
-        return;
+	{
+		ListCtrlStyle s = {0};
+		s.destroying = 1;
+		if (TestListCtrlStyle(&s))
+			return;
+	}
+	{
+		ListItemStyle s = {0};
+		s.bDelayRemoving = 1;
+		if (pItem->TestStyle(s))
+			return;
 
-    // TODO: 如何保证在响应之前pItem不被销毁？
+		// 加上标志，防止DelayRemoveItem重入，防止再调用RemoveItem
+		pItem->ModifyStyle(&s, NULL);
+	}
+	
+	// 从树中移除，防止再调用RemoveAll/RemoveAllChild等
+	RemoveItemFromTree(pItem);
+
     UIMSG  msg;
     msg.message = UI_WM_NOTIFY;
     msg.nCode = UI_LCN_INNER_DELAY_REMOVE_ITEM;
@@ -311,13 +326,27 @@ void  ListCtrlBase::DelayRemoveItem(ListItemBase* pItem, int nRemoveFlag)
 
 LRESULT  ListCtrlBase::OnDelayRemoveItem(WPARAM w, LPARAM l)
 {
-    RemoveItem((ListItemBase*)w, (int)l);
+	ListItemBase* pListItem = (ListItemBase*)w;
+
+	// 移除DelayRemoving样式，RemoveItem中会判断如果有这个
+	// 样式将不处理。
+	ListItemStyle s = {0};
+	s.bDelayRemoving = 1;
+	pListItem->ModifyStyle(0, &s);
+
+    RemoveItem(pListItem, (int)l);
     return 0;
 }
 
 void ListCtrlBase::RemoveItem(ListItemBase* pItem, int nRemoveFlag)
 {
 	if (NULL == pItem)
+		return;
+
+	// 正在延时删除中
+	ListItemStyle s = {0};
+	s.bDelayRemoving = 1;
+	if (pItem->TestStyle(s))
 		return;
 
 	ListItemBase* pNextItem = pItem->GetNextItem();
@@ -386,9 +415,6 @@ bool  ListCtrlBase::_RemoveAllChildItems(ListItemBase* pParent)
         if (m_pMKMgr)
             m_pMKMgr->OnRemoveItem(pItem, &bSelChanged);
         m_MgrFloatItem.OnRemoveItem(pItem);
-
-        // 从无效列表中移除
-        RemoveInvavlidateItem(pItem);
 
         {
             long lId = pItem->GetId();
@@ -1211,6 +1237,9 @@ void ListCtrlBase::SelectItem(ListItemBase* pItem, bool bUpdate, bool bNotify, b
 	if (NULL == pItem)  
 		return;
 
+    if (!pItem->IsSelectable())
+        return;
+
     // 定位到该ITEM，确保完全可见
 	if (m_pFirstSelectedItem == pItem && NULL == m_pFirstSelectedItem->GetNextSelection())
 	{
@@ -1306,6 +1335,9 @@ void ListCtrlBase::AddSelectItem(ListItemBase* pItem, bool bNotify)
 {
 	if (NULL == pItem)
 		return;
+
+    if (!pItem->IsSelectable())
+        return;
 
 	if (m_listctrlStyle.multiple_sel)
 	{
@@ -1804,7 +1836,7 @@ ListItemBase*  ListCtrlBase::FindFocusableItemFrom(ListItemBase* pFindFrom)
 
     while (pFindFrom)
     {
-        if (pFindFrom->IsFocusable())
+        if (pFindFrom->CanFocus())
             return pFindFrom;
 
         pFindFrom = pFindFrom->GetNextFocusableItem();
@@ -2594,10 +2626,11 @@ void  ListCtrlBase::SetFocusRender(IRenderBase* p)
 }
 
 
-bool  ListCtrlBase::InsertItem(ListItemBase* pNewItem, 
-                               IListItemBase* pParent, 
-                               IListItemBase* pAfter,
-                               int nInsertFlags)
+bool  ListCtrlBase::InsertItem(
+		ListItemBase* pNewItem, 
+        IListItemBase* pParent, 
+        IListItemBase* pAfter,
+        int nInsertFlags)
 {
     if (false == _InsertItemToTree(pNewItem, pParent, pAfter))
         return false;
@@ -2641,7 +2674,8 @@ bool ListCtrlBase::_InsertRoot(ListItemBase* pNewItem)
     return true;
 }
 
-bool ListCtrlBase::_InsertAfter(ListItemBase* pNewItem, ListItemBase* pInsertAfter)
+bool ListCtrlBase::_InsertAfter(
+		ListItemBase* pNewItem, ListItemBase* pInsertAfter)
 {
     if (NULL == pInsertAfter)
         return false;
@@ -2664,7 +2698,8 @@ bool ListCtrlBase::_InsertAfter(ListItemBase* pNewItem, ListItemBase* pInsertAft
     return true;
 }
 
-bool ListCtrlBase::_InsertBefore(ListItemBase* pNewItem, ListItemBase* pInsertBefore)
+bool ListCtrlBase::_InsertBefore(
+		ListItemBase* pNewItem, ListItemBase* pInsertBefore)
 {
     if (NULL == pInsertBefore)
         return false;
@@ -3095,28 +3130,48 @@ bool  ListCtrlBase::TestListCtrlStyle(ListCtrlStyle* test)
 
 LRESULT  ListCtrlBase::OnGesturePan(UINT, WPARAM wParam, LPARAM lParam)
 {
-	SetMsgHandled(FALSE);
+	LRESULT lRet = HANDLED;
+	
+	static int  bounce_edge_power = 0;
+	//UI::GESTUREINFO* pgi = (UI::GESTUREINFO*)lParam;
 
     //::OutputDebugStringA("ScrollBarManager::OnGesturePan");
     int xOffset = GET_X_LPARAM(wParam);
     int yOffset = GET_Y_LPARAM(wParam);
 
+	bounce_edge_power += yOffset;
+
     bool bNeedUpdate = false;
     if (xOffset)
     {
-        if (m_mgrScrollBar.SetHScrollPos(m_mgrScrollBar.GetHScrollPos()-xOffset))
+        if (m_mgrScrollBar.SetHScrollPos(
+				m_mgrScrollBar.GetHScrollPos()-xOffset))
+		{
             bNeedUpdate = true;
+		}
     }
     if (yOffset)
     {
-		if (m_mgrScrollBar.SetVScrollPos(m_mgrScrollBar.GetVScrollPos()-yOffset))      
+		int nMaxPos = m_mgrScrollBar.GetVScrollMaxPos();
+		int nCurPos = m_mgrScrollBar.GetVScrollPos();
+		int nTry = nCurPos - yOffset;
+
+		if (nTry < 0 || nTry > nMaxPos)
+		{
+			lRet = GESTURE_RETURN_NEED_BOUNCE_EDGE;
+		}
+
+		if (m_mgrScrollBar.SetVScrollPos(nTry))   
+		{
             bNeedUpdate = true;
+		}
     }
 
     if (bNeedUpdate)
     {
+		m_pUIApplication->HideToolTip();
 		this->SetCalcFirstLastDrawItemFlag();
         this->UpdateObject();
     }
-    return 1;
+    return lRet;
 }

@@ -2,31 +2,54 @@
 #define ILISTCTRLBASE_H_B087355B_4D7A_4e74_AE27_5FF37A91293C
 #include "UISDK\Kernel\Inc\Interface\icontrol.h"
 
+namespace UI
+{
+    class ListCtrlBase;
+    interface IListItemBase;
+    interface IScrollBarManager;
+    interface IListCtrlLayout;
+    interface IListItemTypeShareData;
+    class RenderContext;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // ListCtrl Notify/Message
 //////////////////////////////////////////////////////////////////////////
 
+namespace UI
+{
+    struct  LISTCTRL_CLICKNOTIFY_DATA
+    {
+        IListItemBase*  pDowmItem;  // 鼠标按下时的item，有可能弹起时不在该item上，这由外部去判断。
+        WPARAM  wParam;
+        LPARAM  lParam;
+    };
+}
+
 //	双击listctrl
 //		message: UI_WM_NOTIFY
 //		code:    UI_LCN_DBCLICK
-//		lparam:  POINT
+//		wparam:  LISTCTRL_CLICKNOTIFY_DATA*
 #define UI_NM_DBCLICK   135311303
 
 //	点击listctrl
 //		message: UI_WM_NOTIFY
 //		code:    UI_LCN_CLICK
-//		wparam:  IListItemBase*
-//      lparam:  mouse point
+//		wparam:  LISTCTRL_CLICKNOTIFY_DATA*
 #define UI_NM_CLICK     135311304
 
 //  右击listctrl
 //		message: UI_WM_NOTIFY
 //		code:    UI_NM_RCLICK
-//		wparam:  IListItemBase* (有可能为NULL)
-//		lparam:  mouse point
+//		wparam:  LISTCTRL_CLICKNOTIFY_DATA*
 #define UI_NM_RCLICK     136291126
 
+// 滚轮点击listctrl
+//      message: UI_WM_NOTIFY
+//      code:    UI_NM_MCLICK
+//      wParam: LISTCTRL_CLICKNOTIFY_DATA*
+#define  UI_NM_MCLICK    158141138
+ 
 //  键盘消息
 //      message: UI_WM_NOTIFY
 //      code:    UI_NM_KEYDOWN
@@ -104,15 +127,7 @@
 // 发送给列表派生类
 #define UI_LCN_FIRSTLASTDRAWITEM_UPDATED  157021559
 
-namespace UI
-{
-    class ListCtrlBase;
-    interface IListItemBase;
-    interface IScrollBarManager;
-    interface IListCtrlLayout;
-    interface IListItemTypeShareData;
-    class RenderContext;
-}
+
 #define UITVI_ROOT    ((UI::IListItemBase*)TVI_ROOT)
 #define UITVI_FIRST   ((UI::IListItemBase*)TVI_FIRST)
 #define UITVI_LAST    ((UI::IListItemBase*)TVI_LAST)

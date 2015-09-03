@@ -1,33 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <skin>
 	<layout>
-		<Window needalphachannel="1" id="DemoWnd" layer="1" bkgnd.render.type="color" width="300" height="400" 
+		<Window needalphachannel="1" id="DemoWnd" layer="1" bkgnd.render.type="color" width="400" height="200" 
             bkgnd.render.color="0xFFFFFFFF" font="default"
             text="多皮肤包测试（用于模拟插件模块的皮肤包资源分离）：">
       
-      <Button id="btn" layout.left="10" graphics="gdiplus" layout.top="10" width="100" height="30" text="Plugin Test" 
+      <Button id="btn" layout.align="center|vcenter" graphics="gdiplus" width="100" height="30" text="Plugin Test" 
                bkgnd.render.type="theme.button" transparent="1"
                textrender.align="center|vcenter"
-               textrender.type="simple"/>
-      
-      <ListView id="listview_test" border="2" layout.left="2" layout.top="50" layout.right="2" layout.bottom="2" 
-               bkgnd.render.type="theme.listbox.bkg"
-               foregnd.render.type="theme.listview.item">
-        <HeaderListCtrl id="__header" height="20" foregnd.render.type="theme.header.item" ncchild="1"/>
-        
-        <SystemVScrollBar id="__vscrollbar" ncchild="1" width="18" bkgnd.render.type="theme.vscrollbar.bkg">
-          <Button id="__scrollbar_up" bkgnd.render.type="theme.vscrollbar.up" height="18"/>
-          <Button id="__scrollbar_thumb" bkgnd.render.type="theme.vscrollbar.thumb"/>
-          <Button id="__scrollbar_down" bkgnd.render.type="theme.vscrollbar.down" height="18"/>
-        </SystemVScrollBar>
-        <SystemHScrollBar id="__hscrollbar" ncchild="1" height="18" bkgnd.render.type="theme.hscrollbar.bkg">
-          <Button id="__scrollbar_left" bkgnd.render.type="theme.hscrollbar.left" width="18"/>
-          <Button id="__scrollbar_thumb" bkgnd.render.type="theme.hscrollbar.thumb"/>
-          <Button id="__scrollbar_right" bkgnd.render.type="theme.hscrollbar.right" width="18"/>
-        </SystemHScrollBar>
-        
-      </ListView>
-      
+               textrender.type="simple"
+               tooltip="button"
+              />
 		</Window>
 	</layout>
 </skin>

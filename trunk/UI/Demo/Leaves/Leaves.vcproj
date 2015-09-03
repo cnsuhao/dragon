@@ -241,6 +241,18 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Skin"
+			>
+			<File
+				RelativePath="..\..\Bin\Debug\Demo\Leaves\Default\skin.xml"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Bin\Debug\Demo\Leaves\Default\wnd.xml"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath=".\Leaves.cpp"
 			>

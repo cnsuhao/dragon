@@ -202,6 +202,23 @@ typedef BOOL (__stdcall *pfnGetGestureConfig)(
                                                         // pointer to buffer to receive the returned array of GESTURECONFIG structures
     __in UINT cbSize);                                  // sizeof(GESTURECONFIG)
 
+
+typedef BOOL (__stdcall *pfnBeginPanningFeedback)(
+	__in  HWND hwnd
+);
+
+typedef BOOL (__stdcall *pfnEndPanningFeedback)(
+	__in  HWND hwnd,
+    BOOL fAnimateBack
+);
+
+typedef BOOL (__stdcall *pfnUpdatePanningFeedback)(
+	  __in  HWND hwnd,
+	  __in  LONG lTotalOverpanOffsetX,
+	  __in  LONG lTotalOverpanOffsetY,
+	  __in  BOOL fInInertia
+);
+
 //#endif /* WINVER >= 0x0601 */
 
 // }
@@ -216,7 +233,11 @@ public:
     pfnSetGestureConfig  pSetGestureConfig;
     pfnGetGestureInfo    pGetGestureInfo;
     pfnCloseGestureInfoHandle  pCloseGestureInfoHandle;
+	pfnBeginPanningFeedback  pBeginPanningFeedback;
+	pfnEndPanningFeedback  pEndPanningFeedback;
+	pfnUpdatePanningFeedback  pUpdatePanningFeedback;
     HMODULE  m_hModule;
+	HMODULE  m_hModuleUxTheme;
 
 };
 

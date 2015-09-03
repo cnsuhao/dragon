@@ -92,13 +92,20 @@ void  MultiSelListCtrlMKMgr::OnLButtonDown(UIMSG* pMsg)
     bool bShiftDown = IsKeyDown(VK_SHIFT);
 
     ListItemBase*  pItemPress = m_pItemPress;
-    if (pItemPress && pItemPress->IsSelectable())
+    if (pItemPress)
     {
-        // 如果当前没有选中自己，则直接取消其它选项，设置为自己。
-        // 如果自己被选中了，可能是要进行拖拽操作，则不操作。但如果没有发现拖拽，则在UP中将选项设置为自己
-        if (!bCtrlDown && !bShiftDown && !pItemPress->IsSelected())
+        if (pItemPress->IsSelectable())
         {
-            m_pListCtrlBase->SelectItem(pItemPress, false);
+            // 如果当前没有选中自己，则直接取消其它选项，设置为自己。
+            // 如果自己被选中了，可能是要进行拖拽操作，则不操作。但如果没有发现拖拽，则在UP中将选项设置为自己
+            if (!bCtrlDown && !bShiftDown && !pItemPress->IsSelected())
+            {
+                m_pListCtrlBase->SelectItem(pItemPress, false);
+            }
+        }
+        else if (pItemPress->IsFocusable())
+        {
+            m_pListCtrlBase->SetFocusItem(pItemPress);
         }
     }
 }
@@ -261,10 +268,12 @@ void  MultiSelListCtrlMKMgr::OnKeyDown(UIMSG* pMsg, bool* pbInterestMsg)
     switch (pMsg->wParam)
     {
     case VK_DOWN:
+    case VK_RIGHT:  // icon listview
         OnKeyDown_down(pMsg);
         return;
 
     case VK_UP:
+    case VK_LEFT:  // icon listview
         OnKeyDown_up(pMsg);
         return;
 

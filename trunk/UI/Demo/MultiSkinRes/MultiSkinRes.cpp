@@ -13,7 +13,6 @@
 #include "UISDK\Control\Inc\Interface\ilistview.h"
 
 #pragma comment(lib, "shlwapi.lib")
-#pragma comment(lib, "UxTheme.lib")
 #pragma comment(lib, "uiutil.lib")
 #pragma comment(lib, "uisdk.lib")
 #pragma comment(lib, "uictrls.lib")
@@ -40,28 +39,6 @@ private:
 
     void OnInitialize()
     {
-        SetWindowTheme(GetHWND(), L"explorer", NULL);
-
-        UI::IListView*  pListView = (UI::IListView*)this->FindChildObject(TEXT("listview_test"));
-        if (pListView)
-        {
-            UI::IHeaderListCtrl* pHeader = pListView->GetHeaderCtrl();
-            if (pHeader)
-            {
-                pHeader->AddColumn(TEXT("First"), 80);
-                pHeader->AddColumn(TEXT("Second"), 80);
-                pHeader->AddColumn(TEXT("Third"), 80);
-
-                for (int i = 0; i < 100; i++)
-                {
-                    UI::IListViewItemBase* pItem = pListView->AddTextItem(TEXT("Anna"), 0);
-                    pListView->SetItemText(i, 1, TEXT("Nokia"), false);
-                    pListView->SetItemText(i, 2, TEXT("C601"), false);
-                }
-
-                pListView->LayoutItem(0, false);
-            }
-        }
     }
 
 	void OnClick()

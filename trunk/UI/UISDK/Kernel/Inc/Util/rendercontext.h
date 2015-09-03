@@ -228,7 +228,7 @@ public:
 	bool   m_bUpdateClip;  
 
     // 记录当前正在绘制的控件的坐标，只有当m_bUpdateClip为true时，
-    // 才会将m_rcCurrentClip与InitClip的交集选入rendertarget
+    // 才会将m_curDrawRegionInLayer与InitClip的交集选入rendertarget
     RECT  m_curDrawRegionInLayer;  
 
     // 记录当前的HDC偏移量，控件的parent坐标偏移m_ptOffset即为layer坐标

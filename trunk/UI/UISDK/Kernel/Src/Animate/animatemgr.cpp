@@ -136,7 +136,7 @@ ObjectStoryboard::~ObjectStoryboard()
 {
 	if (m_pStoryboardList)
 	{
-		for (int i = 0; i < m_nCount; i++)
+		for (uint i = 0; i < m_nCount; i++)
 		{
 			SAFE_DELETE_Ixxx(m_pStoryboardList[i]);
 		}
@@ -197,7 +197,7 @@ void AnimateManager::ClearStoryboardOfNotify(IMessage* pMsg)
 	if (m_bHandlingTimerCallback)  // 如果正在对m_listObjTimeline进行遍历中，则不能在这里对list做erase操作
 	{
 		ObjectStoryboard* pObjTimeline = *iter;
-		for (int i = 0; i < pObjTimeline->m_nCount; i++)
+		for (uint i = 0; i < pObjTimeline->m_nCount; i++)
 		{
 			pObjTimeline->m_pStoryboardList[i]->GetImpl()->SetFinish();;
 		}
@@ -281,7 +281,7 @@ void  AnimateManager::AddStoryboardBlock(IStoryboard* p)
 // 查找相同ID的time line，要添加时，如果发现该ID已经存在，则先取消前一个time line
 int ObjectStoryboard::FindStoryboard(int nID)
 {
-	for (int i = 0; i < m_nCount; i++)
+	for (uint i = 0; i < m_nCount; i++)
 	{
 		if (m_pStoryboardList[i]->GetId() == nID)
 			return i;
@@ -323,6 +323,29 @@ void ObjectStoryboard::AddStoryboard(IStoryboard* p)
 		SAFE_DELETE_Ixxx(m_pStoryboardList[nIndex]);
 		m_pStoryboardList[nIndex] = p;
 	}
+
+    Sort();
+}
+
+// 排序。将还没有开始（delay start）的storyboard排后面，这样统一向message
+// 发送消息时，只用发送前面开始的storyboard的count
+bool StoryboardCompareProc(IStoryboard* p1, IStoryboard* p2)
+{
+    bool p1_is_delay = p1->GetImpl()->IsDelayWaiting();
+    bool p2_is_delay = p2->GetImpl()->IsDelayWaiting();
+    
+    if (p1_is_delay == p2_is_delay)
+        return false;
+    
+    return p1_is_delay < p2_is_delay;
+}
+
+void  ObjectStoryboard::Sort()
+{
+    if (m_nCount <= 1)
+        return;
+
+    std::sort(m_pStoryboardList, m_pStoryboardList+m_nCount, StoryboardCompareProc);
 }
 
 void ObjectStoryboard::RemoveStoryboard(IStoryboard* p)
@@ -336,7 +359,7 @@ void ObjectStoryboard::RemoveStoryboard(IStoryboard* p)
 		IStoryboard** ppArray = new IStoryboard*[m_nCount-1];
 
 		int nIndex = 0;
-		for (int i = 0; i < m_nCount; i++)
+		for (uint i = 0; i < m_nCount; i++)
 		{
 			if (m_pStoryboardList[i] == p)
 			{
@@ -359,6 +382,7 @@ void ObjectStoryboard::RemoveStoryboard(IStoryboard* p)
 		m_nCount--;
 	}
 }
+
 void  ObjectStoryboard::RemoveStroyboard(int nId)
 {
     RemoveStoryboard(FindStoryboard2(nId));
@@ -371,8 +395,8 @@ void ObjectStoryboard::CheckFinishFlag()
 
     m_bNeedCheckFinish = false;
 
-	int nAliveCount = 0;
-	for (int i = 0; i < m_nCount; i++)
+	uint nAliveCount = 0;
+	for (uint i = 0; i < m_nCount; i++)
 	{
 		if (!m_pStoryboardList[i]->IsFinish())
 			nAliveCount++;
@@ -384,7 +408,7 @@ void ObjectStoryboard::CheckFinishFlag()
 	{
 		if (m_pStoryboardList)
 		{
-			for (int i = 0; i < m_nCount; i++)
+			for (uint i = 0; i < m_nCount; i++)
 			{
 				SAFE_DELETE_Ixxx(m_pStoryboardList[i]);
 			}
@@ -396,7 +420,7 @@ void ObjectStoryboard::CheckFinishFlag()
 		IStoryboard** ppArray = new IStoryboard*[nAliveCount];
 
 		int nIndex = 0;
-		for (int i = 0; i < m_nCount; i++)
+		for (uint i = 0; i < m_nCount; i++)
 		{
 			if (m_pStoryboardList[i]->IsFinish())
 			{
@@ -460,7 +484,7 @@ void AnimateManager::OnWaitForHandleObjectCallback(HANDLE h, LPARAM l)
 	{
 		ObjectStoryboard* pObjStoryboard = *iter;
         int nCount = pObjStoryboard->m_nCount;
-		for (int i = 0; i < pObjStoryboard->m_nCount; i++)
+		for (uint i = 0; i < pObjStoryboard->m_nCount; i++)
 		{
             Storyboard* pStoryboard = pObjStoryboard->m_pStoryboardList[i]->GetImpl();
 

@@ -142,6 +142,7 @@ public:
     bool  IsRadioChecked();
     bool  IsSelectable();
     bool  IsFocusable();
+	bool  CanFocus();
     bool  IsDragDropHover();
     void  ModifyStyle(ListItemStyle* pAdd, ListItemStyle* pRemove);
     bool  TestStyle(const ListItemStyle& s);

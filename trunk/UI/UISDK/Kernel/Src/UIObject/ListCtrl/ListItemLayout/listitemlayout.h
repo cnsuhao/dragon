@@ -7,6 +7,7 @@ namespace UI
 interface IListItemBase;
 interface IListCtrlBase;
 class ListCtrlBase;
+class ListItemBase;
 
 enum LISTCTRL_ITEM_LAYOUT_TYPE
 {
@@ -93,6 +94,11 @@ protected:
 // 向列表控件获取item间距
 #define UI_LCM_LAYOUT_GET_ITEMSPACE  142901217
 
+// 该列表项单独占用一行
+#define UI_LISTCTRL_LAYOUT_HORZ_SINGLELINE -3
+// 该列表项占满当前行的剩余空间
+//#define UI_LISTCTRL_LAYOUT_HORZ_REMAINLINE -4
+
 // 等高，流式布局，一行铺满则换行 （只有纵向滚动条）
 class ListCtrlItemFixHeightFlowLayout : public IListCtrlLayout
 {
@@ -105,6 +111,71 @@ protected:
     IListCtrlBase*  m_pIListCtrlBase;
 };
 
+
+
+// 横向与纵向同时布局，横向无滚动条，纵向有滚动条
+// 如listview的icon视图模式
+class ListCtrlItemVariableHeightFlowLayout : public IListCtrlLayout
+{
+public:
+    virtual void  SetIListCtrlBase(IListCtrlBase* p) { m_pIListCtrlBase = p; }
+    virtual void  Arrange(IListItemBase* pStartToArrange, SIZE* pSizeContent);
+    virtual void  Measure(SIZE* pSize);
+    virtual void  Release() { delete this; }      
+protected:
+    IListCtrlBase*  m_pIListCtrlBase;
+
+private:
+    // 当前行的列表项集合。在换行时，才能计算出这个列表项的实现位置。
+    // 例如每个item的高度可能不一样，要取到最大高度才行。
+    class CurrentLineItems
+    {
+    public:
+        CurrentLineItems() 
+        {
+            m_nMaxHeight = 0; m_nContentWidth = 0; m_nContentHeight = 0;
+            m_hSpace = m_vSpace = 0;
+            m_nCtrlWidth = 0;
+            m_nxCursor = 0;
+            m_nyCursor = 0;
+        }
+        ~CurrentLineItems() 
+        {
+            UIASSERT(m_vecItems.empty());
+        }
+        void  AddItem(ListItemBase*, int w, int h);
+        void  AddSingleLineItem(ListItemBase*, int h);
+        void  CommitLine();
+        void  GetContentSize(SIZE* p)
+        {
+            if (p) { p->cx = m_nContentWidth; p->cy = m_nContentHeight; }
+        }
+        void  SetHSpace(int n) { m_hSpace = n; }
+        void  SetVSpace(int n) { m_vSpace = n; }
+        void  SetCtrlWidth(int n) { m_nCtrlWidth = m_nContentWidth = n; }
+        void  SetXYCursor(int x, int y) { m_nxCursor = x; m_nyCursor = y; }
+    private:
+        struct ListItemData
+        {
+            ListItemBase* pItem;
+            int x;
+            int w;
+        };
+        vector<ListItemData>  m_vecItems;
+        int  m_nMaxHeight;
+        int  m_nxCursor;  // 当前x的位置游标
+        int  m_nyCursor;  // 当前y的位置游标
+
+        int  m_hSpace;
+        int  m_vSpace;
+        int  m_nCtrlWidth;
+
+        // 最终内容的大小与高度
+        int  m_nContentWidth;
+        int  m_nContentHeight;
+    };
+
+};
 
 IListCtrlLayout*  CreateListCtrlLayout(int nType, IListCtrlBase* p);
 }

@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <skin>
   <layout>
-    <Window id="DemoWnd" graphics="gdiplus"  minwidth="500" minheight="500" bkgnd.render.type="color" bkgnd.render.color="#FF4E4226" text="落叶">
+    <Window id="DemoWnd" graphics="gdiplus" 
+            width="620" height="830" 
+            bkgnd.render.type="color"
+            bkgnd.render.color="#FF4E4226" 
+            text="落叶">
       <Panel layout.left="46" layout.top="46"
              width="510" height="710"
              border="5" bkgnd.render.type="color"
@@ -16,7 +20,7 @@
         <PictureCtrl id="img4" styleclass="leaves_img"/>
         <PictureCtrl id="img5" styleclass="leaves_img"/>
 
-        <!--PictureCtrl id="img6" styleclass="leaves_img"/>
+        <PictureCtrl id="img6" styleclass="leaves_img"/>
         <PictureCtrl id="img7" styleclass="leaves_img"/>
         <PictureCtrl id="img8" styleclass="leaves_img"/>
         <PictureCtrl id="img9" styleclass="leaves_img"/>
@@ -44,7 +48,7 @@
         <PictureCtrl id="img27" styleclass="leaves_img"/>
         <PictureCtrl id="img28" styleclass="leaves_img"/>
         <PictureCtrl id="img29" styleclass="leaves_img"/>
-        <PictureCtrl id="img30" styleclass="leaves_img"/-->
+        <PictureCtrl id="img30" styleclass="leaves_img"/>
 
         <xPanel id="text" layout.left="0" layer="0" layout.top="180" layout.right="0" height="324" bkgnd.render.type="image" bkgnd.render.image="leave_text" bkgnd.render.image.drawtype="stretch">
           <Label layout.left="0" layout.top="0" layout.right="0" layout.bottom="0" text="Fall leaves are beautiful..." textrender.type="simple" textrender.color="#FF5C090A" textrender.font="fall_leaves_text"/>

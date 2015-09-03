@@ -15,25 +15,30 @@ void  LinkElement::Draw(HDC hDC, uint nStart, uint nEnd, RECT* prcRun)
 
 	__super::DrawText(hDC, prcRun, szText, nLen, pcf);
 
+    const Style& style = m_pUnit->GetDoc()->GetStyle();
+
     // »®Ïß
-    if (m_pUnit->IsPress() ||/*&&*/ m_pUnit->IsHover())
+    if (style.draw_link_underline)
     {
-        HFONT hfont = pcf->hFont;
-        if (!hfont)
-            return;
+        if (m_pUnit->IsPress() ||/*&&*/ m_pUnit->IsHover())
+        {
+            HFONT hfont = pcf->hFont;
+            if (!hfont)
+                return;
 
-        COLORREF color = RGB(0,0,0);
-        if (pcf->bTextColor)
-            color = pcf->textColor;
+            COLORREF color = RGB(0,0,0);
+            if (pcf->bTextColor)
+                color = pcf->textColor;
 
-        int y = prcRun->bottom - pcf->nFontDescent + 1;
+            int y = prcRun->bottom - pcf->nFontDescent + 1;
 
-        HPEN hPen = CreatePen(PS_SOLID, 1, color);
-        HPEN hOldPen = (HPEN)SelectObject(hDC, hPen);
-        MoveToEx(hDC, prcRun->left, y, NULL);
-        LineTo(hDC, prcRun->right, y);
-        SelectObject(hDC, hOldPen);
-        DeleteObject(hPen);
+            HPEN hPen = CreatePen(PS_SOLID, 1, color);
+            HPEN hOldPen = (HPEN)SelectObject(hDC, hPen);
+            MoveToEx(hDC, prcRun->left, y, NULL);
+            LineTo(hDC, prcRun->right, y);
+            SelectObject(hDC, hOldPen);
+            DeleteObject(hPen);
+        }
     }
 	
 	return;
@@ -45,17 +50,16 @@ LinkUnit::LinkUnit(Doc* p)
 	:TextUnit(p)
 	,m_oIRichTextLinkUnit(this)
 {
-	m_lId = 0;
 	m_wParam = m_lParam = 0;
 }
 
-void  LinkUnit::SeId(long lId)
+void  LinkUnit::SetId(LPCTSTR szId)
 {
-	m_lId = lId;
+    SETSTRING(m_strId, szId)
 }
-long  LinkUnit::GetId()
+LPCTSTR  LinkUnit::GetId()
 {
-	return m_lId;
+    return m_strId.c_str();
 }
 
 Element*  LinkUnit::CreateElement()

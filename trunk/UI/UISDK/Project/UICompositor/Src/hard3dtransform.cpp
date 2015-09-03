@@ -136,12 +136,8 @@ void  Hard3DTransform::Update()
 	D3DXMATRIX  tempMatrix;
 	m_bInvalidate = false;
 	D3DXMatrixIdentity(&m_matrix);
-
    
-	// 移动
-	D3DXMatrixTranslation(&tempMatrix, m_xTranslate, m_yTranslate, m_zTranslate);
-	m_matrix *= tempMatrix;
- 	
+	// 要先旋转，再移动。否则旋转会基于移动进行大旋转，而不是绕对象本身。
 	// 旋转
 	if (m_xRotate != 0 || m_yRotate != 0 || m_zRotate != 0)
 	{
@@ -149,7 +145,11 @@ void  Hard3DTransform::Update()
 			deg2rad(m_yRotate), deg2rad(m_xRotate), deg2rad(m_zRotate));
 		m_matrix *= tempMatrix;
 	} 
-	
+
+	// 移动
+	D3DXMatrixTranslation(&tempMatrix, m_xTranslate, m_yTranslate, m_zTranslate);
+	m_matrix *= tempMatrix;
+ 	
 	// 缩放
 	if (m_xScale != 1 && m_yScale != 1 && m_zScale != 1)
 	{

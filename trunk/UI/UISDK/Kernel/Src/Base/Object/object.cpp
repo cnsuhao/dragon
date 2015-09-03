@@ -67,7 +67,8 @@ Object::~Object(void)
 
     SAFE_RELEASE(m_pIMapAttributeRemain);
     SAFE_RELEASE(m_pLayoutParam);
-	SAFE_RELEASE(m_pAccessible);
+	if (m_pAccessible)
+		SAFE_RELEASE(m_pAccessible);
 }
 
 HRESULT Object::FinalConstruct(IUIApplication* p, ISkinRes* pSkinRes)
@@ -1910,6 +1911,9 @@ bool  Object::CreateAccesible(IAccessible** pp)
 
 		// 添加默认的object accessible
 		// 内部会调用addref
+
+		// TODO1: Object销毁时，怎么确保这些接口也销毁，而不仅仅是release？
+		// TODO2: 在使用触摸屏滚动页面时，这里居然会造成内存泄露，无法理解
 		p->AddUIAccessible(new ObjectAccessible(*this));
 	}
 

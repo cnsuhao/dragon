@@ -17,6 +17,7 @@ ListCtrlMKMgrBase::ListCtrlMKMgrBase()
     m_pItemPress = NULL;
     m_pItemFocus = NULL;
     m_pItemRPress = NULL;
+    m_pItemMPress = NULL;
 //     m_pItemSelected = NULL;
 
     m_pUIApplication = NULL;
@@ -60,6 +61,18 @@ BOOL  ListCtrlMKMgrBase::DoProcessMessage(UIMSG* pMsg)
 
     case WM_RBUTTONUP:
         OnRButtonUp(pMsg);
+        break;
+
+    case WM_MBUTTONDBLCLK:
+        OnMButtonDBClick(pMsg);
+        break;
+
+    case WM_MBUTTONDOWN:
+        OnMButtonDown(pMsg);
+        break;
+
+    case WM_MBUTTONUP:
+        OnMButtonUp(pMsg);
         break;
 
     case WM_KILLFOCUS:
@@ -354,26 +367,31 @@ long  ListCtrlMKMgrBase::OnLButtonDown(UIMSG* pMsg)
 void  ListCtrlMKMgrBase::OnLButtonUp(UIMSG* pMsg)
 {
     BOOL bHandled = FALSE;
+    ListItemBase* pSave = m_pItemPress;
     if (m_pItemPress)
     {
-        ListItemBase* pSave = m_pItemPress;
         this->SetPressItem(NULL);
         UISendMessage(pSave->GetIListItemBase(), WM_LBUTTONUP, pMsg->wParam, pMsg->lParam,0, 0,0, &bHandled);
+    }
 
-        if (!bHandled)
+    if (!bHandled)
+    {
+//         POINT  ptWindow = { GET_X_LPARAM(pMsg->lParam), GET_Y_LPARAM(pMsg->lParam) };
+//         ListItemBase*  pNewHover = GetItemByPos(ptWindow);
+//         if (pNewHover == pSave)
         {
-            POINT  ptWindow = { GET_X_LPARAM(pMsg->lParam), GET_Y_LPARAM(pMsg->lParam) };
-            ListItemBase*  pNewHover = GetItemByPos(ptWindow);
-            if (pNewHover == pSave)
-            {
-                UIMSG  msg;
-                msg.message = UI_WM_NOTIFY;
-                msg.nCode   = UI_NM_CLICK;
-                msg.wParam  = (WPARAM)pSave->GetIListItemBase();
-				msg.lParam  = pMsg->lParam;
-                msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
-                msg.pMsgFrom->DoNotify(&msg);
-            }
+            LISTCTRL_CLICKNOTIFY_DATA data = {0};
+            if (pSave)
+                data.pDowmItem = pSave->GetIListItemBase();
+            data.wParam = pMsg->wParam;
+            data.lParam = pMsg->lParam;
+
+            UIMSG  msg;
+            msg.message = UI_WM_NOTIFY;
+            msg.nCode   = UI_NM_CLICK;
+            msg.wParam  = (WPARAM)&data;
+            msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
+            msg.pMsgFrom->DoNotify(&msg);
         }
     }
 }
@@ -394,10 +412,16 @@ void  ListCtrlMKMgrBase::OnLButtonDBClick(UIMSG* pMsg)
 
     if (!bHandled)
     {
+        LISTCTRL_CLICKNOTIFY_DATA data = {0};
+        if (m_pItemPress)
+            data.pDowmItem = m_pItemPress->GetIListItemBase();
+        data.wParam = pMsg->wParam;
+        data.lParam = pMsg->lParam;
+
         UIMSG  msg;
         msg.message = UI_WM_NOTIFY;
         msg.nCode   = UI_NM_DBCLICK;
-        msg.lParam  = pMsg->lParam;
+        msg.wParam  = (WPARAM)&data;
         msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
         msg.pMsgFrom->DoNotify(&msg);
     }
@@ -412,20 +436,10 @@ void  ListCtrlMKMgrBase::OnRButtonDown(UIMSG* pMsg)
     if (!m_pItemHover)
         return;
 
-    if (!m_pItemHover->IsSelected())
-    {
-        if (m_pItemHover)
-        {
-            UISendMessage(m_pItemHover->GetIListItemBase(), WM_RBUTTONDOWN, pMsg->wParam, pMsg->lParam);
-            m_pItemRPress = m_pItemHover;
-        }
-    }
-    else
-    {
-        UISendMessage(m_pItemHover->GetIListItemBase(), WM_RBUTTONDOWN, pMsg->wParam, pMsg->lParam);
-        m_pItemRPress = m_pItemHover;
-    }
+    UISendMessage(m_pItemHover->GetIListItemBase(), WM_RBUTTONDOWN, pMsg->wParam, pMsg->lParam);
+    m_pItemRPress = m_pItemHover;
 }
+
 void  ListCtrlMKMgrBase::OnRButtonUp(UIMSG* pMsg)
 {
     BOOL bHandled = FALSE;
@@ -439,12 +453,61 @@ void  ListCtrlMKMgrBase::OnRButtonUp(UIMSG* pMsg)
     }
     if (!bHandled)
     {
+        LISTCTRL_CLICKNOTIFY_DATA data = {0};
+        if (pSave)
+            data.pDowmItem = pSave->GetIListItemBase();
+        data.wParam = pMsg->wParam;
+        data.lParam = pMsg->lParam;
+
         UIMSG  msg;
         msg.message = UI_WM_NOTIFY;
         msg.nCode   = UI_NM_RCLICK;
-		if (pSave)
-			msg.wParam = (WPARAM)pSave->GetIListItemBase();
-        msg.lParam  = pMsg->lParam;
+		msg.wParam = (WPARAM)&data;
+        msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
+        msg.pMsgFrom->DoNotify(&msg);
+    }
+}
+
+
+void  ListCtrlMKMgrBase::OnMButtonDBClick(UIMSG* pMsg)
+{
+    OnMButtonDown(pMsg);
+}
+void  ListCtrlMKMgrBase::OnMButtonDown(UIMSG* pMsg)
+{
+    if (m_pObjPress)
+        return;
+
+    if (!m_pItemHover)
+        return;
+
+    UISendMessage(m_pItemHover->GetIListItemBase(), pMsg->message, pMsg->wParam, pMsg->lParam);
+    m_pItemMPress = m_pItemHover;
+}
+void  ListCtrlMKMgrBase::OnMButtonUp(UIMSG* pMsg)
+{
+    BOOL bHandled = FALSE;
+
+    ListItemBase* pSave = m_pItemMPress;
+    if (m_pItemMPress)
+    {
+        m_pItemMPress = NULL;   // 必须在发通知前先重置。（通知中可能修改该项）
+        UISendMessage(pSave->GetIListItemBase(), pMsg->message, pMsg->wParam, pMsg->lParam, 0, 0, 0, &bHandled);
+    }
+    if (!bHandled)
+    {
+        // 如果当前hover item改变了，由外部业务逻辑去判断是否处理
+
+        LISTCTRL_CLICKNOTIFY_DATA  data = {0};
+        if (pSave)
+            data.pDowmItem = pSave->GetIListItemBase();
+        data.wParam = pMsg->wParam;
+        data.lParam = pMsg->lParam;
+
+        UIMSG  msg;
+        msg.message = UI_WM_NOTIFY;
+        msg.nCode   = UI_NM_MCLICK;
+        msg.wParam  = (WPARAM)&data;
         msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
         msg.pMsgFrom->DoNotify(&msg);
     }
@@ -513,7 +576,7 @@ bool  ListCtrlMKMgrBase::OnKeyMsg(UIMSG* pMsg)
 
 void ListCtrlMKMgrBase::OnRemoveAll()
 {
-    m_pItemHover = m_pItemPress = m_pItemFocus = m_pItemRPress = NULL; 
+    m_pItemHover = m_pItemPress = m_pItemFocus = m_pItemRPress = m_pItemMPress = NULL; 
     m_pObjPress = m_pObjHover = m_pObjFocus = NULL;
 
     if (m_pListCtrlBase->GetIListCtrlBase()->IsHover())
@@ -521,30 +584,60 @@ void ListCtrlMKMgrBase::OnRemoveAll()
         m_pUIApplication->HideToolTip();
     }
 }
-
+void  ListCtrlMKMgrBase::OnDisableItem(ListItemBase* pItem)
+{
+	on_item_state_changed(pItem, ITEM_DISABLED, NULL);
+}
+void  ListCtrlMKMgrBase::OnHideItem(ListItemBase* pItem)
+{
+	on_item_state_changed(pItem, ITEM_HIDE, NULL);
+}
 void  ListCtrlMKMgrBase::OnRemoveItem(ListItemBase* pItem, bool* pbSelChanged)
+{
+	on_item_state_changed(pItem, ITEM_REMOVED, pbSelChanged);
+}
+void  ListCtrlMKMgrBase::on_item_state_changed(
+		ListItemBase* pItem,
+		ITEM_STATE_CHANGE_TYPE eType, 
+		bool* pbSelChanged)
 {
     if (m_pItemHover)
     {
         if (m_pItemHover == pItem || pItem->IsMyChildItem(m_pItemHover, true))
         {
             m_pUIApplication->HideToolTip();
-            m_pItemHover = NULL;
+            
+			// todo: 如果是隐藏的话，这里并没有给item发送mouse leave通知，
+			// 会造成消息不对称。
+			if (eType == ITEM_REMOVED)
+				m_pItemHover = NULL;
+			else
+				SetHoverItem(NULL);
         }
     }
 
-    if (m_pItemPress )
+    if (m_pItemPress)
     {
         if (m_pItemPress == pItem || pItem->IsMyChildItem(m_pItemPress, true))
         {
-            m_pItemPress = NULL;
+			if (eType == ITEM_REMOVED)
+				m_pItemPress = NULL;
+			else
+				SetPressItem(NULL);
         }
     }
-    if (m_pItemRPress )
+    if (m_pItemRPress)
     {
         if (m_pItemRPress == pItem || pItem->IsMyChildItem(m_pItemRPress, true))
         {
             m_pItemRPress = NULL;
+        }
+    }
+    if (m_pItemMPress)
+    {
+        if (m_pItemMPress == pItem || pItem->IsMyChildItem(m_pItemMPress, true))
+        {
+            m_pItemMPress = NULL;
         }
     }
     if (m_pItemFocus)
@@ -629,6 +722,12 @@ void  ListCtrlMKMgrBase::OnRemoveItem(ListItemBase* pItem, bool* pbSelChanged)
         if (pPanel->IsMyChild(m_pObjPress->GetIObject(), true))
             m_pObjPress = NULL;
     }
+
+	// 从无效列表中移除
+	if (eType == ITEM_REMOVED || eType == ITEM_HIDE)
+	{
+		m_pListCtrlBase->RemoveInvavlidateItem(pItem);
+	}
 }
 // void  ListCtrlMKMgrBase::OnRemoveObject(IObject* pObj)
 // {
@@ -757,6 +856,9 @@ void  ListCtrlMKMgrBase::SetPressItem(ListItemBase* pItem)
 void  ListCtrlMKMgrBase::SetFocusItem(ListItemBase* pItem)
 {
     if (m_pItemFocus == pItem)
+        return;
+
+    if (pItem && !pItem->IsFocusable())
         return;
 
     if (m_pItemFocus)
@@ -921,6 +1023,10 @@ void  SingleSelListCtrlMKMgr::OnLButtonDown(UIMSG* pMsg)
             // 只选这一个
             m_pListCtrlBase->SelectItem(m_pItemPress, false);
         }
+        else if (m_pItemPress->IsFocusable())
+        {
+            m_pListCtrlBase->SetFocusItem(m_pItemPress);
+        }
     }
     else
     {
@@ -958,10 +1064,12 @@ void  SingleSelListCtrlMKMgr::OnKeyDown(UIMSG* pMsg, bool* pbInterestMsg)
     switch (pMsg->wParam)
     {
     case VK_DOWN:
+    case VK_RIGHT:  // icon listview
         OnKeyDown_down(pMsg);
         return;
 
     case VK_UP:
+    case VK_LEFT:  // icon listview
         OnKeyDown_up(pMsg);
         return;
 

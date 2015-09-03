@@ -31,22 +31,74 @@ UI_IMPLEMENT_Ixxx_INTERFACE_CreateImpl(IControlAnimateBase, ControlAnimateBase, 
 UI_IMPLEMENT_Ixxx_INTERFACE_Construct2(ISlideAnimate, SlideAnimate)
 UI_IMPLEMENT_Ixxx_INTERFACE_CreateImpl(ISlideAnimate, SlideAnimate, ControlAnimateBase)
 
-ITimeline*  IStoryboard::FindTimeline(int nTimelineId)   { return m_pStoryboardImpl->FindTimeline(nTimelineId); }
-ITimeline*  IStoryboard::GetTimeline(unsigned int nIndex){ return m_pStoryboardImpl->GetTimeline(nIndex); }
-IIntTimeline*    IStoryboard::CreateIntTimeline(int nTimelineId)   { return m_pStoryboardImpl->CreateIntTimeline(nTimelineId); }
-IFloatTimeline*  IStoryboard::CreateFloatTimeline(int nTimelineId) { return m_pStoryboardImpl->CreateFloatTimeline(nTimelineId); }
-INoneTimeline*   IStoryboard::CreateNoneTimeline(int nTimelineId)  { return m_pStoryboardImpl->CreateNoneTimeline(nTimelineId); }
-void  IStoryboard::Begin()                               { m_pStoryboardImpl->Begin(); }
-void  IStoryboard::BeginBlock()                          { m_pStoryboardImpl->BeginBlock(); }
-IMessage*  IStoryboard::GetNotifyObj()                   { return m_pStoryboardImpl->GetNotifyObj(); }
-void  IStoryboard::SetNotifyObj(IMessage* pNotify)       { m_pStoryboardImpl->SetNotifyObj(pNotify); }
-void  IStoryboard::SetId(int nID)                        { m_pStoryboardImpl->SetId(nID) ;}
-int   IStoryboard::GetId()                               { return m_pStoryboardImpl->GetId(); }
-bool  IStoryboard::IsFinish()                            { return m_pStoryboardImpl->IsFinish(); }
-void    IStoryboard::SetWParam(WPARAM wParam)            { m_pStoryboardImpl->SetWParam(wParam); }
-WPARAM  IStoryboard::GetWParam()                         { return m_pStoryboardImpl->GetWParam(); }
-void    IStoryboard::SetLParam(LPARAM lParam)            { m_pStoryboardImpl->SetLParam(lParam); }
-LPARAM  IStoryboard::GetLParam()                         { return m_pStoryboardImpl->GetLParam(); }
+ITimeline*  IStoryboard::FindTimeline(int nTimelineId)   
+{ 
+    return m_pStoryboardImpl->FindTimeline(nTimelineId);
+}
+ITimeline*  IStoryboard::GetTimeline(unsigned int nIndex)
+{
+    return m_pStoryboardImpl->GetTimeline(nIndex); 
+}
+IIntTimeline*    IStoryboard::CreateIntTimeline(int nTimelineId)   
+{
+    return m_pStoryboardImpl->CreateIntTimeline(nTimelineId); 
+}
+IFloatTimeline*  IStoryboard::CreateFloatTimeline(int nTimelineId) 
+{ 
+    return m_pStoryboardImpl->CreateFloatTimeline(nTimelineId); 
+}
+INoneTimeline*   IStoryboard::CreateNoneTimeline(int nTimelineId)  
+{
+    return m_pStoryboardImpl->CreateNoneTimeline(nTimelineId);
+}
+void  IStoryboard::Begin()                              
+{ 
+    m_pStoryboardImpl->Begin(); 
+}
+void  IStoryboard::BeginBlock()                          
+{ 
+    m_pStoryboardImpl->BeginBlock();
+}
+void  IStoryboard::BeginDelay(long lElapse)             
+{
+    m_pStoryboardImpl->BeginDelay(lElapse); 
+}
+IMessage*  IStoryboard::GetNotifyObj()                  
+{ 
+    return m_pStoryboardImpl->GetNotifyObj(); 
+}
+void  IStoryboard::SetNotifyObj(IMessage* pNotify)      
+{ 
+    m_pStoryboardImpl->SetNotifyObj(pNotify);
+}
+void  IStoryboard::SetId(int nID)                        
+{
+    m_pStoryboardImpl->SetId(nID) ;
+}
+int   IStoryboard::GetId()                               
+{
+    return m_pStoryboardImpl->GetId();
+}
+bool  IStoryboard::IsFinish()                            
+{
+    return m_pStoryboardImpl->IsFinish();
+}
+void  IStoryboard::SetWParam(WPARAM wParam)              
+{ 
+    m_pStoryboardImpl->SetWParam(wParam);
+}
+WPARAM  IStoryboard::GetWParam()                         
+{ 
+    return m_pStoryboardImpl->GetWParam();
+}
+void  IStoryboard::SetLParam(LPARAM lParam)              
+{
+    m_pStoryboardImpl->SetLParam(lParam); 
+}
+LPARAM  IStoryboard::GetLParam()                      
+{
+    return m_pStoryboardImpl->GetLParam(); 
+}
 
 void  IWindowAnimateBase::UpdateWindowSourceImage()
 {
@@ -55,13 +107,31 @@ void  IWindowAnimateBase::UpdateWindowSourceImage()
 
 //////////////////////////////////////////////////////////////////////////
 
-float*  IWindow3DAnimate::GetRotateXPtr() { return m_pWindow3DAnimateImpl->GetRotateXPtr(); }
-float*  IWindow3DAnimate::GetRotateYPtr() { return m_pWindow3DAnimateImpl->GetRotateYPtr(); }
-float*  IWindow3DAnimate::GetRotateZPtr() { return m_pWindow3DAnimateImpl->GetRotateZPtr(); }
+float*  IWindow3DAnimate::GetRotateXPtr()
+{
+    return m_pWindow3DAnimateImpl->GetRotateXPtr(); 
+}
+float*  IWindow3DAnimate::GetRotateYPtr()
+{ 
+    return m_pWindow3DAnimateImpl->GetRotateYPtr();
+}
+float*  IWindow3DAnimate::GetRotateZPtr()
+{
+    return m_pWindow3DAnimateImpl->GetRotateZPtr();
+}
 
-int*  IWindow3DAnimate::GetOffsetXPtr() { return m_pWindow3DAnimateImpl->GetOffsetXPtr(); }
-int*  IWindow3DAnimate::GetOffsetYPtr() { return m_pWindow3DAnimateImpl->GetOffsetYPtr(); }
-int*  IWindow3DAnimate::GetOffsetZPtr() { return m_pWindow3DAnimateImpl->GetOffsetZPtr(); }
+int*  IWindow3DAnimate::GetOffsetXPtr()
+{ 
+    return m_pWindow3DAnimateImpl->GetOffsetXPtr();
+}
+int*  IWindow3DAnimate::GetOffsetYPtr()
+{ 
+    return m_pWindow3DAnimateImpl->GetOffsetYPtr();
+}
+int*  IWindow3DAnimate::GetOffsetZPtr() 
+{
+    return m_pWindow3DAnimateImpl->GetOffsetZPtr();
+}
 
 //////////////////////////////////////////////////////////////////////////
 

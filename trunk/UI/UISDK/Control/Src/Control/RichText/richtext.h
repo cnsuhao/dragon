@@ -14,7 +14,7 @@ public:
 	UI_DECLARE_OBJECT(RichText, OBJ_CONTROL|CONTROL_LABEL)
 
 	UI_BEGIN_MSG_MAP
-		UIMSG_WM_PAINT(OnPaint)
+		UIMSG_WM_PAINT2(OnPaint)
 		UIMSG_WM_MOUSEMOVE(OnMouseMove)
 		UIMSG_WM_MOUSELEAVE(OnMouseLeave)
 		UIMSG_WM_SETCURSOR(OnSetCursor)
@@ -40,7 +40,7 @@ public:
 
 protected:
 	void  OnInitialize();
-	void  OnPaint(IRenderTarget* pRT);
+	void  OnPaint(IRenderTarget* pRT, RenderContext* pContext);
     void  OnSize(UINT nType, int cx, int cy);
 	void  OnMouseMove(UINT nFlags, POINT point);
 	void  OnMouseLeave();

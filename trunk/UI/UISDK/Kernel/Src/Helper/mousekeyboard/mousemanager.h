@@ -76,6 +76,9 @@ protected:
     LRESULT  OnRButtonDown(WPARAM,LPARAM);
     LRESULT  OnRButtonUp  (WPARAM,LPARAM);
     LRESULT  OnLButtonDBClick(WPARAM,LPARAM, BOOL* pbHandled);
+    LRESULT  OnMButtonDown(WPARAM,LPARAM);
+    LRESULT  OnMButtonDBClick(WPARAM,LPARAM);
+    LRESULT  OnMButtonUp  (WPARAM,LPARAM);
     LRESULT  OnImeMsg(UINT, WPARAM, LPARAM, BOOL* pbHandled);
     void  OnKillFocus(HWND hWndFocus);
     void  OnSetFocus();
@@ -113,6 +116,7 @@ protected:
     Object*  m_pObjHover;                // 是否有对象处于鼠标下面
     Object*  m_pObjPress;                // 是否有对象已被按下
     Object*  m_pObjRPress;               // 右键点击对象，用于判断是否需要给谁发送RButtonUp消息（仅在RDown、RUp中处理，其它逻辑中不管，越简单越好） 
+    Object*  m_pObjMPress;
     Object*  m_pObjGesture;              // 手势作用的对象
     
     Object*  m_pOldFocusObject;          // 临时对象，用于记录焦点发生变化过程中的旧的焦点对象

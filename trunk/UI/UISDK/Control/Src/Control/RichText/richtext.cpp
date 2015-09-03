@@ -28,7 +28,7 @@ void  RichText::OnInitialize()
 	m_pMKMgr = m_doc.GetMKMgr();
 }
 
-void  RichText::OnPaint(IRenderTarget* pRT)
+void  RichText::OnPaint(IRenderTarget* pRT, RenderContext* pContext)
 {
     if (m_bNeedLayout)
     {
@@ -49,6 +49,18 @@ void  RichText::OnPaint(IRenderTarget* pRT)
 	HDC hDC = pRT->GetHDC();
 	POINT pt = {0, 0};
 	m_doc.Render2DC(hDC, pt);
+
+    if (pRT->IsRenderAlphaChannel())
+    {
+        Util::FixAlphaData data = {0};
+        data.hDC = hDC;
+        RECT  rc = pContext->m_curDrawRegionInLayer;
+        OffsetRect(&rc, pContext->m_ptBufferOffset.x, pContext->m_ptBufferOffset.y);  // »º´æ»¹ÓÐÆ«ÒÆ
+        data.lprc = &rc;
+        data.bTopDownDib = TRUE;
+        data.eMode = Util::SET_ALPHA_255_IF_ALPHA_IS_0;
+        Util::FixBitmapAlpha(&data);
+    }
 }
 
 void  RichText::OnSize(UINT nType, int cx, int cy)

@@ -45,8 +45,9 @@ DepthStencilState EnableDepth
 RasterizerState Rasterizer
 {
     CullMode = NONE;
-	MultisampleEnable = TRUE;
+	MultisampleEnable = TRUE;       // 开启抗锯齿
 	AntialiasedLineEnable = FALSE;
+	ScissorEnable = TRUE;           // 开启剪裁模式
 };
 
 struct VS_OUTPUT
@@ -91,7 +92,6 @@ VS_OUTPUT VSMatrix(
 	return Output;
 }
 
-// TODO: 考虑下使用clip能否使用剪裁功能
 float4 PS( VS_OUTPUT In ) : SV_Target
 {    
 	return g_Texture.Sample( Sampler, In.Tex ) * In.Dif;
