@@ -117,13 +117,31 @@ void  TreeView::OnSerialize(SERIALIZEDATA* pData)
 //         }
 //     }
 
-	AttributeSerializerWrap  as(pData, TEXT("TreeView"));
-	as.AddStringEnum(XML_EXPANDICON_RENDER_TYPE_PREFIX XML_RENDER_TYPE, this,
-		memfun_cast<pfnStringSetter>(&TreeView::LoadExpandIconRender),
-		memfun_cast<pfnStringGetter>(&TreeView::SaveExpandIconRender))
-		->FillRenderBaseTypeData()
-		->ReloadOnChanged();
+		{
+			AttributeSerializerWrap  as(pData, TEXT("TreeView"));
+				as.AddStringEnum(XML_EXPANDICON_RENDER_TYPE_PREFIX XML_RENDER_TYPE, this,
+					memfun_cast<pfnStringSetter>(&TreeView::LoadExpandIconRender),
+					memfun_cast<pfnStringGetter>(&TreeView::SaveExpandIconRender))
+					->FillRenderBaseTypeData()
+					->ReloadOnChanged();	
+		}
 
+		// 展开图标
+		if (m_pExpandIcon)
+		{
+			SERIALIZEDATA data(*pData);
+			data.szParentKey = XML_EXPANDICON_RENDER_TYPE_PREFIX XML_RENDER_TYPE;
+			data.szPrefix = XML_EXPANDICON_RENDER_TYPE_PREFIX;
+
+			// 在editor中，动态修改render type不要清除属性。
+			// 1. 属性可能共用一个key，如render.image=，即使换了type，属性也可以共享
+			// 2. 要实现undo/redo，不能丢掉属性
+			if (data.pUIApplication->IsDesignMode()) 
+				data.SetErase(false);
+
+			m_pExpandIcon->Serialize(&data);
+		}
+		
 //     if (NULL == m_pExpandIcon)
 //     {
 //         pUIApp->CreateRenderBase(RENDER_TYPE_THEME_TREEVIEW_EXPANDCOLLAPSE_ICON, m_pITreeView, &m_pExpandIcon);
