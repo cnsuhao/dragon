@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<skin>
+	<layout>
+		<Window needalphachannel="1" id="DemoWnd" layer="1" bkgnd.render.type="color" width="700" height="500" bkgnd.render.color="0xFFFFFFFF" font="default" text="图片3D旋转示例：">
+			<PictureCtrl id="pic" rejectmousemsg="1" bkgnd.render.type="image" layout.align="center|vcenter" bkgnd.render.image="test.png" bkgnd.render.image.alpha="255" />
+		</Window>
+	</layout>
+</skin>

@@ -1,0 +1,21 @@
+
+输出目录
+$(SolutionDir)Bin\$(ConfigurationName)\UI\
+$(SolutionDir)bin\$(ConfigurationName)\Demo\$(ProjectName)
+
+中间目录
+$(SolutionDir)Build\temp\$(ConfigurationName)\$(ProjectName)\
+
+附加包含目录
+$(SolutionDir)
+
+附加库目录
+$(SolutionDir)Build\lib\$(ConfigurationName)\
+
+PDB
+$(SolutionDir)Build\pdb\$(ConfigurationName)\$(TargetName).pdb
+导入库
+$(SolutionDir)Build\lib\$(ConfigurationName)\$(TargetName).lib
+
+Demo工程：
+延时加载DLL: uisdk.dll;uictrls.dll;uiutil.dll
