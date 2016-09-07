@@ -1,0 +1,55 @@
+﻿<skin>
+  <layout>
+    <CustomWindow id="Window" width="300" height="300">
+      <prop>
+        <x key="back.render" type="color" color="0xFFFFFFFF"/>
+        <x key="transparent" type="layered"/> 
+      </prop>
+      <Panel width="300" heght="200">
+        <prop>
+          <x key="layout" type="vert" layout.space="10"/>
+        </prop>
+        <Button id="btn" width="100" height="100" tooltip="100*100" padding="5" text="#ok">
+          <prop>
+            <x key="back.render" type="imagelist" image="btn" image.drawtype="stretch" image.9region="20"/>
+            <x key="fore.render" type="image" image="icon" image.drawtype="center"/>
+            <x key="text.render" type="simple" align="center|vcenter"/>
+          </prop>
+        </Button>
+      
+        <Label id="label1"/>
+        <Label id="label2" height="30"/>
+        <Picture id="pic" width="32" height="32" layout.align="left" back.render.type="image" back.render.image="icon2" back.render.image.drawtype="stretch"/>
+      </Panel>
+    </CustomWindow>
+
+    <CustomWindow id="Menu.Default" padding="7">
+      <prop>
+        <x key="back.render" type="image" image="menu.back" image.drawtype="stretch" image.9region="35,10,10,10"/>
+        <x key="transparent" type="layered"/>
+      </prop>
+      <Menu icongutterwidth="25" separatorheight="3">
+        <prop>
+          <x key="fore.render" type="imagelist" image="menu.fore" image.drawtype="stretch" image.9region="3"/>
+          <x key="text.render" type="colorlist" color="0xF000;0xFFFF;0xFFFF"/>
+          <x key="separator.render" type="image" image="menu.sep" image.drawtype="stretch" image.9region="1"/>
+        </prop>
+        <String text="TestMenuItem"/>
+      </Menu>
+    </CustomWindow>
+  </layout>
+  <i18n>
+    <string id="ok" zh_cn="确定" en_us="OK"/>
+  </i18n>
+  <font>
+    <item id="normal" face="微软雅黑" size="10"/>
+  </font>
+  <image>
+    <imagelist id="btn" path="btn.png" layout="h" count="3"/>
+    
+    <!--menu-->
+    <image id="menu.back" path="menu/menu_bkg.png"/>
+    <imagelist id="menu.fore" path="menu/menu_highlight.png" layout="h" count="3"/>
+    <image id="menu.sep" path="menu/menu_cutling.png"/>
+  </image>
+</skin>
