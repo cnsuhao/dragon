@@ -1,3 +1,0 @@
-1. 使用VS2008进行编译。
-2. UICompositor使用了DirectX 10, 需要安装DirectX SDK，如Microsoft DirectX SDK (August 2009)
-   
