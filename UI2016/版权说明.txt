@@ -1,0 +1,14 @@
+Dragon - UI Library
+
+Writeen by leeihcy
+Copyright (c) 2009-2016 Dragon - UI Library. All Rights Reserved.
+
+1. Dragon - UI Library旨在相互交流、学习Windows下UI开发,本代码可免费用于以学习为目的的开发。
+
+2. 任何软件如使用了本库，须在软件中标识对本库的引用。
+
+3. 禁止任何人通过修改本库代码进行二次发布，或改名发布。
+
+4. 本代码目前开源代码地址为：http://code.taobao.org/svn/dragon
+   QQ交流群：28927781
+

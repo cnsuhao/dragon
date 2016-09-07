@@ -1,0 +1,33 @@
+﻿<skin>
+  <layout>
+    <CustomWindow id="LoginWnd" width="268" height="364" transparent.type="layered" padding="20">
+      <prop>
+        <x key="back.render" type="image" image="bkg"/>
+      </prop>
+      <Edit id="edit" text="This is a edit control!!">
+        <prop>
+          <x width="202" height="30" padding="3"/>
+          <x key="back.render" type="color" color="0xFFFF" border="1" border.color="0xF333"/>
+          <x key="color" text="0xF00F" select="0xFF00" select.back="0xFFF0" quiet="0xF0F"/>
+        </prop>
+      </Edit>
+      <Button id="btn"  text="登录">
+        <prop>
+          <x key="layout" width="201" height="58" bottom="30" align="center"/>
+        </prop>
+      </Button>
+    </CustomWindow>
+  </layout>
+
+  <image>
+    <image id="bkg" path="login_bg.png"/>
+  </image>
+  <style>
+    <Button handcursor="1">
+      <prop>
+        <x key="back.render" type="imagelist" image="btn" image.drawtype="stretch" image.9region="10"/>
+        <x key="text.render" type="colorlist"  align="center|vcenter" color="0xFFF;0xeee;0xFFF;"/>
+      </prop>
+    </Button>
+  </style>
+</skin>
