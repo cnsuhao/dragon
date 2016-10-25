@@ -1,0 +1,22 @@
+﻿<skin>
+  <layout>
+    <Window id="Window" width="300" height="300">
+      <prop>
+        <x key="back.render" type="color" color="0xFFffffff"/>
+        <x key="transparent" type="layered"/> 
+      </prop>
+        <Button id="btn" layout.left="0" layout.top="0" width="100" height="30" tooltip="100*100" padding="5" text="UI按钮">
+            <prop>
+                <x key="back.render" type="imagelist" image="button1" image.drawtype="stretch" image.9region="5"/>
+                <x key="text.render" type="simple" align="center|vcenter"/>
+            </prop>
+        </Button>
+    </Window>  
+  </layout>
+  <font>
+    <item id="normal" face="微软雅黑" size="10"/>
+  </font>
+    <image>
+        <imagelist id="button1" path="button1.png" layout="v" count="3" />
+    </image>
+</skin>

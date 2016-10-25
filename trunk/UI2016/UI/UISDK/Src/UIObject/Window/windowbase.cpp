@@ -814,7 +814,7 @@ LRESULT  WindowBase::WndProc_GetRetValue(UINT uMsg, WPARAM wParam, LPARAM lParam
         }
         else
         {
-            lResult = DefWindowProc(uMsg, wParam, lParam);
+            lResult = m_oldWndProc/*DefWindowProc*/(m_hWnd, uMsg, wParam, lParam);
         }
     }
     return lResult;
