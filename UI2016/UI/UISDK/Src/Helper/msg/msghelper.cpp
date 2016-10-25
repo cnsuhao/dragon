@@ -27,10 +27,17 @@ BOOL ForwardPostMessageWindow::ProcessWindowMessage(HWND hWnd, UINT uMsg, WPARAM
 		MSG  msg;
 		while (::PeekMessage(&msg, m_hWnd, UI_MSG_POSTMESSAGE, UI_MSG_POSTMESSAGE, PM_REMOVE))
 		{
-			UIMSG* pMsg = (UIMSG*)msg.wParam;
-            if (pMsg->pMsgTo)
-                pMsg->pMsgTo->RemoveDelayRef((void**)&(pMsg->pMsgTo));
-			delete pMsg;
+            if (msg.message == UI_MSG_POSTMESSAGE)
+            {
+                UIMSG* pMsg = (UIMSG*)msg.wParam;
+                if (pMsg->pMsgTo)
+                    pMsg->pMsgTo->RemoveDelayRef((void**)&(pMsg->pMsgTo));
+                delete pMsg;
+            }
+            else
+            {
+                break;
+            }
 		}
 	}
 

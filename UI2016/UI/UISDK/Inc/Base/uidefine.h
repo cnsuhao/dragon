@@ -146,9 +146,9 @@ inline  int RECTH(RECT& rc)  { return rc.bottom - rc.top; }
 //	release版本下断言输出，可以利用debugview.exe看到断言错误
 //  remark: __FILE__ ...这些都是char*类型的
 //
-#ifdef ASSERT
-#undef ASSERT  // 避免使用ASSERT，请使用UIASSERT
-#endif
+// #ifdef ASSERT
+// #undef ASSERT  // 避免使用ASSERT，请使用UIASSERT
+// #endif
 
 #ifdef _DEBUG
 #define UIASSERT(x)   \
