@@ -718,6 +718,14 @@ void  ScrollBarManager::SetVScrollRange(int nY)
         return;
 }
 
+void  ScrollBarManager::SetVScrollPage(int ny)
+{
+    UISCROLLINFO info_v;
+    info_v.nMask = UISIF_PAGE;
+    info_v.nPage = ny;
+    _SetScrollInfo1(VSCROLLBAR, &info_v);
+}
+
 void  ScrollBarManager::SetScrollPageAndRange(const SIZE* pPage, const SIZE* pRange)
 {
     if (NULL == pPage || NULL == pRange)

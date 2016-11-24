@@ -141,7 +141,7 @@ bool  Region9Attribute::IsDefaultValue()
 	return r.IsEqual(m_rDefault);
 }
 
-void  Region9Attribute::Editor(AttributeEditorProxy* p, EditorAttributeFlag e)
+void  Region9Attribute::Editor(SERIALIZEDATA* pData, AttributeEditorProxy* p, EditorAttributeFlag e)
 {
     p->Region92Editor(this, e);
 }

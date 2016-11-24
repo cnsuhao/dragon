@@ -2,6 +2,8 @@
 #include "layer.h"
 #include "compositor.h"
 #include "Src\Base\Application\uiapplication.h"
+#include "..\Base\Object\object_layer.h"
+#include "..\Base\Object\object.h"
 
 using namespace UI;
 
@@ -238,6 +240,12 @@ void  Layer::OnSize( uint nWidth, uint nHeight )
     m_size.cy = nHeight;
     Invalidate(NULL);
 
+    if (!m_pRenderTarget)
+    {
+        GetRenderTarget();
+    }
+    m_pRenderTarget->ResizeRenderBuffer(nWidth, nHeight);
+
     virtualOnSize(nWidth, nHeight);
 }
 
@@ -404,6 +412,7 @@ UIA::E_ANIMATE_TICK_RESULT Layer::OnAnimateTick(UIA::IStoryboard* pStoryboard)
 			m_nOpacity_Render = (byte)pStoryboard->
 				GetTimeline(0)->GetCurrentIntValue();
 
+            static_cast<ObjectLayer*>(m_pLayerContent)->GetObjet().Invalidate();
 			// 有可能是block动画，需要立即刷新
 			m_pCompositor->DoInvalidate();
 		}
@@ -470,3 +479,21 @@ void  Layer::EnableAutoAnimate(bool b)
 //     m_pAnimateFinishCallback = pfn;
 //     m_pAnimateFinishCallbackUserData = pUserData;
 // }
+
+
+IRenderTarget*  Layer::GetRenderTarget()
+{
+    if (!m_pRenderTarget)
+    {
+        if (!m_pCompositor)
+            return NULL;
+
+        m_pCompositor->CreateRenderTarget(&m_pRenderTarget);
+        if (!m_pRenderTarget)
+            return NULL;
+
+        m_pRenderTarget->CreateRenderBuffer(NULL);
+    }
+
+    return m_pRenderTarget;
+}

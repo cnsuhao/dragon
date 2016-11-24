@@ -1,5 +1,5 @@
-#ifndef IWINDWOBASE_H_45FADAE6_FB0B_49e0_8119_6F6D58FD5700
-#define IWINDWOBASE_H_45FADAE6_FB0B_49e0_8119_6F6D58FD5700
+#ifndef _INCLUDED_IWINDOW_
+#define _INCLUDED_IWINDOW_
 
 #include "irenderlayer.h"
 #include "ipanel.h"
@@ -8,6 +8,13 @@ namespace UI
 {
 interface IWindowMouseMgr;
 interface IWindowKeyboardMgr;
+
+//
+//  非UI消息，采用::SendMessage发送
+//  处理一个同步移动窗口事件(添加、修改、删除)
+//		wparam:  SYNC_WINDOW_EVENT_TYPE
+//		lparam:  具体查看SYNC_WINDOW_EVENT_TYPE定义
+#define UI_WM_SYNC_WINDOW  (WM_USER+827)
 
 #define ANCHOR_NONE        0
 #define ANCHOR_LEFT        0x0001
@@ -19,6 +26,7 @@ interface IWindowKeyboardMgr;
 #define ANCHOR_OUT_TOP     0x0040
 #define ANCHOR_OUT_BOTTOM  0x0080
 #define ANCHOR_CUSTOM      0x0100   // 发送UI_WM_SYNC_WINDOWPOSCHANGING消息给窗口，由窗口自行决定如何移动自己
+#define ANCHOR_CLIENTREGION  0x200  // 与host的客户区对齐，例如host是个普通边框窗口
 
 
 enum SYNC_WINDOW_EVENT_TYPE
@@ -33,6 +41,8 @@ enum SYNC_WINDOW_EVENT_TYPE
 
     HOST_WINDOW_DESTROYED,      // 要跟随的HOST销毁了，清空自己的HOST句柄. LPARAM: 无
     HOST_WINDOW_POSCHANGING,    // 发送给SITE窗口，标明下一次响应的WindowPosChaning消息是因为HOST移动产生的
+
+    SYNC_NOW,                   // 发送给host，立即同步一次，如窗口刚创建完成
 };
 
 struct  AnchorData
@@ -55,10 +65,12 @@ struct  AnchorData
     }
 };
 
-#define SWDS_MASK_ANCHORTYPE 0x0001
-#define SWDS_MASK_ANCHORDATA 0x0002
-#define SWDS_MASK_ANCHORON   0x0004
-#define SWDS_MASK_ALL   (SWDS_MASK_ANCHORTYPE|SWDS_MASK_ANCHORDATA|SWDS_MASK_ANCHORON)
+#define SWDS_MASK_ANCHORTYPE    0x1
+#define SWDS_MASK_ANCHORDATA    0x2
+#define SWDS_MASK_ANCHORON      0x4
+#define SWDS_MASK_SYNC_VISIBLE  0x8
+#define SWDS_MASK_ALL           0xFFFF
+
 struct  SyncWindowData
 {
     HWND         m_hWnd;           
@@ -82,6 +94,7 @@ struct  SyncWindowData
 // window style
 typedef struct tagWindowStyle
 {
+    bool  initialized : 1;     // 已初始化完成
 	bool  destroyed : 1;       // 表示该窗口已经被销毁了(WM_NCDESTROY)，用于触发OnFinalMessage
 	bool  attach : 1;          // 表示该窗口是attach的，创建、销毁由外部来控制
 	bool  setcreaterect : 1;   // 创建窗口时指定了窗口大小，不用再进行窗口布局了
@@ -91,18 +104,21 @@ typedef struct tagWindowStyle
 
 // 用于外部业务实现者处理窗口消息。
 // 外部不再要求从IWindowBase派生，只需要实现IWindowMessageCallback接口即可。
-interface IWindowMessageCallback
+interface IWindowDelegate
 {
-	virtual BOOL  OnWindowMessage(UINT, WPARAM, LPARAM, LRESULT& lResult) = 0;
-	virtual BOOL  OnWindowUIMessage(UIMSG* pMsg) = 0;
+    virtual BOOL  OnWindowMessage(UINT, WPARAM, LPARAM, LRESULT& lResult) { return FALSE; }
+    virtual BOOL  OnWindowUIMessage(UIMSG* pMsg) { return FALSE; }
+    virtual void  OnWindowInitialize() {}
+    virtual void  OnWindowClose(bool& bCanClose) { }
+    virtual void  OnWindowDestroy() {};
 };
 
 class WindowBase;
-interface __declspec(uuid("1C7CED21-3CF6-49C9-9E52-72522C8A1CF6"))
-UISDKAPI IWindowBase : public IPanel
+interface UIAPI_UUID(1C7CED21-3CF6-49C9-9E52-72522C8A1CF6) IWindowBase
+ : public IPanel
 {
     HWND  GetHWND();
-    IWindowRender*  GetIWindowRender();
+    IWindowRender*  GetWindowRender();
 	ISkinRes*  GetSkinRes();
 
     BOOL  IsChildWindow();
@@ -129,33 +145,35 @@ UISDKAPI IWindowBase : public IPanel
     void  EndDialog(INT_PTR);
 	void  DestroyWindow();
 
-    void  UpdateWindow(HDC hDC, RECT* prcInvalid);
     void  SaveMemBitmap(TCHAR* szFile);
     void  DrawMemBitmap(HDC hDC, RECT* prc, bool bAlphaBlend);
     void  EnableDwmTransition(bool b);
 	void  EnableGpuComposite(bool b);
 	bool  IsGpuComposite();
 	void  DirectComposite();
-	void  SetWindowMessageCallback(IWindowMessageCallback*);
+	void  SetWindowMessageCallback(IWindowDelegate*);
 
     void  CalcWindowSizeByClientSize( SIZE sizeClient, SIZE* pSizeWindow );
     void  CalcClientRectByWindowRect( RECT* rcWindow, RECT* rcClient );
 
-    bool  AddAnchorItem(const SyncWindowData& data);
-    void  HideAllAnchorItem();
+//     bool  AddAnchorItem(const SyncWindowData& data);
+//     void  HideAllAnchorItem();
 
     HRESULT  SetDroppable(bool b);
 
+	signal_mc<long>&  SizeChangedEvent();
+    signal_mc<bool&>&  OnCloseEvent();  // void  OnWindowClose(bool& bCanClose);
     UI_DECLARE_INTERFACE(WindowBase);
 };
 
+
 class Window;
-interface __declspec(uuid("5C36801E-5929-4512-A998-F9719DCC6903"))
-UISDKAPI IWindow : public IWindowBase
+interface UIAPI_UUID(5C36801E-5929-4512-A998-F9719DCC6903) IWindow
+ : public IWindowBase
 {
     UI_DECLARE_INTERFACE(Window)
 };
 
 }
 
-#endif  // IWINDWOBASE_H_45FADAE6_FB0B_49e0_8119_6F6D58FD5700
+#endif  // _INCLUDED_IWINDOW_

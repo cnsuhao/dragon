@@ -1,12 +1,11 @@
 #include "stdafx.h"
-#if 0
+#if ENABLE_HARDCOMPOSITION
 #include "hardware_layer.h"
 #include "hardware_compositor.h"
-using namespace UI;
+#include "../UICompositor/Inc/inc.h"
 
 HardwareLayer::HardwareLayer()
 {
-    m_pRenderTarget = NULL;
     m_pGpuTexture = NULL;
 }
 
@@ -15,7 +14,6 @@ HardwareLayer::~HardwareLayer()
     SAFE_RELEASE(m_pRenderTarget);
     SAFE_RELEASE(m_pGpuTexture);
 }
-
 
 // void  HardwareLayer::DrawFull()
 // {
@@ -109,31 +107,9 @@ void HardwareLayer::upload_2_gpu()
 }
 
 
-IRenderTarget*  HardwareLayer::GetRenderTarget()
-{
-    if (!m_pRenderTarget)        
-    {
-        if (!m_pCompositor)
-            return NULL;
-
-        m_pCompositor->CreateRenderTarget(&m_pRenderTarget);
-        if (!m_pRenderTarget)
-            return NULL;
-
-        m_pRenderTarget->CreateRenderBuffer(NULL);
-    }
-
-    return m_pRenderTarget;
-}
 
 void  HardwareLayer::virtualOnSize(uint nWidth, uint nHeight)
 {
-    if (!m_pRenderTarget)
-    {
-        GetRenderTarget();
-    }
-    m_pRenderTarget->ResizeRenderBuffer(nWidth, nHeight);
-   
     if (m_pGpuTexture)
     {
         m_pGpuTexture->Resize(nWidth, nHeight);
@@ -171,16 +147,18 @@ void  HardwareLayer::Commit(GpuLayerCommitContext* pContext)
 	// 绕自身中心旋转时，需要知道这个对象在屏幕中的位置，然后才能计算出真正的旋转矩阵。
 	// 因此每次使用前设置一次。
 	m_transfrom3d.set_pos(rcWnd.left, rcWnd.top);
-	if (!m_transfrom3d.is_identity())
-	{
-		MATRIX44 mat;
-		m_transfrom3d.get_matrix(&mat);
-		m_pGpuTexture->Compositor(pContext, (float*)&mat);
-	}
-	else
-	{
-		m_pGpuTexture->Compositor(pContext, NULL);
-	}
+
+	UIASSERT(0);
+// 	if (!m_transfrom3d.is_identity())
+// 	{
+// 		MATRIX44 mat;
+// 		m_transfrom3d.get_matrix(&mat);
+// 		m_pGpuTexture->Compositor(pContext, (float*)&mat);
+// 	}
+// 	else
+// 	{
+// 		m_pGpuTexture->Compositor(pContext, NULL);
+// 	}
 }
 
 void  HardwareLayer::MapView2Layer(POINT* pPoint)

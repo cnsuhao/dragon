@@ -38,8 +38,8 @@ public:
 	~UIApplication(void);
     void  x_Init();  // 内部初始化，避免在构造函数中调用太多东西
 
-	void  SetDesignMode(bool b) { m_bDesignMode = b; }
-	bool  IsDesignMode() { return m_bDesignMode; }
+	void  SetEditorMode(bool b) { m_bEditorMode = b; }
+	bool  IsEditorMode() { return m_bEditorMode; }
 	void  SetUIEditorPtr(IUIEditor* p) { m_pUIEditor = p; }
 	IUIEditor*  GetUIEditorPtr() { return m_pUIEditor; }
 	
@@ -50,25 +50,20 @@ public:
 	GifTimerManager*    GetGifTimerMgr() { return m_pGifTimerMgr; }
 	IWaitForHandlesMgr*  GetWaitForHandlesMgr() { return &m_WaitForHandlesMgr; }
 	IMessageFilterMgr*  GetMessageFilterMgr() { return &m_MsgFilterMgr; }
-	HMODULE             GetUID2DModule();
-	HMODULE             GetUID3DModule();
+	HMODULE  GetUID2DModule();
+	HMODULE  GetUID3DModule();
 
 	RenderBaseFactory&  GetRenderBaseFactory() { return m_renderBaseFactory; }
 	TextRenderFactory&  GetTextRenderFactroy() { return m_textRenderFactroy; }
 	LayoutFactory&  GetLayoutFactory() { return m_layoutFactory; }
 
-	SkinRes*            GetDefaultSkinRes();
-	ImageManager*       GetActiveSkinImageMgr();
-	ImageRes*           GetActiveSkinImageRes();
-	CursorRes*          GetActiveSkinCursorRes();
-	GifRes*             GetActiveSkinGifRes();
-	FontManager*        GetActiveSkinFontMgr();
-	FontRes*            GetActiveSkinFontRes();
-	ColorManager*       GetActiveSkinColorMgr();
-	ColorRes*           GetActiveSkinColorRes();
-	StyleManager*       GetActiveSkinStyleMgr();
-	StyleRes*           GetActiveSkinStyleRes();
-	LayoutManager*      GetActiveSkinLayoutMgr();
+	LPCTSTR  GetRenderBaseName(int nType);
+	bool  CreateRenderBaseByName(
+				LPCTSTR szName, 
+                IObject* pObject, 
+                IRenderBase** ppOut);
+
+	SkinRes*  GetDefaultSkinRes();
 	
 	bool  ShowToolTip(TOOLTIPITEM* pItem);
 	void  HideToolTip();
@@ -116,7 +111,7 @@ private:
     // gpu合成
     bool  m_bGpuEnable;
     // 是否是设计模式
-    bool  m_bDesignMode;
+    bool  m_bEditorMode;
 
 	UIOBJ_CREATE_DATA         m_vecUIObjectDesc;       // 保存UI对象的XML字符串，用于从字符串创建UI对象
     UISKINTAGPARSE_DATA       m_mapSkinTagParseData;

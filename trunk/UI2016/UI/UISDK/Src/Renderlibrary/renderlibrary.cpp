@@ -179,7 +179,11 @@ IRenderTarget*  UICreateRenderTarget(IUIApplication* pUIApp, GRAPHICS_RENDER_LIB
     return pRenderTarget;
 }
 
-void  UICreateRenderBitmap(IUIApplication*  pUIApp, GRAPHICS_RENDER_LIBRARY_TYPE eGraphicsRenderType, IMAGE_ITEM_TYPE eType, IRenderBitmap** ppOut)
+void  UICreateRenderBitmap(
+        IUIApplication*  pUIApp, 
+        GRAPHICS_RENDER_LIBRARY_TYPE eGraphicsRenderType, 
+        IMAGE_ITEM_TYPE eType, 
+        IRenderBitmap** ppOut)
 {
     RenderBitmapFactory::CreateInstance(pUIApp, eGraphicsRenderType, eType, ppOut);
 }

@@ -274,9 +274,11 @@ bool  LayeredWindowWrap::IsMinimized()
 
 bool LayeredWindowWrap::Commit()
 {
+    if (!m_pWindow)
+        return false;
+
 	Layer*  pLayer = m_pWindow->GetLayer();
-	IRenderTarget* pRenderTarget =
-		static_cast<SoftwareLayer*>(pLayer)->GetRenderTarget();
+	IRenderTarget* pRenderTarget = pLayer->GetRenderTarget();
 
 	// 	RECT  rcOffset;
 	// 	pLayer->GetRectDrawInBuffer(&rcOffset);
@@ -284,6 +286,12 @@ bool LayeredWindowWrap::Commit()
 	// 主要是为了防止在分层窗口大小改变时，需要重新创建缓存，
 	// 在缓存完整绘制完一次之前禁止提交到窗口上
 	if (!m_pWindow->CanRedraw())
+		return true;
+
+	// TBD: 窗口还不可见（ComboBox的listbox），但触发了invalidate操作，会导致update layered window失败
+	// 这里先这么处理。
+	if (m_sizeWindow.cx <= 0 ||
+		m_sizeWindow.cy <= 0)
 		return true;
 
 	//POINT ptMemDC  = {rcOffset.left, rcOffset.top};
@@ -356,18 +364,22 @@ bool LayeredWindowWrap::Commit()
 //
 //	通知分层窗口新的位置和大小
 //
-LRESULT LayeredWindowWrap::_OnWindowPosChanged( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
+LRESULT LayeredWindowWrap::_OnWindowPosChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-    bHandled = FALSE;
-    LPWINDOWPOS lpWndPos = (LPWINDOWPOS)lParam;
-    OnWindowPosChanged(lpWndPos);
+	bHandled = FALSE;
+	LPWINDOWPOS lpWndPos = (LPWINDOWPOS)lParam;
+	OnWindowPosChanged(lpWndPos);
 
-    if (!(lpWndPos->flags & SWP_NOSIZE))
-    {
-        UpdateLayeredCaptionWindowRgn();
-    }
+	return 0;
+}
+
+LRESULT  LayeredWindowWrap::_OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	bHandled = FALSE;
+	UpdateLayeredCaptionWindowRgn();
     return 0;
 }
+
 void  LayeredWindowWrap::OnWindowPosChanged(LPWINDOWPOS lpWndPos)
 {
     // 最小化了，仅保存一下m_ptWindow，用于后面判断是否是最小化，不修改m_sizeWindow（不好处理）

@@ -12,6 +12,7 @@ PasswordEdit::PasswordEdit(IPasswordEdit* p) : Edit(p)
 	m_hHook = NULL;
 	m_nTimerId = 0;
 	m_nCreateThreadId = GetCurrentThreadId();
+    m_bShowDefaultIng = false;
 }
 
 PasswordEdit::~PasswordEdit()
@@ -58,10 +59,10 @@ void  PasswordEdit::OnSetFocus(IObject* pOldFocusObj)
 	}
 
 	// 默认密码状态下，点击进入编辑后，清空，让用户重新输入
-// 	if (m_bShowDefaultIng)
-// 	{
-// 		SetText(NULL);
-// 	}
+	if (m_bShowDefaultIng)
+	{
+		SetText(NULL);
+	}
 }
 
 void  PasswordEdit::OnKillFocus(IObject* pNewFocusObj)
@@ -70,13 +71,7 @@ void  PasswordEdit::OnKillFocus(IObject* pNewFocusObj)
 	UnInstallHook();
 	KillTimer();
 
-	// 默认密码状态下显示几个*
-// 	if (m_bShowDefaultIng)
-// 	{
-// 		String strText;
-// 		strText.append(DEFULAT_PASSWORD_CHAR_COUNT, GetPasswordChar());
-// 		SetText(strText.c_str());
-// 	}
+    UpdatePasswordCharInEdit();
 }
 
 static PasswordEdit* s_pActivePasswordEdit = NULL;
@@ -303,15 +298,15 @@ void PasswordEdit::OnHookPasswordChar(string strText)
 	int nSelLength = 0;
 	__super::GetSel2(nSelStart, nSelLength);
 
-	if (nSelLength > 0 /*|| m_bShowDefaultIng*/)
+	if (nSelLength > 0 || m_bShowDefaultIng)
 	{
-// 		if (m_bShowDefaultIng)
-// 		{
-// 			MapErase(0, m_rawPassword.size());
-// 			m_bShowDefaultIng = false;
-// 			nSelStart = 0;
-// 		}
-// 		else
+		if (m_bShowDefaultIng)
+		{
+			MapErase(0, m_rawPassword.size());
+			m_bShowDefaultIng = false;
+			nSelStart = 0;
+		}
+		else
 		{
 			MapErase(nSelStart, nSelLength);
 		}
@@ -366,9 +361,19 @@ void  PasswordEdit::MapErase(int startKey, int count)
 // 设置密码框中显示的*数量
 void PasswordEdit::UpdatePasswordCharInEdit()
 {
-	String strEditText;
-	GetPasswordCharInEdit(strEditText);
-	__super::SetText(strEditText.c_str());
+    // 默认密码状态下显示几个*
+    if (m_bShowDefaultIng)
+    {
+        String strText;
+        strText.append(DEFULAT_PASSWORD_CHAR_COUNT, GetPasswordChar());
+        SetText(strText.c_str());
+    }
+    else
+    {
+        String strEditText;
+        GetPasswordCharInEdit(strEditText);
+        __super::SetText(strEditText.c_str());
+    }
 }
 
 // 获取密码框中显示的*数量
@@ -385,38 +390,33 @@ void  PasswordEdit::GetPasswordCharInEdit(String& str)
 	}
 }
 
-// 获取真实密码
-void  PasswordEdit::GetRealPassword(String& str)
-{
-	for (int i = 0; i < (int)m_rawPassword.size(); i++)
-	{
-		string strOutBuf;
-		Base64Decode(m_rawPassword[i].data(), strOutBuf);
-
-		str.append((LPCTSTR)CA2T(strOutBuf.c_str()));
-	}
-}
-
 LRESULT  PasswordEdit::OnSetRealPassword(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	LPCTSTR szNewPassword = (LPCTSTR)wParam;
-
 	m_rawPassword.clear();
 
-	int nLength = 0;
-	if (szNewPassword)
-		nLength = _tcslen(szNewPassword);
+    if (!szNewPassword)
+    {
+        m_bShowDefaultIng = true;
+    }
+    else
+    {
+        int nLength = 0;
+        if (szNewPassword)
+            nLength = _tcslen(szNewPassword);
 
-	for (int i = 0; i < nLength; i++)
-	{
-		char b[2] = { LOBYTE(szNewPassword[i]), 0 };
-		string strEncode;
-		Base64Encode(b, strEncode);
-		m_rawPassword[i] = strEncode;
-	}
+        for (int i = 0; i < nLength; i++)
+        {
+            char b[2] = { LOBYTE(szNewPassword[i]), 0 };
+            string strEncode;
+            Base64Encode(b, strEncode);
+            m_rawPassword[i] = strEncode;
+        }
 
-// 	m_bHasInputContent = nLength > 0 ? true : false;
-// 	m_bShowDefaultIng = false;
+        // 	m_bHasInputContent = nLength > 0 ? true : false;
+        m_bShowDefaultIng = false;
+    }
+
 	UpdatePasswordCharInEdit();
 
 	SetSel(-1, 0);
@@ -425,28 +425,40 @@ LRESULT  PasswordEdit::OnSetRealPassword(UINT uMsg, WPARAM wParam, LPARAM lParam
 
 LRESULT  PasswordEdit::OnGetRealPassword(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	BSTR* pbstr = (BSTR*)wParam;
-	bool* pbIsDefault = (bool*)lParam;
-
-	GetRealPassword(pbstr, pbIsDefault);
-	return 0;
+	bool* pbIsDefault = (bool*)wParam;
+    return (LRESULT)GetRealPassword(pbIsDefault);
 }
-void  PasswordEdit::GetRealPassword(BSTR* pbstr, bool* pbIsDefault)
+LPCTSTR  PasswordEdit::GetRealPassword(bool* pbIsDefault)
 {
 	if (GetCurrentThreadId() != m_nCreateThreadId)
-		return;
+        return TEXT("");
 
-// 	if (pbIsDefault)
-// 		*pbIsDefault = m_bShowDefaultIng;
+	if (pbIsDefault)
+		*pbIsDefault = m_bShowDefaultIng;
 
-	if (pbstr /*&& !m_bShowDefaultIng*/)
+	if (!m_bShowDefaultIng)
 	{
-		String strText;
+		String& strText = GetTempBufferString();
 		GetRealPassword(strText);
 
-		*pbstr = SysAllocString(strText.c_str());
+        return strText.c_str();
 	}
+
+    return TEXT("");
 }
+
+// 获取真实密码
+void  PasswordEdit::GetRealPassword(String& str)
+{
+    for (int i = 0; i < (int)m_rawPassword.size(); i++)
+    {
+        string strOutBuf;
+        Base64Decode(m_rawPassword[i].data(), strOutBuf);
+
+        str.append((LPCTSTR)CA2T(strOutBuf.c_str()));
+    }
+}
+
 
 LRESULT  PasswordEdit::IgnoreMessage(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -471,12 +483,12 @@ void  PasswordEdit::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		int nSelStart = 0;
 		int nSelLength = 0;
 
-// 		if (m_bShowDefaultIng)
-// 		{
-// 			// TODO: m_bDeleteFlag = true;
-// 			m_bShowDefaultIng = false;
-// 		}
-// 		else
+		if (m_bShowDefaultIng)
+		{
+			// TODO: m_bDeleteFlag = true;
+			m_bShowDefaultIng = false;
+		}
+		else
 		{
 
 			__super::GetSel2(nSelStart, nSelLength);
@@ -511,11 +523,11 @@ void  PasswordEdit::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 				MapErase(nSelStart, nSelLength);
 			}
 		}
-// 		if (m_bShowDefaultIng)
-// 		{
-// 			// TODO: m_bDeleteFlag = true;
-// 			m_bShowDefaultIng = false;
-// 		}
+		if (m_bShowDefaultIng)
+		{
+			// TODO: m_bDeleteFlag = true;
+			m_bShowDefaultIng = false;
+		}
 		UpdatePasswordCharInEdit();
 		__super::SetSel2(nSelStart, 0);
 	}

@@ -1,33 +1,12 @@
 #pragma once
-
-#ifdef _UNICODE
-typedef wstring String;
-#else
-typedef string  String;
-#endif
+#include "../common/define.h"
 
 typedef CRect CRegion4;
 
+#ifndef uint
+typedef unsigned int uint;
+#endif
+
 bool IsKeyDown(UINT vk);
-
-
-#define SAFE_DELETE(p) \
-	if (p) \
-{ \
-	delete (p); \
-	(p) = NULL; \
-}
-
-#define SAFE_ARRAY_DELETE(p) \
-	if (p) \
-{ \
-	delete[] (p); \
-	(p) = NULL; \
-}
-
-#define SAFE_RELEASE(p) \
-	if (p) \
-{ \
-	(p)->Release(); \
-	(p) = NULL; \
-}
+LPTSTR  GetTempBuffer(int nMaxSize = 255);
+UI::String&  GetTempBufferString();

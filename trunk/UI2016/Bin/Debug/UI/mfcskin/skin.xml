@@ -1,15 +1,11 @@
 ﻿<skin>
   <layout>
     <Window id="Window" width="300" height="300">
-      <prop>
-        <x key="back.render" type="color" color="0xFFffffff"/>
-        <x key="transparent" type="layered"/> 
-      </prop>
+      <prop key="back.render" type="color" color="0xFFffffff"/>
+      <prop key="transparent" type="layered"/> 
         <Button id="btn" layout.left="0" layout.top="0" width="100" height="30" tooltip="100*100" padding="5" text="UI按钮">
-            <prop>
-                <x key="back.render" type="imagelist" image="button1" image.drawtype="stretch" image.9region="5"/>
-                <x key="text.render" type="simple" align="center|vcenter"/>
-            </prop>
+          <prop key="back.render" type="imagelist" image="button1" image.drawtype="stretch" image.9region="5"/>
+          <prop key="text.render" type="simple" align="center|vcenter"/>
         </Button>
     </Window>  
   </layout>

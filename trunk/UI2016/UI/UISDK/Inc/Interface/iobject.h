@@ -11,6 +11,7 @@ namespace UI
 	interface IRenderBase;
 	interface ILayer;
 	interface IMapAttribute;
+    interface ILayoutParam;
 
 	typedef struct tagObjStyle
 	{
@@ -41,7 +42,7 @@ namespace UI
 	}OBJSTYLE;
 	typedef struct tagObjState
 	{
-		char  visibility_ : 2;  // 0:collapsed 1:visible 2:hidden 
+		unsigned char visibility_ : 2;  // 0:collapsed 1:visible 2:hidden 
 		bool  disable : 1;
 		bool  press : 1;
 		bool  hover : 1;
@@ -56,29 +57,48 @@ namespace UI
 		bool  activate : 1;   // 给窗口使用
 	}OBJSTATE;
 
+    //struct DECLSPEC_UUID(x);
+
 	class Object;
-	interface __declspec(uuid("B2E563E6-46E7-45F1-B977-5884F217ACD2"))
-	UISDKAPI IObject : public IMessage
+	interface UIAPI IObject : public IMessage
 	{
 		IUIApplication* GetUIApplication();
 		ISkinRes*  GetSkinRes();
 		IWindowBase*  GetWindowObject();
 		void  SetDescription(IObjectDescription* p);
-		IObjectDescription*  GetDescription();
+		IObjectDescription*  GetDescription();  // 返回值不会为空
 		LPCTSTR  GetId();
+        void  SetId(LPCTSTR szText);
 		HWND  GetHWND();
+		void  InitDefaultAttrib();
 		void  GetMapAttribute(IMapAttribute** ppMapAttribute);
-		
+		void  SetOutRef(void** ppOutRef);
+        void  LoadAttributeFromMap(
+                    IMapAttribute* pMatAttrib, bool bReload);
+        void  LoadAttributeFromXml(
+                    IUIElement* pXmlElement, bool bReload);
+
 		IObject*  GetParentObject();
-		IObject*  FindChildObject(LPCTSTR szObjId);
-		IObject*  FindNcChildObject(LPCTSTR szObjId);
+		IObject*  FindObject(LPCTSTR szObjId);
+        IObject*  TryFindObject(LPCTSTR szObjId);
+		IObject*  FindNcObject(LPCTSTR szObjId);
+        IObject*  FindObject(UUID uuid);
 		IObject*  GetChildObject();
 		IObject*  GetNcChildObject();
 		IObject*  GetNextObject();
 		IObject*  GetPrevObject();
+        IObject*  GetLastChildObject();
+
+        IObject*  EnumChildObject(IObject* p);
+        IObject*  REnumChildObject(IObject* p);
+        IObject*  EnumNcChildObject(IObject* p);
+        IObject*  EnumAllChildObject(IObject* p);
 
 		void  AddChild(IObject* p);
 		void  AddNcChild(IObject*p);
+        bool  IsMyChild(IObject* pChild, bool bFindInGrand);
+        bool  RemoveChildInTree(IObject* pChild);
+        void  InsertChild(IObject* pObj, IObject* pInsertAfter);
 
 		void  Invalidate();
 		void  Invalidate(RECT* prcObj);
@@ -99,8 +119,8 @@ namespace UI
 		bool  IsFocus();
 		bool  CanTabstop();
 		void  SetEnable(bool b);
-		void  SetForceHover(bool b, bool bNotify);
-		void  SetForcePress(bool b, bool bNotify);
+		void  SetForceHover(bool b, bool bNotify = true);
+		void  SetForcePress(bool b, bool bNotify = true);
 		bool  SetMouseCapture(int nNotifyMsgId);
 		bool  ReleaseMouseCapture();
 		bool  SetFocusInWindow();
@@ -115,6 +135,7 @@ namespace UI
 		SIZE  GetDesiredSize();
 		int   GetWidth();
 		int   GetHeight();
+        ILayoutParam*  GetSafeLayoutParam();
 		void  SetPaddingRegion(REGION4* prc);
 		void  GetPaddingRegion(REGION4* prc);
 		void  SetMarginRegion(REGION4* prc);
@@ -125,6 +146,7 @@ namespace UI
 		void  GetExtNonClientRegion(REGION4* prc);
 		void  GetClientRectInObject(RECT* prc);
 		void  GetObjectClientRect(RECT* prc);
+        void  GetClientRectInWindow(RECT* prc);
 		void  ClientRect2ObjectRect(const RECT* rcClient, RECT* rcObj);
 		void  WindowRect2ObjectRect(const RECT* rcWindow, RECT* rcObj);
 		void  WindowPoint2ObjectPoint(const POINT* ptWindow, POINT* ptObj, bool bCalcTransform);
@@ -132,9 +154,14 @@ namespace UI
 
 		ITextRenderBase*  GetTextRender();
 		IRenderFont*  GetRenderFont();
-		IRenderBase*  GetBkRender();
+		IRenderBase*  GetBackRender();
 		IRenderBase*  GetForeRender();
+        void  SetBackRender(IRenderBase*);
 		ILayer*  GetLayer();
+		void  EnableLayer(bool);
+
+        void ForwardMessageToChildObject(UIMSG* pMsg);
+        void ForwardMessageToChildObject2(UIMSG* pMsg, UIMSG* pMsg2);
 
 		UI_DECLARE_INTERFACE(Object);
 	};

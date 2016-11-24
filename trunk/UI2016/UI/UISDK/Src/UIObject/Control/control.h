@@ -14,7 +14,7 @@ public:
 
 	UI_BEGIN_MSG_MAP()
 		UIMSG_GET_TOOLTIPINFO(OnGetToolTipInfo)
-        UIMSG_QUERYINTERFACE(Control)
+//        UIMSG_QUERYINTERFACE(Control)
         UIMSG_SERIALIZE(OnSerialize)
     UI_END_MSG_MAP_CHAIN_PARENT(Object)
 

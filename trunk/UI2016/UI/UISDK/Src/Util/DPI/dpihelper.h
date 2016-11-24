@@ -45,9 +45,6 @@
 //
 namespace UI
 {
-    long  GetDpi();
-
-    long  ScaleByDpi(long x);
     long  ScaleByDpi_if_gt0(long x);
     long  RestoreByDpi(long x);
     long  RestoreByDpi_if_gt0(long x);

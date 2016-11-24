@@ -565,6 +565,7 @@ void  Object::notify_WM_SIZE(UINT nType, UINT nWidth, UINT nHeight)
 
     UISendMessage(m_pIObject, WM_SIZE, 0, MAKELPARAM(nWidth, nHeight));
 }
+
 void  Object::virtualOnSize(UINT nType, UINT nWidth, UINT nHeight)
 {
     if (m_pLayer)
@@ -783,13 +784,14 @@ void Object::SetObjectPos(int x, int y, int cx, int cy, int nFlag)
 	if (pWindow)
 		bHardComposite = pWindow->IsGpuComposite();
 
-    RECT rcOldVisibleRect = {0};
+    //RECT rcOldVisibleRect = {0};
     if (bMove || bSize) 
     {
         // 刷新移动前的区域位置
         if (!(nFlag & SWP_NOREDRAW))
         {
-            this->GetRectInWindow(&rcOldVisibleRect, true);  // 获取下当前会刷新的区域范围，放在后面进行提交
+            //this->GetRectInWindow(&rcOldVisibleRect, true);  // 获取下当前会刷新的区域范围，放在后面进行提交
+            this->Invalidate();
         }
     }
 
@@ -920,9 +922,33 @@ ILayoutParam*  Object::GetLayoutParam()
 {
     return m_pLayoutParam;
 }
+
+// 如果没有，则创建一个canvas布局
+ILayoutParam*  Object::GetSafeLayoutParam()
+{
+    if (m_pLayoutParam)
+        return m_pLayoutParam;
+
+    CreateLayoutParam();
+    if (m_pLayoutParam)
+        return m_pLayoutParam;
+
+    CanvasLayout::s_GetObjectLayoutParam(this);
+
+    SERIALIZEDATA data = { 0 };
+    data.pMapAttrib = m_pIMapAttributeRemain;
+    data.pSkinRes = GetISkinRes();
+    data.pUIApplication = GetIUIApplication();
+    data.nFlags = SERIALIZEFLAG_LOAD;
+    m_pLayoutParam->Serialize(&data);
+
+    return m_pLayoutParam;
+}
+
 void  Object::CreateLayoutParam()
 {
-    SAFE_RELEASE(m_pLayoutParam);
+    if (m_pLayoutParam)
+        return;
 
     if (!m_pParent)
         return;
@@ -934,11 +960,17 @@ void  Object::CreateLayoutParam()
     m_pLayoutParam = pLayout->CreateLayoutParam(m_pIObject);
 }
 
+void  Object::DestroyLayoutParam()
+{
+    SAFE_RELEASE(m_pLayoutParam);
+}
+
 void  Object::SetLayoutParam(ILayoutParam* p)
 {
     SAFE_RELEASE(m_pLayoutParam);
     m_pLayoutParam = p;
 }
+
 int   Object::GetConfigWidth()
 {
     if (m_pLayoutParam)

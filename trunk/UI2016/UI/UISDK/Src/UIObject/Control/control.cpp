@@ -159,6 +159,7 @@ BOOL  Control::OnGetToolTipInfo(TOOLTIPITEM* pToolTipItem, IToolTipUI* pToolTip)
 	if (!szTooltip || !szTooltip[0])
 		return 0;
 
-	pToolTip->SetText(szTooltip);
+    LPCTSTR szText = m_pSkinRes->GetI18nRes().MapConfigValue(szTooltip);
+    pToolTip->SetText(szText);
 	return 1;
 }

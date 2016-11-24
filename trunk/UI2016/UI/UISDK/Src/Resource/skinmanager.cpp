@@ -12,6 +12,7 @@ SkinManager::SkinManager()
 	m_bDirty = false;
 
 	m_strLanguage = TEXT("zh_cn");
+    // m_strLanguage = TEXT("en_us");
 	m_pUIApplication = NULL;
 }
 SkinManager::~SkinManager()
@@ -19,13 +20,12 @@ SkinManager::~SkinManager()
     SAFE_DELETE(m_pISkinManager);
 }
 
-ISkinManager*  SkinManager::GetISkinManager()
+ISkinManager&  SkinManager::GetISkinManager()
 { 
-    if (NULL == m_pISkinManager)
-    {
+    if (!m_pISkinManager)
         m_pISkinManager = new ISkinManager(this);
-    }
-    return m_pISkinManager; 
+    
+    return *m_pISkinManager; 
 }
 
 // 用于在UIApplication的析构函数中提前释放
@@ -289,7 +289,7 @@ SkinRes*  SkinManager::LoadSkinRes(LPCTSTR szPath)
 	if (!szPath)
 		return NULL;
 
-	UI_LOG_INFO( _T("\n\n------------  LoadSkinRes: %s ----------------\n"), szPath);
+ 	UI_LOG_INFO( _T("\n\n------------  LoadSkinRes: %s ----------------\n"), szPath);
 
 	TCHAR szSkinName[MAX_PATH] = {0};
 	SKIN_PACKET_TYPE eSkinPackageType = SKIN_PACKET_TYPE_DIR;
@@ -307,12 +307,14 @@ SkinRes*  SkinManager::LoadSkinRes(LPCTSTR szPath)
 		if (szDir[nLength-1] == TEXT('\\'))
 			szDir[nLength-1] = 0;
 		Util::GetPathFileName(szDir, szSkinName);
-		SkinRes* pTest = GetSkinResByName(szSkinName);
-		if (pTest)
-		{
-			UI_LOG_WARN(TEXT("Skin Exist: name=%s"), szSkinName);
-			return pTest;
-		}
+
+        // 允许同名，但在不同的路径下面
+// 		SkinRes* pTest = GetSkinResByName(szSkinName);
+// 		if (pTest)
+// 		{
+// 			UI_LOG_WARN(TEXT("Skin Exist: name=%s"), szSkinName);
+// 			return pTest;
+// 		}
 		eSkinPackageType = SKIN_PACKET_TYPE_DIR;
 	}
 	else
@@ -440,4 +442,19 @@ SkinRes*  SkinManager::GetSkinResByIndex(uint i)
 LPCTSTR  SkinManager::GetCurrentLanguage()
 {
 	return m_strLanguage.c_str();
+}
+void  SkinManager::SetCurrentLanguage(LPCTSTR szText)
+{
+    if (!szText)
+        return;
+
+    if (m_strLanguage == szText)
+        return;
+
+    m_strLanguage = szText;
+
+    for (auto pSkin : m_vSkinRes)
+    {
+        pSkin->GetI18nManager().Reload();
+    }
 }

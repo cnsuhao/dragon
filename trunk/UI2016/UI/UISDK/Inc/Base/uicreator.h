@@ -27,7 +27,13 @@ public:
 	// ×¨ÓÃÐÍ
 	static T* CreateInstance(ISkinRes* pSkinRes)
 	{
-		UIASSERT(pSkinRes);
+        if (!pSkinRes)
+        {
+#ifdef _DEBUG
+            DebugBreak();
+#endif
+            return NULL;
+        }
 
 		T* p = new ObjectCreator<T>;
 		

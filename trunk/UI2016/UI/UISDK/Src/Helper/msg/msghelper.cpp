@@ -24,6 +24,10 @@ BOOL ForwardPostMessageWindow::ProcessWindowMessage(HWND hWnd, UINT uMsg, WPARAM
 	}
 	else if (WM_DESTROY == uMsg)  // 将剩余未处理完的post消息释放，避免内存泄露
 	{
+        // Note that PeekMessage always retrieves WM_QUIT messages, 
+        // no matter which values you specify for wMsgFilterMin and
+        // wMsgFilterMax.
+
 		MSG  msg;
 		while (::PeekMessage(&msg, m_hWnd, UI_MSG_POSTMESSAGE, UI_MSG_POSTMESSAGE, PM_REMOVE))
 		{

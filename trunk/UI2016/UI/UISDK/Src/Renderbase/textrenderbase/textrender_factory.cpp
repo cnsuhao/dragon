@@ -27,12 +27,12 @@ void  TextRenderFactory::Init()
 	REGISTER_UI_TEXTRENDERBASE2(ContrastColorTextRender)
 	REGISTER_UI_TEXTRENDERBASE2(ContrastColorListTextRender)
 }
+
 void  TextRenderFactory::Clear()
 {
-	UITEXTRENDERBASE_CREATE_DATA::iterator iter = m_vecUITextRenderBaseCreateData.begin();
-	for ( ; iter != m_vecUITextRenderBaseCreateData.end(); iter++ )   
+    for (auto iter : m_vecUITextRenderBaseCreateData)
 	{
-		SAFE_DELETE(*iter);               
+		SAFE_DELETE(iter);               
 	}
 	m_vecUITextRenderBaseCreateData.clear();     
 }
@@ -54,7 +54,7 @@ bool  TextRenderFactory::RegisterUITextRenderBaseCreateData(
 	pInfo->m_strName = strName;
 	m_vecUITextRenderBaseCreateData.push_back(pInfo);
 
-	UI_LOG_DEBUG(_T("%s   @ 0x%08X"), szName,  pfunc);
+	//UI_LOG_DEBUG(_T("%s   @ 0x%08X"), szName,  pfunc);
 	return true;
 }
 
@@ -64,37 +64,22 @@ bool  TextRenderFactory::CreateTextRenderBaseByName(
         IObject* pObject, 
         ITextRenderBase** ppOut)
 {
+    UIASSERT(pObject);
 	if (!bstrName || !bstrName[0] || !pObject || !ppOut)
 		return false;
 
-	UITEXTRENDERBASE_CREATE_DATA::iterator iter = m_vecUITextRenderBaseCreateData.begin();
-	for ( ; iter != m_vecUITextRenderBaseCreateData.end(); iter++ )
+    for (auto pData : m_vecUITextRenderBaseCreateData)
 	{
-		UITEXTRENDERBASE_CREATE_INFO* pData = *iter;
 		if (NULL == pData)
 			continue;
 
 		if (pData->m_strName != bstrName)
 			continue;
 
-		// ·ÏÆú
-		//      if (-1 != pData->m_nControlType)
-		//      {
-		//          if (pObject->GetObjectExtentType() != pData->m_nControlType)
-		//              continue;
-		//      }
-		//      if (-1 != pData->m_nControlSubType)
-		//      {
-		//          int  nStylyEx = pObject->GetStyleEx();
-		//          if (GETCONTROLSUBTYPE(nStylyEx) != pData->m_nControlSubType)
-		//              continue;
-		//      }
-
 		HRESULT hr = pData->m_func(pSkinRes, (void**)ppOut);
 		if (SUCCEEDED(hr) && NULL != *ppOut)
 		{
-            // (*ppOut)->AddRef();
-			(*ppOut)->SetObject(m_app.GetIUIApplication(), pObject);
+			(*ppOut)->SetObject(pObject);
 			(*ppOut)->Init();
 			(*ppOut)->SetType((TEXTRENDER_TYPE)pData->m_nRenderType);
 			return true;
@@ -112,13 +97,12 @@ bool  TextRenderFactory::CreateTextRender(
         IObject* pObject, 
         ITextRenderBase** ppOut)
 {
-	if (/*NULL == pObject ||*/ NULL == ppOut)
+    UIASSERT(pObject);
+	if (NULL == pObject || NULL == ppOut)
 		return false;
 
-	UITEXTRENDERBASE_CREATE_DATA::iterator iter = m_vecUITextRenderBaseCreateData.begin();
-	for ( ; iter != m_vecUITextRenderBaseCreateData.end(); iter++ )
+    for (auto pData : m_vecUITextRenderBaseCreateData)
 	{
-		UITEXTRENDERBASE_CREATE_INFO* pData = *iter;
 		if (NULL == pData)
 			continue;
 
@@ -128,8 +112,7 @@ bool  TextRenderFactory::CreateTextRender(
 		HRESULT hr = pData->m_func(pSkinRes, (void**)ppOut);
 		if (SUCCEEDED(hr) && NULL != *ppOut)
 		{
-            //(*ppOut)->AddRef();
-			(*ppOut)->SetObject(m_app.GetIUIApplication(), pObject);
+			(*ppOut)->SetObject(pObject);
 			(*ppOut)->Init();
 			(*ppOut)->SetType((TEXTRENDER_TYPE)nType);
 			return true;
@@ -144,10 +127,8 @@ bool  TextRenderFactory::CreateTextRender(
 
 LPCTSTR  TextRenderFactory::GetTextRenderBaseName(int nType)
 {
-	UITEXTRENDERBASE_CREATE_DATA::iterator iter = m_vecUITextRenderBaseCreateData.begin();
-	for ( ; iter != m_vecUITextRenderBaseCreateData.end(); iter++ )
-	{
-		UITEXTRENDERBASE_CREATE_INFO* pData = *iter;
+    for (auto pData : m_vecUITextRenderBaseCreateData)
+    {
 		if (NULL == pData)
 			continue;
 
@@ -165,10 +146,8 @@ void  TextRenderFactory::EnumTextRenderBaseName(
         WPARAM wParam, 
         LPARAM lParam)
 {
-	UITEXTRENDERBASE_CREATE_DATA::iterator iter = m_vecUITextRenderBaseCreateData.begin();
-	for ( ; iter != m_vecUITextRenderBaseCreateData.end(); iter++ )
-	{
-		UITEXTRENDERBASE_CREATE_INFO* pData = *iter;
+    for (auto pData : m_vecUITextRenderBaseCreateData)
+    {
 		if (NULL == pData)
 			continue;
 

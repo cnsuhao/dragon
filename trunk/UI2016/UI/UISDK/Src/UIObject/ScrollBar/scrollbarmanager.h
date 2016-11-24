@@ -91,6 +91,7 @@ public:
     int   GetScrollPage(SCROLLBAR_DIRECTION_TYPE eDirType);
     int   GetHScrollPage();
     int   GetVScrollPage();
+    void  SetVScrollPage(int ny);
 
     void  GetScrollRange(int *pX, int* pY);
     int   GetScrollRange(SCROLLBAR_DIRECTION_TYPE eDirType);

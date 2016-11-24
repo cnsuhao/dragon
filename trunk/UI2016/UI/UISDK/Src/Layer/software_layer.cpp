@@ -14,33 +14,6 @@ SoftwareLayer::~SoftwareLayer()
     SAFE_RELEASE(m_pRenderTarget);
 }
 
-IRenderTarget*  SoftwareLayer::GetRenderTarget()
-{
-    if (!m_pRenderTarget)        
-    {
-        if (!m_pCompositor)
-            return NULL;
-
-        m_pCompositor->CreateRenderTarget(&m_pRenderTarget);
-        if (!m_pRenderTarget)
-            return NULL;
-
-        m_pRenderTarget->CreateRenderBuffer(NULL);
-    }
-
-    return m_pRenderTarget;
-}
-
-void  SoftwareLayer::virtualOnSize(uint nWidth, uint nHeight)
-{
-    if (!m_pRenderTarget)
-    {
-        GetRenderTarget();
-    }
-    m_pRenderTarget->ResizeRenderBuffer(nWidth, nHeight);
-}
-
-
 void  SoftwareLayer::UpdateDirty()
 {
     if (!m_pLayerContent)

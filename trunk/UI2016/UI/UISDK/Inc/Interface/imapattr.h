@@ -13,9 +13,6 @@ interface ITextRenderBase;
 
 interface IMapAttribute
 {
-	virtual void  SetTag(LPCTSTR szKey) = 0;
-	virtual LPCTSTR  GetTag() = 0;
-
     virtual bool  HasAttrib(LPCTSTR szKey) = 0;
     virtual bool  ExtractMapAttrByPrefix(LPCTSTR szPrefix, bool bErase, /*out*/IMapAttribute** pMapAttribute) = 0;
     virtual long  Release() = 0;
@@ -33,26 +30,6 @@ interface IMapAttribute
     virtual long  GetAttr_intarray(LPCTSTR szPrefix, LPCTSTR szKey, bool bErase, int* pIntArray, unsigned int nSize) = 0;
 	virtual long  GetAttr_REGION4(LPCTSTR szPrefix, LPCTSTR szKey, bool bErase, REGION4* prcGet) = 0;
     virtual long  GetAttr_Image9Region(LPCTSTR szPrefix, LPCTSTR szKey, bool bErase, C9Region* pRegion) = 0;
-    virtual long  GetAttr_RenderBase(
-                LPCTSTR szPrefix, 
-                LPCTSTR szKey, 
-                bool bErase, 
-                IUIApplication* pUIApp,
-                IObject* pBindObj, 
-                IRenderBase** ppGet) = 0;
-    virtual long  GetAttr_TextRenderBase(
-                LPCTSTR szPrefix,
-                LPCTSTR szKey,
-                bool bErase, 
-                IUIApplication* pUIApp, 
-                IObject* pBindObj, 
-                ITextRenderBase** ppGet) = 0;
-    virtual long  GetAttr_Color(
-                LPCTSTR szPrefix,
-                LPCTSTR szKey, 
-                bool bErase, 
-                IUIApplication* pUIApp,
-                Color** ppColor) = 0;
 
 	virtual bool  AddAttr(LPCTSTR szKey, LPCTSTR szValue) = 0;
 	virtual bool  AddAttr_bool(LPCTSTR szKey, bool bValue) = 0;
@@ -64,11 +41,11 @@ interface IMapAttribute
     virtual void  EndEnum() = 0;
 };
 
-// 与IMapAttribute不同的是，IListAttribute不自动排序
+// 与IMapAttribute不同的是，IListAttribute不自动排序，可用于在保存属性时，不改变字段顺序
 interface IListAttribute 
 {
-	virtual void  SetTag(LPCTSTR szKey) = 0;
-    virtual LPCTSTR  GetTag() = 0;
+// 	virtual void  SetTag(LPCTSTR szKey) = 0;
+//     virtual LPCTSTR  GetTag() = 0;
 
     virtual bool  AddAttr(LPCTSTR szKey, LPCTSTR szValue) = 0;
     virtual LPCTSTR  GetAttr(LPCTSTR szKey) = 0;
@@ -81,8 +58,8 @@ interface IListAttribute
     virtual long  Release() = 0;
     virtual long  AddRef() = 0;
 };
-UISDKAPI HRESULT  UICreateIMapAttribute(IMapAttribute** ppOut);
-UISDKAPI HRESULT  UICreateIListAttribute(IListAttribute** ppOut);
+UIAPI HRESULT  UICreateIMapAttribute(IMapAttribute** ppOut);
+UIAPI HRESULT  UICreateIListAttribute(IListAttribute** ppOut);
 
 
 }

@@ -1,10 +1,31 @@
 #include "stdafx.h"
 #ifdef UNITTEST
-#include "Src/Base/Message/message.h"
+#include "Inc\Util\signalslot.h"
+
+void test()
+{
+
+}
+void /*__stdcall*/ OnClick()
+{
+	return test();
+}
+
+class Test
+{
+public:
+	void click()
+	{
+
+	}
+};
 
 void main()
 {
-	IObject* pObj = ObjectCreator<IObject>::CreateInstance(NULL);
-	pObj->Release();
+// 	signal<> clicked;
+// 	clicked.connect0(OnClick);
+// 	//clicked.connect0(&t, &Test::click);
+// 	clicked.emit(99);
+
 }
 #endif

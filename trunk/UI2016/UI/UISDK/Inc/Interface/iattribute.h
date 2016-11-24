@@ -1,5 +1,6 @@
 #ifndef _UI_IATTRIBUTE_H_
 #define _UI_IATTRIBUTE_H_
+#include <functional>
 
 namespace UI
 {
@@ -9,6 +10,7 @@ namespace UI
 enum DEFAULT_ATTRIBUTE_TYPE
 {
     ATTRIBUTE_TYPE_STRING = 0,
+    ATTRIBUTE_TYPE_I18N_STRING,
     ATTRIBUTE_TYPE_CHARARRAY,
     ATTRIBUTE_TYPE_BOOL,
 	ATTRIBUTE_TYPE_RECT,
@@ -22,6 +24,19 @@ enum DEFAULT_ATTRIBUTE_TYPE
     ATTRIBUTE_TYPE_RENDERBASE = 100,
     ATTRIBUTE_TYPE_TEXTRENDERBASE,
 };
+
+//
+// http://stackoverflow.com/questions/8121320/get-memory-address-of-member-function
+//
+// C++ does not support converting a pointer to a member function to
+// an arbitrary pointer.To get a raw pointer, the address of the member 
+// function must be moved into a temporrary member - function pointer,
+// then passed by taking it's address, then de-referencing it. Fortunately,
+// the compiler will optimize the code to remove the extra pointer
+// operations.
+
+// tricky cast
+// void* pPtr = (void*&)&MyClass::Func; // this works
 
 // c++中获取成员函数指针作为参数会报error
 // 这里使用一个模板来获取成员函数指针
@@ -46,6 +61,8 @@ To memfun_cast(From memfunc)
 typedef void  (__thiscall *pfnStringSetter)(LPCTSTR);
 typedef LPCTSTR  (__thiscall *pfnStringGetter)();
 
+typedef void(__thiscall *pfnStringExSetter)(LPCTSTR, int);
+
 typedef void  (__thiscall *pfnBoolSetter)(bool);
 typedef bool  (__thiscall *pfnBoolGetter)();
 
@@ -67,7 +84,7 @@ typedef void  (*pfnEnumAliasCallback)(LPCTSTR szText, long lValue, WPARAM, LPARA
 typedef void  (*pfnEnumStringEnumCallback)(LPCTSTR szText, WPARAM, LPARAM);
 
 class LongAttribute;
-interface UISDKAPI ILongAttribute
+interface UIAPI ILongAttribute
 {
     ILongAttribute(LongAttribute*);
     ILongAttribute*  SetDefault(long l);
@@ -78,6 +95,7 @@ interface UISDKAPI ILongAttribute
     LPCTSTR  GetDesc();
 	LPCTSTR  GetGroupName();
     LPCTSTR  GetParentKey();
+    LPCTSTR  Get();
     long  GetLong();
 
 	unsigned int  GetAliasCount();
@@ -88,7 +106,7 @@ private:
 };
 
 class BoolAttribute;
-interface UISDKAPI IBoolAttribute
+interface UIAPI IBoolAttribute
 {
     IBoolAttribute(BoolAttribute*);
     IBoolAttribute*  SetDefault(bool b);
@@ -98,6 +116,7 @@ interface UISDKAPI IBoolAttribute
     LPCTSTR  GetDesc();
 	LPCTSTR  GetGroupName();
     LPCTSTR  GetParentKey();
+    LPCTSTR  Get();
     bool  GetBool();
     bool  GetDefaultBool();
 
@@ -108,12 +127,11 @@ private:
 
 
 class StringAttribute;
-interface UISDKAPI IStringAttribute
+interface UIAPI IStringAttribute
 {
     IStringAttribute(StringAttribute*);
     IStringAttribute*  SetDefault(LPCTSTR);
     IStringAttribute*  AsData();
-	IStringAttribute*  Internationalization();
 
     LPCTSTR  GetKey();
     LPCTSTR  GetDesc();
@@ -134,7 +152,7 @@ private:
 };
 
 class EnumAttribute;
-interface UISDKAPI IEnumAttribute
+interface UIAPI IEnumAttribute
 {
     IEnumAttribute(EnumAttribute*);
     IEnumAttribute*  AddOption(long, LPCTSTR);
@@ -145,6 +163,7 @@ interface UISDKAPI IEnumAttribute
 	LPCTSTR  GetDesc();
 	LPCTSTR  GetGroupName();
     LPCTSTR  GetParentKey();
+    LPCTSTR  Get();
 	long  GetLong();
 
 	unsigned int  GetAliasCount();
@@ -157,7 +176,7 @@ private:
 };
 
 class FlagsAttribute;
-interface UISDKAPI IFlagsAttribute
+interface UIAPI IFlagsAttribute
 {
     IFlagsAttribute(FlagsAttribute*);
     IFlagsAttribute*  AddFlag(long, LPCTSTR);
@@ -168,6 +187,7 @@ interface UISDKAPI IFlagsAttribute
     LPCTSTR  GetDesc();
     LPCTSTR  GetGroupName();
     LPCTSTR  GetParentKey();
+    LPCTSTR  Get();
     long  GetLong();
 
     unsigned int  GetAliasCount();
@@ -177,7 +197,7 @@ private:
 };
 
 class RectAttribute;
-interface UISDKAPI IRectAttribute
+interface UIAPI IRectAttribute
 {
     IRectAttribute(RectAttribute*);
     IRectAttribute*  AsData();
@@ -192,7 +212,7 @@ private:
 };
 
 class SizeAttribute;
-interface UISDKAPI ISizeAttribute
+interface UIAPI ISizeAttribute
 {
 	ISizeAttribute(SizeAttribute*);
 	ISizeAttribute*  AsData();
@@ -208,7 +228,7 @@ private:
 
 
 class Region9Attribute;
-interface UISDKAPI IRegion9Attribute
+interface UIAPI IRegion9Attribute
 {
 	IRegion9Attribute(Region9Attribute*);
 	IRegion9Attribute*  AsData();
@@ -223,7 +243,7 @@ private:
 };
 
 class StringEnumAttribute;
-interface UISDKAPI IStringEnumAttribute
+interface UIAPI IStringEnumAttribute
 {
     IStringEnumAttribute(StringEnumAttribute*);
     IStringEnumAttribute*  AsData();
@@ -244,16 +264,21 @@ private:
 };
 
 class ColorAttribute;
-interface UISDKAPI IColorAttribute
+interface UIAPI IColorAttribute
 {
 	IColorAttribute(ColorAttribute*);
 	
+	LPCTSTR  GetKey();
+	LPCTSTR  GetDesc();
+	LPCTSTR  GetGroupName();
+	LPCTSTR  GetParentKey();
+	LPCTSTR  Get();
 private:
 	ColorAttribute*  m_pImpl;
 };
 
 class RenderBaseAttribute;
-interface UISDKAPI IRenderBaseAttribute
+interface UIAPI IRenderBaseAttribute
 {
     IRenderBaseAttribute(RenderBaseAttribute*);
     IRenderBaseAttribute*  AsData();
@@ -262,11 +287,14 @@ interface UISDKAPI IRenderBaseAttribute
     LPCTSTR  GetDesc();
     LPCTSTR  Get();
 
+	LPCTSTR  GetGroupName();
+	LPCTSTR  GetParentKey();
+
 private:
     RenderBaseAttribute*  m_pImpl;
 };
 class TextRenderBaseAttribute;
-interface UISDKAPI ITextRenderBaseAttribute
+interface UIAPI ITextRenderBaseAttribute
 {
     ITextRenderBaseAttribute(TextRenderBaseAttribute*);
     ITextRenderBaseAttribute*  AsData();
@@ -275,18 +303,24 @@ interface UISDKAPI ITextRenderBaseAttribute
     LPCTSTR  GetDesc();
     LPCTSTR  Get();
 
+	LPCTSTR  GetGroupName();
+	LPCTSTR  GetParentKey();
+
 private:
     TextRenderBaseAttribute*  m_pImpl;
 };
 
 class AttributeSerializer;
-interface UISDKAPI AttributeSerializerWrap
+interface UIAPI AttributeSerializerWrap
 {
     AttributeSerializerWrap(SERIALIZEDATA*, LPCTSTR szGroupName);
     ~AttributeSerializerWrap();
 	AttributeSerializer*  GetImpl();
 
     IStringAttribute*  AddString(LPCTSTR szKey, void* _this, pfnStringSetter s, pfnStringGetter g);
+    IStringAttribute*  AddString(LPCTSTR szKey, const std::function<void(LPCTSTR)>& s, const std::function<LPCTSTR()>& g);
+    IStringAttribute*  AddI18nString(LPCTSTR szKey, void* _this, pfnStringExSetter s, pfnStringGetter g);
+    IStringAttribute*  AddI18nString(LPCTSTR szKey, const std::function<void(LPCTSTR, int)>& s, const std::function<LPCTSTR()>& g);
 	IStringEnumAttribute*  AddStringEnum(LPCTSTR, void* _this, pfnStringSetter s, pfnStringGetter g);
 
     IBoolAttribute*  AddBool(LPCTSTR szKey, bool& bBindValue);
@@ -324,7 +358,7 @@ enum UpdateAttribute2EditorResult
 };
 
 class AttributeEditorProxy;
-interface UISDKAPI IAttributeEditorProxy
+interface UIAPI IAttributeEditorProxy
 {
 public:
     IAttributeEditorProxy(IUIEditor*);

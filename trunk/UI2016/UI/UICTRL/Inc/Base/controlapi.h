@@ -3,13 +3,13 @@
 
 namespace UI
 {
-interface IUIApplication;
+	interface IUIApplication;
 // interface ITrayIcon;
 }
 
-extern "C" UICTRLAPI 
+extern "C" UICTRL_API 
 bool  UICTRL_RegisterUIObject(UI::IUIApplication* p);
-// extern "C" UICTRLAPI
+// extern "C" UICTRL_API
 // bool  UICreateTrayIcon(UI::IUIApplication* pUIApplication, UI::ITrayIcon** ppOut);
 
 #endif  

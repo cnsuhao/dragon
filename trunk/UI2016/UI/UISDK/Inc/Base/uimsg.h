@@ -239,7 +239,6 @@
 //
 #define UI_MSG_QUERYINTERFACE 165312200
 
-// void*  QueryInterface(const IID* pIID);
 #define UIMSG_QUERYINTERFACE(className)               \
     if (uMsg == UI_MSG_QUERYINTERFACE)                \
     {                                                 \
@@ -250,6 +249,16 @@
             lResult = (LRESULT)(void*)m_pI##className;\
             return TRUE;                              \
         }                                             \
+    }
+
+// void*  QueryInterface(const IID* pIID);
+#define UIMSG_QUERYINTERFACE2(className)              \
+    if (uMsg == UI_MSG_QUERYINTERFACE)                \
+    {                                                 \
+		SetMsgHandled(TRUE);                          \
+		lResult = func(*(const IID*)wParam);          \
+		if (IsMsgHandled())                           \
+			return TRUE;                              \
     }
 
 //
@@ -734,19 +743,21 @@ struct GETDESIREDSIZEINFO
 
 
 
-//
-// 作为目标对象的拖拽事件
-//  wParam : DROPTARGETEVENT_TYPE
-//  lParam : DROPTARGETEVENT_DATA*
-//
-#define UI_MSG_DROPTARGETEVENT   136041933
-
 
 //
 //  gif刷新的通知
 //  wParam:  GifImageRender*
 //  lParam:  notify.lparam
 #define UI_MSG_GIFFRAME_TICK  168281226
+// void  OnGifframeTick(WPARAM wParam, LPARAM lParam)
+#define UIMSG_WM_GIFFRAME_TICK(func)                  \
+	if (uMsg == UI_MSG_GIFFRAME_TICK)                 \
+	{                                                 \
+		SetMsgHandled(TRUE);                          \
+		func(wParam, lParam);                         \
+		if (IsMsgHandled())                           \
+			return TRUE;                              \
+	}
 
 
 namespace UI
@@ -903,7 +914,7 @@ namespace UI
 #define UIMSG_WM_CONTEXTMENU  MSG_WM_CONTEXTMENU
 
 //void OnInitPopupControlWindow()
-#define UIMSG_WM_INITPOPUPCONTROLWINDOW(func)         \
+#define UIMSG_INITPOPUPCONTROLWINDOW(func)            \
     if (uMsg == UI_WM_INITPOPUPCONTROLWINDOW)         \
     {                                                 \
         SetMsgHandled(TRUE);                          \
@@ -913,7 +924,7 @@ namespace UI
     }
 
 //void OnUnInitPopupControlWindow()
-#define UIMSG_WM_UNINITPOPUPCONTROLWINDOW(func)       \
+#define UIMSG_UNINITPOPUPCONTROLWINDOW(func)          \
     if (uMsg == UI_WM_UNINITPOPUPCONTROLWINDOW)       \
     {                                                 \
         SetMsgHandled(TRUE);                          \
@@ -921,5 +932,55 @@ namespace UI
         if(IsMsgHandled())                            \
             return TRUE;                              \
     }
+
+
+//
+// 作为目标对象的拖拽事件
+//  wParam : DROPTARGETEVENT_TYPE
+//  lParam : DROPTARGETEVENT_DATA*
+//
+#define UI_MSG_DROPTARGETEVENT   136041933
+
+// void OnDropTargetEvent(UI::DROPTARGETEVENT_TYPE eType, UI::DROPTARGETEVENT_DATA* pData)
+#define UIMSG_DROPTARGETEVENT(func)                   \
+    if (uMsg == UI_MSG_DROPTARGETEVENT)               \
+    {                                                 \
+        SetMsgHandled(TRUE);                          \
+        func((UI::DROPTARGETEVENT_TYPE)wParam, (UI::DROPTARGETEVENT_DATA*)lParam); \
+        if (IsMsgHandled())                           \
+            return TRUE;                              \
+    }
+
+
+#define  UIALT_CALLLESS  154062051
+
+namespace UI
+{
+    struct IUIApplication;
+    struct IUIEditor;
+    struct IUIElement;
+}
+struct  CREATEBYEDITORDATA
+{
+    UI::IUIApplication*  pUIApp;
+    UI::IUIEditor*  pEditor;
+    UI::IUIElement*  pXml;
+    RECT  rcInitPos;  // IN/OUT
+};
+
+// wParam: CREATEBYEDITORDATA* pData
+// alt id: UIALT_MSG_MAP(UIALT_CALLLESS)
+#define  UI_MSG_CREATEBYEDITOR  154061549
+#define UIMSG_CREATEBYEDITOR(func)                    \
+    if (uMsg == UI_MSG_CREATEBYEDITOR)                \
+    {                                                 \
+        SetMsgHandled(TRUE);                          \
+        func((CREATEBYEDITORDATA*)wParam);            \
+        if (IsMsgHandled())                           \
+            return TRUE;                              \
+    }
+
+// 回车，作用到了默认按钮上面
+#define  UI_MSG_DEFAULTBUTTON_VKRETURN_EVENT  169281816
 
 #endif

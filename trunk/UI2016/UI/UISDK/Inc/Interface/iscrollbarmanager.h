@@ -46,7 +46,7 @@ typedef struct tagUISCROLLINFO
 
 
 class ScrollBarManager;
-interface UISDKAPI IScrollBarManager : public IMessage
+interface UIAPI IScrollBarManager : public IMessage
 {
     IScrollBarManager(ScrollBarManager*);
     ~IScrollBarManager();
@@ -98,6 +98,7 @@ interface UISDKAPI IScrollBarManager : public IMessage
     int   GetScrollPage(SCROLLBAR_DIRECTION_TYPE eDirType);
     int   GetHScrollPage();
     int   GetVScrollPage();
+    void  SetVScrollPage(int nY);
 
     void  GetScrollRange(int *pX, int* pY);
     int   GetScrollRange(SCROLLBAR_DIRECTION_TYPE eDirType);

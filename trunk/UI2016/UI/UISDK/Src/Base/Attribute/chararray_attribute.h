@@ -15,9 +15,9 @@ public:
     virtual void  Set(LPCTSTR) override;
 	virtual void  Reset() override;
     virtual bool  IsDefaultValue() override;
-    virtual void  SetBindValue(void*) override;
-    virtual void  SetBindFuction(void* _this, void* _setter, void* _getter) override;
-    virtual void  Editor(UI::AttributeEditorProxy *,UI::EditorAttributeFlag) override;
+    void  SetBindValue(void*);
+    void  SetBindFuction(void* _this, void* _setter, void* _getter);
+	virtual void  Editor(SERIALIZEDATA* pData, AttributeEditorProxy *, EditorAttributeFlag) override;
     void  SetBindValueSize(long lSize);
     
 public:

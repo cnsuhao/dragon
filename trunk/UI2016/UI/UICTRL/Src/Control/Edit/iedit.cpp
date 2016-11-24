@@ -46,6 +46,10 @@ void  IEdit::SetReadOnly(bool b)
 {
     __pImpl->SetReadOnly(b);
 }
+void  IEdit::SetWantTab(bool b)
+{
+    __pImpl->SetWantTab(b);
+}
 void  IEdit::SetTextFilterDigit()
 {
 	__pImpl->SetTextFilterDigit();
@@ -55,5 +59,12 @@ void  IEdit::ClearTextFilter()
 	__pImpl->ClearTextFilter();
 }
 
+signal<IEdit*, bool>&  IEdit::EnChangeEvent()
+{
+    return __pImpl->en_change;
+}
 
-
+signal_r<bool, IEdit*, UINT>&  IEdit::KeyDownEvent()
+{
+    return __pImpl->keydown;
+}

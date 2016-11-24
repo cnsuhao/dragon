@@ -90,6 +90,28 @@ void Compositor::DoInvalidate()
     this->Commit(arrDirtyInWindow);
 }
 
+void  Compositor::Commit(const RectArray& arrDirtyInWindow)
+{
+    IWindowCommitListener* pListener = m_pWindowRender->GetCommitListener();
+
+    if (pListener)
+    {
+        pListener->PreCommit(
+            arrDirtyInWindow.GetArrayPtr2(),
+            arrDirtyInWindow.GetCount());
+
+        this->virtualCommit(arrDirtyInWindow);
+
+        pListener->PostCommit(
+            arrDirtyInWindow.GetArrayPtr2(),
+            arrDirtyInWindow.GetCount());
+    }
+    else
+    {
+        this->virtualCommit(arrDirtyInWindow);
+    }
+}
+
 bool  Compositor::CreateRenderTarget(IRenderTarget** pp)
 {
     return m_pWindowRender->CreateRenderTarget(pp);

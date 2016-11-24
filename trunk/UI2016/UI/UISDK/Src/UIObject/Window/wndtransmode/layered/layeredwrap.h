@@ -13,6 +13,7 @@ public:
     ~LayeredWindowWrap();
 
     VIRTUAL_BEGIN_MSG_MAP(LayeredWindowWrap)
+		MESSAGE_HANDLER(WM_SIZE, _OnSize)
         MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, _OnWindowPosChanged)
         MESSAGE_HANDLER(WM_CANCELMODE, _OnCancelMode)
         MESSAGE_HANDLER(WM_NCHITTEST, _OnNcHitTest)
@@ -28,6 +29,7 @@ public:
 	UI_END_MSG_MAP()
 
     LRESULT  _OnWindowPosChanged(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT  _OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
     LRESULT  _OnCancelMode(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
     LRESULT  _OnNcHitTest(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
     LRESULT  _OnSetCursor(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);

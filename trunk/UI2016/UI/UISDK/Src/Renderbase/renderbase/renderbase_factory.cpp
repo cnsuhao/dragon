@@ -59,7 +59,7 @@ bool  RenderBaseFactory::RegisterUIRenderBaseCreateData(
 	pInfo->m_strName = strName;
 	m_vecUIRenderBaseCreateData.push_back(pInfo);
 
-	UI_LOG_DEBUG(_T("%s, type=%d, ctrl=%d @ 0x%08X"), bstrName, nType, pfunc);
+	// UI_LOG_DEBUG(_T("%s, type=%d, ctrl=%d @ 0x%08X"), bstrName, nType, pfunc);
 	return true;
 }
 

@@ -46,7 +46,7 @@ public:
 			因为系统默认加载comctl 5.82，这个版本里面的tooltip的size根本没有sizeof(TOOLINFO),
 			里面没有void *lpReserved;所以cbSize设大了，出错了。
 			这时需要写成tooltip.cbSize = TTTOOLINFOA_V2_SIZE;
-			或者强制指定comctl 6.0
+			或者在exe工程中强制指定comctl 6.0（在dll中指定无效）
 			#pragma comment(linker, "\"/manifestdependency:type='Win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='X86' publicKeyToken='6595b64144ccf1df' language='*'\"")
 			
 			指定#define _WIN32_WINNT 0x0501将导致程序只能运行在xp及以上系统。

@@ -15,7 +15,7 @@ public:
 
     virtual LPCTSTR  Get() override; 
     virtual void  Set(LPCTSTR) override;
-    virtual void  Editor(AttributeEditorProxy* p, EditorAttributeFlag e) override;
+	virtual void  Editor(SERIALIZEDATA* pData, AttributeEditorProxy* p, EditorAttributeFlag e) override;
 
 public:
     StringEnumAttribute*  Add(LPCTSTR);

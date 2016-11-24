@@ -6,8 +6,8 @@ namespace UI
 {
 UI_IMPLEMENT_INTERFACE(CustomWindow, Window)
 
-ICustomWindow::ICustomWindow() : ICustomWindow(CREATE_IMPL_TRUE) {
-};
+// ICustomWindow::ICustomWindow() : ICustomWindow(CREATE_IMPL_TRUE) {
+// };
 
 void  ICustomWindow::SetWindowResizeType(UINT nType)         
 { 

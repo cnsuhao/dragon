@@ -1,20 +1,19 @@
 #ifndef _UI_IHWNDHOST_H_
 #define _UI_IHWNDHOST_H_
-#include "Inc\Interface\icontrol.h"
+#include "icontrol.h"
 
 namespace UI
 {
 
 class HwndHost;
-interface __declspec(uuid("86783C0F-875E-4C01-A6D1-3C0A6D3DFDF5"))
-UISDKAPI IHwndHost : public IControl
+struct UIAPI_UUID(54929797-CB09-45A2-BA90-9101739A399E) 
+    IHwndHost : public IControl
 {
 	void  Attach(HWND hWnd);
 	HWND  Detach();
 
     UI_DECLARE_INTERFACE(HwndHost);
 };
-
 }
 
 #endif // _UI_IHWNDHOST_H_

@@ -121,8 +121,12 @@ void StyleResItem::GetAttributeMap(IMapAttribute** ppMapAttrib)
 
 void StyleResItem::SetAttribute(LPCTSTR key, LPCTSTR value)
 {
-    if (m_pMapAttrib)
-        m_pMapAttrib->AddAttr(key, value);
+    if (!m_pMapAttrib)
+    {
+        UICreateIMapAttribute(&m_pMapAttrib);
+    }
+
+    m_pMapAttrib->AddAttr(key, value);
 }
 
 LPCTSTR StyleResItem::GetAttribute(LPCTSTR key)
@@ -203,7 +207,7 @@ bool StyleResItem::InheritMyAttributesToAnother(StyleResItem* pChild)
 //
 bool StyleResItem::Apply(IMapAttribute* pMapAttrib, bool bOverwrite)
 {
-    if (NULL == pMapAttrib)
+    if (!pMapAttrib || !m_pMapAttrib)
         return false;
 
     m_pMapAttrib->CopyTo(pMapAttrib, bOverwrite);
@@ -226,12 +230,12 @@ StyleRes::~StyleRes()
 	this->Clear();
     SAFE_DELETE(m_pIStyleRes);
 }
-IStyleRes*  StyleRes::GetIStyleRes()
+IStyleRes&  StyleRes::GetIStyleRes()
 {
     if (!m_pIStyleRes)
         m_pIStyleRes = new IStyleRes(this);
 
-    return m_pIStyleRes;
+    return *m_pIStyleRes;
 }
 
 void StyleRes::Clear()
@@ -400,9 +404,9 @@ StyleResItem* StyleRes::GetItem(long nIndex )
 	return m_vStyles[nIndex];
 }
 
-StyleResItem* StyleRes::GetItem(STYLE_SELECTOR_TYPE type, LPCTSTR szID)
+StyleResItem* StyleRes::GetItem(STYLE_SELECTOR_TYPE type, LPCTSTR szId)
 {
-	if (NULL == szID)
+	if (NULL == szId)
 		return NULL;
 
 	vector<StyleResItem*>::iterator  iter = m_vStyles.begin();
@@ -410,11 +414,17 @@ StyleResItem* StyleRes::GetItem(STYLE_SELECTOR_TYPE type, LPCTSTR szID)
 	{
 		StyleResItem* p = *iter;
 		if (p->GetSelectorType() == type && 
-            0 == _tcscmp(p->GetId(), szID))
+            0 == _tcscmp(p->GetId(), szId))
 		{
 			return p;
 		}
 	}
+
+    SkinRes* pParentRes = m_pSkinRes->GetParentSkinRes();
+    if (pParentRes)
+    {
+        return pParentRes->GetStyleRes().GetItem(type, szId);
+    }
 
 	return NULL;
 }
@@ -524,10 +534,10 @@ bool  StyleRes::LoadStyle(LPCTSTR szTagName, LPCTSTR szStyleClass, LPCTSTR szID,
 	}
 
 	return true;
-}
+} 
 
 // 将pListAttribte中属于style的属性过滤掉
-bool  StyleRes::FilterStyle(LPCTSTR szTagName, LPCTSTR szStyleClass, LPCTSTR szID, IListAttribute* pListAttribte)
+bool  StyleRes::UnloadStyle(LPCTSTR szTagName, LPCTSTR szStyleClass, LPCTSTR szID, IListAttribute* pListAttribte)
 {
     // 先拿到所有的样式列表
     IMapAttribute*  pStyleAttr = NULL;

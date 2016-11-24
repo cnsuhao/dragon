@@ -32,8 +32,6 @@ ListItemRootPanel::ListItemRootPanel(IListItemRootPanel* p):Panel(p)
 
 void  ListItemRootPanel::OnEraseBkgnd(IRenderTarget* pRenderTarget)
 {
-	UIASSERT(0);
-#if 0
     if (NULL == pRenderTarget)
         return;
 
@@ -46,15 +44,15 @@ void  ListItemRootPanel::OnEraseBkgnd(IRenderTarget* pRenderTarget)
 
     CRect  rcWindow;
     this->GetWindowRect(&rcWindow);
-    RenderContext roc(*pContext);
     
-    roc.m_ptOffset.x -= m_pIListItemRootPanel->GetImpl()->GetParentRectL();
-    roc.m_ptOffset.y -= m_pIListItemRootPanel->GetImpl()->GetParentRectT();
-    roc.Update(pRenderTarget);
+    POINT pt = { GetParentRectL(), GetParentRectT() };
+    pRenderTarget->OffsetOrigin(-pt.x, -pt.y);
 
-    m_pListCtrl->RedrawItemByInnerCtrl(pRenderTarget, &roc, m_pListItem);
-    pContext->Update(pRenderTarget);
-#endif
+    m_pListCtrl->RedrawItemByInnerCtrl(pRenderTarget, m_pListItem);
+
+    pRenderTarget->OffsetOrigin(pt.x, pt.y);
+
+    __super::OnEraseBkgnd(pRenderTarget);
 }
 
 void  ListItemRootPanel::SetListCtrlItem(ListCtrlBase* p1, ListItemBase* p2)

@@ -55,7 +55,7 @@ enum RENDER_TYPE
 };
 
 class RenderBase;
-interface UISDKAPI IRenderBase : public IMessage
+interface UIAPI IRenderBase : public IMessage
 {
     void  CheckThemeChanged();
     bool  IsThemeRender();

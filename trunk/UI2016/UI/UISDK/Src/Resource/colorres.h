@@ -56,7 +56,7 @@ public:
 	ColorRes(SkinRes* p);
 	~ColorRes();
 
-    IColorRes*  GetIColorRes();
+    IColorRes&  GetIColorRes();
 
 	long  GetColorCount();
 	IColorResItem*  GetColorResItem(long lIndex);

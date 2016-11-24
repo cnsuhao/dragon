@@ -51,10 +51,21 @@ ILayout* Panel::GetLayout()
 
 void  Panel::SetLayoutType(LAYOUTTYPE eLayoutType)
 {
+    if (m_pLayout && m_pLayout->GetLayoutType() == eLayoutType)
+        return;
+    
     SAFE_RELEASE(m_pLayout);
 
 	GetUIApplication()->GetLayoutFactory().Create(
 			eLayoutType, m_pIPanel, &m_pLayout);
+
+    // 子结点的布局类型全部跟着变
+    Object* pChild = NULL;
+    while (pChild = EnumChildObject(pChild))
+    {
+        pChild->DestroyLayoutParam();
+        pChild->GetSafeLayoutParam();
+    }
 }
 
 LAYOUTTYPE  Panel::GetLayoutType()
@@ -105,22 +116,12 @@ void  Panel::OnSerialize(SERIALIZEDATA* pData)
         AttributeSerializer s(pData, TEXT("Panel"));
 
         // 纹理层
-        //s.AddRenderBase(XML_TEXTURE_RENDER_PREFIX, XML_RENDER_TYPE, m_pIPanel, m_pTextureRender);
-        s.AddStringEnum(XML_TEXTURE_RENDER_PREFIX XML_RENDER_TYPE, 
-            this,
-            memfun_cast<pfnStringSetter>(&Panel::LoadTextureRender),
-            memfun_cast<pfnStringGetter>(&Panel::
-                GetTextureRenderName))
-                ->FillRenderBaseTypeData();
+        s.AddRenderBase(XML_TEXTURE_RENDER_PREFIX, this, m_pTextureRender);
         s.AddRect(XML_TEXTURE_RENDER_PREFIX XML_PANEL_RENDER_REGION, 
             m_rcTextureRenderRegion);
 
         // 顶层遮罩层
-        //s.AddRenderBase(XML_MASK_RENDER_PREFIX, XML_RENDER_TYPE, m_pIPanel, m_pMaskRender);
-        s.AddStringEnum(XML_MASK_RENDER_PREFIX XML_RENDER_TYPE, this,
-            memfun_cast<pfnStringSetter>(&Panel::LoadMaskRender),
-            memfun_cast<pfnStringGetter>(&Panel::GetMaskRenderName))
-            ->FillRenderBaseTypeData();
+        s.AddRenderBase(XML_MASK_RENDER_PREFIX, this, m_pMaskRender);
         s.AddRect(XML_MASK_RENDER_PREFIX XML_PANEL_RENDER_REGION, 
             m_rcMaskRenderRegion);
 
@@ -151,20 +152,6 @@ void  Panel::OnSerialize(SERIALIZEDATA* pData)
         SERIALIZEDATA  data(*pData);
         data.szParentKey = XML_LAYOUT;
         m_pLayout->Serialize(&data);
-    }
-
-    if (m_pMaskRender)
-    {
-        SERIALIZEDATA data(*pData);
-        data.szPrefix = XML_MASK_RENDER_PREFIX;
-        m_pMaskRender->Serialize(&data);
-    }
-
-    if (m_pTextureRender)
-    {
-        SERIALIZEDATA data(*pData);
-        data.szPrefix = XML_TEXTURE_RENDER_PREFIX;
-        m_pTextureRender->Serialize(&data);
     }
 }
 
@@ -222,6 +209,12 @@ void Panel::SetTextureRender(IRenderBase* p)
 IRenderBase*  Panel::GetTextureRender()
 {
     return m_pTextureRender;
+}
+
+void  Panel::OnCreateByEditor(CREATEBYEDITORDATA* pData)
+{
+    pData->rcInitPos.right = pData->rcInitPos.left + 100;
+    pData->rcInitPos.bottom = pData->rcInitPos.top + 100;
 }
 
 }

@@ -5,8 +5,8 @@
 namespace UI
 {
 class CheckButton;
-interface __declspec(uuid("23F3CC63-179E-4108-86B2-A37D657EFFF7"))
-UICTRLAPI ICheckButton : public IButton
+struct __declspec(uuid("23F3CC63-179E-4108-86B2-A37D657EFFF7"))
+UICTRL_API ICheckButton : public IButton
 {
     UI_DECLARE_INTERFACE(CheckButton)
 };

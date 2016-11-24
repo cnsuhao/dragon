@@ -20,7 +20,7 @@ struct UIMSG : public MSG
 
 
 class Message;
-interface UISDKAPI IMessage
+interface UIAPI IMessage
 {
     IMessage(E_BOOL_CREATE_IMPL);
     BOOL  ProcessMessage(UIMSG* pMsg, int nMsgMapID=0, bool bDoHook=false);
@@ -62,7 +62,7 @@ protected:
 
 
 // 由外部的类继承，用于支持消息映射宏定义
-class UISDKAPI MessageProxy
+class UIAPI MessageProxy
 {
 public:
 	MessageProxy(IMessage* p);

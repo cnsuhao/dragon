@@ -3,11 +3,12 @@
 
 // 导入导出定义
 #ifdef UICTRL_EXPORTS
-#define UICTRLAPI __declspec(dllexport)
+#define UICTRL_API __declspec(dllexport)
 #else
-#define UICTRLAPI __declspec(dllimport)
+#define UICTRL_API __declspec(dllimport)
 #endif
 
+#define UICTRL_API_UUID(guid)  __declspec(uuid(#guid)) UICTRL_API
 
 namespace UI
 {

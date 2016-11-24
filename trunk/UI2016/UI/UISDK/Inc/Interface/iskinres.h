@@ -16,25 +16,27 @@ namespace UI
 	interface IStyleRes;
 	interface ISkinDataSource;
 	interface IUIDocument;
+	interface II18nRes;
 	class SkinRes;
 
-	interface UISDKAPI ISkinRes
+	interface UIAPI ISkinRes
 	{
 		ISkinRes(SkinRes*);
 		SkinRes*  GetImpl();
 		void  SetParentSkinRes(ISkinRes*);
 
 		IUIApplication*  GetUIApplication();
-		ISkinManager*    GetSkinManager();
-		IImageManager*   GetImageManager();
-		IColorManager*   GetColorManager();
-		IFontManager*    GetFontManager();
-		IStyleManager*   GetStyleManager();
-		ILayoutManager*  GetLayoutManager();
-		IImageRes*       GetImageRes();
-		IFontRes*        GetFontRes();
-		IColorRes*       GetColorRes();
-		IStyleRes*       GetStyleRes();
+        ISkinManager&    GetSkinManager();
+        IImageManager&   GetImageManager();
+        IColorManager&   GetColorManager();
+        IFontManager&    GetFontManager();
+        IStyleManager&   GetStyleManager();
+        ILayoutManager&  GetLayoutManager();
+        IImageRes&       GetImageRes();
+        IFontRes&        GetFontRes();
+        IColorRes&       GetColorRes();
+        IStyleRes&       GetStyleRes();
+		II18nRes&        GetI18nRes();
 
 		ISkinDataSource*  GetDataSource();
 
@@ -55,7 +57,7 @@ namespace UI
 
 	interface ISkinDataSource;
 	class SkinManager;
-	interface UISDKAPI ISkinManager : public IRootInterface
+	interface UIAPI ISkinManager : public IRootInterface
 	{
 		ISkinManager(SkinManager*);
 		SkinManager*  GetImpl();
@@ -67,6 +69,9 @@ namespace UI
 		unsigned int  GetSkinResCount();
 		ISkinRes*  GetSkinResByIndex(unsigned int i);
 		ISkinRes*  GetSkinResByName(LPCTSTR szName);
+
+        void  SetCurrentLanguage(LPCTSTR);
+        LPCTSTR  GetCurrentLanguage();
 
 	private:
 		SkinManager*  m_pImpl;

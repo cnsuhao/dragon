@@ -65,3 +65,9 @@ UIElement*  UIElementProxy::get()
 	return m_ptr;
 }
 
+UIElement* UIElementProxy::detach()
+{
+    UIElement* p = m_ptr;
+    m_ptr = NULL;
+    return p;
+}

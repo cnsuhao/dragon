@@ -400,12 +400,12 @@ ImageRes::~ImageRes()
 	SAFE_DELETE(m_pIImageRes);
 }
 
-IImageRes*  ImageRes::GetIImageRes()
+IImageRes&  ImageRes::GetIImageRes()
 {
 	if (NULL == m_pIImageRes)
 		m_pIImageRes = new IImageRes(this);
 
-	return m_pIImageRes;
+	return *m_pIImageRes;
 }
 
 //
@@ -767,5 +767,11 @@ LPCTSTR  ImageRes::GetRenderBitmapId(IRenderBitmap* pBitmap)
 			return iter->second->GetId();
 		}
 	}
+
+    SkinRes* pParent = m_pSkinRes->GetParentSkinRes();
+    if (pParent)
+    {
+        return pParent->GetImageRes().GetRenderBitmapId(pBitmap);
+    }
 	return NULL;
 }

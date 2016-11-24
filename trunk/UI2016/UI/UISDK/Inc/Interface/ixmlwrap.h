@@ -9,7 +9,7 @@ interface IUIDocument;
 
 // 模拟 share_ptr 实现IUIElement生命周期管理。
 // 调用者只需要直接拿到IUIElementProxy返回值进行调用即可，不用负责销毁
-class UISDKAPI IUIElementProxy
+class UIAPI IUIElementProxy
 {
 public:
     IUIElementProxy();
@@ -31,7 +31,7 @@ private:
 };
 
 interface UIElement;
-interface UISDKAPI IUIElement
+interface UIAPI IUIElement
 {
 public:
 	IUIElement(UIElement*);
@@ -67,7 +67,8 @@ public:
     bool  AddChildAfter(IUIElement*  pElem, IUIElement* pInsertAfter);
     IUIElementProxy  AddChildBefore(LPCTSTR szNodeName, IUIElement* pInsertBefore);
     IUIElementProxy  AddChildAfter(LPCTSTR szNodeName, IUIElement* pInsertAfter);
-    bool  MoveChildAfterChild(IUIElement* pChild2Move, IUIElement* pChildInsertAfter);
+    //bool  MoveChildAfterChild(IUIElement* pChild2Move, IUIElement* pChildInsertAfter);
+    bool  MoveTo(IUIElement* pNewParent, IUIElement* pChildInsertAfter);
 
     IUIElementProxy  FirstChild();
     IUIElementProxy  NextElement();
@@ -78,7 +79,7 @@ private:
 };
 
 interface UIDocument;
-interface UISDKAPI IUIDocument
+interface UIAPI IUIDocument
 {
 public:
 	IUIDocument(UIDocument*);

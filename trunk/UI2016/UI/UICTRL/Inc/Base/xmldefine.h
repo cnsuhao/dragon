@@ -88,6 +88,23 @@ enum THEME_RENDER_TYPE
 #define XML_LISTBOX_TEXT_INDENT   _T("textindent")    // 文本缩进
 #pragma endregion
 
+// Button
+
+// 系统按钮类型
+enum SYSTEM_BUTTON_TYPE
+{
+    SYSTEM_BUTTON_TYPE_UNKNOWN = 0,
+    SYSTEM_BUTTON_TYPE_MINIMIZE = 1,
+    SYSTEM_BUTTON_TYPE_MAXIMIZE = 2,
+    SYSTEM_BUTTON_TYPE_RESTORE = 3,
+    SYSTEM_BUTTON_TYPE_CLOSE = 4,
+};
+#define  XML_SYSTEM_BUTTON_TYPE_MINIMIZE  TEXT("minimize")
+#define  XML_SYSTEM_BUTTON_TYPE_MAXIMIZE  TEXT("maximize")
+#define  XML_SYSTEM_BUTTON_TYPE_RESTORE   TEXT("restore")
+#define  XML_SYSTEM_BUTTON_TYPE_CLOSE     TEXT("close")
+
+#define  XML_SYSTEM_BUTTON_TYPE           TEXT("type")
 
 #pragma region  // SplitterBar属性定义
 #define XML_SPLITTERBAR_OBJECTS_POS  _T("type")
@@ -147,6 +164,16 @@ enum SPLITTERBAR_ALIGN
 #define XML_REOLE_NORMAL                      _T("normal")
 #define XML_REOLE_HOVER                       _T("hover")
 #define XML_REOLE_PRESS                       _T("press")
+
+// richtext
+#define XML_RICHTEXT_EDITABLE                 _T("editable")      // 编辑模式
+#define XML_RICHTEXT_EDITABLE_DISABLE         _T("disable")
+#define XML_RICHTEXT_EDITABLE_READONLY        _T("readonly")
+#define XML_RICHTEXT_EDITABLE_ENABLE          _T("enable")
+
+#define XML_RICHTEXT_PAGE_ALIGN_HORZ          _T("page.halign")   // page内容对齐方式
+#define XML_RICHTEXT_PAGE_ALIGN_VERT          _T("page.valign")
+
 
 }
 #endif //_UI_CTRL_XMLDEFINE_H_

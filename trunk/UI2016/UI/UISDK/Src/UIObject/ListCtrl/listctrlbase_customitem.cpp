@@ -34,17 +34,13 @@ CustomListItem*  ListCtrlBase::InsertCustomItem(
 
 	Panel* pRootPanel = pImpl->GetRootPanel();
 
-	// 临时屏蔽父结点，用于实现新加载上的子结点，别将notify设置到Window上去了，
-	// 参见LayoutManager::ParseElement中SetNotify的调用
-
-	pRootPanel->SetParentObjectDirect(NULL);
+    // 解析子控件
+    pRootPanel->LoadAttributeFromXml(element.get(), false);
 
     // 解析子控件
     m_pSkinRes->GetLayoutManager().ParseChildElement(
-            element.get(), 
-            pImpl->GetIRootPanel());
+        element.get(), pRootPanel, NOTIFY_TARGET_NULL);
  
-	pRootPanel->SetParentObjectDirect(this);
     return pImpl;
 }
 

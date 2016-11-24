@@ -10,12 +10,12 @@ namespace UI
 	interface IRenderBitmap;
 	interface IRenderFont;
 
-    interface UISDKAPI IColorManager : public IRootInterface
+    interface UIAPI IColorManager : public IRootInterface
     {
         IColorManager(ColorManager* p);
         ColorManager*  GetImpl();
 
-        IColorRes*  GetColorRes();
+        IColorRes&  GetColorRes();
 
     private:
         ColorManager*  m_pImpl;
@@ -23,7 +23,7 @@ namespace UI
 
 	class ColorRes;
 	interface IColorResItem;
-	interface UISDKAPI IColorRes : public IRootInterface
+	interface UIAPI IColorRes : public IRootInterface
 	{
 		IColorRes(ColorRes* p);
 		ColorRes*  GetImpl();
@@ -38,19 +38,19 @@ namespace UI
 	};
 
 	class  ColorResItem;
-	interface UISDKAPI IColorResItem : public IRootInterface
+	interface UIAPI IColorResItem : public IRootInterface
 	{
 		IColorResItem(ColorResItem* p);
 		ColorResItem*  GetImpl();
 
-		LPCTSTR GetID();
+		LPCTSTR GetId();
 		LPCTSTR GetColorString();
 	private:
 		ColorResItem*  m_pImpl;
 	};
 
     class ImageResItem;
-    interface UISDKAPI IImageResItem : public IRootInterface
+    interface UIAPI IImageResItem : public IRootInterface
     {
         IImageResItem(ImageResItem* p);
         ImageResItem*  GetImpl(); 
@@ -71,7 +71,7 @@ namespace UI
         ImageResItem*  m_pImpl;
     };
     class ImageListResItem;
-    interface UISDKAPI IImageListResItem : public IImageResItem
+    interface UIAPI IImageListResItem : public IImageResItem
     {
         IImageListResItem(ImageListResItem* p);
         ImageListResItem*  GetImpl(); 
@@ -86,7 +86,7 @@ namespace UI
     };
 
     class ImageIconResItem;
-    interface UISDKAPI IImageIconResItem : public IImageResItem
+    interface UIAPI IImageIconResItem : public IImageResItem
     {
         IImageIconResItem(ImageIconResItem* p);
         ImageIconResItem*  GetImpl(); 
@@ -96,7 +96,7 @@ namespace UI
     };
 
     class ImageRes;
-    interface UISDKAPI IImageRes : public IRootInterface
+    interface UIAPI IImageRes : public IRootInterface
     {
         IImageRes(ImageRes* p);
         ImageRes*  GetImpl();
@@ -117,7 +117,7 @@ namespace UI
 
     class CursorRes;
     interface IUICursor;
-    interface UISDKAPI ICursorRes : public IRootInterface
+    interface UIAPI ICursorRes : public IRootInterface
     {
         ICursorRes(CursorRes* p);
         CursorRes*  GetImpl(); 
@@ -130,7 +130,7 @@ namespace UI
     };
 
     class CursorResItem;
-    interface UISDKAPI ICursorResItem : public IRootInterface
+    interface UIAPI ICursorResItem : public IRootInterface
     {
         ICursorResItem(CursorResItem* p);
         CursorResItem*  GetImpl(); 
@@ -141,7 +141,7 @@ namespace UI
 
    
     class FontResItem;
-    interface UISDKAPI IFontResItem : public IRootInterface
+    interface UIAPI IFontResItem : public IRootInterface
     {
         IFontResItem(FontResItem*);
         FontResItem*  GetImpl();
@@ -154,7 +154,7 @@ namespace UI
 
     class GifRes;
     interface IGifImage;
-    interface UISDKAPI IGifRes : public IRootInterface
+    interface UIAPI IGifRes : public IRootInterface
     {
         IGifRes(GifRes* p);
         GifRes*  GetImpl();
@@ -165,7 +165,7 @@ namespace UI
     };
 
     class GifResItem;
-    interface UISDKAPI IGifResItem : public IRootInterface
+    interface UIAPI IGifResItem : public IRootInterface
     {
         IGifResItem(GifResItem* p);
         GifResItem*  GetImpl();
@@ -175,7 +175,7 @@ namespace UI
     };
 
     class FontRes;
-    interface UISDKAPI IFontRes : public IRootInterface
+    interface UIAPI IFontRes : public IRootInterface
     {
         IFontRes(FontRes* p);
         FontRes*  GetImpl();
@@ -191,7 +191,7 @@ namespace UI
     };
 
     class StyleResItem;
-    interface UISDKAPI IStyleResItem : public IRootInterface
+    interface UIAPI IStyleResItem : public IRootInterface
     {
         IStyleResItem(StyleResItem* p);
         StyleResItem*  GetImpl();
@@ -220,19 +220,27 @@ namespace UI
     };
 
     class StyleRes;
-    interface UISDKAPI IStyleRes : public IRootInterface
+    interface UIAPI IStyleRes : public IRootInterface
     {
         IStyleRes(StyleRes* p);
         StyleRes*  GetImpl();
 
-        IStyleResItem*  Add(STYLE_SELECTOR_TYPE type, LPCTSTR szId, LPCTSTR szInherit);
-		IStyleResItem*  Insert(STYLE_SELECTOR_TYPE type, LPCTSTR szId, long lPos);
-		bool  Modify(IStyleResItem* pItem, STYLE_SELECTOR_TYPE type, LPCTSTR szId, LPCTSTR szInherit);
+        IStyleResItem*  Add(
+                STYLE_SELECTOR_TYPE type, LPCTSTR szId, LPCTSTR szInherit);
+		IStyleResItem*  Insert(
+                STYLE_SELECTOR_TYPE type, LPCTSTR szId, long lPos);
+		bool  Modify(
+                IStyleResItem* pItem, 
+                STYLE_SELECTOR_TYPE type,
+                LPCTSTR szId, 
+                LPCTSTR szInherit);
         bool  Remove(STYLE_SELECTOR_TYPE type, LPCTSTR szId);
 		bool  Remove(IStyleResItem* pItem);
 
-		bool  AddAttribute(IStyleResItem* pItem, LPCTSTR szKey, LPCTSTR szValue);
-		bool  ModifyAttribute(IStyleResItem* pItem, LPCTSTR szKey, LPCTSTR szValue);
+		bool  AddAttribute(
+                IStyleResItem* pItem, LPCTSTR szKey, LPCTSTR szValue);
+		bool  ModifyAttribute(
+                IStyleResItem* pItem, LPCTSTR szKey, LPCTSTR szValue);
 		bool  RemoveAttribute(IStyleResItem* pItem, LPCTSTR szKey);
 
         long  GetStyleCount();
@@ -241,22 +249,34 @@ namespace UI
 
         IStyleResItem*  FindItem(STYLE_SELECTOR_TYPE type, LPCTSTR szId);
 
+        bool  LoadStyle(
+                LPCTSTR szTagName, 
+                LPCTSTR szStyleClass, 
+                LPCTSTR szID, 
+                IMapAttribute* pMapStyle);
+        bool  UnloadStyle(
+                LPCTSTR szTagName,
+                LPCTSTR szStyleClass,
+                LPCTSTR szID, 
+                IListAttribute* pListAttribte);
+
     private:
         StyleRes*  m_pImpl;
     };
 
     class ImageManager;
-    interface UISDKAPI IImageManager : public IRootInterface	
+    interface UIAPI IImageManager : public IRootInterface	
     {
         IImageManager(ImageManager* p);
         ImageManager*  GetImpl();
 
-        IImageRes*   GetImageRes();
+        IImageRes&   GetImageRes();
         ICursorRes*  GetCursorRes();
         IGifRes*     GetGifRes();
         IUIElement*  GetImageXmlElem(LPCTSTR szId);
 
-        IImageResItem*  InsertImageItem(IMAGE_ITEM_TYPE eType, LPCTSTR szID, LPCTSTR szPath);
+        IImageResItem*  InsertImageItem(
+                IMAGE_ITEM_TYPE eType, LPCTSTR szID, LPCTSTR szPath);
         bool  ModifyImageItem(LPCTSTR szID, LPCTSTR szPath);
         bool  RemoveImageItem(LPCTSTR szID);
 
@@ -267,44 +287,53 @@ namespace UI
     };
 
     class FontManager;
-    interface UISDKAPI IFontManager : public IRootInterface 
+    interface UIAPI IFontManager
     {
         IFontManager(FontManager* p);
         FontManager*  GetImpl();
 
-        IFontRes*  GetFontRes();
+        IFontRes&  GetFontRes();
     private:
         FontManager*  m_pImpl;
     };
 
     class StyleManager;
-    interface UISDKAPI IStyleManager : public IRootInterface
+    interface UIAPI IStyleManager
     {
         IStyleManager(StyleManager*);
         StyleManager*  GetImpl();
 
-        IStyleRes*  GetStyleRes();
+        IStyleRes&  GetStyleRes();
         IUIElement*  GetStyleXmlElem(LPCTSTR szId);
-
-        bool  ParseStyle(IMapAttribute* pMapAttrib);  // 内部间接调用LoadStyle
-        bool  ReverseParseStyle(IListAttribute* pListAttrib);
-        bool  LoadStyle(LPCTSTR szTagName, LPCTSTR szStyleClass, LPCTSTR szID, IMapAttribute* pMapStyle);
 
     private:
         StyleManager*  m_pImpl;
     };
 
+    interface ILayoutWindowNodeList
+    {
+        virtual void  Release() PURE;
+        virtual UINT  GetCount() PURE;
+        virtual LPCTSTR  GetWindowName(UINT index) PURE;
+        virtual LPCTSTR  GetWindowId(UINT index) PURE;
+        virtual LPCTSTR  GetWindowPath(UINT index) PURE;
+    };
+
     class LayoutManager;
-    interface UISDKAPI ILayoutManager : public IRootInterface
+    interface UIAPI ILayoutManager
     {
         ILayoutManager(LayoutManager*);
         LayoutManager*  GetImpl();
 
-        IObject*  LoadLayout(LPCTSTR szWndName, LPCTSTR szWndId);
+        IObject*  LoadControlLayout(
+                    LPCTSTR szWndId, 
+                    IObject* pParent, 
+                    IMessage* pNotifyTarget);
         IObject*  ParseElement(IUIElement* pUIElement, IObject* pParent);
 
-        bool  FindWindowElement(LPCTSTR szTagName, LPCTSTR szId, IUIElement** ppElem);
-        // bool  LoadWindowNodeList(ILayoutWindowNodeList**);
+        bool  FindWindowElement(
+                   LPCTSTR szTagName, LPCTSTR szId, IUIElement** ppElem);
+        bool  LoadWindowNodeList(ILayoutWindowNodeList**);
 
     private:
         LayoutManager*  m_pImpl;
@@ -313,7 +342,17 @@ namespace UI
 	// 国际化 
 	interface II18nCallback
 	{
-		virtual LPCTSTR I18nMap(LPCTSTR key) = 0;
+		virtual LPCTSTR Map(LPCTSTR key) = 0;
+	};
+
+	class I18nRes;
+	interface UIAPI II18nRes
+	{
+		II18nRes(I18nRes*);
+        LPCTSTR  MapConfigValue(LPCTSTR);
+
+	private:
+		I18nRes*  m_pImpl;
 	};
 }
 

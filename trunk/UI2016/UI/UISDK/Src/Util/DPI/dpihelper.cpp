@@ -80,7 +80,7 @@ long  ScaleByDpi(long x)
     if (GetDpi() == DEFAULT_SCREEN_DPI)
         return x;
 
-    return (long)round(x * GetDpiScale());
+    return _round(x * GetDpiScale());
 }
 long  RestoreByDpi(long x)
 {
@@ -90,7 +90,7 @@ long  RestoreByDpi(long x)
     if (GetDpi() == DEFAULT_SCREEN_DPI)
         return x;
 
-	return (long)round(x / GetDpiScale());
+	return _round(x / GetDpiScale());
 }
 
 // 宽度、高度小于0时，如AUTO/NDEF不适应于dpi

@@ -49,7 +49,7 @@ void  SoftwareCompositor::update_dirty_recursion(Layer* p)
 	}
 }
 
-void  SoftwareCompositor::Commit(const RectArray& arrDirtyInWindow) 
+void  SoftwareCompositor::virtualCommit(const RectArray& arrDirtyInWindow)
 {
     if (!m_pRootLayer)
         return;
@@ -69,7 +69,7 @@ void  SoftwareCompositor::Commit(const RectArray& arrDirtyInWindow)
         param.ySrc = param.yDst = rcInWindow.top;
         param.wSrc = param.wDst = rcInWindow.right - rcInWindow.left;
         param.hSrc = param.hDst = rcInWindow.bottom - rcInWindow.top;
-        static_cast<SoftwareLayer*>(m_pRootLayer)->GetRenderTarget()->Render2DC(hDC, &param);
+        m_pRootLayer->GetRenderTarget()->Render2DC(hDC, &param);
     }
 	ReleaseDC(m_hWnd, hDC);
 }

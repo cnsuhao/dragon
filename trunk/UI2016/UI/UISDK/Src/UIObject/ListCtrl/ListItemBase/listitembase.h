@@ -161,8 +161,8 @@ public:
     void  SetRadioChecked(bool b, bool bNotify=true);
     void  SetSelectable(bool b);
     void  SetFocusable(bool b);
-    void  SetDragDropHover(bool b, bool bNotify);
-    void  SetDraging(bool b, bool bNotify);
+    void  SetDragDropHover(bool b, bool bNotify = true);
+    void  SetDraging(bool b, bool bNotify = true);
 
     // obj item 
 	IPanel*  GetIRootPanel();
@@ -180,6 +180,7 @@ public:
     void  Draw(IRenderTarget* pRenderTarget);
     void  DrawItemInnerControl(IRenderTarget* pRenderTarget);
     void  DrawFloat(IRenderTarget* pRenderTarget);
+    void  Invalidate();
 
     BOOL  ProcessItemMKMessage(UIMSG* pMSG);
 

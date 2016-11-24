@@ -32,25 +32,25 @@ namespace UI
 //		message: UI_MSG_NOTIFY
 //		code:    UI_LCN_DBCLICK
 //		wparam:  LISTCTRL_CLICKNOTIFY_DATA*
-#define UI_NM_DBCLICK   135311303
+// #define UI_NM_DBCLICK   135311303
 
 //	点击listctrl
 //		message: UI_MSG_NOTIFY
 //		code:    UI_LCN_CLICK
 //		wparam:  LISTCTRL_CLICKNOTIFY_DATA*
-#define UI_NM_CLICK     135311304
+//#define UI_NM_CLICK     135311304
 
 //  右击listctrl
 //		message: UI_MSG_NOTIFY
 //		code:    UI_NM_RCLICK
 //		wparam:  LISTCTRL_CLICKNOTIFY_DATA*
-#define UI_NM_RCLICK     136291126
+// #define UI_NM_RCLICK     136291126
 
 // 滚轮点击listctrl
 //      message: UI_MSG_NOTIFY
 //      code:    UI_NM_MCLICK
 //      wParam: LISTCTRL_CLICKNOTIFY_DATA*
-#define  UI_NM_MCLICK    158141138
+//#define  UI_NM_MCLICK    158141138
  
 //  键盘消息
 //      message: UI_MSG_NOTIFY
@@ -58,7 +58,7 @@ namespace UI
 //      wParam:  vKey
 //      lParam:  
 //      return:  1表示已处理，0表示未处理
-#define UI_NM_KEYDOWN    140081548
+// #define UI_NM_KEYDOWN    140081548
 
 //	listctrl 当前选中项改变(combobox)
 //		message: UI_MSG_NOTIFY
@@ -66,7 +66,7 @@ namespace UI
 //		wparam:  IListItemBase* pOld
 //		lparam:  IListItemBase* pNew
 #define UI_LCN_SELCHANGED_SELF  135311306   // 给自己派生类发送的
-#define UI_LCN_SELCHANGED  135311305  // 给自己发送的
+// #define UI_LCN_SELCHANGED  135311305  // 给自己发送的。废弃，修改为signal
 
 
 //  listctrl当前hover项改变\
@@ -193,7 +193,7 @@ typedef struct tagListCtrlStyle
 // #define LISTCTRLBASE_INNER_CONTROL_MSG_ID  3  // 内部控件ID。当内部控件调用DoNotify是，将发到这个ID上	
 #define LISTCTRLBASE_EDIT_CONTROL_MSG_ID   4  // 编辑控件消息通知ID
 
-interface UISDKAPI IListCtrlBase : public IControl
+struct UIAPI IListCtrlBase : public IControl
 {
     UI_DECLARE_INTERFACE(ListCtrlBase);
 
@@ -234,6 +234,7 @@ interface UISDKAPI IListCtrlBase : public IControl
     IObject*  GetFocusObject();
 
     IListItemBase*  GetItemByPos(int i, bool bVisibleOnly=true);
+    int  GetItemPos(IListItemBase*, bool bVisibleOnly = true);
     IListItemBase*  GetItemUnderCursor();
     IListItemBase*  GetItemById(long lId);
     IListItemBase*  FindItemByText(LPCTSTR szText, IListItemBase* pStart=NULL);
@@ -273,7 +274,7 @@ interface UISDKAPI IListCtrlBase : public IControl
     IRenderBase*  GetFocusRender();
     void  SetFocusRender(IRenderBase* p);
     void  SetFocusItem(IListItemBase* pItem);
-    void  SelectItem(IListItemBase* pItem, bool bUpdate, bool bNotify=true);
+    void  SelectItem(IListItemBase* pItem, bool bNotify=true);
 	void  ClearSelectItem(bool bNotify);
    
     void  InvalidateItem(IListItemBase* pItem);
@@ -316,13 +317,21 @@ interface UISDKAPI IListCtrlBase : public IControl
     void  ScrollX(int nX, bool bUpdate);
     void  SetScrollPos(int nX, int nY, bool bUpdate);
 
+
+	signal<IListCtrlBase*>&  SelectChangedEvent();
+    signal<IListCtrlBase*, IListItemBase*>&  ClickEvent();
+    signal<IListCtrlBase*, IListItemBase*>&  RClickEvent();
+    signal<IListCtrlBase*, IListItemBase*>&  MClickEvent();
+    signal<IListCtrlBase*, IListItemBase*>&  DBClickEvent();
+    signal<IListCtrlBase*, UINT, bool&>&  KeyDownEvent();
+
 //     static void  SetListItemRectChangedCallback(
 //                     bool (__stdcall *func)(IListItemBase& item,LPCRECT prcOld,LPCRECT prcNew));
 };
 
 
 class ListItemShareData;
-interface UISDKAPI IListItemShareData : public IMessage
+interface UIAPI IListItemShareData : public IMessage
 {
     IListCtrlBase*  GetListCtrlBase();
 

@@ -17,7 +17,7 @@ IObject*  CustomListItem::FindControl(LPCTSTR szId)
 	if (!m_pPanelRoot)
 		return NULL;
 
-	return m_pPanelRoot->FindChildObject(szId);
+	return m_pPanelRoot->FindObject(szId);
 }
 
 

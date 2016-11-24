@@ -34,8 +34,8 @@ MenuScrollbar::~MenuScrollbar()
 
 void  MenuScrollbar::Initialize(IMenu* pParent, IScrollBarManager* pMgr)
 {
- 	IObject* pObjTop = pParent->FindNcChildObject(MENUSCROLLBAR_TOPBUTTON_ID);
-    IObject* pObjBottom = pParent->FindNcChildObject(MENUSCROLLBAR_BOTTOMBUTTON_ID);
+ 	IObject* pObjTop = pParent->FindNcObject(MENUSCROLLBAR_TOPBUTTON_ID);
+    IObject* pObjBottom = pParent->FindNcObject(MENUSCROLLBAR_BOTTOMBUTTON_ID);
 
     if (!pObjTop || !pObjBottom)
         return;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Src\UIObject\Panel\panel.h"
-#include "Src\UIObject\Window\SyncWindowHelper.h"
+#include "Src\UIObject\Window\sync_window.h"
 #include "Inc\Interface\iwindow.h"
 #include "Src\Helper\MouseKeyboard\mousemanager.h"
 #include "Src\Helper\dragdrop\windowdragdropmgr.h"
@@ -36,7 +36,7 @@ private:
 class CWindowMessageHookProxy : public IMessage
 {
 public:
-	CWindowMessageHookProxy(IWindowMessageCallback* p) : IMessage(CREATE_IMPL_TRUE)
+	CWindowMessageHookProxy(IWindowDelegate* p) : IMessage(CREATE_IMPL_TRUE)
 	{
 		m_pCallback = p;
 	}
@@ -49,19 +49,41 @@ public:
 		}
 		return FALSE;
 	}
+    void  OnWindowClose(bool& bCanClose)
+    {
+        if (m_pCallback)
+        {
+            m_pCallback->OnWindowClose(bCanClose);
+        }
+    }
+    void  OnWindowDestroy()
+    {
+        if (m_pCallback)
+        {
+            m_pCallback->OnWindowDestroy();
+        }
+    }
+    void  OnWindowInit()
+    {
+        if (m_pCallback)
+        {
+            m_pCallback->OnWindowInitialize();
+        }
+    }
+
 protected:
-	virtual BOOL  virtualProcessMessage(UIMSG* pMsg, int nMsgMapID, bool bDoHook)
+	virtual BOOL  virtualProcessMessage(
+                UIMSG* pMsg, int nMsgMapID, bool bDoHook)
 	{
 		if (m_pCallback)
 			return m_pCallback->OnWindowUIMessage(pMsg);
 		return FALSE;
 	}
 private:
-	IWindowMessageCallback*  m_pCallback;
+	IWindowDelegate*  m_pCallback;
 };
 
 class WindowBase : public Panel
-                 , public SyncWindowHelper<WindowBase>
 {
 public:
     WindowBase(IWindowBase* p);
@@ -111,6 +133,7 @@ public:
         MESSAGE_HANDLER( WM_IME_KEYUP,            _OnHandleKeyBoardMessage )
         
         MESSAGE_HANDLER( WM_GETMINMAXINFO,        _OnGetMinMaxInfo )
+        MESSAGE_HANDLER(WM_SHOWWINDOW,            _OnShowWindow)
         MESSAGE_HANDLER( WM_WINDOWPOSCHANGING,    _OnWindowPosChanging )
         MESSAGE_HANDLER( UI_WM_SYNC_WINDOW,       _OnSyncWindow )
         MESSAGE_HANDLER( WM_ENTERSIZEMOVE,        _OnEnterSizeMove )
@@ -122,6 +145,7 @@ public:
 		MESSAGE_HANDLER( WM_GETOBJECT,            _OnGetObject )
         MESSAGE_HANDLER( WM_CREATE,               _OnCreate )
         MESSAGE_HANDLER( WM_INITDIALOG,           _OnCreate )
+		MESSAGE_HANDLER( WM_CLOSE,                _OnClose)
         MESSAGE_HANDLER( WM_NCDESTROY,            _OnNcDestroy )
 #if(_WIN32_WINNT >= 0x0501)
         MESSAGE_HANDLER( WM_THEMECHANGED,         _OnThemeChange )
@@ -160,7 +184,7 @@ public:
 	void  EndDialog(INT_PTR);
 	bool  Attach(HWND hWnd, LPCTSTR szID);
 	void  Detach();
-	void  SetWindowMessageCallback(IWindowMessageCallback*);
+	void  SetWindowMessageCallback(IWindowDelegate*);
 
 	BOOL  IsChildWindow();
 	BOOL  IsWindowVisible();
@@ -193,7 +217,6 @@ public:
 	bool  IsGpuComposite();
 	void  DirectComposite();
 
-	void  PaintWindow(HDC hDC, RECT* prcInvalidArray, uint nCount);
 	void  SaveMemBitmap(TCHAR* szFile);
 	void  DrawMemBitmap(HDC hDC, RECT* prc, bool bAlphaBlend);
     void  EnableDwmTransition(bool b);
@@ -245,6 +268,7 @@ protected:
 	LRESULT  _OnPostMessage( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
 	LRESULT  _OnSize( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
 	LRESULT  _OnCreate( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
+	LRESULT  _OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT  _OnNcDestroy( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
 	LRESULT  _OnHandleMouseMessage(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
     LRESULT  _OnHandleKeyBoardMessage(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
@@ -254,6 +278,7 @@ protected:
     LRESULT  _OnMouseActive( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
 	LRESULT  _OnThemeChange( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
 	LRESULT  _OnWindowPosChanging( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
+    LRESULT  _OnShowWindow(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT  _OnSyncWindow( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
 	LRESULT  _OnGetMinMaxInfo( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
 	LRESULT  _OnEnterSizeMove( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
@@ -264,6 +289,8 @@ protected:
     void      OnGetDesiredSize(SIZE* pSize);
 
 private:
+    void  set_hwnd(HWND);
+
     void  load_minwidth(long);
     long  save_minwidth();
     void  load_maxwidth(long);
@@ -285,9 +312,10 @@ public:
 
 protected:
     IWindowBase*  m_pIWindowBase;
-	CWndProcThunk  m_thunk;          // ATL中的THUNK，用于将一个窗口过程作成自己的成员函数
+    CWndProcThunk  m_thunk;          // ATL中的THUNK，用于将一个窗口过程作成自己的成员函数
 	WNDPROC  m_oldWndProc;           // 该窗口的原始窗口过程
 
+    SyncWindow       m_syncWindow;
     WindowDragDropMgr      m_oDragDropManager;   // 拖拽管理器
 	WindowMouseMgr         m_oMouseManager;      // 鼠标消息处理器
     WindowRender           m_oWindowRender;      // 窗口的渲染放在这个对象里面，windowbase不负责渲染
@@ -299,6 +327,7 @@ protected:
 	INT_PTR  m_lDoModalReturn;
 
 	WindowStyle  m_windowStyle;
+
 
 	long  m_lMinWidth;               // 窗口大小限制
 	long  m_lMinHeight;
@@ -315,6 +344,11 @@ protected:
     // 3. 当窗口字体也没时，使用UI Font Res 默认字体
     // 4. 最后则尝试使用system default font.
 	IRenderFont*  m_pDefaultFont;    
+	
+public:
+	// 事件
+	signal_mc<long>  size_changed;
+    signal_mc<bool&> on_close;
 };
 
 

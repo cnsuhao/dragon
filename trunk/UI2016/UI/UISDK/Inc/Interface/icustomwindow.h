@@ -8,10 +8,10 @@ namespace UI
 class CustomWindow;
 interface IWindowTransparent;
 
-interface __declspec(uuid("AB69FBED-6311-4980-8444-B5D880568B10"))
-UISDKAPI ICustomWindow : public IWindow
+interface UIAPI_UUID(AB69FBED-6311-4980-8444-B5D880568B10) ICustomWindow
+ : public IWindow
 {
-	ICustomWindow();  // 内部直接调用ICustomWindow(CREATE_IMPL_TRUE)
+	//ICustomWindow();  // 内部直接调用ICustomWindow(CREATE_IMPL_TRUE)
 
     void  SetWindowResizeType(UINT nType);
     void  SetWindowTransparentType(WINDOW_TRANSPARENT_TYPE eMode);

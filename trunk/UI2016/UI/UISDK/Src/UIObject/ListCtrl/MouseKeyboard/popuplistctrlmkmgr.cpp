@@ -117,7 +117,7 @@ void  PopupListCtrlMKMgr::OnLButtonUp(UIMSG* pMsg)
                 {
                     // 只选这一个
                     // ListItemBase* pItemSave = m_pItemHover;
-                    m_pListCtrlBase->SelectItem(m_pItemHover, false);
+                    m_pListCtrlBase->SelectItem(m_pItemHover);
                 }
             }
             else
@@ -130,12 +130,16 @@ void  PopupListCtrlMKMgr::OnLButtonUp(UIMSG* pMsg)
         {
             if (pSave &&  pSave == pNowHover)
             {
-                UIMSG  msg;
-                msg.message = UI_MSG_NOTIFY;
-                msg.nCode   = UI_NM_CLICK;
-                msg.wParam  = (WPARAM)pSave->GetIListItemBase();
-                msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
-                msg.pMsgFrom->DoNotify(&msg);
+//                 UIMSG  msg;
+//                 msg.message = UI_MSG_NOTIFY;
+//                 msg.nCode   = UI_NM_CLICK;
+//                 msg.wParam  = (WPARAM)pSave->GetIListItemBase();
+//                 msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
+//                 msg.pMsgFrom->DoNotify(&msg);
+
+                m_pListCtrlBase->click.emit(
+                    m_pListCtrlBase->GetIListCtrlBase(),
+                    pSave ? pSave->GetIListItemBase() : NULL);
             }
         }
     }

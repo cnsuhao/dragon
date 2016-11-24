@@ -22,13 +22,13 @@ public:
 public:
     virtual long  GetConfigWidth() override;
     virtual void  SetConfigWidth(long) override;
-    void  LoadConfigWidth(long);
-    long  SaveConfigWidth();
+    void  LoadConfigWidth(LPCTSTR);
+    LPCTSTR  SaveConfigWidth();
 
     virtual long  GetConfigHeight() override;
     virtual void  SetConfigHeight(long) override;
-    void  LoadConfigHeight(long);
-    long  SaveConfigHeight();
+    void  LoadConfigHeight(LPCTSTR);
+    LPCTSTR  SaveConfigHeight();
 
     virtual void SetConfigLayoutFlags(long) override;
     virtual long GetConfigLayoutFlags() override;
@@ -38,8 +38,8 @@ private:
     long  m_nConfigHeight; 
     long  m_nConfigLayoutFlags;
 
-	LAYOUT_VALUE_TYPE  m_eWidthValueType;
-	LAYOUT_VALUE_TYPE  m_eHeightValueType;
+    long  m_eWidthType = WH_SET;
+    long  m_eHeightType = WH_SET;
 
 	friend class HorzLayout;
 };
@@ -53,7 +53,8 @@ public:
     virtual SIZE  Measure() override;
 	virtual void  DoArrage(IObject* pObjToArrage = NULL) override;
 	virtual void  Serialize(SERIALIZEDATA* pData) override;
-    virtual void  OnChildObjectVisibleChanged(IObject* pObj) override;
+    virtual void  ChildObjectVisibleChanged(IObject* pObj) override;
+    virtual void  ChildObjectContentSizeChanged(IObject* pObj) override;
 
     virtual void  SetSpace(int n);
 

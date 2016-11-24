@@ -1,6 +1,7 @@
 #ifndef _UI_IEDIT_H_
 #define _UI_IEDIT_H_
 #include "..\..\..\UISDK\Inc\Interface\icontrol.h"
+#include "..\..\..\common\define.h"
 
 namespace UI
 {
@@ -15,13 +16,13 @@ const UINT  EDIT_BKGND_RENDER_STATE_DISABLE = RENDER_STATE_DISABLE|3;
 // 在编辑框中按了下某个键
 // wParam: RETURN/ESC/TAB
 // return: 1已处理，0未处理
-#define UI_EN_KEYDOWN  136181700
+// #define UI_EN_KEYDOWN  136181700
 
 // 在编辑框中的文本发生了变化
 // message: UI_WM_NOTIFY
 // code:    UI_EN_CHANGE
 // wParam:  0表示由用户输入触发，1表示由调用api(settext等)触发 bInvokeBySetText
-#define UI_EN_CHANGE   136221429
+// #define UI_EN_CHANGE   136221429
 
 
 struct EDITSTYLE
@@ -29,12 +30,17 @@ struct EDITSTYLE
 	bool  combobox : 1;       // 组合框中使用的编辑框
 	bool  want_tab : 1;       // 接收TAB键消息
 	bool  read_only : 1;      // 只读
+};
 
+enum EDITTEXTALIGN
+{
+    EDIT_TEXT_ALIGN_LEFT = 0,
+    EDIT_TEXT_ALIGN_CENTER,
 };
 
 class Edit;
 interface __declspec(uuid("9EFA8C1A-21A6-415A-9C6C-C759ACAD2966"))
-UICTRLAPI IEdit : public IControl
+UICTRL_API IEdit : public IControl
 {
     void  SetText(LPCTSTR szText);
     void  SetTextLong(long lNumber);
@@ -47,9 +53,13 @@ UICTRLAPI IEdit : public IControl
 
     bool  IsReadOnly();
     void  SetReadOnly(bool b);
+    void  SetWantTab(bool b);
 	
 	void  SetTextFilterDigit();
 	void  ClearTextFilter();
+
+    signal<IEdit*, bool>&  EnChangeEvent();
+    signal_r<bool, IEdit*, UINT>&  KeyDownEvent();
 
 	UI_DECLARE_INTERFACE_ACROSSMODULE(Edit);
 };
@@ -76,7 +86,7 @@ enum START_EDIT_RESULT
 
 class InstantEdit;
 interface __declspec(uuid("227EB0DD-D4EC-4A3A-83ED-25FEA28E123E"))
-UICTRLAPI IInstantEdit : public IEdit
+UICTRL_API IInstantEdit : public IEdit
 {
     UI_DECLARE_INTERFACE(InstantEdit);
 };
@@ -104,21 +114,27 @@ IPasswordEdit : public IEdit
 	UI_DECLARE_INTERFACE(PasswordEdit);
 };
 
-// wParam: BSTR*
-// lParam: bool* 
+// wParam: bool*
+// return: 
 #define UI_PASSWORDEDIT_MSG_GETREALPASSWORD  151081651
-inline void PasswordEdit_GetRealPassword(IMessage* pPasswordCtrl, void/*BSTR*/* pOut)
+inline LPCTSTR PasswordEdit_GetRealPassword(IMessage* pPasswordCtrl, bool* pbIsDefault)
 {
-	UIASSERT(pPasswordCtrl && pOut);
-	UISendMessage(pPasswordCtrl, UI_PASSWORDEDIT_MSG_GETREALPASSWORD, (WPARAM)pOut);
+	UIASSERT(pPasswordCtrl);
+    return (LPCTSTR)UISendMessage(
+                pPasswordCtrl, 
+                UI_PASSWORDEDIT_MSG_GETREALPASSWORD, 
+                (WPARAM)pbIsDefault);
 }
 
-// wParam: LPCTSTR
+// wParam: LPCTSTR, NULL表示显示默认密码
 #define UI_PASSWORDEDIT_MSG_SETREALPASSWORD  164152027
 inline void PasswordEdit_SetRealPassword(IMessage* pPasswordCtrl, LPCTSTR pText)
 {
-	UIASSERT(pPasswordCtrl && pText);
-	UISendMessage(pPasswordCtrl, UI_PASSWORDEDIT_MSG_SETREALPASSWORD, (WPARAM)pText);
+	UIASSERT(pPasswordCtrl);
+	UISendMessage(
+            pPasswordCtrl, 
+            UI_PASSWORDEDIT_MSG_SETREALPASSWORD, 
+            (WPARAM)pText);
 }
 
 // 原文、密码 模式切换
@@ -134,6 +150,8 @@ inline void PasswordEdit_SwitchMode(IMessage* pPasswordCtrl, PASSWORDEDIT_MODE e
 	UIASSERT(pPasswordCtrl);
 	UISendMessage(pPasswordCtrl, UI_PASSWORDEDIT_MSG_SWITCHMODE, (WPARAM)eMode);
 }
+
+
 
 }
 

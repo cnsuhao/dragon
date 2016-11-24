@@ -11,6 +11,10 @@
 #include "Inc\Interface\imapattr.h"
 #include "Inc\Interface\iuiapplication.h"
 
+void* memfun_cast2(void*& p)
+{
+    return p;
+}
 
 // 将xml用的配置转成对象的属性，注意，子类重载该函数时，必须先调用父类的该方法
 // bReload表示为换肤时调用，此时不能再给某些属性赋值，例如text属性
@@ -43,7 +47,14 @@ void  Object::OnSerialize(SERIALIZEDATA* pData)
 
     {
 		AttributeSerializer s(pData, TEXT("Object"));
-        s.AddString(XML_ID, m_strId);
+        s.AddString(XML_ID, m_strId)->AsData();
+
+#ifdef EDITOR_MODE
+        s.AddString(XML_STYLECLASS,
+            [this](LPCTSTR t){ if (t){m_strStyle = t;}else {m_strStyle.clear();} },
+            [this]()->LPCTSTR{ return m_strStyle.c_str(); })
+            ->ReloadOnChanged();
+#endif
 
 		// styelclass被修改时，应该重新解析所有属性
         // s.AddString(XML_STYLECLASS, m_strStyleClass)->ReloadOnChanged();
@@ -94,7 +105,7 @@ void  Object::OnSerialize(SERIALIZEDATA* pData)
 
         s.AddBool(XML_LAYER, this, 
             memfun_cast<pfnBoolSetter>(&Object::load_layer_config), 
-            memfun_cast<pfnBoolGetter>(&Object::HasRenderLayer));
+            memfun_cast<pfnBoolGetter>(&Object::HasLayer));
 
 // 	    s.AddString(XML_CURSOR, this, 
 // 		    memfun_cast<pfnStringSetter>(&Object::SetCursorId),

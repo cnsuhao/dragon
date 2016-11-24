@@ -30,7 +30,7 @@ namespace UIA
 // FPS有时最大只在60帧左右,但有时有能够正常。
 // 后测试发现，打开chrome浏览器时，fps能上去。关闭chrome时，fps只能是60
 // 2016.3.10
-// 使用timeBeginPeriod可恢复的精度。
+// 使用timeBeginPeriod可恢复精度。
 
 class Storyboard;
 interface IAnimateManager;

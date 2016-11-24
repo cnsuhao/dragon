@@ -55,9 +55,9 @@ namespace UI
 		virtual IDragFeedback*  GetDragFeedback() = 0;
 	};
 
-	UISDKAPI void  CreateDataObjectInstance(IDataObject**  pp);
-	UISDKAPI void  CreateDropSourceInstance(IDropSource**  pp);
-	UISDKAPI LRESULT  UIDoDragDrop(
+	UIAPI void  CreateDataObjectInstance(IDataObject**  pp);
+	UIAPI void  CreateDropSourceInstance(IDropSource**  pp);
+	UIAPI LRESULT  UIDoDragDrop(
 		IDataObject* pDataObject,   // Pointer to the data object
 		IDropSource* pDropSource,   // Pointer to the source
 		DWORD dwOKEffect,           // Effects allowed by the source

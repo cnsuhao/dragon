@@ -103,12 +103,12 @@ FontRes::~FontRes()
 	this->Clear();
     SAFE_DELETE(m_pIFontRes);
 }
-IFontRes*  FontRes::GetIFontRes()
+IFontRes&  FontRes::GetIFontRes()
 {
-    if (NULL == m_pIFontRes)
+    if (!m_pIFontRes)
         m_pIFontRes = new IFontRes(this);
 
-    return m_pIFontRes;
+    return *m_pIFontRes;
 }
 long  FontRes::GetFontCount() 
 { 
@@ -229,42 +229,42 @@ LPCTSTR  FontRes::GetRenderFontId(IRenderFont* pFont)
 	return NULL;
 }
 
-bool FontRes::InsertFont( const String& strID, LOGFONT* pLogFont )
+bool FontRes::InsertFont(LPCTSTR szId, LOGFONT* pLogFont)
 {
-	FontResItem* pItem = this->InsertFont(strID, pLogFont, 0,0 );
-	if (NULL == pItem )
+	FontResItem* pItem = this->InsertFont(szId, pLogFont, 0,0 );
+	if (!pItem)
 		return false;
 	
 	return true;
 }
 
 FontResItem* FontRes::InsertFont( 
-	const String& strID,
+	LPCTSTR szId,
 	LOGFONT* pLogFont,
 	WPARAM wParam,
 	LPARAM lParam)
 {
-	if (NULL == pLogFont )
+	if (NULL == pLogFont)
 	{
 		UI_LOG_ERROR(_T("FontRes::InsertFont failed."));
 		return NULL;
 	}
-	vector<FontResItem*>::iterator  iter = m_vFonts.begin();
-	vector<FontResItem*>::iterator  iterEnd = m_vFonts.end();
-
-	for( ; iter != iterEnd; iter++ )
-	{
-		FontResItem* p = *iter;
-
-		if (strID == p->GetId() /*&& p->GetWParam() == wParam && p->GetLParam() == lParam */)
-		{
-			UI_LOG_WARN(_T("FontRes::InsertFont failed, insert item=%s"), strID.c_str() );
-			return NULL;
-		}
-	}
+// 	vector<FontResItem*>::iterator  iter = m_vFonts.begin();
+// 	vector<FontResItem*>::iterator  iterEnd = m_vFonts.end();
+// 
+// 	for( ; iter != iterEnd; iter++ )
+// 	{
+// 		FontResItem* p = *iter;
+// 
+// 		if (strID == p->GetId() /*&& p->GetWParam() == wParam && p->GetLParam() == lParam */)
+// 		{
+// 			UI_LOG_WARN(_T("FontRes::InsertFont failed, insert item=%s"), strID.c_str() );
+// 			return NULL;
+// 		}
+// 	}
 
 	FontResItem*  pFontItem = new FontResItem;
-	pFontItem->SetId(strID.c_str());
+	pFontItem->SetId(szId);
 	pFontItem->SetLogFont( pLogFont );
 
 	this->m_vFonts.push_back(pFontItem);  

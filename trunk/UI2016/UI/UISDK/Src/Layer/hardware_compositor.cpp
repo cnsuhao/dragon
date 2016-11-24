@@ -1,9 +1,8 @@
 #include "stdafx.h"
-#if 0
+#if ENABLE_HARDCOMPOSITION
 #include "hardware_compositor.h"
 #include "hardware_layer.h"
-#include "UISDK/Project/UICompositor/Inc/ihardwarecompositor.h"
-
+#include "../UICompositor/Inc/inc.h"
 
 HardwareCompositor::HardwareCompositor()
 {
@@ -17,13 +16,13 @@ HardwareCompositor::~HardwareCompositor()
 
 void  HardwareCompositor::virtualBindHWND(HWND hWnd)
 {
-    assert (!m_pHardwareComposition);
+	UIASSERT(!m_pHardwareComposition);
     m_pHardwareComposition = UI::CreateHardwareComposition(m_hWnd);
 }
 
 void  HardwareCompositor::Resize(uint nWidth, uint nSize)
 {
-    assert (m_pHardwareComposition);
+    UIASSERT (m_pHardwareComposition);
     if (m_pHardwareComposition)
         m_pHardwareComposition->Resize(nWidth, nSize);
 }
@@ -52,7 +51,7 @@ void  HardwareCompositor::UpdateDirty(__out_opt RectArray& arrDirtyInWindow)
 
 void  HardwareCompositor::update_dirty_recursion(Layer* p)
 {
-    assert (p);
+	UIASSERT(p);
 
     static_cast<HardwareLayer*>(p)->UpdateDirty();
 
@@ -64,7 +63,7 @@ void  HardwareCompositor::update_dirty_recursion(Layer* p)
     }
 }
 
-void  HardwareCompositor::Commit(HDC hDC, const RectArray& arrDirtyInWindow) 
+void  HardwareCompositor::Commit(const RectArray& arrDirtyInWindow) 
 {
     // FillRect(hDC, prcInWindow, (HBRUSH)GetStockObject(GRAY_BRUSH));
 
@@ -105,7 +104,7 @@ void  HardwareCompositor::commit_recursion(Layer* p, GpuLayerCommitContext* pCon
 
 IGpuRenderLayer*  HardwareCompositor::CreateGpuLayerTexture()
 {
-    assert(m_pHardwareComposition);
+    UIASSERT(m_pHardwareComposition);
     if (!m_pHardwareComposition)
         return NULL;
 

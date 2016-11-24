@@ -23,17 +23,8 @@ namespace UI
 	// ¾ä±ú¶¨Òå
 	interface IUIApplication;
 
-    interface ILayoutWindowNodeList  
-    {
-        virtual void  Release() PURE;
-        virtual UINT  GetCount() PURE;
-        virtual LPCTSTR  GetWindowName(UINT index) PURE;
-        virtual LPCTSTR  GetWindowId(UINT index) PURE;
-        virtual LPCTSTR  GetWindowPath(UINT index) PURE;
-    };
-    
     class TopWindowManager;
-    interface UISDKAPI ITopWindowManager : public IRootInterface
+    interface UIAPI ITopWindowManager : public IRootInterface
     {
         ITopWindowManager(TopWindowManager* p);
         TopWindowManager* GetImpl();

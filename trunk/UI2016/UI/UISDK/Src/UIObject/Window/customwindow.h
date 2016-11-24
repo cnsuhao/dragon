@@ -83,6 +83,7 @@ public:
 		UIMSG_ERASEBKGND(OnEraseBkgnd)
 		UIMSG_HITTEST(OnHitTest)
         MSG_WM_SYSCOMMAND(OnSysCommand)
+		MSG_WM_LBUTTONDBLCLK(OnLButtonDblClk)
 		
 //		UIMSG_NCHITTEST(OnNcHitTest)
 // 		UIMSG_NCMOUSEMOVE    (OnNcMouseMove)
@@ -136,7 +137,7 @@ private:
 protected:
     
     LRESULT  _OnNcCalcSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-    LRESULT  _OnWindowPosChanging( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
+    LRESULT  _OnWindowPosChanging(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
     LRESULT  _OnNcHitTest(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
     LRESULT  _OnGetMinMaxInfo( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled );
 //	LRESULT  _OnNcPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
@@ -149,6 +150,8 @@ protected:
 	void  OnEraseBkgnd(IRenderTarget* hDC);
     int   OnHitTest(POINT* pt, POINT*  ptInChild);
     void  OnSysCommand(UINT nID, CPoint point);
+	void  OnLButtonDblClk(UINT nFlags, POINT point);
+
 
     virtual void  virtualOnSize(UINT nType, UINT nWidth, UINT nHeight);
 

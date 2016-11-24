@@ -24,6 +24,7 @@
 #include <algorithm>
 #include "..\Accessible\accessibleimpl.h"
 #include "..\Accessible\object_accessible.h"
+#include "object_desc.h"
 
 
 using namespace UI;
@@ -54,7 +55,7 @@ Object::Object(IObject* p) : ObjTree(p)
     m_pLayoutParam = NULL;
     m_pLayer = NULL;
 	m_pAccessible = NULL;
-    m_pDescription = NULL;
+    m_pDescription = UndefineDescription::Get();
 
 	memset(&m_objStyle, 0, sizeof(m_objStyle));
 	memset(&m_objState, 0, sizeof(m_objState));
@@ -296,7 +297,7 @@ Layer*  Object::FindNextLayer(Layer* pParentLayer)
 }
 
 // 获取自己所在层的层对象
-Object*  Object::GetRenderLayerCreateObject()
+Object*  Object::GetLayerCreator()
 {
     ObjectLayer*  p = GetLayerEx();
     if (p)
@@ -346,21 +347,32 @@ HWND Object::GetHWND()
 //	Return
 //		成功返回对象地址，失败返回NULL
 //
-Object*  Object::FindChildObject(LPCTSTR szObjId)
+Object*  Object::FindObject(LPCTSTR szObjId)
 {
-    if (NULL == szObjId)
+    if (!szObjId)
         return NULL;
 
 	Object* pRet = this->find_child_object(szObjId, true);
 	if (!pRet)
 	{
 		UI_LOG_WARN(_T("Find \"%s\" from \"%s\" failed."), szObjId, this->m_strId.c_str() );
+        UIASSERT(0);
 	}
 	return pRet;
 }
 
+// 不写日志
+Object*  Object::TryFindObject(LPCTSTR szObjId)
+{
+    if (!szObjId)
+        return NULL;
+
+    Object* pRet = this->find_child_object(szObjId, true);
+    return pRet;
+}
+
 // 没有递归
-Object*  Object::FindNcChildObject(LPCTSTR szobjId)
+Object*  Object::FindNcObject(LPCTSTR szobjId)
 {
 	if (NULL == szobjId)
 		return NULL;
@@ -374,6 +386,11 @@ Object*  Object::FindNcChildObject(LPCTSTR szobjId)
 		}
 	}	
 	return NULL;
+}
+
+Object*  Object::FindObject(UUID uuid)
+{
+    return this->find_child_object(uuid, true);
 }
 
 Object* Object::find_child_object(LPCTSTR szobjId, bool bFindDecendant)
@@ -403,18 +420,61 @@ Object* Object::find_child_object(LPCTSTR szobjId, bool bFindDecendant)
 	return NULL;
 }
 
-void  Object::ParseStyleAndLoadAttribute(IMapAttribute* pMatAttrib, bool bReload)
-{
-        StyleManager* pStyleMgr = &m_pSkinRes->GetStyleManager();
-        if (pStyleMgr)
-        {
-            pStyleMgr->ParseStyle(pMatAttrib);
-        }
 
-	SERIALIZEDATA data = {0};
+Object* Object::find_child_object(UUID uuid, bool bFindDecendant)
+{
+    Object* pObjChild = NULL;
+    while (pObjChild = this->EnumChildObject(pObjChild))
+    {
+        IObjectDescription* pDesc = pObjChild->GetDescription();
+        if (IsEqualGUID(pDesc->GetGUID(), uuid))
+        {
+            return pObjChild;
+        }
+    }
+
+    if (!bFindDecendant)
+        return NULL;
+
+    pObjChild = NULL;
+    while (pObjChild = this->EnumChildObject(pObjChild))
+    {
+        Object* pRet = ((Object*)pObjChild)->
+            find_child_object(uuid, bFindDecendant);
+        if (pRet)
+            return pRet;
+    }
+    return NULL;
+}
+
+
+void  Object::LoadAttributeFromMap(IMapAttribute* pMapAttrib, bool bReload)
+{
+    if (!pMapAttrib)
+        return;
+
+    String strStyle;
+    String strId;
+    
+    LPCTSTR szText = pMapAttrib->GetAttr(XML_STYLECLASS, false);
+    if (szText)
+        strStyle = szText;
+    
+    szText = pMapAttrib->GetAttr(XML_ID, false);
+    if (szText)
+        strId = szText;
+
+    StyleRes& styleRes = m_pSkinRes->GetStyleRes();
+    styleRes.LoadStyle(
+                m_pDescription->GetTagName(),
+                strStyle.c_str(),
+                strId.c_str(),
+                pMapAttrib);
+
+    SERIALIZEDATA data = { 0 };
     data.pUIApplication = GetIUIApplication();
 	data.pSkinRes = m_pSkinRes->GetISkinRes();
-	data.pMapAttrib = pMatAttrib;
+	data.pMapAttrib = pMapAttrib;
 	data.nFlags = SERIALIZEFLAG_LOAD|SERIALIZEFLAG_LOAD_ERASEATTR;
 	if (bReload)
 		data.nFlags |= SERIALIZEFLAG_RELOAD;
@@ -431,7 +491,7 @@ void  Object::LoadAttributeFromXml(UIElement* pElement, bool bReload)
 	IMapAttribute*  pMapAttrib = NULL;
 	pElement->GetAttribList(&pMapAttrib);
 	{
-		this->ParseStyleAndLoadAttribute(pMapAttrib, bReload);
+		this->LoadAttributeFromMap(pMapAttrib, bReload);
 	}
 	SAFE_RELEASE(pMapAttrib);
 
@@ -445,37 +505,6 @@ void  Object::LoadAttributeFromXml(UIElement* pElement, bool bReload)
 		pEditor->OnObjectAttributeLoad(m_pIObject, pElement->GetIUIElement());
 	}
 }
-
-/*
-void Object::SetAttributeByPrefix(LPCTSTR szPrefix, IMapAttribute* pMapAttrib, bool bReload, bool bErase)
-{
-	//UIASSERT(0 && _T("该函数已过期，不要再调用"));
-    IMapAttribute* pMapChildObjAttrib = NULL;
-
-    if (szPrefix)
-    {
-        if (false == pMapAttrib->ExtractMapAttrByPrefix(szPrefix, bErase, &pMapChildObjAttrib))
-        {
-            SAFE_RELEASE(pMapChildObjAttrib);
-            return;
-        }
-
-        if (NULL == pMapChildObjAttrib)
-            return;
-
-		if (m_pDescription)
-			pMapChildObjAttrib->SetTag(m_pDescription->GetTagName());
-    }
-    else
-    {
-        pMapChildObjAttrib = pMapAttrib;
-        pMapChildObjAttrib->AddRef();
-    }
-
-    ParseStyleAndLoadAttribute(pMapChildObjAttrib, bReload);
-    SAFE_RELEASE(pMapChildObjAttrib);
-}
-*/
 
 // 获取一个未解析的属性。如果bErase==true，则将返回一个临时的字符串指针，调用者应该尽快保存或者仅临时使用
 LPCTSTR  Object::GetAttribute(LPCTSTR szKey, bool bErase)
@@ -727,7 +756,7 @@ void  Object::ModifyObjectStyle(OBJSTYLE* add, OBJSTYLE* remove)
 		__ADD(tabstop);
 
 		if (add->layer)
-			SetRenderLayer(true);
+			EnableLayer(true);
 
 		// 默认值为1时，如果没有在xml中配置，不会触发setter函数
 		// 因此在设置默认值的时候，应该同步一次该值
@@ -775,7 +804,7 @@ void  Object::ModifyObjectStyle(OBJSTYLE* add, OBJSTYLE* remove)
 		__REMOVE(clip_client);
 		__REMOVE(tabstop);
 		if (remove->layer)
-			SetRenderLayer(false);
+			EnableLayer(false);
 
 		if (remove->default_ncobject)
 		{
@@ -1126,7 +1155,7 @@ void  Object::SetVisibleEx(VISIBILITY_TYPE eType)
 		ILayout*  pLayout = (ILayout*)UISendMessage(m_pParent, UI_MSG_GETLAYOUT);
         if (pLayout)
         {
-            pLayout->OnChildObjectVisibleChanged(m_pIObject);
+            pLayout->ChildObjectVisibleChanged(m_pIObject);
         }
     }
 
@@ -1357,15 +1386,20 @@ void  Object::InitDefaultAttrib()
 {
     IMapAttribute* pMapAttrib = NULL;
     UICreateIMapAttribute(&pMapAttrib);
-	if (m_pDescription)
-		pMapAttrib->SetTag(m_pDescription->GetTagName());
-	pMapAttrib->AddAttr(XML_ID, m_strId.c_str());
+
+    UIASSERT(m_strId.empty() && TEXT("将setid放在该函数之后调用，避免覆盖"));
+	// pMapAttrib->AddAttr(XML_ID, m_strId.c_str()); // 防止id被覆盖??
 
     // 解析样式
-	if (m_pSkinRes)
-	{
-		m_pSkinRes->GetStyleManager().ParseStyle(pMapAttrib);
-	}
+    UIASSERT(m_pSkinRes);
+	
+    StyleRes& styleRes = m_pSkinRes->GetStyleRes();
+    styleRes.LoadStyle(
+        m_pDescription->GetTagName(),
+        nullptr,
+        nullptr,
+        pMapAttrib);
+	
 
 	SERIALIZEDATA data = {0};
     data.pUIApplication = GetIUIApplication();
@@ -1494,7 +1528,7 @@ void  Object::SortChildByZorder()
 	}
 }
 
-void Object::SetBkgndRender(IRenderBase* p)
+void Object::SetBackRender(IRenderBase* p)
 {
 	SAFE_RELEASE(m_pBkgndRender);
 	m_pBkgndRender = p;
@@ -1527,7 +1561,7 @@ ITextRenderBase*  Object::GetTextRender()
 {
     return m_pTextRender; 
 }
-IRenderBase*  Object::GetBkRender() 
+IRenderBase*  Object::GetBackRender() 
 { 
     return m_pBkgndRender; 
 }
@@ -1812,7 +1846,7 @@ void  Object::load_layer_config(bool b)
     m_objStyle.layer = b;
 }
 
-void  Object::SetRenderLayer(bool b)
+void  Object::EnableLayer(bool b)
 {
 #if 0
 	if (b)
@@ -1838,14 +1872,11 @@ void  Object::SetRenderLayer(bool b)
 	}
 #endif
 
-    if (m_objStyle.layer == b)
-        return;
-    
     m_objStyle.layer = b;
     update_layer_ptr();
 }
 
-bool  Object::HasRenderLayer()
+bool  Object::HasLayer()
 {
 	return m_objStyle.layer;
 }
@@ -1857,7 +1888,11 @@ void  Object::update_layer_ptr()
     if (m_objStyle.layer || m_lzOrder > 0)
     {
         if (!m_pLayer)
+        {
             m_pLayer = new ObjectLayer(*this);
+            if (!m_rcParent.IsRectEmpty())
+                m_pLayer->OnSize(m_rcParent.Width(), m_rcParent.Height());
+        }
     }
     else
     {
@@ -2034,4 +2069,15 @@ void  Object::SetDescription(IObjectDescription* p)
 IObjectDescription*  Object::GetDescription()
 {
     return m_pDescription;
+}
+
+// 自己在树中的位置改变。如在编辑器中，拖拽控件到另一个panel下面
+void  Object::position_in_tree_changed()
+{
+    if (!m_pLayoutParam)
+        return;
+
+    // 根据父对象，重新生成布局参数
+    SAFE_RELEASE(m_pLayoutParam);
+    GetSafeLayoutParam();
 }

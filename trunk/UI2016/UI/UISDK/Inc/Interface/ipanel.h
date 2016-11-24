@@ -10,8 +10,8 @@ interface IObject;
 interface IRenderBase;
 class Panel;
 
-interface __declspec(uuid("A591D454-65ED-40C3-8D84-612ABA3C8167"))
-UISDKAPI IPanel : public IObject
+interface UIAPI_UUID(A591D454-65ED-40C3-8D84-612ABA3C8167) IPanel
+ : public IObject
 {
     ILayout*   GetLayout();
     void  SetLayoutType(LAYOUTTYPE eLayoutType);

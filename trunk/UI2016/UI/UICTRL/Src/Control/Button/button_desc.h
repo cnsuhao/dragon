@@ -1,6 +1,7 @@
 #pragma once
 #include "..\UISDK\Inc\Interface\iobjectdescription.h"
 #include "Inc\Interface\ibutton.h"
+#include "system_button.h"
 
 class ButtonDescription : public IObjectDescription
 {
@@ -45,5 +46,30 @@ public:
     virtual HBITMAP  LoadIcon() override 
     {
         return NULL;
+    }
+};
+
+class SystemButtonDescription : public ButtonDescription
+{
+public:
+    static IObjectDescription*  Get()
+    {
+        static SystemButtonDescription s;
+        return &s;
+    }
+
+    virtual const wchar_t*  GetTagName() override
+    {
+        return L"SystemButton";
+    }
+    virtual void  GetDefaultSize(long& w, long h) override
+    {
+        w = 20;
+        h = 20;
+    }
+   
+    virtual void  CreateInstance(UI::ISkinRes* p, void** pp) override
+    {
+        *pp = ISystemButton::CreateInstance(p);
     }
 };

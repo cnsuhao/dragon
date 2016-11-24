@@ -216,12 +216,12 @@ void  ListCtrlBase::OnSerialize(SERIALIZEDATA* pData)
     }
 }
 
-// void  ListCtrlBase::OnCreateByEditor(CREATEBYEDITORDATA* pData)
-// {
-//     DO_PARENT_PROCESS_MAPID(IListCtrlBase, IControl, UIALT_CALLLESS);
-// 	pData->rcInitPos.right = pData->rcInitPos.left + 100;
-// 	pData->rcInitPos.bottom = pData->rcInitPos.top + 100;
-// }
+void  ListCtrlBase::OnCreateByEditor(CREATEBYEDITORDATA* pData)
+{
+    DO_PARENT_PROCESS_MAPID(IListCtrlBase, IControl, UIALT_CALLLESS);
+	pData->rcInitPos.right = pData->rcInitPos.left + 100;
+	pData->rcInitPos.bottom = pData->rcInitPos.top + 100;
+}
 
 IScrollBarManager*  ListCtrlBase::GetIScrollBarMgr()
 {
@@ -832,6 +832,44 @@ ListItemBase* ListCtrlBase::GetItemByPos(UINT nIndex, bool bVisibleOnly)
     return NULL;
 }
 
+int  ListCtrlBase::GetItemPos(ListItemBase* pFindItem, bool bVisibleOnly)
+{
+    if (!pFindItem)
+        return -1;
+
+    if (pFindItem->GetListCtrlBase() != this)
+        return -1;
+
+    if (bVisibleOnly)
+    {
+        ListItemBase* pItem = FindVisibleItemFrom(NULL);
+
+        UINT i = 0;
+        while (pItem)
+        {
+            if (pFindItem == pItem)
+                return i;
+
+            i++;
+            pItem = pItem->GetNextVisibleItem();
+        }
+    }
+    else
+    {
+        ListItemBase* pItem = m_pFirstItem;
+
+        UINT i = 0;
+        while (pItem)
+        {
+            if (pFindItem == pItem)
+                return i;
+
+            i++;
+            pItem = pItem->GetNextItem();
+        }
+    }
+    return NULL;
+}
 
 ListItemBase*  ListCtrlBase::GetItemById(long lId)
 {
@@ -1192,7 +1230,7 @@ bool ListCtrlBase::IsSelected(ListItemBase* pItem)
 }
 
 // 设置一个选择项(只选中一个)
-void ListCtrlBase::SelectItem(ListItemBase* pItem, bool bUpdate, bool bNotify, bool bMakeVisible)
+void ListCtrlBase::SelectItem(ListItemBase* pItem, bool bNotify, bool bMakeVisible)
 {
 	if (NULL == pItem)  
 		return;
@@ -1266,10 +1304,11 @@ void  ListCtrlBase::FireSelectItemChanged(ListItemBase* pOldSelectoinItem)
     UISendMessage(&msg, 0, 0);
 
     // 再通知外部处理 
-    msg.pMsgTo = NULL;
-    msg.bHandled = FALSE;
-	msg.nCode = UI_LCN_SELCHANGED;
-	m_pIListCtrlBase->DoNotify(&msg);
+//  msg.pMsgTo = NULL;
+//  msg.bHandled = FALSE;
+// 	msg.nCode = UI_LCN_SELCHANGED;
+// 	m_pIListCtrlBase->DoNotify(&msg);
+	select_changed.emit(m_pIListCtrlBase);
 }
 
 ListItemBase* ListCtrlBase::GetLastSelectItem()
@@ -2120,14 +2159,19 @@ void ListCtrlBase::WindowPoint2ItemPoint(ListItemBase* pItem, const POINT* ptWnd
 void ListCtrlBase::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
     // 向外部发出notify，如果外部处理，则不再交由mousekeymgr处理
-	UIMSG  msg;
-	msg.message = UI_MSG_NOTIFY;
-	msg.nCode = UI_NM_KEYDOWN;
-	msg.wParam = nChar;
-	msg.pMsgFrom = m_pIListCtrlBase;
+// 	UIMSG  msg;
+// 	msg.message = UI_MSG_NOTIFY;
+// 	msg.nCode = UI_NM_KEYDOWN;
+// 	msg.wParam = nChar;
+// 	msg.pMsgFrom = m_pIListCtrlBase;
+// 
+//     long lRet = m_pIListCtrlBase->DoNotify(&msg);
+// 	if (0 == lRet)
 
-    long lRet = m_pIListCtrlBase->DoNotify(&msg);
-	if (0 == lRet)
+    bool bHandled = false;
+    keydown.emit(m_pIListCtrlBase, nChar, bHandled);
+
+    if (!bHandled)
 	{
 		SetMsgHandled(FALSE);
 	}

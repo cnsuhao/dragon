@@ -108,12 +108,8 @@ void  ColorRender::SetBorderRegion(const CRegion4* prc)
 void ColorRender::OnSerialize(SERIALIZEDATA* pData)
 {
 	AttributeSerializer s(pData, TEXT("ColorRender"));
-	s.AddString(XML_RENDER_COLOR, this, 
-		memfun_cast<pfnStringSetter>(&ColorRender::LoadBkColor),
-		memfun_cast<pfnStringGetter>(&ColorRender::GetBkColorId));
-	s.AddString(XML_RENDER_BORDERCOLOR, this, 
-		memfun_cast<pfnStringSetter>(&ColorRender::LoadBorderColor),
-		memfun_cast<pfnStringGetter>(&ColorRender::GetBorderColorId));
+    s.AddColor(XML_RENDER_COLOR, m_pBkColor);
+    s.AddColor(XML_RENDER_BORDERCOLOR, m_pBorderColor);
 	s.AddRect(XML_RENDER_BORDER, m_rcBorder);
 } 
 
@@ -388,7 +384,7 @@ void  ColorListRender::LoadBkColor(LPCTSTR szText)
     if (!szText)
         return;
 
-    IColorRes* pColorRes = GetSkinColorRes();
+    ColorRes* pColorRes = GetSkinColorRes();
     if (NULL == pColorRes)
         return;
 
@@ -424,7 +420,7 @@ LPCTSTR  ColorListRender::SaveBkColor()
 }
 void  ColorListRender::LoadBorderColor(LPCTSTR szText)
 {
-    IColorRes* pColorRes = GetSkinColorRes();
+    ColorRes* pColorRes = GetSkinColorRes();
     if (NULL == pColorRes)
         return;
 
@@ -449,6 +445,7 @@ void  ColorListRender::LoadBorderColor(LPCTSTR szText)
 
 LPCTSTR  ColorListRender::SaveBorderColor()
 {
+    bool bHasValue = false;
     String&  strBuffer = GetTempBufferString();
     for (int i = 0; i < m_nCount; i++)
     {
@@ -456,11 +453,16 @@ LPCTSTR  ColorListRender::SaveBorderColor()
             strBuffer.push_back(XML_MULTI_SEPARATOR);
 
         LPCTSTR szTemp = _GetColorId(m_vBorderColor[i]);
-        if (szTemp)
+        if (szTemp && szTemp[0])
+        {
+            bHasValue = true;
             strBuffer.append(szTemp);
+        }
     }
 
-    return strBuffer.c_str();
+    if (bHasValue)
+        return strBuffer.c_str();
+    return NULL;
 }
 
 void ColorListRender::OnSerialize(SERIALIZEDATA* pData)

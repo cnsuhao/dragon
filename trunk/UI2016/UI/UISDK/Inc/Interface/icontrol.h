@@ -17,13 +17,16 @@ typedef struct tagControlStyle
 }ControlStyle;
 
 class Control;
-interface __declspec(uuid("78EC44D9-137E-46A1-8ACA-0E12A209FF4F"))
-UISDKAPI IControl : public IObject
+struct UIAPI IControl// UIAPI_UUID(78EC44D9-137E-46A1-8ACA-0E12A209FF4F)
+         : public IObject
 {
    void  ModifyControlStyle(ControlStyle* add, ControlStyle* remove);
    bool  TestControlStyle(ControlStyle* test);
    bool  IsGroup();
    void  SetGroup(bool);
+
+   LPCTSTR  GetToolTipText();
+   void  SetToolTipText(LPCTSTR szText);
 
    ITextRenderBase*  CreateDefaultTextRender();
    ITextRenderBase*  GetTextRenderDefault();

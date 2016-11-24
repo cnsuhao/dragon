@@ -57,6 +57,7 @@ class AttributeSerializer
 public:
     AttributeSerializer(SERIALIZEDATA*, LPCTSTR szGroupName);
     ~AttributeSerializer();
+    AttributeBase*  Add(long eType, LPCTSTR szKey);
     AttributeBase*  Add(long eType, LPCTSTR szKey, void* pBindValue);
     AttributeBase*  Add(long eType, LPCTSTR szKey, void* _this, void* _setter, void* _getter);
 
@@ -73,6 +74,11 @@ public:
 
     StringAttribute*  AddString(LPCTSTR, String& sBindValue); // 仅内部使用
 	StringAttribute*  AddString(LPCTSTR, void* _this, pfnStringSetter s, pfnStringGetter g);
+    StringAttribute*  AddString(LPCTSTR szKey, const function<void(LPCTSTR)>& s, const function<LPCTSTR()>& g);
+
+    StringAttribute*  AddI18nString(LPCTSTR, String& sBindValue); // 仅内部使用
+    StringAttribute*  AddI18nString(LPCTSTR, void* _this, pfnStringExSetter s, pfnStringGetter g);
+    StringAttribute*  AddI18nString(LPCTSTR, const function<void(LPCTSTR, int)>& s, const function<LPCTSTR()>& g);
     StringEnumAttribute*  AddStringEnum(LPCTSTR, void* _this, pfnStringSetter s, pfnStringGetter g);
 
     BoolAttribute*  AddBool(LPCTSTR, bool& bBindValue);
@@ -120,13 +126,18 @@ public:
     ~AttributeEditorProxy();
     
     void  Clear();
-    void  AddAttribute(AttributeBase* p, LPCTSTR szGroupName);
+    void  AddAttribute(
+			AttributeBase* p, 
+			SERIALIZEDATA* pData, 
+			LPCTSTR szGroupName);
+
     AttributeBase*  FindAttributeByKey(LPCTSTR szKey);
     bool  Set(LPCTSTR szKey, LPCTSTR szValue);
     LPCTSTR  Get(LPCTSTR szKey);
 
     void  LoadAttribute2Editor(IObject* pObj);
 	UpdateAttribute2EditorResult  UpdateAttribute2Editor(LPCTSTR szKey);
+
 
     void  String2Editor(StringAttribute* p, EditorAttributeFlag e);
     void  CharArray2Editor(CharArrayAttribute* p, EditorAttributeFlag e);
@@ -138,6 +149,10 @@ public:
 	void  Size2Editor(SizeAttribute* p, EditorAttributeFlag e);
 	void  Region92Editor(Region9Attribute* p, EditorAttributeFlag e);
     void  StringEnum2Editor(StringEnumAttribute* p, EditorAttributeFlag e);
+	void  Color2Editor(ColorAttribute* p, EditorAttributeFlag e);
+    void  RenderBase2Editor(RenderBaseAttribute* p, EditorAttributeFlag e);
+    void  TextRenderBase2Editor(
+                TextRenderBaseAttribute* p, EditorAttributeFlag e);
 
 private:
     IAttributeEditorProxy&  m_oIProxy;

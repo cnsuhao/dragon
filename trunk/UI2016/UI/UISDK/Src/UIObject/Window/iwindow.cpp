@@ -41,7 +41,7 @@ bool  IWindowBase::IsDoModal()
 { 
 	return __pImpl->IsDoModal(); 
 }
-IWindowRender*  IWindowBase::GetIWindowRender()                            
+IWindowRender*  IWindowBase::GetWindowRender()                            
 { 
 	return __pImpl->GetWindowRender()->GetIWindowRender();
 }
@@ -137,10 +137,6 @@ void  IWindowBase::CalcClientRectByWindowRect( RECT* rcWindow, RECT* rcClient )
 {
 	__pImpl->CalcClientRectByWindowRect(rcWindow, rcClient);
 }
-void  IWindowBase::UpdateWindow(HDC hDC, RECT* prcInvalid)
-{
-    __pImpl->PaintWindow(hDC, prcInvalid, 1);
-}
 void  IWindowBase::SaveMemBitmap(TCHAR* szFile) 
 {
 	__pImpl->SaveMemBitmap(szFile);
@@ -154,14 +150,14 @@ void  IWindowBase::EnableDwmTransition(bool b)
 	__pImpl->EnableDwmTransition(b); 
 }
 
-bool  IWindowBase::AddAnchorItem(const SyncWindowData& data)
-{
-	return __pImpl->AddAnchorItem(data);
-}
-void  IWindowBase::HideAllAnchorItem() 
-{
-	__pImpl->HideAllAnchorItem(); 
-}
+// bool  IWindowBase::AddAnchorItem(const SyncWindowData& data)
+// {
+// 	return __pImpl->AddAnchorItem(data);
+// }
+// void  IWindowBase::HideAllAnchorItem() 
+// {
+// 	__pImpl->HideAllAnchorItem(); 
+// }
 
 HRESULT  IWindowBase::SetDroppable(bool b) 
 {
@@ -180,7 +176,17 @@ void  IWindowBase::DirectComposite()
 	__pImpl->DirectComposite();
 }
 
-void  IWindowBase::SetWindowMessageCallback(IWindowMessageCallback* p)
+void  IWindowBase::SetWindowMessageCallback(IWindowDelegate* p)
 {
 	__pImpl->SetWindowMessageCallback(p);
+}
+
+signal_mc<long>&  IWindowBase::SizeChangedEvent()
+{
+	return __pImpl->size_changed;
+}
+
+signal_mc<bool&>&  IWindowBase::OnCloseEvent()
+{
+    return __pImpl->on_close;
 }

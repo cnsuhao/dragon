@@ -561,7 +561,7 @@ void  GridLayout::DoArrage(IObject* pObjToArrage)
 
  		CRegion4 rcMargin;
  		pChild->GetMarginRegion(&rcMargin);
- 		DeflatRect(&rc, &rcMargin);
+ 		Util::DeflatRect(&rc, &rcMargin);
 
         int nConfigW = pParam->GetConfigWidth();
         int nConfigH = pParam->GetConfigHeight();
@@ -626,7 +626,7 @@ GridWH*  GridLayout::GetHeight(unsigned int nIndex)
 }
 
 
-void  GridLayout::OnChildObjectVisibleChanged(IObject* pObj)
+void  GridLayout::ChildObjectVisibleChanged(IObject* pObj)
 {
 	UIASSERT(pObj);
 	UIASSERT(pObj->GetParentObject());

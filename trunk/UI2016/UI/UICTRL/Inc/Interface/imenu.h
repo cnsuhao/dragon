@@ -101,7 +101,7 @@ interface IMenuPopupItem : public IListItemBase
 //////////////////////////////////////////////////////////////////////////
 
 interface __declspec(uuid("DE6225F7-9DB1-4D13-A712-6553EF3B7556"))
-UICTRLAPI IMenu : public IListCtrlBase
+UICTRL_API IMenu : public IListCtrlBase
 {
     void  OnNewChildElement(IUIElement* pUIElement);
     int   TrackPopupMenu(UINT nFlag, int x, int y, IMessage* pNotifyObj, HWND hWndClickFrom = NULL, RECT* prcClickFrom = NULL);
@@ -171,8 +171,8 @@ private:
 
 }
 
-extern "C" UICTRLAPI void  UISetDefaultMenuData(UI::DefaultMenuData* pData);
-extern "C" UICTRLAPI UI::IMenu*  UILoadMenu(UI::LoadMenuData* pData);
-extern "C" UICTRLAPI bool  UIDestroyMenu(UI::IMenu* pMenu);
+extern "C" UICTRL_API void  UISetDefaultMenuData(UI::DefaultMenuData* pData);
+extern "C" UICTRL_API UI::IMenu*  UILoadMenu(UI::LoadMenuData* pData);
+extern "C" UICTRL_API bool  UIDestroyMenu(UI::IMenu* pMenu);
 
 #endif // IMENU_H_31481C5E_BC0B_4872_9C54_FF8D06736CFB

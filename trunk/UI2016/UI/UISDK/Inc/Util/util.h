@@ -7,12 +7,14 @@ namespace UI {
 	namespace Util 
 {
 	COLORREF  TranslateHexColor(LPCTSTR szColor);
-	COLORREF  TranslateColor(LPCTSTR szColor);
+    COLORREF  UIAPI TranslateColor(LPCTSTR szColor);
 	COLORREF  TranslateRGB(LPCTSTR szCol, TCHAR szSep = _T(','));
 	bool  TranslateSIZE(LPCTSTR szText, SIZE* pSize, TCHAR szSep = _T(','));
 	bool  TranslateRECT(LPCTSTR szRect, RECT* pRect, TCHAR szSep = _T(','));
 	bool  TranslateImage9Region(LPCTSTR str, C9Region* p9Region, TCHAR szSep = _T(','));
-	bool  IsKeyDown(UINT vk);
+    bool  UIAPI IsKeyDown(UINT vk);
+
+    void  UIAPI DeflatRect(RECT* pfc, LPCRECT pDeflatRc);
 
 	interface ISplitStringEnum
 	{
@@ -20,7 +22,7 @@ namespace UI {
 		virtual LPCTSTR GetText(UINT nIndex) = 0;
 		virtual int   GetCount() = 0;
 	};
-	UINT SplitString(
+	UINT UIAPI SplitString(
 		LPCTSTR szText,
 		TCHAR szSep,
 		ISplitStringEnum** pEnum
@@ -69,10 +71,10 @@ namespace UI {
 		WPARAM   wParam;
 		LPARAM   lParam;
 	};
-	BOOL UISDKAPI FixBitmapAlpha(FixAlphaData* pData);
-	BOOL UISDKAPI FixRenderTargetClipRegionAlpha(IRenderTarget*);
+	BOOL UIAPI FixBitmapAlpha(FixAlphaData* pData);
+	BOOL UIAPI FixRenderTargetClipRegionAlpha(IRenderTarget*);
 
-	void UISDKAPI PathInBin(LPCTSTR szRelative, TCHAR szAbsolution[MAX_PATH]);
+	void UIAPI PathInBin(LPCTSTR szRelative, TCHAR szAbsolution[MAX_PATH]);
 }
 }
 

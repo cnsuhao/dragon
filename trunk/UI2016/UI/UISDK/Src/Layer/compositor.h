@@ -27,14 +27,15 @@ public:
     HWND  GetHWND();
     void  RequestInvalidate();
     void  DoInvalidate();
+    void  Commit(const RectArray& arrDirtyInWindow);
 
     virtual void  UpdateDirty(__out_opt  RectArray& arrDirtyInWindow) = 0;
-    virtual void  Commit(const RectArray& arrDirtyInWindow) = 0;
     virtual void  Resize(uint nWidth, uint nSize) = 0;
 
 protected:
     virtual Layer*  virtualCreateLayer() = 0;
     virtual void  virtualBindHWND(HWND) = 0;
+    virtual void  virtualCommit(const RectArray& arrDirtyInWindow) = 0;
 
 protected:
     UI::UIApplication*  m_pUIApp;

@@ -140,6 +140,9 @@ void  SmoothScroll::CreateScrollAnimate(uint nPower)
 // m_eMouseWheelDir中包含了方向
 void  SmoothScroll::CreateBouncyEdgeOutAnimate(uint nPower)
 {
+	// 有bug，先屏蔽
+	return;
+
 	int bounce_from = 0;
 
 	int bounce_height = nPower/10;

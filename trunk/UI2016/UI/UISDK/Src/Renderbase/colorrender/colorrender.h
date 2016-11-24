@@ -32,22 +32,6 @@ public:
     void  SetBorderColor(COLORREF col);
     void  SetBorderRegion(const CRegion4* prc);
 
-	void  LoadBorderColor(LPCTSTR sz)
-	{
-		_LoadColor(sz, m_pBorderColor);
-	}
-	LPCTSTR  GetBorderColorId()
-	{
-		return _GetColorId(m_pBorderColor);
-	}
-	void  LoadBkColor(LPCTSTR sz)
-	{
-		_LoadColor(sz, m_pBkColor);
-	}
-	LPCTSTR  GetBkColorId()
-	{
-		return _GetColorId(m_pBkColor);
-	}
 public:
     IColorRender*  m_pIColorRender;
 

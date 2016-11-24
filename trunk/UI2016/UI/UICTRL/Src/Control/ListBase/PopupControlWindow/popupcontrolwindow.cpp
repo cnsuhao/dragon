@@ -156,11 +156,18 @@ void  PopupControlWindow::Show(
 
 	if (!bDesignMode)
 	{
-        ::ShowWindow(hPopupWnd, lShowType);
-
         if (lShowType != SW_HIDE)
         {
+            // 解决showwindow将窗口直接显示成alpha 255的问题
+            GetLayer()->SetOpacity(10, nullptr);
+            GetWindowRender()->InvalidateNow();
+
+            ::ShowWindow(hPopupWnd, lShowType);
             start_show_animate();
+        }
+        else
+        {
+            ::ShowWindow(hPopupWnd, lShowType);
         }
 
 		IMessageFilterMgr* pMgr = GetUIApplication()->GetMessageFilterMgr();
@@ -239,7 +246,7 @@ void PopupControlWindow::OnDestroy()
 void  PopupControlWindow::start_show_animate()
 {
 	LayerAnimateParam param = { 0 };
-	param.bBlock = true;
+	param.bBlock = false;
 	GetLayer()->SetOpacity(10, nullptr);
 	GetLayer()->SetOpacity(255, &param);
 }

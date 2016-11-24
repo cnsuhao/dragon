@@ -14,10 +14,11 @@ public:
     virtual LPCTSTR  Get() override; 
     virtual void  Set(LPCTSTR) override;
 	virtual void  Reset() override;
-    virtual void  Editor(AttributeEditorProxy* p, EditorAttributeFlag e) override;
+	virtual void  Editor(SERIALIZEDATA* pData, AttributeEditorProxy* p, EditorAttributeFlag e) override;
     virtual bool  IsDefaultValue() override;
-    virtual void  SetBindValue(void*) override;
-    virtual void  SetBindFuction(void* _this, void* _setter, void* _getter) override;
+
+    void  SetBindValue(void*);
+    void  SetBindFuction(void* _this, void* _setter, void* _getter);
 
 public:
 	BoolAttribute*  SetDefault(bool b);

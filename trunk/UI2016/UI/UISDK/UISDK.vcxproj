@@ -72,8 +72,9 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;UISDK_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;UI_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -88,7 +89,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;UISDK_EXPORTS;UNITTEST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;UI_EXPORTS;UNITTEST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -106,8 +107,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;UISDK_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;UI_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -125,6 +127,11 @@
     <ClInclude Include="..\3rd\zip\unzip.h" />
     <ClInclude Include="..\3rd\zip\zip.h" />
     <ClInclude Include="..\3rd\zip\ziputil.h" />
+    <ClInclude Include="..\common\math\math.h" />
+    <ClInclude Include="..\common\math\matrix.h" />
+    <ClInclude Include="..\common\math\point.h" />
+    <ClInclude Include="..\common\math\quad.h" />
+    <ClInclude Include="..\common\math\rect.h" />
     <ClInclude Include="Inc\Base\uiapi.h" />
     <ClInclude Include="Inc\Base\uicreator.h" />
     <ClInclude Include="Inc\Base\uidefine.h" />
@@ -202,6 +209,7 @@
     <ClInclude Include="Src\Base\Attribute\textrenderbase_attribute.h" />
     <ClInclude Include="Src\Base\Message\message.h" />
     <ClInclude Include="Src\Base\Object\object.h" />
+    <ClInclude Include="Src\Base\Object\object_desc.h" />
     <ClInclude Include="Src\Base\Object\object_layer.h" />
     <ClInclude Include="Src\Base\Object\objtree.h" />
     <ClInclude Include="Src\Helper\dragdrop\dragfeedback.h" />
@@ -229,6 +237,7 @@
     <ClInclude Include="Src\Layer\layer.h" />
     <ClInclude Include="Src\Layer\software_compositor.h" />
     <ClInclude Include="Src\Layer\software_layer.h" />
+    <ClInclude Include="Src\Layer\transform3d.h" />
     <ClInclude Include="Src\Layer\windowrender.h" />
     <ClInclude Include="Src\Renderbase\colorrender\colorrender.h" />
     <ClInclude Include="Src\Renderbase\imagerender\imagerender.h" />
@@ -292,7 +301,7 @@
     <ClInclude Include="Src\UIObject\ScrollBar\scrollbarmanager.h" />
     <ClInclude Include="Src\UIObject\ScrollBar\smoothscroll.h" />
     <ClInclude Include="Src\UIObject\Window\customwindow.h" />
-    <ClInclude Include="Src\UIObject\Window\SyncWindowHelper.h" />
+    <ClInclude Include="Src\UIObject\Window\sync_window.h" />
     <ClInclude Include="Src\UIObject\Window\window.h" />
     <ClInclude Include="Src\UIObject\Window\windowbase.h" />
     <ClInclude Include="Src\UIObject\Window\window_desc.h" />
@@ -323,6 +332,9 @@
     <ClCompile Include="..\3rd\zip\unzip.cpp" />
     <ClCompile Include="..\3rd\zip\zip.cpp" />
     <ClCompile Include="..\3rd\zip\ziputil.cpp" />
+    <ClCompile Include="..\common\math\math.cpp" />
+    <ClCompile Include="..\common\math\matrix.cpp" />
+    <ClCompile Include="..\common\math\quad.cpp" />
     <ClCompile Include="Other/dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='UnitTest|Win32'">false</CompileAsManaged>
@@ -346,6 +358,7 @@
     <ClCompile Include="Src\Animate\ianimate.cpp" />
     <ClCompile Include="Src\Animate\storyboard.cpp" />
     <ClCompile Include="Src\Animate\timeline.cpp" />
+    <ClCompile Include="Src\Animate\VSync.cpp" />
     <ClCompile Include="Src\Animate\wrap\animate.cpp" />
     <ClCompile Include="Src\Atl\iimage.cpp" />
     <ClCompile Include="Src\Atl\image.cpp" />
@@ -355,6 +368,7 @@
     <ClCompile Include="Src\Base\Application\uiapplication.cpp" />
     <ClCompile Include="Src\Base\Attribute\9region_attribute.cpp" />
     <ClCompile Include="Src\Base\Attribute\attribute.cpp" />
+    <ClCompile Include="Src\Base\Attribute\attributebase.cpp" />
     <ClCompile Include="Src\Base\Attribute\attribute_alias.cpp" />
     <ClCompile Include="Src\Base\Attribute\attribute_wrap.cpp" />
     <ClCompile Include="Src\Base\Attribute\bool_attribute.cpp" />
@@ -405,6 +419,7 @@
     <ClCompile Include="Src\Layer\layer.cpp" />
     <ClCompile Include="Src\Layer\software_compositor.cpp" />
     <ClCompile Include="Src\Layer\software_layer.cpp" />
+    <ClCompile Include="Src\Layer\transform3d.cpp" />
     <ClCompile Include="Src\Layer\windowrender.cpp" />
     <ClCompile Include="Src\Renderbase\colorrender\colorrender.cpp" />
     <ClCompile Include="Src\Renderbase\colorrender\icolorrender.cpp" />
@@ -481,6 +496,7 @@
     <ClCompile Include="Src\UIObject\Window\customwindow.cpp" />
     <ClCompile Include="Src\UIObject\Window\icustomwindow.cpp" />
     <ClCompile Include="Src\UIObject\Window\iwindow.cpp" />
+    <ClCompile Include="Src\UIObject\Window\sync_window.cpp" />
     <ClCompile Include="Src\UIObject\Window\window.cpp" />
     <ClCompile Include="Src\UIObject\Window\windowbase.cpp" />
     <ClCompile Include="Src\UIObject\Window\wndtransmode\aero\aerowrap.cpp" />

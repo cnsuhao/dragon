@@ -24,6 +24,10 @@ void  IWindowRender::SetCanCommit(bool b)
 // {
 //     m_pWindowRenderImpl->Commit(hDC, prc, nCount);
 // }
+void  IWindowRender::InvalidateNow()
+{
+    m_pWindowRenderImpl->InvalidateNow();
+}
 GRAPHICS_RENDER_LIBRARY_TYPE  IWindowRender::GetGraphicsRenderType()
 {
 	return m_pWindowRenderImpl->GetGraphicsRenderType();
@@ -36,12 +40,26 @@ bool  IWindowRender::GetRequireAlphaChannel()
 {
 	return m_pWindowRenderImpl->GetRequireAlphaChannel();
 }
+void  IWindowRender::SetCommitListener(IWindowCommitListener* p)
+{
+    m_pWindowRenderImpl->SetCommitListener(p);
+}
+
+IWindowCommitListener*  IWindowRender::GetCommitListener()
+{
+    return m_pWindowRenderImpl->GetCommitListener();
+}
 
 //////////////////////////////////////////////////////////////////////////
 
 ILayer::ILayer(Layer* p)
 {
 	m_pImpl = p;
+}
+
+IRenderTarget*  ILayer::GetRenderTarget()
+{
+    return m_pImpl->GetRenderTarget();
 }
 
 bool  ILayer::IsAutoAnimate()

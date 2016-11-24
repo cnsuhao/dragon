@@ -7,7 +7,7 @@
 
 
 // CMFCDemoDlg 对话框
-class CMFCDemoDlg : public CDialogEx, public UI::IWindowMessageCallback
+class CMFCDemoDlg : public CDialogEx, public UI::IWindowDelegate
 {
 // 构造
 public:

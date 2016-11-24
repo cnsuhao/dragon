@@ -1123,12 +1123,12 @@ BOOL WindowMouseMgr::IsDialogMessage(MSG* pMsg)
             
             // Windows的做法是给窗口发送一个WM_COMMAND( id, hwnd )的消息
             // 查找default button，发送给defpushbutton
-            if (m_pObjDefault && m_pObjDefault->IsEnable() && m_pObjDefault->IsVisible())
+            if (m_pObjDefault && 
+                m_pObjDefault->IsEnable() && 
+                m_pObjDefault->IsVisible())
             {
                 UIMSG   msg;
-                msg.message = UI_MSG_NOTIFY;
-                msg.nCode   = BN_CLICKED;
-                msg.pMsgFrom = m_pObjDefault->GetIMessage();
+                msg.message = UI_MSG_DEFAULTBUTTON_VKRETURN_EVENT;
                 msg.pMsgTo = m_pObjDefault->GetIMessage();
                 UISendMessage(&msg);
                 return TRUE;

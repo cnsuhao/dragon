@@ -8,7 +8,7 @@ namespace UI
 //
 // 9宫拉伸区域定义
 //
-class  UISDKAPI C9Region
+class  UIAPI C9Region
 {
 public:
     C9Region(){ Set(0); }

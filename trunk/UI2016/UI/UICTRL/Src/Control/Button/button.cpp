@@ -94,7 +94,7 @@ const UINT  BUTTON_ICON_RENDER_STATE_SELECTED_DISABLE = RENDER_STATE_DISABLE | R
 
 void ButtonBase::OnEraseBkgnd(IRenderTarget* pRenderTarget)
 {
-    IRenderBase* pBkgndRender = m_pIButtonBase->GetBkRender();
+    IRenderBase* pBkgndRender = m_pIButtonBase->GetBackRender();
 	if (pBkgndRender)
 	{
 		bool  bDisable = !m_pIButtonBase->IsEnable();
@@ -346,17 +346,17 @@ void ButtonBase::SetCheck(int nCheckState)
 		this->SetUnChecked();
 }
 
-void  ButtonBase::SetCheck(bool bCheck, bool bUpdate)
+void  ButtonBase::SetCheck(bool bCheck)
 {
+    if (IsChecked() == bCheck)
+        return;
+
     if (bCheck)
         this->SetChecked();
     else
         this->SetUnChecked();
 
-    if (bUpdate)
-    {
-        m_pIButtonBase->Invalidate();
-    }
+    m_pIButtonBase->Invalidate();
 }
 
 void ButtonBase::SetChecked()
@@ -395,7 +395,7 @@ bool ButtonBase::IsChecked()
 Button::Button(IButton* p):ButtonBase(p)
 {
     m_pIButton = p;
-    m_eAutoSizeType = BUTTON_AUTOSIZE_TYPE_CONTENT;
+    m_eAutoSizeType = BUTTON_AUTOSIZE_TYPE_NDEF;
     m_eIconAlignFlag = ALIGN_LEFT;
     m_lIconMarginText = 0;
     m_eDrawFocusType = BUTTON_RENDER_DRAW_FOCUS_TYPE_NONE;
@@ -412,12 +412,7 @@ void  Button::OnInitialize()
     // 检测自己是否是DefaultPushButton
 	if (m_buttonStyle.default_push_button)
 	{
-		IWindowBase* pWindow = m_pIButton->GetWindowObject();
-		if (pWindow)
-		{
-			UISendMessage(pWindow, 
-				UI_DM_SETDEFID, (WPARAM)m_pIButton);
-		}
+        set_as_window_default_button();
 	}
 }
 
@@ -527,14 +522,7 @@ LPCTSTR  Button::GetText()
     return m_strText.c_str(); 
 }
 
-LPCTSTR  Button::SaveText()
-{
-	if (m_strText.empty()) // 空，不插入xml属性
-		return NULL;
-	return m_strText.c_str();
-}
-
-void  Button::SetText(LPCTSTR  szText) 
+void  Button::SetText(LPCTSTR szText) 
 {
 	if (szText)
 		m_strText = szText;
@@ -544,22 +532,43 @@ void  Button::SetText(LPCTSTR  szText)
 
 void  Button::SetTextAndUpdate(LPCTSTR  szText)
 {
+    if (szText && m_strText == szText)
+        return;
+
+    if (!szText && m_strText.empty())
+        return;
+
     SetText(szText);
     m_pIButton->Invalidate();
+}
+
+void  Button::Click()
+{
+	this->virtualOnClicked();
 }
 
 void  Button::GetDesiredSize(SIZE* pSize)
 {
     pSize->cx = pSize->cy = 0;
 
+    BUTTON_AUTO_SIZE_TYPE eAutoSizeType = m_eAutoSizeType;
+    if (eAutoSizeType == BUTTON_AUTOSIZE_TYPE_NDEF)
+    {
+        // hack 多语言支持编辑时，m_text包含两段数据
+        if (m_strText.length() && m_strText[0] != 0)
+            eAutoSizeType = BUTTON_AUTOSIZE_TYPE_CONTENT;
+        else
+            eAutoSizeType = BUTTON_AUTOSIZE_TYPE_BKIMAGE;
+    }
+
     // 按钮的auto size可以按背景图标大小来算，也可以按内容的大小来算
-    switch (m_eAutoSizeType)
+    switch (eAutoSizeType)
     {
     case BUTTON_AUTOSIZE_TYPE_BKIMAGE:
         {
-            if (m_pIButton->GetBkRender())
+            if (m_pIButton->GetBackRender())
             {
-                *pSize = m_pIButton->GetBkRender()->GetDesiredSize( );
+                *pSize = m_pIButton->GetBackRender()->GetDesiredSize( );
             }
         }
         break;
@@ -592,7 +601,10 @@ void  Button::GetDesiredSize(SIZE* pSize)
                 case ALIGN_LEFT:
                 case ALIGN_RIGHT:
                     {
-                        sIconText.cx = sizeIcon.cx + sizeText.cx + m_lIconMarginText;
+                        sIconText.cx = 
+                            sizeIcon.cx + 
+                            sizeText.cx + 
+                            m_lIconMarginText;
                         sIconText.cy = max( sizeIcon.cy, sizeText.cy );
                     }
                     break;
@@ -600,7 +612,10 @@ void  Button::GetDesiredSize(SIZE* pSize)
                 case ALIGN_BOTTOM:
                     {
                         sIconText.cx = max( sizeIcon.cx, sizeText.cx );
-                        sIconText.cy = sizeIcon.cy + sizeText.cy + m_lIconMarginText;
+                        sIconText.cy = 
+                            sizeIcon.cy + 
+                            sizeText.cy +
+                            m_lIconMarginText;
                     }
                     break;
                 }
@@ -613,8 +628,8 @@ void  Button::GetDesiredSize(SIZE* pSize)
     case BUTTON_AUTOSIZE_TYPE_BKIMAGEHEIGHT_CONTENTWIDTH:
         {
             SIZE sHeight = {0,0};
-            if (m_pIButton->GetBkRender())
-                sHeight = m_pIButton->GetBkRender()->GetDesiredSize( );
+            if (m_pIButton->GetBackRender())
+                sHeight = m_pIButton->GetBackRender()->GetDesiredSize( );
 
             SIZE sWidth;
             REGION4 rcNonClient;
@@ -643,7 +658,10 @@ void  Button::GetDesiredSize(SIZE* pSize)
                 case ALIGN_LEFT:
                 case ALIGN_RIGHT:
                     {
-                        sIconText.cx = sizeIcon.cx + sizeText.cx + m_lIconMarginText;
+                        sIconText.cx =
+                            sizeIcon.cx +
+                            sizeText.cx + 
+                            m_lIconMarginText;
                         sIconText.cy = max( sizeIcon.cy, sizeText.cy );
                     }
                     break;
@@ -651,7 +669,10 @@ void  Button::GetDesiredSize(SIZE* pSize)
                 case ALIGN_BOTTOM:
                     {
                         sIconText.cx = max( sizeIcon.cx, sizeText.cx );
-                        sIconText.cy = sizeIcon.cy + sizeText.cy + m_lIconMarginText;
+                        sIconText.cy = 
+                            sizeIcon.cy + 
+                            sizeText.cy + 
+                            m_lIconMarginText;
                     }
                     break;
                 }
@@ -665,7 +686,6 @@ void  Button::GetDesiredSize(SIZE* pSize)
         }
 
     default:
-        // UI_LOG_WARN( _T("ButtonBase::GetAutoSize  Unknown autosize type: %d"), m_eAutoSizeType);
         break;
     }
 }
@@ -681,7 +701,8 @@ UINT  Button::OnGetDlgCode(LPMSG lpMsg)
     {
         if (m_pIButton->CanTabstop() && HasDefaultPushButtonStyle())
         {
-            nRet |= DLGC_UNDEFPUSHBUTTON;  // 表示现在不是默认按钮，但自己可以成为默认按钮
+            // 表示现在不是默认按钮，但自己可以成为默认按钮
+            nRet |= DLGC_UNDEFPUSHBUTTON;  
         }
     }
 
@@ -694,10 +715,9 @@ void Button::OnSerialize(SERIALIZEDATA* pData)
 
     AttributeSerializerWrap s(pData, TEXT("Button"));
 
-    s.AddString(XML_TEXT, this, 
-        memfun_cast<pfnStringSetter>(&Button::SetText),
-        memfun_cast<pfnStringGetter>(&Button::SaveText))
-		->Internationalization()
+    s.AddI18nString(XML_TEXT,
+        [this](LPCTSTR t, int s){ m_strText.assign(t, s); },
+        [this](){ return m_strText.c_str(); })
         ->AsData();
 
     s.AddLong(XML_BUTTON_ICON_TEXT_SPACE, m_lIconMarginText);
@@ -713,11 +733,12 @@ void Button::OnSerialize(SERIALIZEDATA* pData)
 		->SetDefault(false);
 
     s.AddEnum(XML_BUTTON_AUTOSIZE_TYPE, *(long*)&m_eAutoSizeType)
+        ->AddOption(BUTTON_AUTOSIZE_TYPE_NDEF, TEXT(""))
         ->AddOption(BUTTON_AUTOSIZE_TYPE_CONTENT,  XML_BUTTON_AUTOSIZE_TYPE_CONTENT)
         ->AddOption(BUTTON_AUTOSIZE_TYPE_BKIMAGE,  XML_BUTTON_AUTOSIZE_TYPE_BKIMAGE)
         ->AddOption(BUTTON_AUTOSIZE_TYPE_BKIMAGEHEIGHT_CONTENTWIDTH, 
                     XML_BUTTON_AUTOSIZE_TYPE_BKIMAGEHEIGHT_CONTENTWIDTH)
-        ->SetDefault(BUTTON_AUTOSIZE_TYPE_CONTENT);
+        ->SetDefault(BUTTON_AUTOSIZE_TYPE_NDEF);
 
     s.AddEnum(XML_BUTTON_ICON_ALIGN, *(long*)&m_eIconAlignFlag)
         ->AddOption(ALIGN_LEFT,   XML_ALIGN_LEFT)
@@ -763,12 +784,12 @@ void Button::OnSerialize(SERIALIZEDATA* pData)
 // 	return true;
 // }
 
-// void  Button::OnCreateByEditor(CREATEBYEDITORDATA* pData)
-// {
-//     DO_PARENT_PROCESS_MAPID(IButtonBase, IControl, UIALT_CALLLESS);
-// 	pData->rcInitPos.right = pData->rcInitPos.left + 100;
-// 	pData->rcInitPos.bottom = pData->rcInitPos.top + 24;
-// }
+void  Button::OnCreateByEditor(CREATEBYEDITORDATA* pData)
+{
+    DO_PARENT_PROCESS_MAPID(IButtonBase, IControl, UIALT_CALLLESS);
+	pData->rcInitPos.right = pData->rcInitPos.left + 100;
+	pData->rcInitPos.bottom = pData->rcInitPos.top + 24;
+}
 
 void  Button::SetDrawFocusType(BUTTON_RENDER_DRAW_FOCUS_TYPE eType)
 {
@@ -891,7 +912,6 @@ void Button::OnPaint(IRenderTarget* pRenderTarget)
         if (pTextRender)
             pTextRender->DrawState(pRenderTarget, &rcText, nState, m_strText.c_str());
     }
-    return;
 }
 
 LRESULT  Button::DrawFocus(WPARAM w, LPARAM)
@@ -961,4 +981,27 @@ LRESULT Button::OnSetCursor(UINT, WPARAM, LPARAM)
 	return 0;
 }
 
+LRESULT  Button::OnDefaultEvent(UINT, WPARAM, LPARAM)
+{
+    this->Click();
+    return 0;
+}
 
+void  Button::OnVisibleChanged(BOOL bVisible, IObject* pObjChanged)
+{
+    // 检测自己是否是DefaultPushButton
+    if (m_buttonStyle.default_push_button && bVisible)
+    {
+        set_as_window_default_button();
+    }
+}
+
+void  Button::set_as_window_default_button()
+{
+    IWindowBase* pWindow = m_pIButton->GetWindowObject();
+    if (pWindow)
+    {
+        UISendMessage(pWindow,
+            UI_DM_SETDEFID, (WPARAM)m_pIButton);
+    }
+}

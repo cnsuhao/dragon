@@ -19,19 +19,12 @@ VertLayout::~VertLayout()
 }
 void  VertLayout::Serialize(SERIALIZEDATA* pData)
 {
-    AttributeSerializer s(pData, TEXT("VertLayout"));
-
+//     AttributeSerializer s(pData, TEXT("VertLayout"));
+//
 //     s.AddLong(XML_LAYOUT_VERT_GAP, this,
 //         memfun_cast<pfnLongSetter>(&VertLayout::LoadGap),
 //         memfun_cast<pfnLongGetter>(&VertLayout::SaveGap));
 // 
-//     s.AddEnum(XML_LAYOUT_Vert_DIRECTION, *(long*)&m_eDirection)
-//         ->AddOption(LAYOUT_Vert_LEFTTORIGHT, XML_LAYOUT_Vert_LEFTTORIGHT)
-//         ->AddOption(LAYOUT_Vert_RIGHTTOLEFT, XML_LAYOUT_Vert_RIGHTTOLEFT)
-//         ->AddOption(LAYOUT_Vert_LEFTANDRIGHT, XML_LAYOUT_Vert_LEFTANDRIGHT)
-//         ->AddOption(LAYOUT_Vert_TOPTOBOTTOM, XML_LAYOUT_Vert_TOPTOBOTTOM)
-//         ->AddOption(LAYOUT_Vert_BOTTOMTOTOP, XML_LAYOUT_Vert_BOTTOMTOTOP)
-//         ->AddOption(LAYOUT_Vert_TOPANDBOTTOM, XML_LAYOUT_Vert_TOPANDBOTTOM);
 }
 
 void  VertLayout::LoadGap(long n)
@@ -71,19 +64,14 @@ SIZE  VertLayout::Measure()
 		if (pChild->IsSelfCollapsed())
 			continue;
 
-		switch (pParam->m_eHeightValueType)
-		{
-		case LAYOUT_VALUE_SET:
-		{
-			s.cy += pParam->m_nConfigHeight;
-		}
-		break;
-		case LAYOUT_VALUE_AUTO:
+		if (pParam->m_eHeightType == AUTO)
 		{
 			s.cy += pChild->GetDesiredSize().cy;
 		}
-		break;
-		}
+        else
+		{
+			s.cy += pParam->m_nConfigHeight;
+		} 
 
 		RECT rMargin = { 0 };
 		pChild->GetMarginRegion(&rMargin);
@@ -91,59 +79,30 @@ SIZE  VertLayout::Measure()
 		s.cy += rMargin.top + rMargin.bottom;
 
 		int nWidth = rMargin.left + rMargin.right;
-		switch (pParam->m_eWidthValueType)
-		{
-		case LAYOUT_VALUE_SET:
-		{
-			nWidth += pParam->m_nConfigWidth;
-		}
-		break;
-		case LAYOUT_VALUE_AUTO:
+		
+        if (pParam->m_eHeightType == AUTO)
 		{
 			nWidth += pChild->GetDesiredSize().cx;
 		}
-		break;
+		else 
+		{
+			nWidth += pParam->m_nConfigWidth;
 		}
-		nMaxWidth = max(nMaxWidth, nWidth);
+        
+
+        nMaxWidth = max(nMaxWidth, nWidth);
 	}
 	s.cx = nMaxWidth;
 
 	return s;
 
-#if 0
-	SIZE  size = {0,0};
-
-	// 通过子控件来获取自己所需要的大小
-	Object*  pChild = NULL;
-	while (pChild = this->m_pPanel->EnumChildObject(pChild))
-	{
-        if (pChild->IsSelfCollapsed())
-        {
-            continue;
-        }
-
-        VertLayoutParam* pParam = s_GetObjectLayoutParam(pChild);
-        if (!pParam)
-        {
-            continue;
-        }
-
-		SIZE  s = pChild->GetDesiredSize();
-
-		size.cy += s.cy + m_nSpace;
-		if (size.cx < s.cx)
-			size.cx = s.cx;
-	}
-
-	return size;
-#endif
 }
 
 struct ObjLayoutInfo
 {
 	Object*  pObj;
-	int width;
-	int height;
+	int width;  // 不包含margin
+	int height; // 不包含margin
 };
 
 void  VertLayout::DoArrage(IObject* /*pIObjToArrage*/)
@@ -200,25 +159,41 @@ void  VertLayout::DoArrage(IObject* /*pIObjToArrage*/)
 		if (pParam->IsSizedByContent())
 		{
 			SIZE s = pChild->GetDesiredSize();
-			nObjWidth = s.cx;
-			nObjHeight = s.cy;
+
+			nObjWidth = s.cx - pChild->GetMarginW();
+			nObjHeight = s.cy - pChild->GetMarginH();
 		}
 
-		if (pParam->m_eHeightValueType == LAYOUT_VALUE_SET)
-		{
-			nObjHeight = pParam->m_nConfigHeight;
-		}
-		else if (pParam->m_eHeightValueType == LAYOUT_VALUE_AVG)
+        if (pParam->m_eHeightType == WH_AVG)
 		{
 			// 本次循环结束后再计算
 			nAvgCount++;
 			nObjHeight = 0;
 		}
+		else if (pParam->m_eHeightType == WH_PERCENT)
+		{
+#if 0 // 比例中包含margin
+            nObjHeight = rcParent.Height() * pParam->m_nConfigHeight / 100;
+            nObjHeight -= pChild->GetMarginH();
 
-		if (pParam->m_eWidthValueType == LAYOUT_VALUE_SET)
+#else // 比例中不包含margin
+            nObjHeight = rcParent.Height() * pParam->m_nConfigHeight / 100;
+#endif
+		}
+		else if (pParam->m_eHeightType != WH_AUTO)
+		{
+			nObjHeight = pParam->m_nConfigHeight;
+		}
+         
+
+        if (pParam->m_eWidthType == WH_SET)
 		{
 			nObjWidth = pParam->m_nConfigWidth;
 		}
+        else if (pParam->m_eWidthType == WH_PERCENT)
+        {
+            nObjWidth = rcParent.Width() * pParam->m_nConfigWidth / 100;
+        }
 
 		ObjLayoutInfo& info = vecInfo[nIndex];
 		info.pObj = pChild;
@@ -263,7 +238,7 @@ void  VertLayout::DoArrage(IObject* /*pIObjToArrage*/)
 		CRect rcObj;
 
 		// 如果是平均宽度，为其宽度赋值
-		if (pParam->m_eHeightValueType == LAYOUT_VALUE_AVG)
+        if (pParam->m_eHeightType == WH_AVG)
 		{
 			info.height = nAvgHeight;
 			info.height += nAvgDiff;
@@ -319,86 +294,23 @@ void  VertLayout::DoArrage(IObject* /*pIObjToArrage*/)
 			SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS|SWP_FORCESENDSIZEMSG);
 	}
 
-#if 0
-    Object* pObjToArrage = NULL;
-    if (pIObjToArrage)
-    {
-        pObjToArrage = pIObjToArrage->GetImpl();
-    }
-
-	int  nConsume1 = 0; // 当前已消耗的高度或宽度（从left/top开始计数）
-	int  nConsume2 = 0; // 当前已消耗的高度或宽度（从right/bottom开始计数）
-	
-	bool bStartToArrange = false;
-	if (NULL == pObjToArrage)
-    {
-		bStartToArrange = true;
-    }
-
-	Object* pChild = NULL;
-	while (pChild = m_pPanel->EnumChildObject(pChild))
-	{
-		if (pObjToArrage && pChild == pObjToArrage)
-        {
-			bStartToArrange = true;
-        }
-
-		// 放在IsSelfCollapsed之前。editor中也需要加载隐藏对象的布局属性
-		VertLayoutParam* pParam = s_GetObjectLayoutParam(pChild);
-		if (!pParam)
-			continue;
-
-		if (pChild->IsSelfCollapsed())
-			continue;
-
-		SIZE s;
-		bool  bFill = pParam->GetConfigLayoutFlags() & LAYOUT_ITEM_ALIGN_FILL ? true:false;
-		if (bStartToArrange || bFill)  // fill mode的子控件会受其它子控件大小改变影响，因此需要每次都判断
-		{
-            s = pChild->GetDesiredSize();
-            if (bFill)
-            {
-                // 计算出剩下的对象的所需大小
-                Object* pChildTemp = pChild;
-                SIZE sNeedNext = {0, 0}; 
-                while (pChildTemp = m_pPanel->EnumChildObject(pChildTemp))
-                {
-                    if (!pChildTemp->IsSelfVisible())
-                    {
-                        continue;
-                    }
-
-                    SIZE sThis = pChildTemp->GetDesiredSize();
-                    sNeedNext.cy += sThis.cy + m_nSpace;
-                }
-
-                CRect rcClient;
-                m_pPanel->GetClientRectInObject(&rcClient);
-                int  nPanelWidth  = rcClient.Width();
-                int  nPanelHeight = rcClient.Height();
-
-                s.cy = nPanelHeight - sNeedNext.cy - nConsume2 - nConsume1;
-            }
-		}
-		else
-		{
-			s.cx = pChild->GetWidth() + pChild->GetMarginW();
-			s.cy = pChild->GetHeight() + pChild->GetMarginH();
-		}
-
-		if (pParam->m_nConfigLayoutFlags & LAYOUT_ITEM_ALIGN_BOTTOM)
-			ArrangeObject_Bottom(pChild, nConsume1, nConsume2, s);
-		else
-			ArrangeObject_Top(pChild, nConsume1, nConsume2, s);
-	}
-#endif
 }
 
-void  VertLayout::OnChildObjectVisibleChanged(IObject* pObj)
+void  VertLayout::ChildObjectVisibleChanged(IObject* pObj)
 {
     UIASSERT (pObj);
 	UIASSERT(pObj->GetParentObject());
 	UIASSERT(pObj->GetParentObject()->GetImpl() == m_pPanel);
+
+    SetDirty(true);
+    m_pPanel->Invalidate();
+}
+
+void  VertLayout::ChildObjectContentSizeChanged(IObject* pObj)
+{
+    UIASSERT(pObj);
+    UIASSERT(pObj->GetParentObject());
+    UIASSERT(pObj->GetParentObject()->GetImpl() == m_pPanel);
 
     SetDirty(true);
     m_pPanel->Invalidate();
@@ -411,8 +323,6 @@ VertLayoutParam::VertLayoutParam()
     m_nConfigWidth = AUTO;
     m_nConfigHeight = AUTO;
     m_nConfigLayoutFlags = 0;
-	m_eWidthValueType = LAYOUT_VALUE_SET;
-	m_eHeightValueType = LAYOUT_VALUE_SET;
 }
 VertLayoutParam::~VertLayoutParam()
 {
@@ -437,43 +347,29 @@ void  VertLayoutParam::UpdateByRect()
 void  VertLayoutParam::Serialize(SERIALIZEDATA* pData)
 {
     AttributeSerializer s(pData, TEXT("VertLayoutParam"));
-    
-    s.AddLong(
-        XML_WIDTH,  this,
-        memfun_cast<pfnLongSetter>(&VertLayoutParam::LoadConfigWidth), 
-        memfun_cast<pfnLongGetter>(&VertLayoutParam::SaveConfigWidth)
-        )->AddAlias(AUTO, XML_AUTO)->SetDefault(AUTO)
-		->SetCompatibleKey(XML_LAYOUT_PREFIX XML_WIDTH);;
 
-    s.AddLong(
-        XML_HEIGHT,  this,
-        memfun_cast<pfnLongSetter>(&VertLayoutParam::LoadConfigHeight), 
-        memfun_cast<pfnLongGetter>(&VertLayoutParam::SaveConfigHeight)
-        )->AddAlias(AUTO, XML_AUTO)->SetDefault(AUTO)
+    s.AddString(
+            XML_WIDTH, this,
+            memfun_cast<pfnStringSetter>(&VertLayoutParam::LoadConfigWidth),
+            memfun_cast<pfnStringGetter>(&VertLayoutParam::SaveConfigWidth)
+        )
+        ->SetCompatibleKey(XML_LAYOUT_PREFIX XML_WIDTH);
+
+    s.AddString(
+            XML_HEIGHT, this,
+            memfun_cast<pfnStringSetter>(&VertLayoutParam::LoadConfigHeight),
+            memfun_cast<pfnStringGetter>(&VertLayoutParam::SaveConfigHeight)
+        )
 		->SetCompatibleKey(XML_LAYOUT_PREFIX XML_HEIGHT);;
 
     s.AddFlags(XML_LAYOUT_ITEM_ALIGN, m_nConfigLayoutFlags)
-        ->AddFlag(LAYOUT_ITEM_ALIGN_LEFT,        XML_LAYOUT_ITEM_ALIGN_LEFT)
-        ->AddFlag(LAYOUT_ITEM_ALIGN_RIGHT,       XML_LAYOUT_ITEM_ALIGN_RIGHT)
-        ->AddFlag(LAYOUT_ITEM_ALIGN_TOP,         XML_LAYOUT_ITEM_ALIGN_TOP)
-        ->AddFlag(LAYOUT_ITEM_ALIGN_BOTTOM,      XML_LAYOUT_ITEM_ALIGN_BOTTOM)
-        ->AddFlag(LAYOUT_ITEM_ALIGN_CENTER,      XML_LAYOUT_ITEM_ALIGN_CENTER)
-        ->AddFlag(LAYOUT_ITEM_ALIGN_VCENTER,     XML_LAYOUT_ITEM_ALIGN_VCENTER)
-        ->AddFlag(LAYOUT_ITEM_ALIGN_FILL,        XML_LAYOUT_ITEM_ALIGN_FILL);
-
-	s.AddEnum(XML_LAYOUT_WIDTH_TYPE, *(long*)&m_eWidthValueType)
-		->AddOption(LAYOUT_VALUE_SET,     XML_LAYOUT_VALUE_TYPE_SET)
-		->AddOption(LAYOUT_VALUE_AUTO,    XML_LAYOUT_VALUE_TYPE_AUTO)
-		->AddOption(LAYOUT_VALUE_AVG,     XML_LAYOUT_VALUE_TYPE_AVG)
-		->AddOption(LAYOUT_VALUE_PERCENT, XML_LAYOUT_VALUE_TYPE_PERCENT)
-		->SetCompatibleKey(XML_LAYOUT_PREFIX XML_LAYOUT_WIDTH_TYPE);
-
-	s.AddEnum(XML_LAYOUT_HEIGHT_TYPE, *(long*)&m_eHeightValueType)
-		->AddOption(LAYOUT_VALUE_SET,     XML_LAYOUT_VALUE_TYPE_SET)
-		->AddOption(LAYOUT_VALUE_AUTO,    XML_LAYOUT_VALUE_TYPE_AUTO)
-		->AddOption(LAYOUT_VALUE_AVG,     XML_LAYOUT_VALUE_TYPE_AVG)
-		->AddOption(LAYOUT_VALUE_PERCENT, XML_LAYOUT_VALUE_TYPE_PERCENT)
-		->SetCompatibleKey(XML_LAYOUT_PREFIX XML_LAYOUT_HEIGHT_TYPE);
+        ->AddFlag(LAYOUT_ITEM_ALIGN_LEFT, XML_LAYOUT_ITEM_ALIGN_LEFT)
+        ->AddFlag(LAYOUT_ITEM_ALIGN_RIGHT, XML_LAYOUT_ITEM_ALIGN_RIGHT)
+        ->AddFlag(LAYOUT_ITEM_ALIGN_TOP, XML_LAYOUT_ITEM_ALIGN_TOP)
+        ->AddFlag(LAYOUT_ITEM_ALIGN_BOTTOM, XML_LAYOUT_ITEM_ALIGN_BOTTOM)
+        ->AddFlag(LAYOUT_ITEM_ALIGN_CENTER, XML_LAYOUT_ITEM_ALIGN_CENTER)
+        ->AddFlag(LAYOUT_ITEM_ALIGN_VCENTER, XML_LAYOUT_ITEM_ALIGN_VCENTER)
+        ->AddFlag(LAYOUT_ITEM_ALIGN_FILL, XML_LAYOUT_ITEM_ALIGN_FILL);
 }
 
 long  VertLayoutParam::GetConfigWidth()
@@ -484,13 +380,13 @@ void  VertLayoutParam::SetConfigWidth(long n)
 {
     m_nConfigWidth = n;
 }
-void  VertLayoutParam::LoadConfigWidth(long n)
+void  VertLayoutParam::LoadConfigWidth(LPCTSTR szText)
 {
-    m_nConfigWidth = ScaleByDpi(n);
+    LoadConfigWH(szText, m_nConfigWidth, m_eWidthType);
 }
-long  VertLayoutParam::SaveConfigWidth()
+LPCTSTR  VertLayoutParam::SaveConfigWidth()
 {
-    return RestoreByDpi(m_nConfigWidth);
+    return SaveConfigWH(m_nConfigWidth, m_eWidthType);
 }
 
 long  VertLayoutParam::GetConfigHeight()
@@ -501,41 +397,37 @@ void  VertLayoutParam::SetConfigHeight(long n)
 {
     m_nConfigHeight = n;
 }
-void  VertLayoutParam::LoadConfigHeight(long n)
+void  VertLayoutParam::LoadConfigHeight(LPCTSTR szText)
 {
-    m_nConfigHeight = ScaleByDpi(n);
+    LoadConfigWH(szText, m_nConfigHeight, m_eHeightType);
 }
-long  VertLayoutParam::SaveConfigHeight()
+LPCTSTR  VertLayoutParam::SaveConfigHeight()
 {
-    return RestoreByDpi(m_nConfigHeight);
+    return SaveConfigWH(m_nConfigHeight, m_eHeightType);
 }
 
 void  VertLayoutParam::SetConfigLayoutFlags(long n)
 {
-   // m_nConfigLayoutFlags = n;
+    m_nConfigLayoutFlags = n;
 }
 long  VertLayoutParam::GetConfigLayoutFlags()
 {
-   // return m_nConfigLayoutFlags;
-	return 0;
+    return m_nConfigLayoutFlags;
 }
 
 SIZE  VertLayoutParam::CalcDesiredSize()
 {
     SIZE size = {0,0};
 
-    bool bWidthNotConfiged = m_nConfigWidth == AUTO ? true:false;
-    bool bHeightNotConfiged = m_nConfigHeight == AUTO ? true:false;;
-
-    if (bWidthNotConfiged || bHeightNotConfiged)
+    if (IsSizedByContent())
     {
         // 获取子对象所需要的空间
         UISendMessage(m_pObj, UI_MSG_GETDESIREDSIZE, (WPARAM)&size);
 
         // 如果有指定width、height的其中一个，那么忽略在上一步中得到的值
-        if (this->m_nConfigWidth != AUTO)
+        if (this->m_eWidthType != AUTO)
             size.cx = this->m_nConfigWidth;
-        if (this->m_nConfigHeight!= AUTO)
+        if (this->m_eHeightType != AUTO)
             size.cy = this->m_nConfigHeight;
     }
     else
@@ -553,7 +445,7 @@ SIZE  VertLayoutParam::CalcDesiredSize()
 
 bool  VertLayoutParam::IsSizedByContent()
 {
-    if (m_nConfigHeight != AUTO && m_nConfigWidth != AUTO)
+    if (m_eWidthType != AUTO && m_eHeightType != AUTO)
         return false;
 
     return true;

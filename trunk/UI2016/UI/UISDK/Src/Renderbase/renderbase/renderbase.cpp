@@ -21,38 +21,30 @@ RenderBase::RenderBase(IRenderBase* p) : Message(p)
     m_pUIApplication = NULL;
 }
 
-IColorRes*  RenderBase::GetSkinColorRes()
-{
-	if (m_pObject)
-	{
-		SkinRes* pSkinRes = m_pObject->GetSkinRes();
-		if (pSkinRes)
-			return pSkinRes->GetColorRes().GetIColorRes();
-	}
-	else
-	{
-		if (m_pUIApplication)
-			return m_pUIApplication->GetActiveSkinColorRes()->GetIColorRes();
-	}
 
-	return NULL;
+SkinRes*  RenderBase::GetSkinRes()
+{
+    if (!m_pObject)
+        return NULL;
+
+    return m_pObject->GetSkinRes();
+}
+ColorRes*  RenderBase::GetSkinColorRes()
+{
+    SkinRes* pSkinRes = GetSkinRes();
+    if (!pSkinRes)
+        return nullptr;
+
+    return &pSkinRes->GetColorRes();
 }
 
-IImageRes*  RenderBase::GetSkinImageRes()
+ImageRes*  RenderBase::GetSkinImageRes()
 {
-	if (m_pObject)
-	{
-		 SkinRes* pSkinRes = m_pObject->GetSkinRes();
-		 if (pSkinRes)
-			 return pSkinRes->GetImageRes().GetIImageRes();
-	}
-	else
-	{
-		if (m_pUIApplication)
-			return m_pUIApplication->GetActiveSkinImageRes()->GetIImageRes();
-	}
+    SkinRes* pSkinRes = GetSkinRes();
+    if (!pSkinRes)
+        return nullptr;
 
-	return NULL;
+    return &pSkinRes->GetImageRes();
 }
 
 void  RenderBase::CheckThemeChanged()
@@ -69,7 +61,7 @@ void  RenderBase::_LoadColor(LPCTSTR szColorId, Color*& pColorRef)
 	if (!szColorId)
 		return;
 
-	IColorRes* pColorRes = GetSkinColorRes();
+	ColorRes* pColorRes = GetSkinColorRes();
 	if (!pColorRes)
 		return;
 
@@ -80,7 +72,7 @@ LPCTSTR  RenderBase::_GetColorId(Color*& pColorRef)
 	if (!pColorRef)
 		return NULL;
 
-	IColorRes* pColorRes = GetSkinColorRes();
+	ColorRes* pColorRes = GetSkinColorRes();
 	if (pColorRes)
 	{
 		LPCTSTR szId = pColorRes->GetColorId(pColorRef);
@@ -89,7 +81,7 @@ LPCTSTR  RenderBase::_GetColorId(Color*& pColorRef)
 	}
 
 	TCHAR* szBuffer = GetTempBuffer();
-	pColorRef->ToHexString(szBuffer);
+	pColorRef->ToWebString(szBuffer);
 	return szBuffer;
 }
 
@@ -122,7 +114,7 @@ void  RenderBase::_LoadBitmap(LPCTSTR szBitmapId, IRenderBitmap*& pBitmapRef)
 	}
 	else
 	{
-		IImageRes* pImageRes = GetSkinImageRes();
+		ImageRes* pImageRes = GetSkinImageRes();
 		if (!pImageRes)
 			return;
 
@@ -135,7 +127,7 @@ LPCTSTR  RenderBase::_GetBitmapId(IRenderBitmap*& pBitmapRef)
 	if (!pBitmapRef)
 		return NULL;
 
-	IImageRes* pImageRes = GetSkinImageRes();
+	ImageRes* pImageRes = GetSkinImageRes();
 	if (!pImageRes)
 		return NULL;
 

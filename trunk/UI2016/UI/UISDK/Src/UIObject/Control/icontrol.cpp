@@ -31,3 +31,12 @@ ITextRenderBase*  IControl::CreateDefaultTextRender()
 {
     return __pImpl->CreateDefaultTextRender();
 }
+
+LPCTSTR  IControl::GetToolTipText()
+{
+    return __pImpl->GetToolTipText();
+}
+void  IControl::SetToolTipText(LPCTSTR szText)
+{
+    __pImpl->SetToolTipText(szText);
+}

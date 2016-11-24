@@ -478,7 +478,7 @@ void  CDragFeedback::Unbind2DropSource(IDropSource* pDropSource)
     }
 }
 
-LRESULT _UIDoDragDrop(
+LRESULT UIDoDragDrop(
 		IDataObject* pDataObject, 
 		IDropSource* pDropSource, 
 		DWORD dwOKEffect,         

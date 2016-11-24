@@ -29,12 +29,11 @@ public:
 
 	void  Create(HWND hWnd, GLOW_WINDOW_ALIGN eAlign);
 	void  Destroy();
+    void render();
 	void  commit();
 
 private:
 	void OnSize(UINT nType, CSize size);
-
-	void render();
 
 private:
 	Image  m_buffer;
@@ -53,12 +52,16 @@ public:
     {
         return WINDOW_TRANSPARENT_TYPE_GLOW;
     }
+
+    virtual BOOL  ProcessWindowMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult, DWORD dwMsgMapID = 0);
+
     virtual void  UpdateRgn();
     virtual void  Init(ICustomWindow* pWnd);
 	virtual void  Enable(bool b);
 
 public:
-
+    void  Show();
+    void  Hide();
 private:
 	GlowWindow  m_topGW;
 	GlowWindow  m_leftGW;

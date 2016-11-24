@@ -27,6 +27,7 @@ public:
 	UIElement* operator->();
 	operator bool() const;
 	UIElement* get();
+    UIElement* detach();
 
 private:
 	void  release();
@@ -57,7 +58,7 @@ interface UIElement
 	virtual bool  AddChildAfter(UIElement*  pElem, UIElement* pInsertAfter) = 0;
     virtual UIElementProxy  AddChildBefore(LPCTSTR szNodeName, UIElement* pInsertBefore) = 0;
     virtual UIElementProxy  AddChildAfter(LPCTSTR szNodeName, UIElement* pInsertAfter) = 0;
-	virtual bool  MoveChildAfterChild(UIElement* pChild2Move, UIElement* pChildInsertAfter) = 0;
+    virtual bool  MoveTo(UIElement* pNewParent, UIElement* pChildInsertAfter) = 0;
 	virtual bool  RemoveChild(UIElement*) = 0;
 	virtual bool  RemoveSelfInParent() = 0;
 	virtual UIElementProxy  FirstChild() = 0;

@@ -4,7 +4,7 @@
 namespace UI
 {
 class Image;
-interface UISDKAPI ImageWrap
+interface UIAPI ImageWrap
 {
     ImageWrap();
 	ImageWrap(Image* p);

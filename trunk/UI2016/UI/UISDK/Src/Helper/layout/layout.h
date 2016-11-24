@@ -92,7 +92,7 @@ public:
             SERIALIZEDATA data = {0};
             data.pUIApplication = pObj->GetUIApplication();
 			data.pSkinRes = pObj->GetSkinRes();
-            data.nFlags = SERIALIZEFLAG_LOAD;
+            data.nFlags = SERIALIZEFLAG_LOAD | SERIALIZEFLAG_LOAD_ERASEATTR;
             data.pMapAttrib = pMapAttr;
 
             p->Serialize(&data);
@@ -134,6 +134,11 @@ public:
     void  SetDirty(bool b)
     {
         m_bDirty = b;
+    }
+
+    virtual void  ChildObjectContentSizeChanged(IObject* pObj) override
+    {
+
     }
 
 protected:
@@ -184,6 +189,7 @@ public:
 
         return s;
     }
+    
 
 protected:
     Object*  m_pObj;
@@ -199,6 +205,9 @@ public:
     void  Arrange(WindowBase*  pWindow);
 };
 
+
+void  LoadConfigWH(LPCTSTR szText, long& wh, long& whtype);
+LPCTSTR  SaveConfigWH(long wh, long whtype);
 }
 
 #endif // LAYOUT_H_70402CBF_A4C2_4a35_AA14_829F26BA9A5C

@@ -82,6 +82,9 @@ void  RectAttribute::get(LPRECT prc)
 
 void  RectAttribute::set(LPRECT prc)
 {
+    if (!prc)
+        prc = &m_rcDefault;
+
     if (m_pBindValue)
     {
 		CopyRect(m_pBindValue, prc);
@@ -121,6 +124,10 @@ void  RectAttribute::Set(LPCTSTR szValue)
 	{
 		set(&rc);
 	}
+    else
+    {
+        set(nullptr);
+    }
 }
 
 void  RectAttribute::Reset()
@@ -136,7 +143,7 @@ bool  RectAttribute::IsDefaultValue()
 	return ::EqualRect(&m_rcDefault, &rc) ? true:false;
 }
 
-void  RectAttribute::Editor(AttributeEditorProxy* p, EditorAttributeFlag e)
+void  RectAttribute::Editor(SERIALIZEDATA* pData, AttributeEditorProxy* p, EditorAttributeFlag e)
 {
     p->Rect2Editor(this, e);
 }

@@ -12,8 +12,8 @@ enum BKCOLOR_FILL_TYPE
     BKCOLOR_FILL_EMPTY   // 只在背景图没有绘制的地方进行填充。因为如果先fill all，再画透明位图的话，位图的背景色就被污染了。例如IM背景窗口皮肤图片与其背景色
 };
 class ImageRender;
-interface __declspec(uuid("6DAC8F58-390D-4660-A35F-2EBE956ED442"))
-UISDKAPI IImageRender : public IRenderBase
+interface UIAPI_UUID(6DAC8F58-390D-4660-A35F-2EBE956ED442) IImageRender
+ : public IRenderBase
 {
     void  SetAlpha(int nAlpha);
     int   GetAlpha();
@@ -32,16 +32,16 @@ UISDKAPI IImageRender : public IRenderBase
 };
 
 class ImageListItemRender;
-interface __declspec(uuid("51FFF758-737E-4252-BDBF-7DAF9DB261A6"))
-UISDKAPI IImageListItemRender : public IImageRender
+interface UIAPI_UUID(51FFF758-737E-4252-BDBF-7DAF9DB261A6) IImageListItemRender
+ : public IImageRender
 {
     UI_DECLARE_INTERFACE(ImageListItemRender);
 };
 
 class ImageListRender;
 interface IImageListRenderBitmap;
-interface __declspec(uuid("34CBE966-3ADE-49F9-98D5-79584248DBDB"))
-UISDKAPI IImageListRender : public IRenderBase
+interface UIAPI_UUID(34CBE966-3ADE-49F9-98D5-79584248DBDB) IImageListRender
+ : public IRenderBase
 {
     void  SetIImageListRenderBitmap(IImageListRenderBitmap* pBitmap);
     IRenderBitmap*  GetRenderBitmap();

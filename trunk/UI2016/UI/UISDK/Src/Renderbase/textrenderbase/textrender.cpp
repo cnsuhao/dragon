@@ -26,7 +26,6 @@
 TextRenderBase::TextRenderBase(ITextRenderBase* p) : Message(p)
 {
     m_pITextRenderBase = p;
-    m_pUIApplication = NULL;
 	m_pObject = NULL;
 	m_nTextRenderType = TEXTRENDER_TYPE_NULL;
 	m_nDrawTextFlag = DEFAULT_DRAWTEXT_FLAG;
@@ -176,7 +175,7 @@ LPCTSTR  TextRenderBase::_SaveColor(Color*& pColor)
     }
 
     TCHAR* szBuffer = GetTempBuffer();
-    pColor->ToHexString(szBuffer);
+    pColor->ToWebString(szBuffer);
     return szBuffer;
 }
 
@@ -197,36 +196,30 @@ SIZE TextRenderBase::GetDesiredSize(LPCTSTR szText, int nLimitWidth)
 
 IColorRes*  TextRenderBase::GetSkinColorRes()
 {
-	if (m_pObject)
-	{
-		SkinRes* pSkinRes = m_pObject->GetSkinRes();
-		if (pSkinRes)
-			return pSkinRes->GetColorRes().GetIColorRes();
-	}
-	else
-	{
-		if (m_pUIApplication)
-			return m_pUIApplication->GetActiveSkinColorRes()->GetIColorRes();
-	}
+    SkinRes* pSkinRes = GetSkinRes();
+    if (!pSkinRes)
+        return NULL;
 
-	return NULL;
+    return &pSkinRes->GetColorRes().GetIColorRes();
+}
+
+SkinRes*  TextRenderBase::GetSkinRes()
+{
+    if (m_pObject)
+    {
+        return m_pObject->GetSkinRes();
+    }
+
+    return NULL;
 }
 
 IFontRes*  TextRenderBase::GetSkinFontRes()
 {
-	if (m_pObject)
-	{
-		SkinRes* pSkinRes = m_pObject->GetSkinRes();
-		if (pSkinRes)
-			return pSkinRes->GetFontRes().GetIFontRes();
-	}
-	else
-	{
-		if (m_pUIApplication)
-			return m_pUIApplication->GetActiveSkinFontRes()->GetIFontRes();
-	}
+    SkinRes* pSkinRes = GetSkinRes();
+    if (!pSkinRes)
+        return NULL;
 
-	return NULL;
+    return &pSkinRes->GetFontRes().GetIFontRes();
 }
 
 bool  TextRenderBase::IsThemeRender() 
@@ -267,9 +260,7 @@ void SimpleTextRender::OnSerialize(SERIALIZEDATA* pData)
 		s.AddString(XML_TEXTRENDER_FONT, this,
 			memfun_cast<pfnStringSetter>(&SimpleTextRender::LoadFont),
 			memfun_cast<pfnStringGetter>(&SimpleTextRender::GetFontId));
-		s.AddString(XML_TEXTRENDER_COLOR, this,
-			memfun_cast<pfnStringSetter>(&SimpleTextRender::LoadColor),
-			memfun_cast<pfnStringGetter>(&SimpleTextRender::GetColorId));
+        s.AddColor(XML_TEXTRENDER_COLOR, m_pColorText);
 	}
 
 	if (!m_pRenderFont && pData->IsLoad())
@@ -280,21 +271,28 @@ void SimpleTextRender::OnSerialize(SERIALIZEDATA* pData)
 
 void  SimpleTextRender::LoadFont(LPCTSTR szFontId)
 {
+#ifdef EDITOR_MODE
+    if (szFontId)
+        m_strFontId = szFontId;
+    else
+        m_strFontId.clear();
+#endif
+
+    SkinRes* pSkinRes = GetSkinRes();
+    if (!pSkinRes)
+        return;
+
+    szFontId = pSkinRes->GetI18nRes().MapConfigValue(szFontId);
     _LoadFont(szFontId, m_pRenderFont);
 }
 LPCTSTR  SimpleTextRender::GetFontId()
 {
-    return _SaveFont(m_pRenderFont);
+#ifdef EDITOR_MODE
+    return m_strFontId.c_str();
+#endif
+    return NULL;
 }
 
-void  SimpleTextRender::LoadColor(LPCTSTR szColorId)
-{
-    _LoadColor(szColorId, m_pColorText);
-}
-LPCTSTR  SimpleTextRender::GetColorId()
-{
-    return _SaveColor(m_pColorText);
-}
 
 void SimpleTextRender::SetRenderFont(IRenderFont* pFont)
 {
@@ -621,6 +619,31 @@ void ColorListTextRender::OnSerialize(SERIALIZEDATA* pData)
 	{
 		_LoadDefalutFont(&m_pRenderFont);
 	}
+}
+
+void  ColorListTextRender::LoadFont(LPCTSTR szFontId)
+{
+#ifdef EDITOR_MODE
+    if (szFontId)
+        m_strFontId = szFontId;
+    else
+        m_strFontId.clear();
+#endif
+
+    SkinRes* pSkinRes = GetSkinRes();
+    if (!pSkinRes)
+        return;
+
+    szFontId = pSkinRes->GetI18nRes().MapConfigValue(szFontId);
+    _LoadFont(szFontId, m_pRenderFont);
+}
+LPCTSTR  ColorListTextRender::GetFontId()
+{
+    //return _SaveFont(m_pRenderFont);
+#ifdef EDITOR_MODE
+    return m_strFontId.c_str();
+#endif
+    return NULL;
 }
 
 void  ColorListTextRender::LoadColor(LPCTSTR szText)

@@ -4,9 +4,7 @@
 #include <atlstr.h>
 #include "..\UISDK\Inc\Util\igifimage.h"
 #include "..\UISDK\Inc\Interface\iuires.h"
-
-namespace UI
-{
+#include "..\UISDK\Inc\Interface\iimagerender.h"
 
 Label::Label(ILabel* p):MessageProxy(p)
 {
@@ -25,8 +23,10 @@ HRESULT  Label::FinalConstruct(ISkinRes* p)
 	OBJSTYLE s = {0};
 	s.default_transparent = 1;  // 默认透明
 	s.default_reject_all_mouse_msg = 1;  // 默认不接收鼠标消息
-	s.default_tabstop = 0;     // 没有焦点
-	m_pILabel->ModifyObjectStyle(&s, 0);
+
+    OBJSTYLE sRemove = { 0 };
+    sRemove.default_tabstop = 1;     // 没有焦点
+    m_pILabel->ModifyObjectStyle(&s, &sRemove);
 
     return S_OK;
 }
@@ -111,20 +111,19 @@ void  Label::OnSerialize(SERIALIZEDATA* pData)
 
     AttributeSerializerWrap s(pData, TEXT("Label"));
 
-    s.AddString(XML_TEXT, this, 
-        memfun_cast<pfnStringSetter>(&Label::SetText),
-        memfun_cast<pfnStringGetter>(&Label::GetText))
-		->Internationalization()
+    s.AddI18nString(XML_TEXT,
+        [this](LPCTSTR t, int s){ m_strText.assign(t, s); },
+        [this](){ return m_strText.c_str(); })
         ->AsData();
 }
 
-// void  Label::OnCreateByEditor(CREATEBYEDITORDATA* pData)
-// {
-//     DO_PARENT_PROCESS_MAPID(ILabel, IControl, UIALT_CALLLESS);
-// 
-//     pData->rcInitPos.right = pData->rcInitPos.left + 100;
-//     pData->rcInitPos.bottom = pData->rcInitPos.top + 20;
-// }
+void  Label::OnCreateByEditor(CREATEBYEDITORDATA* pData)
+{
+    DO_PARENT_PROCESS_MAPID(ILabel, IControl, UIALT_CALLLESS);
+
+    pData->rcInitPos.right = pData->rcInitPos.left + 100;
+    pData->rcInitPos.bottom = pData->rcInitPos.top + 20;
+}
 
 void  Label::GetDesiredSize(SIZE* pSize)
 {
@@ -186,11 +185,13 @@ HRESULT  PictureCtrl::FinalConstruct(ISkinRes* p)
 {
 	HRESULT lRet = DO_PARENT_PROCESS3(IPictureCtrl, IControl);
 
-	OBJSTYLE s = {0};
-	s.reject_all_mouse_msg = 1;
-	s.tabstop = 0;
-	s.default_tabstop = 0;
-	m_pIPictureCtrl->ModifyObjectStyle(&s, 0);  // 默认不接收鼠标消息
+	OBJSTYLE sAdd = {0};
+    sAdd.default_reject_self_mouse_msg = 1;
+
+    OBJSTYLE sRemove = { 0 };
+    sRemove.tabstop = 1;
+    sRemove.default_tabstop = 1;
+    m_pIPictureCtrl->ModifyObjectStyle(&sAdd, &sRemove);  // 默认不接收鼠标消息
 
 	return lRet;
 }
@@ -200,7 +201,7 @@ void  PictureCtrl::GetDesiredSize(SIZE* pSize)
 	pSize->cx = pSize->cy = 0;
     IRenderBase* p = NULL;
 
-    p = m_pIPictureCtrl->GetBkRender();
+    p = m_pIPictureCtrl->GetBackRender();
 	if (p)
 		*pSize = p->GetDesiredSize();
 	
@@ -220,13 +221,75 @@ void PictureCtrl::OnPaint(IRenderTarget* pRenderTarget)
 	}
 }
 
-// void  PictureCtrl::OnCreateByEditor(CREATEBYEDITORDATA* pData)
-// {
-//     DO_PARENT_PROCESS_MAPID(IPictureCtrl, IControl, UIALT_CALLLESS);
-// 
-//     pData->rcInitPos.right = pData->rcInitPos.left + 100;
-//     pData->rcInitPos.bottom = pData->rcInitPos.top + 100;
-// }
+void  PictureCtrl::OnCreateByEditor(CREATEBYEDITORDATA* pData)
+{
+    DO_PARENT_PROCESS_MAPID(IPictureCtrl, IControl, UIALT_CALLLESS);
+
+    pData->rcInitPos.right = pData->rcInitPos.left + 100;
+    pData->rcInitPos.bottom = pData->rcInitPos.top + 100;
+}
+
+bool  PictureCtrl::SetImageByPath(LPCTSTR szPath)
+{
+    IRenderBase* pRender = m_pIPictureCtrl->GetBackRender();
+    if (!pRender)
+    {
+        m_pIPictureCtrl->GetUIApplication()->CreateRenderBase(
+            RENDER_TYPE_IMAGE, m_pIPictureCtrl, &pRender);
+
+        m_pIPictureCtrl->SetBackRender(pRender);
+    }
+
+    if (pRender->GetType() != RENDER_TYPE_IMAGE)
+        return false;
+
+    IRenderBitmap* pRB = NULL;
+    UICreateRenderBitmap(
+        m_pIPictureCtrl->GetUIApplication(),
+        GRAPHICS_RENDER_LIBRARY_TYPE_GDI,
+        IMAGE_ITEM_TYPE_IMAGE,
+        &pRB);
+
+    if (!pRB)
+        return false;
+
+    if (pRB->LoadFromFile(szPath, RENDER_BITMAP_LOAD_CREATE_ALPHA_CHANNEL))
+    {
+        static_cast<IImageRender*>(pRender)->SetRenderBitmap(pRB);
+    }
+    SAFE_RELEASE(pRB);
+    
+    m_pIPictureCtrl->Invalidate();
+    return true;
+}
+bool  PictureCtrl::SetImageById(LPCTSTR szId)
+{
+    IRenderBase* pRender = m_pIPictureCtrl->GetBackRender();
+    if (!pRender)
+    {
+        m_pIPictureCtrl->GetUIApplication()->CreateRenderBase(
+            RENDER_TYPE_IMAGE, m_pIPictureCtrl, &pRender);
+
+        m_pIPictureCtrl->SetBackRender(pRender);
+    }
+
+    if (pRender->GetType() != RENDER_TYPE_IMAGE)
+        return false;
+
+    IRenderBitmap* pRB = NULL;
+    ISkinRes* pSkinRes = m_pIPictureCtrl->GetSkinRes();
+    pSkinRes->GetImageRes().GetBitmap(
+        szId, GRAPHICS_RENDER_LIBRARY_TYPE_GDI, &pRB);
+    
+    if (!pRB)
+        return false;
+
+    static_cast<IImageRender*>(pRender)->SetRenderBitmap(pRB);
+    SAFE_RELEASE(pRB);
+
+    m_pIPictureCtrl->Invalidate();
+    return true;
+}
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -256,64 +319,59 @@ HRESULT  GifCtrl::FinalConstruct(ISkinRes* p)
 	HRESULT hRet = DO_PARENT_PROCESS3(IGifCtrl, IControl);
 
 	OBJSTYLE sAdd = {0};
-	sAdd.reject_all_mouse_msg = 1;
-	sAdd.tabstop = 0;
-	sAdd.default_tabstop = 0;
+    sAdd.default_reject_self_mouse_msg = 1;
 
 	OBJSTYLE sRemove = {0};
 	sRemove.transparent = 1;
+    sRemove.tabstop = 1;
+    sRemove.default_tabstop = 1;
 
 	m_pIGifCtrl->ModifyObjectStyle(&sAdd, &sRemove);  // 默认不接收鼠标消息// 默认不透明
 	return hRet;
 }
 
-void GifCtrl::SetAttribute(IMapAttribute* pMapAttrib, bool bReload)
+void  GifCtrl::OnSerialize(SERIALIZEDATA* pData)
 {
-	DO_PARENT_PROCESS(IGifCtrl, IControl);
+    DO_PARENT_PROCESS(IGifCtrl, IControl);
 
-	LPCTSTR  szText = pMapAttrib->GetAttr(XML_GIFCTRL_GIF, true);
-	if (szText)
-	{
-		IGifImage*  pGifImage = NULL;
+    if (pData->IsLoad())
+    {
+        IMapAttribute* pMapAttrib = pData->pMapAttrib;
+        LPCTSTR  szText = pMapAttrib->GetAttr(XML_GIFCTRL_GIF, true);
+        if (szText)
+        {
+            IGifImage*  pGifImage = NULL;
 
-		IGifRes* pGifRes = m_pIGifCtrl->GetUIApplication()->GetActiveSkinGifRes();
-		if (pGifRes)
-			pGifRes->GetGifImage(szText, &pGifImage);
+            IGifRes* pGifRes = m_pIGifCtrl->GetSkinRes()->GetImageManager().GetGifRes();
+            if (pGifRes)
+                pGifRes->GetGifImage(szText, &pGifImage);
 
-		if (pGifImage)
-		{
-			SAFE_RELEASE(m_pGifRender);
+            if (pGifImage)
+            {
+                SAFE_RELEASE(m_pGifRender);
 
-            Gif_Timer_Notify notify;
-            memset(&notify, 0, sizeof(notify));
-            notify.eType = Gif_Timer_Notify_Send_Msg;
-            notify.notify_ui_msg.pNotifyMsgObj = static_cast<IMessage*>(m_pIGifCtrl);
-			m_pGifRender = pGifImage->AddRender(&notify, m_pIGifCtrl->GetUIApplication());
+                Gif_Timer_Notify notify;
+                memset(&notify, 0, sizeof(notify));
+                notify.eType = Gif_Timer_Notify_Send_Msg;
+                notify.notify_ui_msg.pNotifyMsgObj = static_cast<IMessage*>(m_pIGifCtrl);
+                m_pGifRender = pGifImage->AddRender(&notify, m_pIGifCtrl->GetUIApplication());
+            }
+        }
 
-			if (m_pGifRender)
-			{
-				bool  bAutoPlay = false;
-				pMapAttrib->GetAttr_bool(XML_GIFCTRL_AUTOPLAY, true, &bAutoPlay);
-				if (bAutoPlay)
-				{
-					m_pGifRender->Start();
-				}
-			}
-		}
-		else
-		{
-			//UI_LOG_WARN(_T("load gif image failed. id=%s"), szText);
-		}
-	}
+        if (m_pGifRender)
+        {
+            bool  bAutoPlay = false;
+            pMapAttrib->GetAttr_bool(XML_GIFCTRL_AUTOPLAY, true, &bAutoPlay);
+            if (bAutoPlay)
+                m_pGifRender->Start();
+        }
+    }
 }
 
 void  GifCtrl::OnPaint(IRenderTarget* pRenderTarget)
 {
 	if (m_pGifRender)
 	{
-//      if (GIF_DRAW_STATUS_STOP == m_pGifRender->GetStatus()) // 避免在gif隐藏的时候还在绘制
-//          m_pGifRender->Start();
-
 		// GIF都是直接带alpha通道的，可以用原始HDC绘制。否则使用Gdipulus::Graphics.GetHDC
 		// 会大大降低绘制效率
 		HDC hDC = pRenderTarget->GetHDC(); 
@@ -327,10 +385,6 @@ void  GifCtrl::OnPaint(IRenderTarget* pRenderTarget)
             m_pGifRender->OnPaint(hDC, 0,0);  // 因为HDC是已经带偏移量的，因此直接绘制在0,0即可
         }
 	}
-}
-
-void  GifCtrl::OnMove(CPoint ptPos)
-{
 }
 
 void  GifCtrl::OnGifFrameTick(WPARAM wParam, LPARAM lParam)
@@ -362,4 +416,25 @@ bool  GifCtrl::Stop()
     m_pGifRender->Stop();
     return true;
 }
+
+void GifCtrl::OnVisibleChanged(BOOL bVisible, IObject* pObjChanged)
+{
+    if (!m_pGifRender)
+        return;
+
+    if (!bVisible)
+    {
+        if (m_pGifRender->GetStatus() == GIF_DRAW_STATUS_START)
+        {
+            m_pGifRender->Pause();
+        }
+    }
+    else
+    {
+        if (m_pGifRender->GetStatus() == GIF_DRAW_STATUS_PAUSE)
+        {
+            m_pGifRender->Start();
+        }
+    }
+
 }

@@ -25,12 +25,12 @@ ColorManager::~ColorManager(void)
 	m_listUIElement.Clear();
 }
 
-IColorManager*  ColorManager::GetIColorManager()
+IColorManager&  ColorManager::GetIColorManager()
 {
-    if (NULL == m_pIColorManager)
+    if (!m_pIColorManager)
         m_pIColorManager = new IColorManager(this);
 
-    return m_pIColorManager;
+    return *m_pIColorManager;
 }
 /*
 **	清除所有col资源
@@ -70,11 +70,8 @@ ColorRes&  ColorManager::GetColorRes()
 
 HRESULT  ColorManager::UIParseColorTagCallback(IUIElement* pElem, ISkinRes* pSkinRes)
 {
-    IColorManager*  pColorMgr = pSkinRes->GetColorManager();
-    if (NULL == pColorMgr)
-        return E_FAIL;
-
-    return pColorMgr->GetImpl()->ParseNewElement(pElem->GetImpl());
+    IColorManager&  pColorMgr = pSkinRes->GetColorManager();
+    return pColorMgr.GetImpl()->ParseNewElement(pElem->GetImpl());
 }
 
 HRESULT  ColorManager::ParseNewElement(UIElement* pElem)

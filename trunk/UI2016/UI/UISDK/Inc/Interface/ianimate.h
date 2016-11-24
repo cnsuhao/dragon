@@ -3,7 +3,7 @@
 
 namespace UIA
 {
-#define ANIMATEBASE_API UISDKAPI
+#define ANIMATEBASE_API UIAPI
 
 enum TIMELINE_TIME_TYPE
 {

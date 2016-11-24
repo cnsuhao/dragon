@@ -116,7 +116,11 @@ void  InstantEdit::OnPaint(IRenderTarget* pRenderTarget)
 		+ (rcClient.Height() - lTextHeight) / 2;
 	rcText.bottom = rcText.top + lTextHeight;
 
-	DrawText(hDC, GetText(), -1, rcText, DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX | DT_SINGLELINE);
+    long drawType = DT_LEFT | DT_END_ELLIPSIS | DT_NOPREFIX | DT_SINGLELINE;
+    if (m_textAlign == EDIT_TEXT_ALIGN_CENTER)
+        drawType |= DT_CENTER;
+
+	DrawText(hDC, GetText(), -1, rcText, drawType);
 
 	::SetTextColor(hDC, oldTextCol);
 	::SelectObject(hDC, hOldFont);
@@ -263,6 +267,10 @@ BOOL  InstantEdit::PreTranslateMessage(MSG* pMsg)
 	case WM_LBUTTONDBLCLK:
 	case WM_RBUTTONDOWN:
 	case WM_RBUTTONDBLCLK:
+    case WM_NCLBUTTONDOWN:
+    case WM_NCRBUTTONDOWN:
+    case WM_NCLBUTTONDBLCLK:
+    case WM_NCRBUTTONDBLCLK:
 		{
 			POINT  ptWnd = {GET_X_LPARAM(pMsg->lParam), GET_Y_LPARAM(pMsg->lParam)};
 

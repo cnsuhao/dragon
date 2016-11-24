@@ -58,7 +58,7 @@ protected:
 public:
 	// 外部接口
 	void  SetCheck(int nCheckState);
-    void  SetCheck(bool bCheck, bool bUpdate);
+    void  SetCheck(bool bCheck);
 	void  SetChecked();
 	void  SetUnChecked();
 	int   GetCheck();
@@ -93,8 +93,10 @@ public:
         UIMSG_INITIALIZE(OnInitialize)
         UIMSG_SERIALIZE(OnSerialize)
 		UIMSG_HANDLER_EX(WM_SETCURSOR, OnSetCursor)
-// 	UIALT_MSG_MAP(UIALT_CALLLESS)
-// 		UIMSG_WM_CREATEBYEDITOR(OnCreateByEditor)
+        UIMSG_VISIBLE_CHANGED(OnVisibleChanged)
+        UIMSG_HANDLER_EX(UI_MSG_DEFAULTBUTTON_VKRETURN_EVENT, OnDefaultEvent)
+	UIALT_MSG_MAP(UIALT_CALLLESS)
+		UIMSG_CREATEBYEDITOR(OnCreateByEditor)
     UI_END_MSG_MAP_CHAIN_PARENT(ButtonBase)
 
 public:
@@ -103,7 +105,8 @@ public:
     void  SetTextAndUpdate(LPCTSTR  szText);
     void  SetText(LPCTSTR  szText);
     LPCTSTR  GetText();
-	LPCTSTR  SaveText();
+
+	void  Click();
 
     void  SetIconFromFile(LPCTSTR szIconPath);
     void  SetIconFromHBITMAP(HBITMAP hBitmap);
@@ -118,19 +121,22 @@ public:
 
 protected:
     void  OnSerialize(SERIALIZEDATA*);
-//	void  OnCreateByEditor(CREATEBYEDITORDATA*);
+	void  OnCreateByEditor(CREATEBYEDITORDATA*);
     void  OnInitialize();
 
 	void  GetDesiredSize(SIZE* pSize);
     UINT  OnGetDlgCode(LPMSG lpMsg);
     void  OnPaint(IRenderTarget*);
+    void  OnVisibleChanged(BOOL bVisible, IObject* pObjChanged);
     LRESULT  DrawFocus(WPARAM, LPARAM);
 	LRESULT  OnSetCursor(UINT, WPARAM, LPARAM);
+    LRESULT  OnDefaultEvent(UINT, WPARAM, LPARAM);
 
 	virtual void virtualOnClicked() override;
 
 private:
     void  calc_icontext_rect(IRenderTarget*, CRect& rcIcon, CRect& rcText);
+    void  set_as_window_default_button();
 
 protected:
     IButton*  m_pIButton;

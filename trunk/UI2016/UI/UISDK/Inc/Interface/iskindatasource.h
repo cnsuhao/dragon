@@ -13,7 +13,7 @@ enum  SKIN_PACKET_TYPE
 };
 
 // 跨模块加载gdiplus::bitmap时使用。确保Bitmap*都在同一个模块new/delete
-class UISDKAPI GdiplusBitmapLoadWrap
+class UIAPI GdiplusBitmapLoadWrap
 {
 public:
     GdiplusBitmapLoadWrap();
@@ -31,7 +31,7 @@ private:
 interface ImageWrap;
 interface IStreamBufferReader;
 interface SkinDataSource;
-interface UISDKAPI ISkinDataSource
+interface UIAPI ISkinDataSource
 {
 	ISkinDataSource(SkinDataSource*);
 
