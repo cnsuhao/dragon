@@ -136,12 +136,12 @@ ColorRes::~ColorRes()
     SAFE_DELETE(m_pIColorRes);
 }
 
-IColorRes*  ColorRes::GetIColorRes()
+IColorRes&  ColorRes::GetIColorRes()
 {
-    if (NULL == m_pIColorRes)
+    if (!m_pIColorRes)
         m_pIColorRes = new IColorRes(this);
 
-    return m_pIColorRes;
+    return *m_pIColorRes;
 }
 long ColorRes::GetColorCount() 
 {
@@ -184,7 +184,7 @@ ColorResItem* ColorRes::GetColorItem( const String& strID )
 
 void ColorRes::GetColor(LPCTSTR szColorId, Color** pp)
 {
-	if (NULL == szColorId || !pp)
+	if (!szColorId || !szColorId[0] || !pp)
 		return;
 
      // 直接翻译，不根据ID去映射
@@ -197,6 +197,12 @@ void ColorRes::GetColor(LPCTSTR szColorId, Color** pp)
     else if (szColorId[0] == _T('0') && szColorId[1] == _T('x'))
     {
         COLORREF color = Util::TranslateHexColor(szColorId+2);
+        *pp = Color::CreateInstance(color);
+        return;
+    }
+    else if (_tcsstr(szColorId, TEXT(",")))
+    {
+        COLORREF color = Util::TranslateColor(szColorId);
         *pp = Color::CreateInstance(color);
         return;
     }

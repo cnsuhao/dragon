@@ -57,6 +57,10 @@ long  ILongAttribute::GetLong()
 {
     return m_pImpl->GetLong();
 }
+LPCTSTR  ILongAttribute::Get()
+{
+    return m_pImpl->Get();
+}
 long  ILongAttribute::EnumAlias(pfnEnumAliasCallback c, WPARAM w, LPARAM l)
 {
 	return m_pImpl->EnumAlias(c, w, l);
@@ -99,6 +103,10 @@ LPCTSTR  IBoolAttribute::GetParentKey()
 {
     return m_pImpl->GetParentKey();
 }
+LPCTSTR  IBoolAttribute::Get()
+{
+    return m_pImpl->Get();
+}
 bool  IBoolAttribute::GetBool()
 {
     return m_pImpl->GetBool();
@@ -131,11 +139,11 @@ IStringAttribute*  IStringAttribute::AsData()
     m_pImpl->AsData();
     return this;
 }
-IStringAttribute*  IStringAttribute::Internationalization()
-{
-	m_pImpl->Internationalization();
-	return this;
-}
+// IStringAttribute*  IStringAttribute::Internationalization()
+// {
+// 	m_pImpl->Internationalization();
+// 	return this;
+// }
 
 LPCTSTR  IStringAttribute::GetKey()
 {
@@ -204,6 +212,10 @@ LPCTSTR  IEnumAttribute::GetParentKey()
 {
     return m_pImpl->GetParentKey();
 }
+LPCTSTR  IEnumAttribute::Get()
+{
+    return m_pImpl->Get();
+}
 long  IEnumAttribute::GetLong()
 {
 	return m_pImpl->GetLong();
@@ -260,6 +272,10 @@ LPCTSTR  IFlagsAttribute::GetGroupName()
 LPCTSTR  IFlagsAttribute::GetParentKey()
 {
     return m_pImpl->GetParentKey();
+}
+LPCTSTR  IFlagsAttribute::Get()
+{
+    return m_pImpl->Get();
 }
 long  IFlagsAttribute::GetLong()
 {
@@ -437,6 +453,26 @@ IColorAttribute::IColorAttribute(ColorAttribute* p)
 	m_pImpl = p;
 }
 
+LPCTSTR  IColorAttribute::GetKey()
+{
+	return m_pImpl->GetKey();
+}
+LPCTSTR  IColorAttribute::GetDesc()
+{
+	return m_pImpl->GetDesc();
+}
+LPCTSTR  IColorAttribute::GetGroupName()
+{
+	return m_pImpl->GetGroupName();
+}
+LPCTSTR  IColorAttribute::GetParentKey()
+{
+	return m_pImpl->GetParentKey();
+}
+LPCTSTR  IColorAttribute::Get()
+{
+	return m_pImpl->Get();
+}
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -462,6 +498,16 @@ LPCTSTR  IRenderBaseAttribute::Get()
 {
     return m_pImpl->Get();
 }
+
+LPCTSTR  IRenderBaseAttribute::GetGroupName()
+{
+	return m_pImpl->GetGroupName();
+}
+LPCTSTR  IRenderBaseAttribute::GetParentKey()
+{
+	return m_pImpl->GetParentKey();
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 ITextRenderBaseAttribute::ITextRenderBaseAttribute(TextRenderBaseAttribute* p)
@@ -486,6 +532,15 @@ LPCTSTR  ITextRenderBaseAttribute::Get()
 {
     return m_pImpl->Get();
 }
+LPCTSTR  ITextRenderBaseAttribute::GetGroupName()
+{
+	return m_pImpl->GetGroupName();
+}
+LPCTSTR  ITextRenderBaseAttribute::GetParentKey()
+{
+	return m_pImpl->GetParentKey();
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 AttributeSerializerWrap::AttributeSerializerWrap(SERIALIZEDATA* p, LPCTSTR szGroupName)
@@ -504,6 +559,39 @@ AttributeSerializer*  AttributeSerializerWrap::GetImpl()
 IStringAttribute*  AttributeSerializerWrap::AddString(LPCTSTR szKey, void* _this, pfnStringSetter s, pfnStringGetter g)
 {
     StringAttribute* p = m_pImpl->AddString(szKey, _this, s, g);
+    if (!p)
+        return NULL;
+
+    return p->GetIStringAttribute();
+}
+
+IStringAttribute*  AttributeSerializerWrap::AddString(
+    LPCTSTR szKey, 
+    const std::function<void(LPCTSTR)>& s, 
+    const std::function<LPCTSTR()>& g)
+{
+    StringAttribute* p = m_pImpl->AddString(szKey, s, g);
+    if (!p)
+        return NULL;
+
+    return p->GetIStringAttribute();
+}
+
+IStringAttribute*  AttributeSerializerWrap::AddI18nString(LPCTSTR szKey, void* _this, pfnStringExSetter s, pfnStringGetter g)
+{
+    StringAttribute* p = m_pImpl->AddI18nString(szKey, _this, s, g);
+    if (!p)
+        return NULL;
+
+    return p->GetIStringAttribute();
+}
+
+IStringAttribute*  AttributeSerializerWrap::AddI18nString(
+    LPCTSTR szKey, 
+    const std::function<void(LPCTSTR, int)>& s, 
+    const std::function<LPCTSTR()>& g)
+{
+    StringAttribute* p = m_pImpl->AddI18nString(szKey, s, g);
     if (!p)
         return NULL;
 

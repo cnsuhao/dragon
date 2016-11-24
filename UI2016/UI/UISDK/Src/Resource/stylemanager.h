@@ -22,13 +22,12 @@ public:
 	~StyleManager(void);
 	
 	StyleRes&  GetStyleRes();
-    IStyleManager*  GetIStyleManager();
+    IStyleManager&  GetIStyleManager();
 
     UIElement*  GetStyleXmlElem(LPCTSTR szId);
 
-	bool  LoadStyle(LPCTSTR szTagName, LPCTSTR szStyleClass, LPCTSTR szID, IMapAttribute* pMapStyle);
-    bool  ParseStyle(IMapAttribute* pMapAttrib);
-    bool  ReverseParseStyle(IListAttribute* pListAttrib);
+    // bool  ParseStyle(IMapAttribute* pMapAttrib);
+    // bool  ReverseParseStyle(IListAttribute* pListAttrib);
 
 public:
 	// Editor

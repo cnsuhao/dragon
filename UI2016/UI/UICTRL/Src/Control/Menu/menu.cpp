@@ -96,18 +96,7 @@ PARSE_CONTROL_RETURN  Menu::UIParseMenuTag(IUIElement* pElem, ISkinRes* pSkinRes
 		pParent->AddChild(pIMenu);
 
     // 设置属性
-    IMapAttribute*  pMapAttrib = NULL;
-    IStyleManager*  pStyleMgr = pUIApp->GetActiveSkinStyleMgr();
-
-    pElem->GetAttribList(&pMapAttrib);
-    pStyleMgr->ParseStyle(pMapAttrib);
-
-	SERIALIZEDATA data = {0};
-    data.pUIApplication = pUIApp;
-	data.pMapAttrib = pMapAttrib;
-	data.nFlags = SERIALIZEFLAG_LOAD;
-	UISendMessage(pIMenu, UI_MSG_SERIALIZE, (WPARAM)&data);
-    SAFE_RELEASE(pMapAttrib);
+    pIMenu->LoadAttributeFromXml(pElem, false);
 
     // 遍历其子元素
     IUIElementProxy childElement = pElem->FirstChild();
@@ -126,7 +115,7 @@ void  Menu::OnNewChildElement(IUIElement* pUIElement)
     IMapAttribute*  pMapAttrib = NULL;
     pUIElement->GetAttribList(&pMapAttrib);
 
-	String  strTagName = pMapAttrib->GetTag();
+    String strTagName = pUIElement->GetTagName();
 
     // 特殊处理：扩展style，要将<string>扩展为menu.string..
     String strStyleClass, strID;
@@ -143,8 +132,12 @@ void  Menu::OnNewChildElement(IUIElement* pUIElement)
     if (szText)
         strStyleClass = szText;
 
-    IStyleManager*  pStyleMgr = m_pIMenu->GetUIApplication()->GetActiveSkinStyleMgr();
-    pStyleMgr->LoadStyle(strTagName.c_str(), strStyleClass.c_str(), strID.c_str(), pMapAttrib);
+    IStyleRes&  pStyleRes = m_pIMenu->GetSkinRes()->GetStyleRes();
+    pStyleRes.LoadStyle(
+        strTagName.c_str(), 
+        strStyleClass.c_str(), 
+        strID.c_str(),
+        pMapAttrib);
 
     // 加载菜单子项
     IListItemBase* pItem = this->LoadMenuItem(pUIElement, strTagName.c_str(), pMapAttrib);
@@ -259,7 +252,7 @@ IListItemBase* Menu::LoadMenuItem(IUIElement* pUIElement, LPCTSTR szTagName, IMa
     else
     {
         // 可能是菜单里的Button（滚动条）
-        IObject* pObj = m_pIMenu->GetSkinRes()->GetLayoutManager()->
+        IObject* pObj = m_pIMenu->GetSkinRes()->GetLayoutManager().
             ParseElement(pUIElement, m_pIMenu); 
         
         if (!pObj)
@@ -491,7 +484,7 @@ int  Menu::TrackPopupMenu(UINT nFlag, int x, int y, IMessage* pNotifyObj, HWND h
 // 本函数主要用于UIEditor当中显示菜单图像
 IWindow*  Menu::CreateMenuWindow()
 {
-    if (!m_pIMenu->GetUIApplication()->IsDesignMode())
+    if (!m_pIMenu->GetUIApplication()->IsEditorMode())
         return NULL;
 
     if (NULL == m_pPopupWrapWnd->GetHWND())
@@ -1268,7 +1261,7 @@ void Menu::OnUnInitPopupControlWindow()
 
 				if (!pMenu)
 				{
-					IObject* pCtrl = pPopupWindow->FindChildObject(szMenuId);
+					IObject* pCtrl = pPopupWindow->FindObject(szMenuId);
 					if (!pCtrl)
 						break;
 

@@ -56,7 +56,7 @@ void  CardLayout::DoArrage(IObject* pIObjToArrage)
 }
 
 // 一个对象显示后，将其它对象隐藏掉
-void  CardLayout::OnChildObjectVisibleChanged(IObject* pIObj)
+void  CardLayout::ChildObjectVisibleChanged(IObject* pIObj)
 {
     UIASSERT (pIObj);
 	UIASSERT(pIObj->GetParentObject());
@@ -75,5 +75,6 @@ void  CardLayout::OnChildObjectVisibleChanged(IObject* pIObj)
         }
     }
 
+    // SetDirty(true);
     m_pPanel->Invalidate();
 }

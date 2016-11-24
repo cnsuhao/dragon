@@ -3,6 +3,7 @@
 #include "attribute.h"
 #include "Src\Resource\i18nres.h"
 #include "Src\Resource\skinres.h"
+#include "..\Application\uiapplication.h"
 
 using namespace UI;
 
@@ -12,6 +13,20 @@ AttributeBase*  CreateStringAttribute()
 {
     return new StringAttribute();
 }
+
+// TODO: 
+// 注：为了支持i18n字段的编辑功能，不得不额外增加一个存储空间来存放string id
+//    但为了尽量避免破坏非编辑模式下的代码逻辑，目前的做法是将set函数修改为
+//    set(LPCTSTR text, int size)
+//    在编辑模式下，将text分为两段，前一段表示转义之后的内容，后一段内容表示
+//    string id，中间用\0分隔。
+//    这种方式强制外部需要增加一个新的函数，不是很好，但没想到更好的办法 
+
+AttributeBase*  CreateI18nStringAttribute()
+{
+    return new I18nStringAttribute();
+}
+
 }
 
 StringAttribute::StringAttribute()
@@ -21,8 +36,6 @@ StringAttribute::StringAttribute()
     _this = NULL;
     _getter = NULL;
     _setter = NULL;
-	m_bDefaultIsNULL = true;
-	m_bI18n = false;
 }
 
 StringAttribute::~StringAttribute()
@@ -38,26 +51,34 @@ IStringAttribute*  StringAttribute::GetIStringAttribute()
     return m_pIStringAttribute;
 }
 
-void  StringAttribute::SetBindValue(void* p)
+void  StringAttribute::BindReference(String& s)
 {
-    m_pBindValue = (String*)p;
-	m_bDefaultIsNULL = false;
+    m_pBindValue = &s;
 }
 
 // 这种情况下，默认值为NULL
-void  StringAttribute::SetBindFuction(void* _this, void* _setter, void* _getter)
+void  StringAttribute::BindFunction(
+        void* _this, pfnStringSetter s, pfnStringGetter g)
 {
     this->_this = _this;
-    this->_setter = (pfnStringSetter)_setter;
-    this->_getter = (pfnStringGetter)_getter;   
-	m_bDefaultIsNULL = true;
+    this->_setter = s;
+    this->_getter = g;
+}
+
+void  StringAttribute::BindFunction(
+        const function<void(LPCTSTR)>& s, 
+        const function<LPCTSTR()>& g)
+{
+    _func_setter = s;
+    _func_getter = g;
 }
 
 LPCTSTR  StringAttribute::Get()
 {
+	LPCTSTR szValue = NULL;
     if (m_pBindValue)
     {
-        return m_pBindValue->c_str();
+		szValue = m_pBindValue->c_str();
     }
     else if (_this && _getter)
     {
@@ -72,41 +93,18 @@ LPCTSTR  StringAttribute::Get()
 			mov  szReturn, eax;        // 获取返回值
 		}
 
-        return szReturn;
+		szValue = szReturn;
     }
-    else
+    else if (!_func_getter._Empty())
     {
-        return NULL;
+        szValue = _func_getter();
     }
+
+	return szValue;
 }
 
 void  StringAttribute::Set(LPCTSTR szValue)
 {
-	if (m_bI18n)
-	{
-		if (szValue && szValue[0] && szValue[1])
-		{
-			if (szValue[0] == XML_I18N_PREFIX)
-			{
-				if (szValue[1] == XML_I18N_PREFIX)
-				{
-					// 两个##，取消转义
-					szValue = szValue + 1;
-				}
-				else
-				{
-					// 后面的为需要解析的国际化字段
-					szValue = szValue + 1;
-					if (m_pSkinRes)
-					{
-						szValue = m_pSkinRes->GetI18nRes().I18nMap(szValue);
-					}
-				}
-			}
-		}
-
-	}
-
     if (m_pBindValue)
     {
         if (szValue)
@@ -125,10 +123,15 @@ void  StringAttribute::Set(LPCTSTR szValue)
 			push eax;
 
 			mov  ecx, localVarThis;   // 设置this
-			call localVarSetter;     // 调用
+			call localVarSetter;      // 调用
 		}
     }
+    else if (!_func_setter._Empty())
+    {
+        _func_setter(szValue);
+    }
 }
+
 
 void  StringAttribute::Reset()
 {
@@ -140,10 +143,13 @@ bool  StringAttribute::IsDefaultValue()
     LPCTSTR szValue = Get();
 	LPCTSTR szDefault = GetDefault();
 
-    if (szValue == NULL && szDefault == NULL)
-        return true;
+    if (m_strDefault.empty())
+    {
+        if (!szValue || !szValue[0])
+            return true;
+    }
 
-	if (szValue && szDefault && 0 ==_tcscmp(szValue, szDefault))
+	if (szValue && m_strDefault == szValue)
 		return true;
 
     return false;
@@ -153,12 +159,10 @@ StringAttribute*  StringAttribute::SetDefault(LPCTSTR szValue)
 {
 	if (szValue)
 	{
-		m_bDefaultIsNULL = false;
 		m_strDefault = szValue;
 	}
 	else
 	{
-		m_bDefaultIsNULL = true;
 		m_strDefault.clear();
 	}
 
@@ -167,18 +171,119 @@ StringAttribute*  StringAttribute::SetDefault(LPCTSTR szValue)
 
 LPCTSTR  StringAttribute::GetDefault()
 {
-	if (m_bDefaultIsNULL)
-		return NULL;
-
 	return m_strDefault.c_str();
 }
 
-void StringAttribute::Editor(AttributeEditorProxy* p, EditorAttributeFlag e)
+void StringAttribute::Editor(SERIALIZEDATA* pData, AttributeEditorProxy* p, EditorAttributeFlag e)
 {
     p->String2Editor(this, e);
 }
 
-void  StringAttribute::Internationalization()
+// void  StringAttribute::Internationalization()
+// {
+// 	m_bI18n = true;
+// }
+
+
+
+LPCTSTR  I18nStringAttribute::Get()
 {
-	m_bI18n = true;
+    LPCTSTR szValue = StringAttribute::Get();
+
+    if (szValue)
+    {
+        if (GetUIApplication()->IsEditorMode())
+        {
+            // 取出原始字符串id
+            LPCTSTR szBuffer = szValue;
+            int nLength1 = _tcslen(szValue);
+            if (nLength1)
+                szValue = szBuffer + (nLength1 + 1);
+        }
+    }
+
+    return szValue;
+}
+
+void  I18nStringAttribute::Set(LPCTSTR szValue)
+{
+    int nSize = 0;
+    if (szValue)
+    {
+        int nLength1 = _tcslen(szValue);
+        int nLength2 = 0;
+
+        LPCTSTR szValue2 = m_pSkinRes->GetI18nRes().MapConfigValue(szValue);
+        if (szValue2)
+            nLength2 = _tcslen(szValue2);
+
+        int length1 = (nLength1);
+        int length2 = (nLength2);
+
+        // 在编辑模式下面，不能将原始的id丢掉，因此保存到转译后的字符串后面，在Get时重新
+        // 取出来。
+        if (GetUIApplication()->IsEditorMode())
+        {
+            LPTSTR szBuffer = GetTempBuffer(nLength1 + nLength2 + 2);
+            char* p = (char*)szBuffer;
+
+            int nSize1 = sizeof(TCHAR)*(length1 + 1);
+            int nSize2 = sizeof(TCHAR)*(length2 + 1);
+            memcpy(p, szValue2, nSize2);
+            memcpy(p + nSize2, szValue, nSize1);
+            szValue = szBuffer;
+
+            nSize = length1 + length1 + 2;
+        }
+        else
+        {
+            szValue = szValue2;
+            nSize = length1;
+        }
+    }
+
+    if (m_pBindValue)
+    {
+        if (szValue)
+            m_pBindValue->assign(szValue, nSize);
+        else
+            m_pBindValue->clear();
+    }
+    else if (_this && _setter_ex)
+    {
+        long  localVarThis = (long)_this;
+        long  localVarSetter = (long)_setter_ex;
+
+        __asm
+        {
+            mov eax, nSize;
+            push eax;
+            mov eax, dword ptr[szValue]; // 压入参数
+            push eax;
+
+            mov  ecx, localVarThis;   // 设置this
+            call localVarSetter;      // 调用
+        }
+    }
+    else if (!_func_setter_ex._Empty())
+    {
+        _func_setter_ex(szValue, nSize);
+    }
+}
+
+// 这种情况下，默认值为NULL
+void  I18nStringAttribute::BindFunctionEx(
+        void* _this, pfnStringExSetter s, pfnStringGetter g)
+{
+    this->_this = _this;
+    this->_setter_ex = s;
+    this->_getter = g;
+}
+
+void  I18nStringAttribute::BindFunctionEx(
+    const function<void(LPCTSTR, int)>& s,
+    const function<LPCTSTR()>& g)
+{
+    _func_setter_ex = s;
+    _func_getter = g;
 }

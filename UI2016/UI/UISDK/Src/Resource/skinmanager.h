@@ -25,7 +25,7 @@ public:
     void  Destroy();
 
 public:
-	ISkinManager*  GetISkinManager();
+	ISkinManager&  GetISkinManager();
 	UIApplication*  GetUIApplication();
 	void  SetUIApplication(UIApplication* pUIApp);
 
@@ -39,6 +39,7 @@ public:
     void  ChangeSkinHLS( short h, short l, short s, int nFlag );
 
 	LPCTSTR  GetCurrentLanguage();
+    void  SetCurrentLanguage(LPCTSTR);
 
 private:
     ISkinManager*  m_pISkinManager;

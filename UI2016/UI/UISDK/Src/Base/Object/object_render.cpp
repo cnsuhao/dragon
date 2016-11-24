@@ -228,10 +228,12 @@ void  Object::DrawToLayer__(IRenderTarget* pRenderTarget)
         this->DrawChildObject__(pRenderTarget, m_pNcChild);
     }
 
-//     if (m_objStyle.post_paint)
-//     {
-//         this->DoPostPaint(pRenderTarget);
-//     }
+    if (m_objStyle.post_paint)
+    {
+            UI::UISendMessage(m_pIObject,
+                UI_MSG_POSTPAINT,
+                (WPARAM)pRenderTarget);
+    }
 
 #ifdef _DEBUG
     static bool bDebug = false;
@@ -293,9 +295,8 @@ void  Object::DrawChildObject__(IRenderTarget* pRenderTarget, Object* pChildStar
                 param.wSrc = param.wDst = pChild->GetWidth();
                 param.hSrc = param.hDst = pChild->GetHeight();
                 param.bAlphaBlend = true;
-                param.opacity = 255;
-                static_cast<SoftwareLayer*>(pChildLayer)->
-                    GetRenderTarget()->Render2Target(pRenderTarget, &param);
+                param.opacity = pChildLayer->GetOpacity();
+                pChildLayer->GetRenderTarget()->Render2Target(pRenderTarget, &param);
             }
         }
         else

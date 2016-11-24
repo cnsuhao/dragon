@@ -75,7 +75,7 @@ void  CanvasLayout::DoArrage(IObject* pIObjToArrage)
         if (pChild->IsSelfCollapsed())
 		{
 			// 隐藏的控件，在编辑器中也需要加载布局属性。
-			if (m_pPanel->GetUIApplication()->IsDesignMode())
+			if (m_pPanel->GetUIApplication()->IsEditorMode())
 				s_GetObjectLayoutParam(pChild);
 
 			continue;
@@ -170,7 +170,7 @@ void  CanvasLayout::ArrangeObject(Object*  pChild, const int& nWidth, const int&
         }
         else
         {
-            if (nConfigFlag & LAYOUT_ITEM_ALIGN_CENTER)
+            if (nConfigFlag & LAYOUT_ITEM_ALIGN_VCENTER)
             {
                 y = ( nHeight - s.cy ) / 2;  // 居中
             }
@@ -186,11 +186,24 @@ void  CanvasLayout::ArrangeObject(Object*  pChild, const int& nWidth, const int&
     pChild->SetObjectPos(&rcChildObj, SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS|SWP_FORCESENDSIZEMSG);
 }
 
-void  CanvasLayout::OnChildObjectVisibleChanged(IObject* pObj)
+void  CanvasLayout::ChildObjectVisibleChanged(IObject* pObj)
 {
     UIASSERT (pObj);
 	UIASSERT(pObj->GetParentObject());
 	UIASSERT(pObj->GetParentObject()->GetImpl() == m_pPanel);
+
+    // TODO: 优化为只布局该pObj，并且仅在collapsed的情况下需要布局
+    //SetDirty(true);<-- 不能仅调该函数，可能后面没有触发invalidate
+    DoArrage(pObj);
+
+    pObj->Invalidate();
+}
+
+void  CanvasLayout::ChildObjectContentSizeChanged(IObject* pObj)
+{
+    UIASSERT(pObj);
+    UIASSERT(pObj->GetParentObject());
+    UIASSERT(pObj->GetParentObject()->GetImpl() == m_pPanel);
 
     // TODO: 优化为只布局该pObj，并且仅在collapsed的情况下需要布局
     //SetDirty(true);<-- 不能仅调该函数，可能后面没有触发invalidate
@@ -348,7 +361,7 @@ void  CanvasLayoutParam::Serialize(SERIALIZEDATA* pData)
         ->AddFlag(LAYOUT_ITEM_ALIGN_BOTTOM,      XML_LAYOUT_ITEM_ALIGN_BOTTOM)
         ->AddFlag(LAYOUT_ITEM_ALIGN_CENTER,      XML_LAYOUT_ITEM_ALIGN_CENTER)
         ->AddFlag(LAYOUT_ITEM_ALIGN_VCENTER,     XML_LAYOUT_ITEM_ALIGN_VCENTER)
-        ->AddFlag(LAYOUT_FLAG_FORCE_DESIREDSIZE, XML_LAYOUT_ALIGN_FORCE_DESIREDSIZE);
+        /*->AddFlag(LAYOUT_FLAG_FORCE_DESIREDSIZE, XML_LAYOUT_ALIGN_FORCE_DESIREDSIZE)*/;
 }
 
 long  CanvasLayoutParam::GetConfigLeft()
@@ -484,8 +497,8 @@ int  CanvasLayoutParam::ParseAlignAttr(LPCTSTR szAttr)
             nRet |= LAYOUT_ITEM_ALIGN_CENTER;
         else if (0 == _tcscmp(szFlag, XML_LAYOUT_ITEM_ALIGN_VCENTER))
             nRet |= LAYOUT_ITEM_ALIGN_VCENTER;
-		else if (0 == _tcscmp(szFlag, XML_LAYOUT_ALIGN_FORCE_DESIREDSIZE))
-			nRet |= LAYOUT_FLAG_FORCE_DESIREDSIZE;
+// 		else if (0 == _tcscmp(szFlag, XML_LAYOUT_ALIGN_FORCE_DESIREDSIZE))
+// 			nRet |= LAYOUT_FLAG_FORCE_DESIREDSIZE;
     }
     SAFE_RELEASE(pEnum);
 
@@ -494,12 +507,17 @@ int  CanvasLayoutParam::ParseAlignAttr(LPCTSTR szAttr)
 
 bool  CanvasLayoutParam::IsSizedByContent()
 {
-    bool  bWidthNotConfiged = (m_nConfigLeft == NDEF || m_nConfigRight == NDEF) && m_nConfigWidth ==AUTO;
-    bool  bHeightNotConfiged = (m_nConfigTop == NDEF || m_nConfigBottom == NDEF) && m_nConfigHeight == AUTO;
+    bool  bWidthNotConfiged = m_nConfigWidth == AUTO;
+    bool  bHeightNotConfiged = m_nConfigHeight == AUTO;
 
-    if (bWidthNotConfiged || bHeightNotConfiged || 
-        (m_nConfigLayoutFlags & LAYOUT_FLAG_FORCE_DESIREDSIZE))
-        return true;
+//     bool  bWidthNotConfiged = (m_nConfigLeft == NDEF || m_nConfigRight == NDEF) && m_nConfigWidth == AUTO;
+//     bool  bHeightNotConfiged = (m_nConfigTop == NDEF || m_nConfigBottom == NDEF) && m_nConfigHeight == AUTO;
+// 
+    if (bWidthNotConfiged || bHeightNotConfiged)
+		return true;
+
+//     if (m_nConfigLayoutFlags & LAYOUT_FLAG_FORCE_DESIREDSIZE)
+//         return true;
 
     return false;
 }

@@ -20,13 +20,13 @@ ITextRenderBase::ITextRenderBase() : IMessage(CREATE_IMPL_FALSE)
 	m_pImpl = new TextRenderBase(this);
 }
 
-void  ITextRenderBase::SetObject(IUIApplication*  pUIApp, IObject* pObject)
+void  ITextRenderBase::SetObject(IObject* pObject)
 {
     Object* pObj = NULL;
     if (pObject)
         pObj = pObject->GetImpl();
 
-    __pImpl->SetObject(pUIApp?pUIApp->GetImpl():NULL, pObj);
+    __pImpl->SetObject(pObj);
 }
 IObject*  ITextRenderBase::GetObject()
 {

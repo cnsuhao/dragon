@@ -12,14 +12,7 @@ namespace UI
     class AttributeBase
     {
     public:
-        AttributeBase()
-        {
-            /*m_pSerializer = NULL;*/
-            m_pUIApplication = NULL;
-            m_bData = false;
-            m_bParentKeyIsNull = true;
-			m_bReloadOnChanged = false;
-        }
+		AttributeBase();
 
         virtual ~AttributeBase() {};
         virtual void  Release() { delete this; };
@@ -28,108 +21,41 @@ namespace UI
         virtual void  Set(LPCTSTR) PURE;
         // reload时，如果在xml中没有显式配置该属性，则调用Reset，而不是Set
 		virtual void  Reset() PURE;   
-        virtual void  Editor(AttributeEditorProxy* p, EditorAttributeFlag e) PURE;
         virtual bool  IsDefaultValue() PURE;
 
-        virtual void  SetBindValue(void*) PURE;
-        virtual void  SetBindFuction(void* _this, void* _setter, void* _getter) PURE;
+		// 加载、保存、编辑器显示
+		virtual void  Load(SERIALIZEDATA*);
+		virtual void  Save(SERIALIZEDATA*);
+		virtual void  Editor(
+						SERIALIZEDATA* pData, 
+						AttributeEditorProxy* p,
+						EditorAttributeFlag e) PURE;
+
+        // 已过期，将删除。修改为各个类自己的方法来设置。参照StringAttribute.
+        virtual void  SetBindValue(void*) {};
+        virtual void  SetBindFuction(void* _this, void* _setter, void* _getter) {};
 
     public:
-        void  SetKey(LPCTSTR szKey)
-        {
-            SETSTRING(m_strKey, szKey);
-        }
-        LPCTSTR  GetKey()
-        {
-            return m_strKey.c_str();
-        }
-		AttributeBase*  SetCompatibleKey(LPCTSTR szKey)
-		{
-			SETSTRING(m_strKeyCompatible, szKey);
-			return this;
-		}
-		LPCTSTR  GetCompatibleKey()
-		{
-			return m_strKeyCompatible.c_str();
-		}
-		bool  IsKey(LPCTSTR szKey)
-		{
-			if (!szKey || !szKey[0])
-				return false;
-			if (m_strKey == szKey)
-				return true;
-			if (m_strKeyCompatible == szKey)
-				return true;
+		void  SetKey(LPCTSTR szKey);
+		LPCTSTR  GetKey();
+		AttributeBase*  SetCompatibleKey(LPCTSTR szKey);
+		LPCTSTR  GetCompatibleKey();
+		bool  IsKey(LPCTSTR szKey);
 
-			return false;
-		}
+		LPCTSTR  GetDesc();
+		AttributeBase*  AsData();
+		bool  IsData();
+		AttributeBase*  ReloadOnChanged();
+		bool  IsReloadOnChanged();
 
-        LPCTSTR  GetDesc()
-        {
-            return m_strDesc.c_str();
-        }
+		AttributeBase*  SetParentKey(LPCTSTR szParent);
+		LPCTSTR  GetParentKey();
 
-        AttributeBase*  AsData()
-        {
-            m_bData = true; 
-			return this;
-        }
-        bool  IsData() 
-        {
-            return m_bData; 
-        }
-
-        AttributeBase*  ReloadOnChanged()
-        {
-            m_bReloadOnChanged = true;
-            return this;
-        }
-        bool  IsReloadOnChanged()
-        {
-            return m_bReloadOnChanged;
-        }
-
-		AttributeBase*  SetParentKey(LPCTSTR szParent)
-		{
-            if (szParent)
-            {
-                m_strParentKey = szParent;
-                m_bParentKeyIsNull = false;
-            }
-            else
-            {
-                m_strParentKey.clear();
-                m_bParentKeyIsNull = true;
-            }
-			return this;
-		}
-        LPCTSTR  GetParentKey()
-        {
-            if (m_bParentKeyIsNull)
-                return NULL;
-            return m_strParentKey.c_str();
-        }
-
-		void  SetGroupName(LPCTSTR szGroupName)
-		{
-			SETSTRING(m_strGroupName, szGroupName);
-		}
-		LPCTSTR  GetGroupName()
-		{
-			return m_strGroupName.c_str();
-		}
-        void  SetUIApplication(UIApplication* p)
-        {
-            m_pUIApplication = p;
-        }
-		void  SetSkinRes(SkinRes* p)
-		{
-			m_pSkinRes = p;
-		}
-        UIApplication*  GetUIApplication()
-        {
-            return m_pUIApplication;
-        }
+		void  SetGroupName(LPCTSTR szGroupName);
+		LPCTSTR  GetGroupName();
+		void  SetUIApplication(UIApplication* p);
+		void  SetSkinRes(SkinRes* p);
+		UIApplication*  GetUIApplication();
 
     protected:
         LPCTSTR  ConstructTempLPCTSTR(long lValue);
@@ -138,8 +64,14 @@ namespace UI
         String  m_strKey;
 		String  m_strKeyCompatible; // 兼容key。例如：width="100"，也可以写成 layout.width="100"
 		String  m_strDesc;
-        String  m_strGroupName;  // 属性所属的对象名，例如"Object" "ImageRender"
-        String  m_strParentKey;  // 父结点fullkey。例如bkg.render.type
+
+		// 例如back.render.image，它的groupname是ImageRender，它的
+		// parentkey是back.render.type
+
+		// 属性所属的对象名，例如"Object" "ImageRender"
+        String  m_strGroupName;  
+		// 父结点fullkey。例如bkg.render.type
+        String  m_strParentKey;  
         bool  m_bParentKeyIsNull;
 
         // 该属性是否是一个控件data。data在换肤的时候不用再加载一次

@@ -12,9 +12,9 @@ void  IButtonBase::SetCheck(int nCheckState)
 {
     __pImpl->SetCheck(nCheckState);
 }
-void  IButtonBase::SetCheck(bool bCheck, bool bUpdate)
+void  IButtonBase::SetCheck(bool bCheck)
 {
-    __pImpl->SetCheck(bCheck, bUpdate);
+    __pImpl->SetCheck(bCheck);
 }
 void  IButtonBase::SetChecked()
 {
@@ -47,17 +47,20 @@ void  IButton::SetIconFromHBITMAP(HBITMAP hBitmap)
 { 
     __pImpl->SetIconFromHBITMAP(hBitmap); 
 }
-void  IButton::SetText(LPCTSTR  szText, bool bUpdate) 
+void  IButton::SetText(LPCTSTR  szText) 
 {
-    if (bUpdate)
-        __pImpl->SetTextAndUpdate(szText); 
-    else
-        __pImpl->SetText(szText);
+    __pImpl->SetTextAndUpdate(szText); 
 }
 LPCTSTR  IButton::GetText() 
 { 
     return __pImpl->GetText(); 
 }
+
+void  IButton::Click()
+{
+	__pImpl->Click();
+}
+
 void  IButton::SetDrawFocusType(BUTTON_RENDER_DRAW_FOCUS_TYPE eType)
 { 
     __pImpl->SetDrawFocusType(eType);

@@ -24,6 +24,16 @@ IBindSourceChangedListener*  ILabel::GetListener()
 	return __pImpl->GetListener();
 }
 
+bool IPictureCtrl::SetImageByPath(LPCTSTR szPath)
+{
+    return __pImpl->SetImageByPath(szPath);
+}
+bool IPictureCtrl::SetImageById(LPCTSTR szId)
+{
+    return __pImpl->SetImageById(szId);
+}
+
+
 bool  IGifCtrl::Start()
 { 
 	return __pImpl->Start(); 

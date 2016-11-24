@@ -12,15 +12,18 @@ public:
     virtual LPCTSTR  Get() override; 
     virtual void  Set(LPCTSTR) override;
 	virtual void  Reset() override;
-    virtual void  Editor(AttributeEditorProxy* p, EditorAttributeFlag e) override;
     virtual bool  IsDefaultValue() override;
-    virtual void  SetBindValue(void*) override;
-    virtual void  SetBindFuction(void* _this, void* _setter, void* _getter) override
+    void  SetBindValue(void*);
+    void  SetBindFuction(void* _this, void* _setter, void* _getter)
     {
         // TODO:
         UIASSERT(0);
         return;
     }
+
+	virtual void  Load(SERIALIZEDATA*) override;
+	virtual void  Save(SERIALIZEDATA*) override;
+	virtual void  Editor(SERIALIZEDATA* pData, AttributeEditorProxy* p, EditorAttributeFlag e) override;
 
 public:
     void  SetObjectPtr(Object* p)
@@ -34,8 +37,10 @@ public:
         else
             m_strPrefix.clear();
     }
-
     IRenderBaseAttribute*  GetIRenderBaseAttribute();
+
+private:
+	void  do_child_action(SERIALIZEDATA*);
 
 private:
     IRenderBaseAttribute*  m_pIRenderBaseAttribute;

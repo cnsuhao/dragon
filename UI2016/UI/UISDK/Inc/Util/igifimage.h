@@ -36,7 +36,7 @@ struct Gif_Timer_Notify
 };
 
 class GifImageBase;
-interface UISDKAPI IGifImage
+interface UIAPI IGifImage
 {
 public:
     IGifImage(GifImageBase* p);

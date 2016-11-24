@@ -41,12 +41,13 @@ typedef struct
     double  value;       // [0, 1]
 }HSV, HSB;
 
-class UISDKAPI Color
+class UIAPI Color
 {
 public:
     Color();
 	Color(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
     Color(DWORD rgba);
+    ~Color();
     static Color* CreateInstance(COLORREF color);
 
     operator COLORREF();
@@ -84,6 +85,7 @@ public:
     void  SetHSV(HSV& hsv);
     
     void  ToHexString(TCHAR* szBuffer);
+    void  ToWebString(TCHAR* szBuffer);
 
     // 在外部使用Color对象时，既有可能是通过GetColor获取到的Color*指针，也有可能外部自己直接设置
     // 一个COLORREF值，这个时候就得new一个Color*，使得逻辑与GetColor保持一致。为了达到释放逻辑一
@@ -93,6 +95,17 @@ public:
 
 private:
     long  lRef;
+
+#ifdef EDITOR_MODE
+public:
+    // 为了在编辑器中区分开是使用id引用的颜色，还是直接书写的颜色值，增加该逻辑
+    void  SetResId(LPCTSTR);
+    LPCTSTR  GetResId();
+
+private:
+    LPTSTR  m_szResId = nullptr;
+#endif
+
 };
 typedef Color* ColorPtr;
 

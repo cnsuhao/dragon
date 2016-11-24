@@ -17,6 +17,7 @@ using namespace UI;
 AttributeClassFactory::AttributeClassFactory()
 {
     Register(ATTRIBUTE_TYPE_STRING, CreateStringAttribute);
+    Register(ATTRIBUTE_TYPE_I18N_STRING, CreateI18nStringAttribute);
     Register(ATTRIBUTE_TYPE_BOOL,   CreateBoolAttribute);
 	Register(ATTRIBUTE_TYPE_RECT,   CreateRectAttribute);
 	Register(ATTRIBUTE_TYPE_9REGION,  CreateRegion9Attribute);
@@ -112,12 +113,76 @@ IUIApplication*  AttributeSerializer::GetUIApplication()
 
 StringAttribute*  AttributeSerializer::AddString(LPCTSTR szKey, String& sBindValue)
 {
-    return static_cast<StringAttribute*>(Add(ATTRIBUTE_TYPE_STRING, szKey, &sBindValue));
+    StringAttribute* p = static_cast<StringAttribute*>(
+            Add(ATTRIBUTE_TYPE_STRING, szKey));
+
+    if (p)
+        p->BindReference(sBindValue);
+
+    return p;
 }
-StringAttribute*  AttributeSerializer::AddString(LPCTSTR szKey, void* _this, pfnStringSetter s, pfnStringGetter g)
+StringAttribute*  AttributeSerializer::AddString(
+    LPCTSTR szKey, void* _this, pfnStringSetter s, pfnStringGetter g)
 {
-	return static_cast<StringAttribute*>(Add(ATTRIBUTE_TYPE_STRING, szKey, _this, s, g));
+    StringAttribute* p = static_cast<StringAttribute*>(
+        Add(ATTRIBUTE_TYPE_STRING, szKey));
+
+    if (p)
+        p->BindFunction(_this, s, g);
+
+    return p;
 }
+StringAttribute*  AttributeSerializer::AddString(
+    LPCTSTR szKey, 
+    const function<void(LPCTSTR)>& s,
+    const function<LPCTSTR()>& g)
+{
+    StringAttribute* p = static_cast<StringAttribute*>(
+        Add(ATTRIBUTE_TYPE_STRING, szKey));
+
+    if (p)
+        p->BindFunction(s, g);
+
+    return p;
+}
+
+StringAttribute*  AttributeSerializer::AddI18nString(LPCTSTR szKey, String& sBindValue)
+{
+    StringAttribute* p = static_cast<StringAttribute*>(
+        Add(ATTRIBUTE_TYPE_I18N_STRING, szKey));
+
+    if (p)
+        p->BindReference(sBindValue);
+
+    return p;
+}
+
+StringAttribute*  AttributeSerializer::AddI18nString(
+    LPCTSTR szKey, void* _this, pfnStringExSetter s, pfnStringGetter g)
+{
+    I18nStringAttribute* p = static_cast<I18nStringAttribute*>(
+        Add(ATTRIBUTE_TYPE_I18N_STRING, szKey));
+
+    if (p)
+        p->BindFunctionEx(_this, s, g);
+
+    return p;
+}
+
+StringAttribute*  AttributeSerializer::AddI18nString(
+    LPCTSTR szKey, 
+    const function<void(LPCTSTR, int)>& s, 
+    const function<LPCTSTR()>& g)
+{
+    I18nStringAttribute* p = static_cast<I18nStringAttribute*>(
+        Add(ATTRIBUTE_TYPE_I18N_STRING, szKey));
+
+    if (p)
+        p->BindFunctionEx(s, g);
+
+    return p;
+}
+
 StringEnumAttribute*  AttributeSerializer::AddStringEnum(LPCTSTR szKey, void* _this, pfnStringSetter s, pfnStringGetter g)
 {
     return static_cast<StringEnumAttribute*>(Add(ATTRIBUTE_TYPE_STRINGENUM, szKey, _this, s, g));
@@ -203,7 +268,7 @@ RenderBaseAttribute*  AttributeSerializer::AddRenderBase(LPCTSTR szPrefix, Objec
 	// 在editor中，动态修改render type不要清除属性。
 	// 1. 属性可能共用一个key，如render.image=，即使换了type，属性也可以共享
 	// 2. 要实现undo/redo，不能丢掉属性
-	if (m_pData->pUIApplication->IsDesignMode())
+	if (m_pData->pUIApplication->IsEditorMode())
 		m_pData->SetErase(false);
 
 	//p->FillRenderBaseTypeData()
@@ -231,6 +296,34 @@ TextRenderBaseAttribute*  AttributeSerializer::AddTextRenderBase(
 }
 
 // 添加一个属性
+AttributeBase*  AttributeSerializer::Add(long eType, LPCTSTR szKey)
+{
+    AttributeBase* pAttribute = GetAttributeClassFactory().CreateInstance(eType);
+    if (!pAttribute)
+    {
+        UI_LOG_ERROR(TEXT("Create Attribute Class Factory Failed. Type=%d"), eType);
+        return NULL;
+    }
+
+    pAttribute->SetUIApplication(m_pData->pUIApplication ? m_pData->pUIApplication->GetImpl() : NULL);
+    pAttribute->SetSkinRes(m_pData->pSkinRes ? m_pData->pSkinRes->GetImpl() : NULL);
+    if (m_pData->szPrefix)
+    {
+        String str(m_pData->szPrefix);
+        str.append(szKey);
+        pAttribute->SetKey(str.c_str());
+    }
+    else
+    {
+        pAttribute->SetKey(szKey);
+    }
+
+    pAttribute->SetParentKey(m_pData->szParentKey);
+
+    m_list.push_back(pAttribute);
+    return pAttribute;
+}
+
 AttributeBase*  AttributeSerializer::Add(long eType, LPCTSTR szKey, void* pBindValue)
 {
     AttributeBase* pAttribute = GetAttributeClassFactory().CreateInstance(eType);
@@ -313,115 +406,48 @@ void  AttributeSerializer::Load()
     if (!m_pData->pMapAttrib)
         return;
 
-    bool bEraseAttr = m_pData->NeedErase();
-
-	if (m_pData->IsReload())
+	for (auto iter : m_list)
 	{
-		_AttrIter iter = m_list.begin();
-		for (; iter != m_list.end(); ++iter)
-		{
-			AttributeBase* pAttribute = *iter;
-			if (pAttribute->IsData())
-				continue;
-
-			LPCTSTR szKey = pAttribute->GetKey();
-			LPCTSTR szText = m_pData->pMapAttrib->GetAttr(NULL, szKey, bEraseAttr);
-			if (!szText)
-			{
-				LPCTSTR szCompatibleKey = pAttribute->GetCompatibleKey();
-				if (szCompatibleKey && szCompatibleKey[0])
-					szText = m_pData->pMapAttrib->GetAttr(NULL, szCompatibleKey, bEraseAttr);
-			}
-			
-			if (szText)
-			{
-				pAttribute->Set(szText);
-			}
-			// 没有配置该属性，重置。
-			// 会也调用到setter，让控件去释放一些资源，如renderbase。
-			// 这样就不再需要UI_WM_RESETEATTRIBUTE
-			else if (!pAttribute->IsDefaultValue())
-			{
-				pAttribute->Reset();
-			}
-		}
-	}
-	else
-	{
-		_AttrIter iter = m_list.begin();
-		for (; iter != m_list.end(); ++iter)
-		{
-			AttributeBase* pAttribute = *iter;
-
-			LPCTSTR szKey = pAttribute->GetKey();
-			LPCTSTR szText = m_pData->pMapAttrib->GetAttr(
-                    NULL, szKey, bEraseAttr);
-
-			if (!szText)
-			{
-				LPCTSTR szCompatibleKey = pAttribute->GetCompatibleKey();
-				if (szCompatibleKey && szCompatibleKey[0])
-					szText = m_pData->pMapAttrib->GetAttr(NULL, szCompatibleKey, bEraseAttr);
-			}
-
-			if (szText)
-            {
-				pAttribute->Set(szText);
-            }
-            else
-            {
-                // 增加该代码，以防变量在构造函数中的赋值与在属性的默认值
-                // 设置上不一样，导致变量序列化失败
-                pAttribute->Reset(); 
-            }
-		}
+		iter->Load(m_pData);
 	}
 }
 
 void  AttributeSerializer::Save()
 {
-    String  strKey;
-    _AttrIter iter = m_list.begin();
-    for (; iter != m_list.end(); ++iter)
-    {
-        AttributeBase* pAttribute = *iter;
-
-        LPCTSTR szKey = pAttribute->GetKey();
-        if (!szKey)
-            continue;
-
-        strKey = szKey;
-
-        LPCTSTR szValue = pAttribute->Get();
-        if (szValue && !pAttribute->IsDefaultValue())
-        {
-            m_pData->pListAttrib->AddAttr(strKey.c_str(), szValue);
-        }
-    }
+	for (auto iter : m_list)
+	{
+		iter->Save(m_pData);
+	}
 }
 
 // 将AttributeBase*列表从AttributeSerializer类中脱离，交由UIEditor维护和管理
 void  AttributeSerializer::Editor()
 {
-    if (!m_pData->pUIApplication)
-        return;
+	if (!m_pData->pUIApplication)
+		return;
 
-    IAttributeEditorProxy* pIProxy = m_pData->pAttributeEditorProxy;
-    if (!pIProxy)
-        return;
+	IAttributeEditorProxy* pIProxy = m_pData->pAttributeEditorProxy;
+	if (!pIProxy)
+		return;
 
-    AttributeEditorProxy* pProxy = pIProxy->GetImpl();
-    if (!pProxy)
-        return;
-    
-    _AttrIter iter = m_list.begin();
-    for (; iter != m_list.end(); ++iter)
-    {
-        AttributeBase* pAttribute = *iter;
+	AttributeEditorProxy* pProxy = pIProxy->GetImpl();
+	if (!pProxy)
+		return;
 
-        //pAttribute->SetSerializer(NULL);  // AttributeSerializer是一个局部变量，即将被销毁
-        pProxy->AddAttribute(pAttribute, m_strGroupName.c_str());
-    }
+	for (auto iter : m_list)
+	{
+		pProxy->AddAttribute(iter, m_pData, m_strGroupName.c_str());
+	}
+
+//     
+//     _AttrIter iter = m_list.begin();
+//     for (; iter != m_list.end(); ++iter)
+//     {
+//         AttributeBase* pAttribute = *iter;
+// 
+//         //pAttribute->SetSerializer(NULL);  // AttributeSerializer是一个局部变量，即将被销毁
+//         pProxy->AddAttribute(pAttribute, m_strGroupName.c_str());
+//     }
     m_list.clear();
 }
 
@@ -449,12 +475,15 @@ AttributeEditorProxy::~AttributeEditorProxy()
     Clear();
 }
 
-void  AttributeEditorProxy::AddAttribute(AttributeBase* p, LPCTSTR szGroupName)
+void  AttributeEditorProxy::AddAttribute(
+			AttributeBase* p, SERIALIZEDATA* pData, LPCTSTR szGroupName)
 {
     UIASSERT(p);
     m_list.push_back(p);
 	p->SetGroupName(szGroupName);
-    p->Editor(this, EDITOR_ATTRIBUTE_ADD);  // 会触会AddString2Editor/AddBool2Editor等
+
+	// 会触会AddString2Editor/AddBool2Editor等
+	p->Editor(pData, this, EDITOR_ATTRIBUTE_ADD);
 }
 
 AttributeBase*  AttributeEditorProxy::FindAttributeByKey(LPCTSTR szKey)
@@ -499,19 +528,24 @@ void  AttributeEditorProxy::LoadAttribute2Editor(IObject* pObj)
     if (!m_bLoaded)
     {
         m_bLoaded = true;
-        SERIALIZEDATA data = {0};
-        data.pAttributeEditorProxy = &m_oIProxy;
-        data.pUIApplication = pObj->GetUIApplication();
+
+		SERIALIZEDATA data = { 0 };
+		data.pAttributeEditorProxy = &m_oIProxy;
+		data.pUIApplication = pObj->GetUIApplication();
 		data.pSkinRes = pObj->GetSkinRes();
-        data.nFlags = SERIALIZEFLAG_EDITOR;
-        UISendMessage(static_cast<IMessage*>(pObj), UI_MSG_SERIALIZE, (WPARAM)&data);
+		data.nFlags = SERIALIZEFLAG_EDITOR;
+
+        UISendMessage(
+			static_cast<IMessage*>(pObj), 
+			UI_MSG_SERIALIZE, 
+			(WPARAM)&data);
     }
     else
     {
         _AttrIter iter = m_list.begin();
         for (; iter != m_list.end(); ++iter)
         {
-            (*iter)->Editor(this, EDITOR_ATTRIBUTE_ADD);
+			(*iter)->Editor(nullptr, this, EDITOR_ATTRIBUTE_ADD);
         }
     }
 }
@@ -530,7 +564,7 @@ UpdateAttribute2EditorResult  AttributeEditorProxy::UpdateAttribute2Editor(LPCTS
         return UpdateAttribute2EditorNeedReload;
     }
 
-    pAttrib->Editor(this, EDITOR_ATTRIBUTE_UPDATE);
+    pAttrib->Editor(NULL, this, EDITOR_ATTRIBUTE_UPDATE);
     return UpdateAttribute2EditorSuccess;
 }
 
@@ -575,11 +609,15 @@ void  AttributeEditorProxy::StringEnum2Editor(StringEnumAttribute* p, EditorAttr
 {
     m_pEditor->EditorStringEnumAttribute(p->GetIStringEnumAttribute(), e);
 }
-// void  AttributeEditorProxy::RenderBase2Editor(RenderBaseAttribute* p, EditorAttributeFlag e)
-// {
-//     m_pEditor->EditorRenderBase(p->GetIRenderBaseAttribute(), e);
-// }
-// void  AttributeEditorProxy::TextRenderBase2Editor(TextRenderBaseAttribute* p, EditorAttributeFlag e)
-// {
-//     m_pEditor->EditorTextRenderBase(p->GetITextRenderBaseAttribute(), e);
-// }
+void  AttributeEditorProxy::Color2Editor(ColorAttribute* p, EditorAttributeFlag e)
+{
+	m_pEditor->EditorColorAttribute(p->GetIColorAttribute(), e);
+}
+void  AttributeEditorProxy::RenderBase2Editor(RenderBaseAttribute* p, EditorAttributeFlag e)
+{
+    m_pEditor->EditorRenderBase(p->GetIRenderBaseAttribute(), e);
+}
+void  AttributeEditorProxy::TextRenderBase2Editor(TextRenderBaseAttribute* p, EditorAttributeFlag e)
+{
+    m_pEditor->EditorTextRenderBase(p->GetITextRenderBaseAttribute(), e);
+}

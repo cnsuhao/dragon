@@ -32,7 +32,10 @@ public:
         return m_strID.c_str();
     }
     void  SetId(LPCTSTR szId){
-        SETSTRING(m_strID, szId);
+        if (szId)
+            m_strID = szId;
+        else
+            m_strID.clear();
     }
 
 	STYLE_SELECTOR_TYPE  GetSelectorType() { return m_eSelectorType; }
@@ -79,7 +82,7 @@ class StyleRes
 public:
     StyleRes(SkinRes* p);
 	~StyleRes();
-    IStyleRes*  GetIStyleRes();
+    IStyleRes&  GetIStyleRes();
 	void  Clear();
 
 public:
@@ -101,7 +104,7 @@ public:
 	StyleResItem* GetItem(STYLE_SELECTOR_TYPE type, LPCTSTR szID);
 
 	bool  LoadStyle(LPCTSTR szTagName, LPCTSTR szStyleClass, LPCTSTR szID, IMapAttribute* pMapAttribute);
-    bool  FilterStyle(LPCTSTR szTagName, LPCTSTR szStyleClass, LPCTSTR szID, IListAttribute* pListAttribte);
+    bool  UnloadStyle(LPCTSTR szTagName, LPCTSTR szStyleClass, LPCTSTR szID, IListAttribute* pListAttribte);
 
 private:
     IStyleRes*  m_pIStyleRes;

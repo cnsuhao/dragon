@@ -23,7 +23,7 @@ public:
 	ImageManager(SkinRes* pSkinRes);
 	~ImageManager(void);
 
-    IImageManager*  GetIImageManager();
+    IImageManager&  GetIImageManager();
 
 	ImageRes&    GetImageRes();
 	CursorRes&   GetCursorRes();
@@ -39,9 +39,6 @@ public:
 
 	void  Clear();
 	bool  ChangeSkinHLS(short h, short l, short s, int nFlag);
-
-	int  GetImageCount( );
-	IImageResItem*  GetImageItemInfo(int nIndex);
 
 	static HRESULT  UIParseImageTagCallback(IUIElement*, ISkinRes* pSkinRes);
 

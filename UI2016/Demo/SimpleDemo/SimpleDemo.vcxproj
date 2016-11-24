@@ -104,7 +104,9 @@
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="..\..\Bin\Debug\UI\Skin\Plugin\Login\skin.xml" />
+    <Xml Include="..\..\Bin\Debug\UI\Skin\Plugin\Login\skin.xml">
+      <SubType>Designer</SubType>
+    </Xml>
     <Xml Include="..\..\Bin\Debug\UI\Skin\Root\skin.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

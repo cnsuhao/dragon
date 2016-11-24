@@ -493,6 +493,10 @@ void  IListItemBase::SetFloat(bool b)
 	__pImpl->SetFloat(b);
 }
 
+void  IListItemBase::Invalidate()
+{
+    __pImpl->Invalidate();
+}
 //////////////////////////////////////////////////////////////////////////
 
 IObject*  ICustomListItem::FindControl(LPCTSTR szId)

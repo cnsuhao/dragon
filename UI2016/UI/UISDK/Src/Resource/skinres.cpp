@@ -110,8 +110,9 @@ bool  SkinRes::Unload()
 
 void  SkinRes::SetParentSkinRes(SkinRes* p)
 {
+    UIASSERT(p != this);
 	m_pParentSkinRes = p;
-}
+} 
 
 SkinRes*  SkinRes::GetParentSkinRes()
 {
@@ -156,21 +157,6 @@ bool SkinRes::Save()
 bool SkinRes::ReLoadLayout(Object* pRootObj, list<Object*>& listAllChild )
 {
 	return m_mgrLayout.ReLoadLayout(pRootObj, listAllChild);
-}
-
-IImageResItem* SkinRes::GetImageItemInfo(UINT nIndex)
-{
-	return m_mgrImage.GetImageItemInfo(nIndex);
-}
-
-IColorResItem* SkinRes::GetColorItemInfo(UINT nIndex)
-{
-	return m_mgrColor.GetColorItemInfo(nIndex);
-}
-
-IFontResItem* SkinRes::GetFontItemInfo(UINT nIndex)
-{
-	return m_mgrFont.GetFontItemInfo(nIndex);
 }
 
 bool SkinRes::ChangeSkinHLS(short h, short l, short s, int nFlag)
@@ -230,7 +216,7 @@ UIApplication*  SkinRes::GetUIApplication()
 { 
 	return m_mgrSkinRef.GetUIApplication();
 }
-ISkinManager*  SkinRes::GetISkinManager()   
+ISkinManager&  SkinRes::GetISkinManager()   
 { 
 	return m_mgrSkinRef.GetISkinManager(); 
 }
@@ -246,6 +232,11 @@ ColorRes&  SkinRes::GetColorRes()
 FontRes&  SkinRes::GetFontRes()
 {
 	return m_mgrFont.GetFontRes();
+}
+
+StyleRes&  SkinRes::GetStyleRes()
+{
+    return m_mgrStyle.GetStyleRes();
 }
 
 I18nRes&  SkinRes::GetI18nRes()

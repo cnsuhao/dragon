@@ -33,7 +33,7 @@ struct TOOLTIPITEM;
 class TimerItem;
 
 
-interface UISDKAPI IUIApplication
+interface UIAPI IUIApplication
 {
     IUIApplication();
     virtual ~IUIApplication();
@@ -42,28 +42,17 @@ interface UISDKAPI IUIApplication
 
     ISkinRes*  LoadSkinRes(LPCTSTR szSkinName);
 
-    void  SetDesignMode(bool b);
-	void  SetUIEditorPtr(IUIEditor*);
-    bool  IsDesignMode();
+    void  SetEditorMode(bool b);
+    bool  IsEditorMode();
+    void  SetUIEditorPtr(IUIEditor*);
     IUIEditor*  GetUIEditorPtr();
 
-    ISkinManager*       GetSkinMgr();
+    ISkinManager&       GetSkinMgr();
     ITopWindowManager*  GetTopWindowMgr();
     UIA::IAnimateManager*   GetAnimateMgr();
 	IMessageFilterMgr*  GetMessageFilterMgr();
 
     ISkinRes*       GetDefaultSkinRes();
-    IImageManager*  GetActiveSkinImageMgr();
-    IImageRes*      GetActiveSkinImageRes();
-    ICursorRes*     GetActiveSkinCursorRes();
-    IGifRes*        GetActiveSkinGifRes();
-    IFontManager*   GetActiveSkinFontMgr();
-    IFontRes*       GetActiveSkinFontRes();
-    IColorManager*  GetActiveSkinColorMgr();
-    IColorRes*      GetActiveSkinColorRes();
-    IStyleManager*  GetActiveSkinStyleMgr();
-    IStyleRes*      GetActiveSkinStyleRes();
-    ILayoutManager* GetActiveSkinLayoutMgr();
 
     void  RestoreRegisterUIObject();
     bool  RegisterControlTagParseFunc(LPCTSTR szTag, pfnParseControlTag func);
@@ -76,9 +65,7 @@ interface UISDKAPI IUIApplication
     void  LoadUIObjectListToToolBox();
 
     bool  RegisterUIRenderBaseCreateData(LPCTSTR szName, int nType, pfnUICreateRenderBasePtr pfunc);
-    bool  CreateRenderBaseByName(LPCTSTR szName, IObject* pObject, IRenderBase** ppOut);
     bool  CreateRenderBase(int nType, IObject* pObject, IRenderBase** ppOut);
-    LPCTSTR  GetRenderBaseName(int nType);
     void  EnumRenderBaseName(pfnEnumRenderBaseNameCallback callback, WPARAM wParam, LPARAM lParam);
 
     bool  RegisterUITextRenderBaseCreateData(LPCTSTR szName, int nType, pfnUICreateTextRenderBasePtr pfunc);
@@ -121,7 +108,7 @@ private:
     UIApplication*  m_pImpl;
 };
 
-interface UISDKAPI UISDKVersion
+interface UIAPI UISDKVersion
 {
 	static int  GetMajor();
 	static int  GetMinor();

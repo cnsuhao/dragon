@@ -49,7 +49,8 @@ public:
 	bool  GetInsertMode() { return m_bInsertMode; }
 
 	void  GetText(String& str) { str = m_strText; }
-	const String&  GetTextRef() { return m_strText; }
+	const String&  GetTextRef() { 
+            return m_strText; }
 	LPCTSTR  GetText() { return m_strText.c_str(); }
 	int   GetTextLength() { return (int)m_strText.length(); }
 	int   GetCaretIndex() { return m_nCaret; }
@@ -129,8 +130,8 @@ public:
         UIMSG_GETDESIREDSIZE(GetDesiredSize)
         UIMSG_QUERYINTERFACE(Edit)
         UIMSG_SERIALIZE(OnSerialize)
-//     UIALT_MSG_MAP(UIALT_CALLLESS)
-//         UIMSG_WM_CREATEBYEDITOR(OnCreateByEditor)
+    UIALT_MSG_MAP(UIALT_CALLLESS)
+        UIMSG_CREATEBYEDITOR(OnCreateByEditor)
 	UI_END_MSG_MAP_CHAIN_PARENT_Ixxx(Edit, IControl)
 
     IEdit*  GetIEdit() { return m_pIEdit; }
@@ -181,7 +182,7 @@ protected:
    
     void  GetDesiredSize(SIZE* pSize); 
     void  OnSerialize(SERIALIZEDATA* pData);
-//    void  OnCreateByEditor(CREATEBYEDITORDATA* pData);
+    void  OnCreateByEditor(CREATEBYEDITORDATA* pData);
 
 	virtual void virtualShowContentMenu(CPoint point);
 
@@ -207,6 +208,7 @@ public:
     bool  IsReadOnly();
     void  SetReadOnly(bool b);
 	bool  IsRealFocus();
+    void  SetWantTab(bool b);
 	
 	void  SetTextFilterDigit();
 	void  ClearTextFilter();
@@ -285,8 +287,20 @@ protected:
 	Color*   m_pColorSelectBk;
 	CCaret   m_caret;     // 用于实现分层窗口上的光标显示
 
-	long  m_lEditType;   // edit控件类型，例如嵌套在combo中的edit
+	// long  m_lEditType;   // edit控件类型，例如嵌套在combo中的edit
 
 	EDITSTYLE  m_editStyle;
+
+    // 对齐方式，目前只为instantEdit实现了一部分
+    EDITTEXTALIGN  m_textAlign = EDIT_TEXT_ALIGN_LEFT;
+
+    // event
+public:
+    // 0表示由用户输入触发，1表示由调用api(settext等)触发 bInvokeBySetText
+    signal<IEdit*, bool>  en_change;
+
+    // wParam: RETURN/ESC/TAB
+    // return: 1已处理，0未处理
+    signal_r<bool, IEdit*, UINT>  keydown;
 };
 }

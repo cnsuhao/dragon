@@ -148,7 +148,7 @@ bool WindowBase::CreateUI(LPCTSTR szId)
 
 			// 遍历子对象
 			layoutmanager.ParseChildElement(
-                    pUIElement.get(), m_pIWindowBase);
+                    pUIElement.get(), this);
 		}
 		else
 		{
@@ -178,7 +178,7 @@ bool WindowBase::CreateUI(LPCTSTR szId)
 
     // 分层
     
-    SetRenderLayer(true);
+    EnableLayer(true);
     
 	return true;
 }
@@ -217,37 +217,37 @@ HWND  WindowBase::GetHWND()
     return m_hWnd; 
 }
 
-void  WindowBase::PaintWindow(HDC hDC, RECT* prcInvalidArray, uint nCount)
-{
-#ifdef TRACE_DRAW_PROCESS
-	if (prcInvalidArray)
-	{
-		ATL::CString strOutput(L"---------- InvalidRect:");
-		for (uint i = 0; i < nCount; i++)
-		{
-			strOutput.AppendFormat(
-				TEXT("%d,%d [%d,%d]  "),
-				prcInvalidArray[i].left,
-				prcInvalidArray[i].top, 
-				RECTW(prcInvalidArray[i]),
-				RECTH(prcInvalidArray[i]));
-		}
-		strOutput.Append(TEXT(" ----------"));
-		UI_LOG_DEBUG(strOutput);
-	}
-	else
-	{
-		UI_LOG_DEBUG(_T("InvalidRect: NULL-----------------------"));
-	}   
-#endif
-}
+// void  WindowBase::PaintWindow(HDC hDC, RECT* prcInvalidArray, uint nCount)
+// {
+// #ifdef TRACE_DRAW_PROCESS
+// 	if (prcInvalidArray)
+// 	{
+// 		ATL::CString strOutput(L"---------- InvalidRect:");
+// 		for (uint i = 0; i < nCount; i++)
+// 		{
+// 			strOutput.AppendFormat(
+// 				TEXT("%d,%d [%d,%d]  "),
+// 				prcInvalidArray[i].left,
+// 				prcInvalidArray[i].top, 
+// 				RECTW(prcInvalidArray[i]),
+// 				RECTH(prcInvalidArray[i]));
+// 		}
+// 		strOutput.Append(TEXT(" ----------"));
+// 		UI_LOG_DEBUG(strOutput);
+// 	}
+// 	else
+// 	{
+// 		UI_LOG_DEBUG(_T("InvalidRect: NULL-----------------------"));
+// 	}   
+// #endif
+// }
 
 void  WindowBase::DestroyWindow()
 {
 	if (m_hWnd)
 	{
 		::DestroyWindow(m_hWnd);
-		m_hWnd = NULL;
+        set_hwnd(nullptr);
 	}
 	m_strId.clear();
 }
@@ -302,7 +302,7 @@ bool WindowBase::Create(LPCTSTR szId, HWND hWndParent, RECT* prc, long lStyle, l
 
 	if (NULL == m_hWnd)
 	{
-		UI_LOG_FATAL( _T("%CreateWindowEx失败"));
+		UI_LOG_FATAL( _T("CreateWindowEx失败"));
 		return false;
 	}
 	return true;
@@ -313,11 +313,11 @@ bool WindowBase::Attach(HWND hWnd, LPCTSTR szID)
 	if (m_hWnd)
 		return false;
 
-	m_hWnd = hWnd;
+    set_hwnd(hWnd);
 
 	if (false == this->CreateUI(szID))
 	{
-		m_hWnd = NULL;
+        set_hwnd(nullptr);
 		UI_LOG_ERROR(_T("failed. id=%s"), m_strId.c_str());
 		return false;
 	}
@@ -341,7 +341,7 @@ void  WindowBase::Detach()
 
 	BOOL bHandled = FALSE;
 	_OnNcDestroy(WM_NCDESTROY, 0, 0, bHandled);
-	m_hWnd = NULL;
+    set_hwnd(nullptr);
 }
 
 void WindowBase::EndDialog(INT_PTR nResult)
@@ -426,12 +426,13 @@ long WindowBase::DoModal(LPCTSTR szID, HWND hWndParent, bool canResize)
 	GlobalFree(hgbl); 
 	return lRet;
 #endif
-	HWND hWnd = this->DoModeless(szID, hWndParent, canResize);
-	if( NULL == hWnd )
-	{
-		return -1;
-	}
+// 	HWND hWnd = this->DoModeless(szID, hWndParent, canResize);
+// 	if( NULL == hWnd )
+// 	{
+// 		return -1;
+// 	}
 
+	Create(szID, hWndParent, NULL);
 	return this->ModalLoop(hWndParent);
 }
 
@@ -483,19 +484,21 @@ long WindowBase::ModalLoop(HWND hWndParent)
 
 #endif
 	// hide the window before enabling the parent, etc.
+	BOOL bActive = ::GetActiveWindow() == m_hWnd;
 	if (m_hWnd != NULL)
 	{
-		SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0, SWP_HIDEWINDOW|SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE|SWP_NOZORDER);
+		::ShowWindow(m_hWnd, SW_HIDE);
 	}
 
 	if (bEnableWindow)
 	{
 		::EnableWindow( hWndParent, TRUE );
 	}
-	if (hWndParent != NULL && ::GetActiveWindow() == m_hWnd)
+	if (hWndParent && bActive)
 	{
-		::SetActiveWindow(hWndParent);  // 如果不调用该函数，将导致父窗口跑到屏幕Z次序的后面去了
+		::SetActiveWindow(hWndParent);  // 如果不调用该函数，将导致父窗口跑到屏幕Z次序的后面去了		
 	}
+
 	::DestroyWindow(this->m_hWnd);    // 销毁窗口
 
 	this->m_bDoModal = false;
@@ -583,6 +586,7 @@ HWND WindowBase::DoModeless(LPCTSTR szId, HWND hWndOnwer, bool canResize)
 	GlobalFree(hgbl); 
 	return m_hWnd;
 }
+
 HWND WindowBase::DoModeless(HINSTANCE hResInst, UINT nResID, LPCTSTR szId, HWND hWndOnwer)
 {
 	UIASSERT( NULL == m_hWnd );
@@ -660,7 +664,7 @@ LRESULT CALLBACK WindowBase::StartDialogProc( HWND hwnd, UINT uMsg, WPARAM wPara
 LRESULT WindowBase::StartProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool bWindowOrDialog )
 {
 	// 子类化
-	this->m_hWnd = hwnd;
+    set_hwnd(hwnd);
 
 	this->m_thunk.Init( &WindowBase::ThunkWndProc, this );
 	WNDPROC pProc = this->m_thunk.GetWNDPROC();
@@ -760,6 +764,7 @@ LRESULT	WindowBase::WndProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
 		// 可能位于任何一个当前窗口的消息响应中，因此当pOldMsg==NULL时，即表示
 		// 没有消息嵌套了，在检查一次WINDOW_STYLE_DESTROYED标志即可。
 		m_windowStyle.destroyed = 1;
+        m_windowStyle.initialized = 0;
 	}
 	if (m_windowStyle.destroyed && pOldMsg == NULL)
 	{
@@ -814,7 +819,8 @@ LRESULT  WindowBase::WndProc_GetRetValue(UINT uMsg, WPARAM wParam, LPARAM lParam
         }
         else
         {
-            lResult = m_oldWndProc/*DefWindowProc*/(m_hWnd, uMsg, wParam, lParam);
+            //lResult = DefWindowProc(uMsg, wParam, lParam);
+            lResult = m_oldWndProc(m_hWnd, uMsg, wParam, lParam);
         }
     }
     return lResult;
@@ -964,8 +970,15 @@ LRESULT WindowBase::_OnEraseBkgnd( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 		{
 			m_bFirsetEraseBkgnd = false;
 
-			m_oWindowRender.OnInvalidate();
-            
+
+            // 分层窗口不处理。场景：
+            // 在窗口创建完成后，设置分层窗口的大小，此时在这里又触发了分层窗口刷新，导致
+            // 窗口大小被修改为旧的大小，新的windowposchanged/onsize消息无效
+            if (!(GetWindowLong(m_hWnd, GWL_EXSTYLE) & WS_EX_LAYERED))
+            {
+                m_oWindowRender.InvalidateNow();
+            }
+
 			// 如果什么也不做，会导致窗口第一次显示时，窗口先显示一次黑色，例如combobox.listbox/menu
 			// 如果直接调用DefWindowProc会导致窗口显示白色，但最终显示的界面不一定就是白色的，也会导致闪烁
             // 因此在这里先做一次全量绘制
@@ -992,7 +1005,7 @@ LRESULT WindowBase::_OnPostMessage( UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 	{
 		bHandled = TRUE;
 		
-		m_oWindowRender.OnInvalidate();
+		m_oWindowRender.InvalidateNow();
 	}
 	return 0;
 }
@@ -1048,6 +1061,8 @@ LRESULT WindowBase::_OnPaint( UINT uMsg, WPARAM wParam,LPARAM lParam, BOOL& bHan
 	return 1;  //  在_OnPaint中返回0，会导致dialog类型的窗口，被其它窗口覆盖后移出来刷新异常!!!
 }
 
+// win7下面带WS_THICKFRAME样式窗口贴边最大化/还原的消息只有WM_SIZE，没有WM_SYSCOMMAND
+// 因此就不能使用WM_SYSCOMMAND消息来处理
 LRESULT WindowBase::_OnSize( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
 {
 	bHandled = FALSE;
@@ -1065,6 +1080,7 @@ LRESULT WindowBase::_OnSize( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHan
 
 	bHandled = TRUE;
 	notify_WM_SIZE(wParam, LOWORD(lParam), HIWORD(lParam));
+	size_changed.emit((long)wParam);
 
     m_oWindowRender.OnWindowSize(LOWORD(lParam), HIWORD(lParam));
 
@@ -1080,8 +1096,17 @@ LRESULT WindowBase::_OnSize( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHan
 		// 如果!cancommit，有可能是窗口刚创建时的初始化，直接走WM_PAINT消息
 		// 然后由windowrender解除cancommit限制
 
-		this->Invalidate();
-		ValidateRect(m_hWnd, NULL);
+		//this->Invalidate();
+        // 需要立即刷新.  场景：
+        // 窗口作为一个ws_child嵌入在其它窗口下面。当改变父窗口大小时，本窗口也响应
+        // size改变，如果只延迟刷新，会导致自己的缓存被清空，但父窗口刷新时子窗口也要刷新，
+        // 最后导致将自己的空缓存提交上去了，然后再延时刷新，界面又正常。
+        // 因此这里不能延时刷新
+        if (m_windowStyle.initialized)
+        {
+            m_oWindowRender.InvalidateNow();
+        }
+        ValidateRect(m_hWnd, NULL);
 	}
 	else
 	{
@@ -1188,6 +1213,11 @@ LRESULT WindowBase::_OnCreate(
 
 		UISendMessage(m_pIMessage, UI_MSG_INITIALIZE2);
     }
+    if (m_pCallbackProxy)
+    {
+        m_pCallbackProxy->OnWindowInit();
+    }
+
 	m_oWindowRender.SetCanCommit(true);
 
 	// 设置默认对象
@@ -1223,15 +1253,54 @@ void  WindowBase::recursion_on_load_notify(Object* pParent)
 
 void  WindowBase::virtualInnerInitWindow()
 {
+    m_windowStyle.initialized = 1;
+
     // 窗口加载即将完成，在内部调用所有
     recursion_on_load_notify(this);
 }
 
+LRESULT  WindowBase::_OnClose(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+    bHandled = FALSE;  // 默认处理会调用DestroyWindow
+
+    // 先发送给订阅者，例如cef控件，它需要异步关闭
+    bool bCanClose = true;
+    on_close.emit_foreach(
+        [&bCanClose]()
+    {
+        // 有一个订阅者中断关闭
+        if (!bCanClose)
+            return false;
+        return true;
+    },
+        bCanClose);
+    if (!bCanClose)
+    {
+        bHandled = TRUE;
+        return 0;
+    }
+
+    if (m_pCallbackProxy)
+    {
+        bool bCanClose = true;
+        m_pCallbackProxy->OnWindowClose(bCanClose);
+        if (!bCanClose)
+        {
+            bHandled = TRUE;
+            return 0;
+        }
+    }
+	if (m_bDoModal)
+	{
+		EndDialog(IDCANCEL);
+	}
+	return 0;
+}
 LRESULT WindowBase::_OnNcDestroy( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
 	bHandled = FALSE;
 
-	SyncWindowHelper<WindowBase>::_OnNcDestroy();
+	m_syncWindow._OnNcDestroy();
 
 //	if (!IsChildWindow())
 	{
@@ -1248,15 +1317,20 @@ LRESULT WindowBase::_OnNcDestroy( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 		::SetWindowLong( m_hWnd, GWLP_WNDPROC, (LONG)(LONG_PTR)m_oldWndProc);
 		m_oldWndProc = NULL;
 	}
-	m_hWnd = NULL;
+    set_hwnd(nullptr);
 	
 	this->DestroyChildObject();   // 删除子对象
+    
+    if (m_pCallbackProxy)
+    {
+        m_pCallbackProxy->OnWindowDestroy();
+    }
 	return 0;
 }
 
 LRESULT WindowBase::_OnHandleMouseMessage(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
-	if (m_bSizeMove)  // 拖拽过程中不处理
+	if (m_syncWindow.IsSizeMoveIng())  // 拖拽过程中不处理
 	{
 		bHandled = FALSE;
 		return 0;
@@ -1408,8 +1482,17 @@ LRESULT WindowBase::_OnGetMinMaxInfo( UINT uMsg, WPARAM wParam, LPARAM lParam, B
 
 LRESULT WindowBase::_OnWindowPosChanging( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
 {
-	SyncWindowHelper<WindowBase>::_OnWindowPosChanging((LPWINDOWPOS)lParam, bHandled);
+    m_syncWindow._OnWindowPosChanging((LPWINDOWPOS)lParam, bHandled);
 	return 0;
+}
+
+LRESULT  WindowBase::_OnShowWindow(
+            UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+    bHandled = FALSE;
+
+    m_syncWindow._OnShowWindow(wParam, lParam);
+    return 0;
 }
 LRESULT WindowBase::_OnSyncWindow( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
 {
@@ -1418,53 +1501,60 @@ LRESULT WindowBase::_OnSyncWindow( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 	case ADD_SYNC_WINDOW:
 		{
 			const SyncWindowData& data = *(SyncWindowData*)(lParam);
-			this->AddAnchorItem(data);
+			m_syncWindow.AddAnchorItem(data);
 		}
 		break;
 	case MODIFY_SYNC_WINDOW:
 		{
 			const SyncWindowData& data = *(SyncWindowData*)(lParam);
-			this->ModifyAnchorItem(data);
+            m_syncWindow.ModifyAnchorItem(data);
 		}
 		break;
 	case REMOVE_SYNC_WINDOW:
 		{
 			const SyncWindowData& data = *(SyncWindowData*)(lParam);
-			this->RemoveAnchorItem(data.m_hWnd);
+            m_syncWindow.RemoveAnchorItem(data.m_hWnd);
 		}
 		break;
 	case ADD_SYNC_WINDOW_RESULT:
 		{
-			this->OnAddAnchorItem((HWND)lParam);
+            m_syncWindow.OnAddAnchorItem((HWND)lParam);
 		}
 		break;
 	case MODIFY_SYNC_WINDOW_RESULT:
 		{
-			this->OnModifyAnchorItem((HWND)lParam);
+            m_syncWindow.OnModifyAnchorItem((HWND)lParam);
 		}
 		break;
 	case REMOVE_SYNC_WINDOW_RESULT:
 		{
-			this->OnRemoveAnchorItem((HWND)lParam);
+            m_syncWindow.OnRemoveAnchorItem((HWND)lParam);
 		}
 		break;
 	case HOST_WINDOW_DESTROYED:
 		{
-			this->OnRemoveAnchorItem((HWND)lParam);
+            m_syncWindow.OnRemoveAnchorItem((HWND)lParam);
 		}
 		break;
 	case HOST_WINDOW_POSCHANGING:
 		{
-			this->OnHostWindowPosChanging();
+            m_syncWindow.OnHostWindowPosChanging();
 		}
 		break;
+
+    case SYNC_NOW:
+    {
+        m_syncWindow.SyncNow();
+    }
+    break;
+
 	}
 	return 0;
 }
 LRESULT WindowBase::_OnEnterSizeMove( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
 {
 	bHandled = FALSE;
-	SyncWindowHelper<WindowBase>::_OnEnterSizeMove();
+    m_syncWindow._OnEnterSizeMove();
 
 	LRESULT lRet = m_oMouseManager.HandleMouseMessage(uMsg, wParam, lParam, &bHandled);
 	if (bHandled)
@@ -1475,7 +1565,7 @@ LRESULT WindowBase::_OnEnterSizeMove( UINT uMsg, WPARAM wParam, LPARAM lParam, B
 LRESULT WindowBase::_OnExitSizeMove( UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled )
 {
 	bHandled = FALSE;
-	SyncWindowHelper<WindowBase>::_OnExitSizeMove();
+    m_syncWindow._OnExitSizeMove();
 
 	LRESULT lRet = m_oMouseManager.HandleMouseMessage(uMsg, wParam, lParam, &bHandled);
 	if (bHandled)
@@ -1837,16 +1927,34 @@ void WindowBase::SaveMemBitmap(TCHAR* szFile)
 // 将内存位图绘图到指定区域
 void WindowBase::DrawMemBitmap(HDC hDC, RECT* prc, bool bAlphaBlend)
 {
-	assert (0 && "需要重写");
-#if 0
-    HDC hMemDC = m_pRenderLayer->GetRenderTarget()->GetHDC();
-    POINT  ptOffset;
-    m_pRenderLayer->GetOffsetDrawInBuffer(&ptOffset);
+    Layer* pLayer = GetLayer();
+    if (!pLayer)
+        return;
+
+    if (pLayer->GetType() != Layer_Software)
+    {
+        UIASSERT(0);
+        return;
+    }
+
+    IRenderTarget* pRT = pLayer->GetRenderTarget();
+    HDC hMemDC = pRT->GetHDC();
+    POINT  ptOffset = { 0, 0 };
 
 	if (bAlphaBlend) 
 	{
         BLENDFUNCTION bf = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
-        AlphaBlend(hDC, prc->left, prc->top, RECTW(prc), RECTH(prc), hMemDC, ptOffset.x, ptOffset.y, RECTW(prc), RECTH(prc), bf);
+        AlphaBlend(hDC, 
+            prc->left,
+            prc->top, 
+            RECTW(prc), 
+            RECTH(prc),
+            hMemDC, 
+            ptOffset.x, 
+            ptOffset.y, 
+            RECTW(prc), 
+            RECTH(prc),
+            bf);
 	}
 	else
 	{
@@ -1854,20 +1962,35 @@ void WindowBase::DrawMemBitmap(HDC hDC, RECT* prc, bool bAlphaBlend)
 		int nRet = ::GetWindowRgn(m_hWnd, hRgn);
         if (ERROR == nRet)
         {
-            BitBlt(hDC, prc->left, prc->top, RECTW(prc), RECTH(prc), hMemDC, ptOffset.x, ptOffset.y, SRCCOPY);
+            BitBlt(hDC,
+                prc->left, 
+                prc->top,
+                RECTW(prc),
+                RECTH(prc), 
+                hMemDC, 
+                ptOffset.x,
+                ptOffset.y, 
+                SRCCOPY);
         }
         else
         {
 		    ::SelectClipRgn(hDC, hRgn);
 		    ::OffsetClipRgn(hDC, prc->left, prc->top);
     		
-            BitBlt(hDC, prc->left, prc->top, RECTW(prc), RECTH(prc), hMemDC, ptOffset.x, ptOffset.y, SRCCOPY);
+            BitBlt(hDC,
+                prc->left, 
+                prc->top, 
+                RECTW(prc), 
+                RECTH(prc),
+                hMemDC, 
+                ptOffset.x, 
+                ptOffset.y,
+                SRCCOPY);
 
 		    ::SelectClipRgn(hDC, NULL);
         }
         SAFE_DELETE_GDIOBJECT(hRgn);
 	}
-#endif
 }
 
 void WindowBase::EnableDwmTransition(bool b)
@@ -2049,11 +2172,10 @@ LPCTSTR  WindowBase::GetDefaultRenderFontId()
 	if (m_pDefaultFont->IsAttach())
 		return NULL;
 	
-	FontRes* pFontRes = GetUIApplication()->GetActiveSkinFontRes();
-	if (!pFontRes)
-		return NULL;
+    if (!m_pSkinRes)
+        return NULL;
 
-	return pFontRes->GetRenderFontId(m_pDefaultFont);
+    return m_pSkinRes->GetFontRes().GetRenderFontId(m_pDefaultFont);
 }
 
 bool  WindowBase::IsDoModal() 
@@ -2085,6 +2207,11 @@ void  WindowBase::virtualSetEnable(bool b)
 
 bool  WindowBase::IsVisible()
 {
+    // TBD: 在编辑模式下，被编辑的窗口是隐藏的，导致invalid时判断窗口不可见直接返回了。
+    //      所以在这里做一个hack，允许编辑模式下的invalid
+    if (GetUIApplication()->IsEditorMode())
+        return true;
+
 	return ::IsWindowVisible(((WindowBase*)this)->m_hWnd)?true:false;
 }
 
@@ -2155,7 +2282,7 @@ long  WindowBase::save_maxheight()
 }
 
 
-void WindowBase::SetWindowMessageCallback(IWindowMessageCallback* p)
+void WindowBase::SetWindowMessageCallback(IWindowDelegate* p)
 {
 	if (m_pCallbackProxy)
 	{
@@ -2168,4 +2295,10 @@ void WindowBase::SetWindowMessageCallback(IWindowMessageCallback* p)
 
 	m_pCallbackProxy = new CWindowMessageHookProxy(p);
 	this->AddHook(m_pCallbackProxy, 0, 0);
+}
+
+void  WindowBase::set_hwnd(HWND hWnd)
+{
+    m_hWnd = hWnd;
+    m_syncWindow.SetHwnd(hWnd);
 }

@@ -3,8 +3,8 @@
 #include "Src/UIObject/Window/customwindow.h"
 #include "Inc\Interface\iuires.h"
 #include "Inc\Interface\imapattr.h"
-#include "Src\Base\Application\uiapplication.h"
 #include "Src\Resource\colorres.h"
+#include "Src\Resource\skinres.h"
 
 namespace UI
 {
@@ -32,15 +32,12 @@ void  ColorMaskWindowWrap::Init(ICustomWindow* pWnd)
         szText = pMapAttrib->GetAttr(XML_WINDOW_TRANSPARENT_MASKCOLOR_VALUE, false);
         if (szText)
         {
-            UIApplication* pUIApp = m_pWindow->GetUIApplication();
-            if (pUIApp)
+            SkinRes* pSkinRes = pWnd->GetImpl()->GetSkinRes();
+            if (pSkinRes)
             {
-                ColorRes* pColorRes = pUIApp->GetActiveSkinColorRes();
-                if (pColorRes)
-                {
-                    SAFE_RELEASE(m_pColMask);
-                    pColorRes->GetColor(szText, &m_pColMask);
-                }
+                ColorRes colorRes = pSkinRes->GetColorRes();
+                SAFE_RELEASE(m_pColMask);
+                colorRes.GetColor(szText, &m_pColMask);
             }
         }
 

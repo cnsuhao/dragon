@@ -156,7 +156,7 @@ LPCTSTR  CharArrayAttribute::GetDefault()
 	return m_strDefault.c_str();
 }
 
-void  CharArrayAttribute::Editor(UI::AttributeEditorProxy* p, UI::EditorAttributeFlag e)
+void  CharArrayAttribute::Editor(SERIALIZEDATA* pData, UI::AttributeEditorProxy* p, UI::EditorAttributeFlag e)
 {
     p->CharArray2Editor(this, e);
 }

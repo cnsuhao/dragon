@@ -6,6 +6,8 @@ namespace UI
 {
 class Object;
 interface UIElement;
+interface ILayoutWindowNodeList;
+
 
 //  延迟加载的布局配置
 //  一个xml配置中，允许配置多个相关联的窗口、自定义列表项
@@ -32,29 +34,50 @@ private:
     vector<String>  m_vecListItem;
 };
 
+// 新加载的子控件的notify设置为谁
+#define NOTIFY_TARGET_ROOT  (IMessage*)1  // 窗口（根对象）
+#define NOTIFY_TARGET_NULL  (IMessage*)0  // 不指定
+
 class LayoutManager
 {
 public:
 	LayoutManager(SkinRes*);
 	~LayoutManager(void);
 	
-    ILayoutManager*  GetILayoutManager();
+    ILayoutManager&  GetILayoutManager();
 
-	IObject*  LoadLayout(LPCTSTR szObjName, LPCTSTR szId);
+    Object*  LoadControlLayout(
+                LPCTSTR szId, 
+                Object* pNewParemt, 
+                IMessage* pNotifyTarget = NOTIFY_TARGET_ROOT);
+
 	UIElementProxy  FindWindowElement(LPCTSTR szTagName, LPCTSTR szId);
     UIElementProxy  FindListItemElement(LPCTSTR szId);
 
-	IObject*  ParseElement(UIElement* pUIElement, IObject* pParent);
-	void  ParseChildElement(UIElement* pParentElement, IObject* pIObjParent);
+    Object*  ParseElement(
+                UIElement* pUIElement, 
+                Object* pParent, 
+                IMessage* pNotifyTarget = NOTIFY_TARGET_ROOT);
+    Object*  ParseChildElement(
+                UIElement* pParentElement, 
+                Object* pParent,
+                IMessage* pNotifyTarget = NOTIFY_TARGET_ROOT);
 
-	bool  ReLoadLayout(Object* pRootObj, list<Object*>& listAllChild );
-	void  ReloadChildObjects(Object* pObjParent, UIElement* pObjElement, list<Object*>& listAllChild);
+	bool  ReLoadLayout(
+                Object* pRootObj, 
+                list<Object*>& listAllChild );
+	void  ReloadChildObjects(
+                Object* pObjParent,
+                UIElement* pObjElement,
+                list<Object*>& listAllChild);
 
-    static HRESULT  UIParseLayoutTagCallback(IUIElement*, ISkinRes* pSkinRes);
-	static HRESULT  UIParseLayoutConfigTagCallback(IUIElement*, ISkinRes* pSkinRes);
+    static HRESULT  UIParseLayoutTagCallback(
+                IUIElement*, ISkinRes* pSkinRes);
+	static HRESULT  UIParseLayoutConfigTagCallback(
+                IUIElement*, ISkinRes* pSkinRes);
 	
 	// 编辑器专用函数
-	// bool  LoadWindowNodeList(ILayoutWindowNodeList** pp);
+	bool  LoadWindowNodeList(ILayoutWindowNodeList** pp);
 
 private:
     void  ParseNewElement(UIElement* pElem);

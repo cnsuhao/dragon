@@ -15,6 +15,8 @@ interface ILayoutParam;
 
 class Object : public ObjTree
 {
+    friend class ObjTree;
+
 public:
     Object(IObject*);
     virtual ~Object();
@@ -24,7 +26,6 @@ public:
 		UIMSG_HITTEST(OnHitTest)
 		UIMSG_VISIBLE_CHANGED(OnVisibleChanged)
 		UIMSG_SERIALIZE(OnSerialize)
-		UIMSG_QUERYINTERFACE(Object)
 		UIMSG_FINALCONSTRUCT(FinalConstruct)
 		UIMSG_FINALRELEASE(FinalRelease)
 	UI_END_MSG_MAP()
@@ -49,9 +50,9 @@ public:
 	Layer*  GetLayer();
 	ObjectLayer*  GetLayerEx();
 	Layer*  FindNextLayer(Layer* pParentLayer);
-	Object*  GetRenderLayerCreateObject();
-	void  SetRenderLayer(bool b);
-	bool  HasRenderLayer();
+	Object*  GetLayerCreator();
+	void  EnableLayer(bool b);
+	bool  HasLayer();
 
 	void  Invalidate();
 	void  Invalidate(RECT* prcObj);
@@ -59,8 +60,10 @@ public:
 	void  DrawToLayer__(IRenderTarget* pRenderTarget);
 	void  DrawChildObject__(IRenderTarget* pRenderTarget, Object* pChildStart);
 	
-	Object*  FindChildObject(LPCTSTR szObjId);
-	Object*  FindNcChildObject(LPCTSTR szobjId);
+	Object*  FindObject(LPCTSTR szObjId);
+    Object*  TryFindObject(LPCTSTR szObjId);
+	Object*  FindNcObject(LPCTSTR szobjId);
+    Object*  FindObject(UUID uuid);
 	void  ClearMyTreeRelationOnly();
 	unsigned long  GetChildCount();
 	Object*  GetChildObjectByIndex(unsigned long lIndex);
@@ -117,7 +120,7 @@ public:
 	void  ModifyObjectStyle(OBJSTYLE* add, OBJSTYLE* remove);
 	bool  TestObjectStyle(const OBJSTYLE& test);
 
-	void  ParseStyleAndLoadAttribute(IMapAttribute* pMatAttrib, bool bReload);
+	void  LoadAttributeFromMap(IMapAttribute* pMatAttrib, bool bReload);
 	void  LoadAttributeFromXml(UIElement* pElement, bool bReload);
 
 	LPCTSTR  GetAttribute(LPCTSTR szKey, bool bErase);
@@ -133,11 +136,11 @@ public:
 	bool  ReleaseKeyboardCapture();
 
 	
-	void  SetBkgndRender(IRenderBase* p);
+	void  SetBackRender(IRenderBase* p);
 	void  SetForegndRender(IRenderBase* p);
 	void Object::SetTextRender(ITextRenderBase* p);
 	ITextRenderBase*  GetTextRender();
-	IRenderBase*  GetBkRender();
+	IRenderBase*  GetBackRender();
 	IRenderBase*  GetForeRender();
 	IRenderFont*  GetRenderFont();
 
@@ -167,6 +170,8 @@ public:
 	bool  GetScrollRange(int* pxRange, int* pyRange);
 
 	ILayoutParam*  GetLayoutParam();
+    ILayoutParam*  GetSafeLayoutParam();
+    void  DestroyLayoutParam();
 	void  CreateLayoutParam();
 	void  SetLayoutParam(ILayoutParam* p);
 
@@ -271,8 +276,11 @@ protected:
 	void  OnSerialize(SERIALIZEDATA* pData);
 	void  OnEraseBkgnd(IRenderTarget* pRenderTarget);
 
+    void  position_in_tree_changed();
+
 protected:
 	Object*  find_child_object(LPCTSTR szobjId, bool bFindDecendant);
+    Object*  find_child_object(UUID uuid, bool bFindDecendant);
 	void  load_renderbase(LPCTSTR szName, IRenderBase*& pRender);
 	void  load_textrender(LPCTSTR szName, ITextRenderBase*& pTextRender);
 	LPCTSTR  get_renderbase_name(IRenderBase*& pRender);
@@ -298,10 +306,10 @@ protected: // virtual
 public:
 	virtual  void  virtualOnLoad();
 
-public: // static
-	void Object::ForwardMessageToChildObject(
+public: 
+	static void Object::ForwardMessageToChildObject(
 			Object* pParent, UIMSG* pMsg);
-	void Object::ForwardMessageToChildObject2(
+    static void Object::ForwardMessageToChildObject2(
 			Object* pParent, UIMSG* pMsg, UIMSG* pMsg2);
 
 protected:
@@ -310,6 +318,9 @@ protected:
 	IObjectDescription*  m_pDescription; // 对象的一些静态属性，仅保存指针，通常这是一个static对象地址。
 
 	String  m_strId;                    // 该对象在XML中的标识
+#ifdef EDITOR_MODE
+    String  m_strStyle;                 // 控件样式
+#endif
 
 #pragma region //坐标相关数据
 	CRect      m_rcParent;              // 该对象的范围，相对于parent的client区域.对于Window对象是客户区域位置，即左上角为0，0

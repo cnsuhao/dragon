@@ -34,7 +34,7 @@ namespace UI {
 		};
 		UINT  SplitString(LPCTSTR szText, TCHAR szSep, ISplitStringEnum** ppEnum)
 		{
-			if (NULL == szText || NULL == ppEnum)
+			if (!szText || !szText[0] || !ppEnum)
 				return 0;
 
 			String str = szText;
@@ -166,7 +166,7 @@ namespace UI {
 					_ttoi(pEnum->GetText(1)),
 					_ttoi(pEnum->GetText(2)));
 
-				//    col |= 0xFF000000;  // a 默认为255;
+				col |= 0xFF000000;  // a 默认为255;
 			}
 
 			// r g b a
@@ -295,8 +295,9 @@ namespace UI {
 				return TranslateHexColor(szColor + 1);
 			else if (szColor[0] == _T('0') && szColor[1] == _T('x'))
 				return TranslateHexColor(szColor + 2);
-			else
-				return TranslateHexColor(szColor);
+			
+            // A,R,G,B形式
+            return TranslateRGB(szColor);
 		}
 
 		bool  TranslateRECT(LPCTSTR szRect, RECT* pRect, TCHAR szSep)
@@ -357,6 +358,17 @@ namespace UI {
 			SAFE_RELEASE(pEnum);
 			return true;
 		}
+
+
+        // 用于将一个RECT缩小一个PADDING/MARGIN的大小
+        void DeflatRect(RECT* pfc, LPCRECT pDeflatRc)
+        {
+            pfc->left += pDeflatRc->left;
+            pfc->top += pDeflatRc->top;
+            pfc->right -= pDeflatRc->right;
+            pfc->bottom -= pDeflatRc->bottom;
+        }
+
 
 // 		void  FormatV(TCHAR* pszFormat, va_list argList, BSTR& bstr)
 // 		{
@@ -688,7 +700,7 @@ bool TranslateImage9Region(LPCTSTR szText, C9Region* p9Region, TCHAR szSep)
 	return true;
 }
 
-void UISDKAPI PathInBin(LPCTSTR szRelative, TCHAR szAbsolution[MAX_PATH])
+void UIAPI PathInBin(LPCTSTR szRelative, TCHAR szAbsolution[MAX_PATH])
 {
 	GetModuleFileName(GetModuleHandle(NULL), szAbsolution, MAX_PATH);
 	TCHAR* p = _tcsrchr(szAbsolution, '\\');

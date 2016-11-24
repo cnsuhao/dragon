@@ -44,6 +44,7 @@ Color::Color()
     m_col = 0;
     lRef = 0;
 }
+
 Color::Color(byte _r, byte _g, byte _b, byte _a)
 {
     lRef = 0;
@@ -51,11 +52,19 @@ Color::Color(byte _r, byte _g, byte _b, byte _a)
     this->r = _r;
     this->g = _g;
     this->b = _b;
+
 }
 Color::Color(DWORD rgba)
 {
     lRef = 0;
     m_col = rgba;
+}
+
+Color::~Color()
+{
+#ifdef EDITOR_MODE
+    SAFE_ARRAY_DELETE(m_szResId);
+#endif
 }
 
 Color* Color::CreateInstance(COLORREF color)
@@ -167,6 +176,35 @@ long  Color::Release()
 void  Color::ToHexString(TCHAR* szBuffer)
 {
     _stprintf(szBuffer, TEXT("0x%02X%02X%02X%02X"), a,r,g,b);
+}
+void  Color::ToWebString(TCHAR* szBuffer)
+{
+    if (a == 255)
+    {
+        _stprintf(szBuffer, TEXT("#%02X%02X%02X"), r, g, b);
+        if (szBuffer[1] == szBuffer[2] &&
+            szBuffer[3] == szBuffer[4] &&
+            szBuffer[5] == szBuffer[6])
+        {
+            szBuffer[2] = szBuffer[3];
+            szBuffer[3] = szBuffer[5];
+            szBuffer[4] = 0;
+        }
+    }
+    else
+    {
+        _stprintf(szBuffer, TEXT("#%02X%02X%02X%02X"), a, r, g, b);
+        if (szBuffer[1] == szBuffer[2] &&
+            szBuffer[3] == szBuffer[4] &&
+            szBuffer[5] == szBuffer[6] &&
+            szBuffer[7] == szBuffer[8])
+        {
+            szBuffer[2] = szBuffer[3];
+            szBuffer[3] = szBuffer[5];
+            szBuffer[4] = szBuffer[7];
+            szBuffer[5] = 0;
+        }
+    }
 }
 
 // http://en.wikipedia.org/wiki/HSL_and_HSV
@@ -330,9 +368,9 @@ void  Color::SetHSL(HSL& hsl)
 
     double m = hsl.lightness - C/2;
 
-    r = static_cast<byte>(round(255.0 * (dr + m)));
-    g = static_cast<byte>(round(255.0 * (dg + m)));
-    b = static_cast<byte>(round(255.0 * (db + m)));
+    r = static_cast<byte>(_round(255.0 * (dr + m)));
+    g = static_cast<byte>(_round(255.0 * (dg + m)));
+    b = static_cast<byte>(_round(255.0 * (db + m)));
 
 #endif
 }
@@ -386,8 +424,28 @@ void  Color::SetHSV(HSV& hsv)
 
     double m = hsv.value - C;
 
-    r = static_cast<byte>(round(255.0 * (dr + m)));
-    g = static_cast<byte>(round(255.0 * (dg + m)));
-    b = static_cast<byte>(round(255.0 * (db + m)));
+    r = static_cast<byte>(_round(255.0 * (dr + m)));
+    g = static_cast<byte>(_round(255.0 * (dg + m)));
+    b = static_cast<byte>(_round(255.0 * (db + m)));
 }
+
+#ifdef EDITOR_MODE
+void  Color::SetResId(LPCTSTR szId)
+{
+    if (m_szResId)
+    {
+        SAFE_ARRAY_DELETE(m_szResId);
+    }
+
+    if (szId && szId[0])
+    {
+        m_szResId = new TCHAR[_tcslen(szId) + 1];
+        _tcscpy(m_szResId, szId);
+    }
+}
+LPCTSTR  Color::GetResId()
+{
+    return m_szResId;
+}
+#endif
 }

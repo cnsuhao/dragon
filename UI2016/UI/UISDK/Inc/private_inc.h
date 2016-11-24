@@ -9,64 +9,8 @@
 #include "Inc/Interface/iuieditor.h"
 #include "Inc/Interface/iobjectdescription.h"
 #include "Src/Util/Log/log.h"
+#include "../common/define.h"
 
-namespace UI
-{
-	
-// 常用缩写定义
-#define SAFE_DELETE(p) \
-	if (p) \
-{ \
-	delete (p); \
-	(p) = NULL; \
-}
-
-#define SAFE_ARRAY_DELETE(p) \
-	if (p) \
-{ \
-	delete[] (p); \
-	(p) = NULL; \
-}
-
-#define SAFE_RELEASE(p) \
-	if (p) \
-{ \
-	(p)->Release(); \
-	(p) = NULL; \
-}
-
-#define SAFE_RELEASE2(p) \
-	if (p) \
-{ \
-	(p).Release(); \
-	(p) = NULL; \
-}
-
-#define SAFE_DELETE_GDIOBJECT(h) \
-{\
-	if (h)\
-	{\
-		/*BOOL b = */::DeleteObject(h);\
-		/*if (0 == b) UIASSERT(b);*/ \
-		(h) = NULL;\
-	}\
-}
-
-#ifdef _UNICODE
-	typedef wstring String;
-#else
-	typedef string  String;
-#endif
-
-//typedef unsigned char byte;
-
-#ifndef uint
-typedef unsigned int uint;
-#endif
-
-typedef CRect CRegion4;
-
-typedef map<String, String>  ATTRMAP;
 
 
 // TODO: Delete Below!
@@ -101,17 +45,27 @@ typedef map<String, String>  ATTRMAP;
 #define SETSTRING(str, sz) \
 	if (sz){str = sz;} else {str.clear();}
 
+namespace UI
+{
+    
+//typedef unsigned char byte;
+
+#ifndef uint
+typedef unsigned int uint;
+#endif
+
+typedef CRect CRegion4;
+
+typedef map<String, String>  ATTRMAP;
+
+
 // 内部api
 void  UI_Split(const String& str, TCHAR szSep, vector<String>& vRet);
 long  UISendMessage(Message* pMsgTo, UINT message, WPARAM wParam = 0, LPARAM lParam = 0);
 interface IRenderFont;
 void  UI_AttachFont(IRenderFont** pOut, HFONT hFont, GRAPHICS_RENDER_LIBRARY_TYPE eRenderType);
-interface IRenderTarget;
-interface IUIApplication;
-IRenderTarget*  UICreateRenderTarget(IUIApplication* pUIApp, GRAPHICS_RENDER_LIBRARY_TYPE eType, bool bNeedAlphaChannel);
 LPTSTR  GetTempBuffer(int nMaxSize = 255);
 String&  GetTempBufferString();
-void  DeflatRect(RECT* pfc, LPCRECT pDeflatRc);
 
 class Object;
 interface IMKMgr : public IRootInterface
@@ -120,21 +74,5 @@ interface IMKMgr : public IRootInterface
 	virtual void  OnObjectRemoveInd(Object* pObj) = 0;
 	virtual void  SetFocusObject(Object* pObj) = 0;
 };
-
-inline int _round(const float& f)
-{
-	if (f < 0.0f)
-		return int(f - 0.5f);
-	else
-		return int(f + 0.5f);
-}
-inline int _round(const double& f)
-{
-	if (f < 0.0f)
-		return int(f - 0.5);
-	else
-		return int(f + 0.5);
-}
-
 
 }

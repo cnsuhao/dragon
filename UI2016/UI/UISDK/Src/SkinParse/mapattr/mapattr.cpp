@@ -4,6 +4,7 @@
 #include "Src\Renderbase\textrenderbase\textrender.h"
 #include "Inc\Interface\iuires.h"
 #include "Inc\Interface\iuiapplication.h"
+#include "Src\Base\Application\uiapplication.h"
 
 namespace UI
 {
@@ -20,20 +21,19 @@ CMapAttribute::~CMapAttribute()
 CMapAttribute::CMapAttribute(const CMapAttribute& o)
 {
     m_mapAttr = o.m_mapAttr;
-    m_strTemp.clear();
 }
 
-void  CMapAttribute::SetTag(LPCTSTR szKey)
-{
-	if (szKey)
-		m_strTag = szKey;
-	else
-		m_strTag.clear();
-}
-LPCTSTR  CMapAttribute::GetTag()
-{
-	return m_strTag.c_str();
-}
+// void  CMapAttribute::SetTag(LPCTSTR szKey)
+// {
+// 	if (szKey)
+// 		m_strTag = szKey;
+// 	else
+// 		m_strTag.clear();
+// }
+// LPCTSTR  CMapAttribute::GetTag()
+// {
+// 	return m_strTag.c_str();
+// }
 bool  CMapAttribute::HasAttrib(LPCTSTR szKey)
 {
     if (NULL == szKey)
@@ -56,9 +56,10 @@ LPCTSTR CMapAttribute::GetAttr(LPCTSTR szKey, bool bErase)
 
     if (bErase)
     {
-        m_strTemp = iter->second;
+        String& str = GetTempBufferString();
+        str = iter->second;
         m_mapAttr.erase(iter);
-        return m_strTemp.c_str();
+        return str.c_str();
     }
     return iter->second.c_str();
 }
@@ -71,9 +72,10 @@ LPCTSTR CMapAttribute::GetAttr(const String& strKey, bool bErase)
 
     if (bErase)
     {
-        m_strTemp = iter->second;
+        String& strTemp = GetTempBufferString();
+        strTemp = iter->second;
         m_mapAttr.erase(iter);
-        return m_strTemp.c_str();
+        return strTemp.c_str();
     }
     return iter->second.c_str();
 }
@@ -244,132 +246,135 @@ long  CMapAttribute::GetAttr_Image9Region(LPCTSTR szPrefix, LPCTSTR szKey, bool 
     return lRet;
 }
 
-long CMapAttribute::GetAttr_RenderBase(
-    LPCTSTR szPrefix,
-    LPCTSTR szKey, 
-    bool bErase,
-    IUIApplication* pUIApp, 
-    IObject* pBindObj, 
-    IRenderBase** ppGet)
-{
-    if (NULL == szKey || NULL == ppGet || NULL == pUIApp)
-        return MAPATTR_RET_ERROR;
-
-    LRESULT lRet = MAPATTR_RET_OK;
-    String strKey;
-    if (szPrefix)
-        strKey = szPrefix;
-    strKey.append(szKey);
-
-    ATTRMAP::iterator iter = m_mapAttr.find(strKey);
-    if (iter == m_mapAttr.end())
-        return MAPATTR_RET_NOT_EXIST;
-
-    SAFE_RELEASE(*ppGet);
-
-    pUIApp->CreateRenderBaseByName(iter->second.c_str(), pBindObj, ppGet);
-    if (*ppGet)
-    {
-        SERIALIZEDATA data = {0};
-        data.pUIApplication = pUIApp;
-		data.pSkinRes = pBindObj?pBindObj->GetSkinRes():NULL;
-        data.pMapAttrib = static_cast<IMapAttribute*>(this);
-        data.szPrefix = szPrefix;
-        data.nFlags = SERIALIZEFLAG_LOAD;
-        if (bErase)
-            data.nFlags |= SERIALIZEFLAG_LOAD_ERASEATTR;
-        (*ppGet)->Serialize(&data);
-    }
-    else
-    {
-        lRet = MAPATTR_RET_INVLID_VALUE;
-    }
-
-    if (bErase)
-        m_mapAttr.erase(iter);
-    return lRet;
-}
-
-long CMapAttribute::GetAttr_TextRenderBase(
-    LPCTSTR szPrefix, 
-    LPCTSTR szKey, 
-    bool bErase, 
-    IUIApplication* pUIApp,
-    IObject* pBindObj, 
-    ITextRenderBase** ppGet)
-{
-    if (NULL == szKey || NULL == ppGet)
-        return MAPATTR_RET_ERROR;
-
-    LRESULT lRet = MAPATTR_RET_OK;
-    String strKey;
-    if (szPrefix)
-        strKey = szPrefix;
-    strKey.append(szKey);
-
-    ATTRMAP::iterator iter = m_mapAttr.find(strKey.c_str());
-    if (iter == m_mapAttr.end())
-        return MAPATTR_RET_NOT_EXIST;
-
-    SAFE_RELEASE(*ppGet);
-
-    pUIApp->CreateTextRenderBaseByName(
-            (BSTR)iter->second.c_str(), pBindObj, ppGet);
-    if (*ppGet)
-    {
-        SERIALIZEDATA data = {0};
-        data.pUIApplication = pUIApp;
-		data.pSkinRes = pBindObj ? pBindObj->GetSkinRes() : NULL;
-        data.pMapAttrib = static_cast<IMapAttribute*>(this);
-        data.szPrefix = szPrefix;
-        data.nFlags = SERIALIZEFLAG_LOAD;
-        if (bErase)
-            data.nFlags |= SERIALIZEFLAG_LOAD_ERASEATTR;
-        (*ppGet)->Serialize(&data);
-    }
-    else
-    {
-        lRet = MAPATTR_RET_INVLID_VALUE;
-    }
-
-    if (bErase)
-        m_mapAttr.erase(iter);
-    return lRet;
-}
-
-long  CMapAttribute::GetAttr_Color(
-        LPCTSTR szPrefix,
-        LPCTSTR szKey, 
-        bool bErase, 
-        IUIApplication* pUIApp,
-        Color** ppColor)
-{
-    if (NULL == szKey || NULL == ppColor)
-        return MAPATTR_RET_ERROR;
-
-    LRESULT lRet = MAPATTR_RET_OK;
-    String strKey;
-    if (szPrefix)
-        strKey = szPrefix;
-    strKey.append(szKey);
-
-    ATTRMAP::iterator iter = m_mapAttr.find(strKey.c_str());
-    if (iter == m_mapAttr.end())
-        return MAPATTR_RET_NOT_EXIST;
-
-    SAFE_RELEASE(*ppColor);
-
-    IColorRes* pColorRes = pUIApp->GetActiveSkinColorRes();
-    pColorRes->GetColor(iter->second.c_str(), ppColor);
-
-    if (bErase)
-        m_mapAttr.erase(iter);
-
-    if (!(*ppColor))
-        lRet = MAPATTR_RET_ERROR;
-
-    return lRet;
-}
+// long CMapAttribute::GetAttr_RenderBase(
+//     LPCTSTR szPrefix,
+//     LPCTSTR szKey, 
+//     bool bErase,
+//     IUIApplication* pUIApp, 
+//     IObject* pBindObj, 
+//     IRenderBase** ppGet)
+// {
+//     if (NULL == szKey || NULL == ppGet || NULL == pUIApp)
+//         return MAPATTR_RET_ERROR;
+// 
+//     LRESULT lRet = MAPATTR_RET_OK;
+//     String strKey;
+//     if (szPrefix)
+//         strKey = szPrefix;
+//     strKey.append(szKey);
+// 
+//     ATTRMAP::iterator iter = m_mapAttr.find(strKey);
+//     if (iter == m_mapAttr.end())
+//         return MAPATTR_RET_NOT_EXIST;
+// 
+//     SAFE_RELEASE(*ppGet);
+// 
+//     pUIApp->GetImpl()->CreateRenderBaseByName(
+// 		iter->second.c_str(), pBindObj, ppGet);
+//     if (*ppGet)
+//     {
+//         SERIALIZEDATA data = {0};
+//         data.pUIApplication = pUIApp;
+// 		data.pSkinRes = pBindObj?pBindObj->GetSkinRes():NULL;
+//         data.pMapAttrib = static_cast<IMapAttribute*>(this);
+//         data.szPrefix = szPrefix;
+//         data.nFlags = SERIALIZEFLAG_LOAD;
+//         if (bErase)
+//             data.nFlags |= SERIALIZEFLAG_LOAD_ERASEATTR;
+//         (*ppGet)->Serialize(&data);
+//     }
+//     else
+//     {
+//         lRet = MAPATTR_RET_INVLID_VALUE;
+//     }
+// 
+//     if (bErase)
+//         m_mapAttr.erase(iter);
+//     return lRet;
+// }
+// 
+// long CMapAttribute::GetAttr_TextRenderBase(
+//     LPCTSTR szPrefix, 
+//     LPCTSTR szKey, 
+//     bool bErase, 
+//     ISkinRes* pUIApp,
+//     IObject* pBindObj, 
+//     ITextRenderBase** ppGet)
+// {
+//     if (NULL == szKey || NULL == ppGet)
+//         return MAPATTR_RET_ERROR;
+// 
+//     LRESULT lRet = MAPATTR_RET_OK;
+//     String strKey;
+//     if (szPrefix)
+//         strKey = szPrefix;
+//     strKey.append(szKey);
+// 
+//     ATTRMAP::iterator iter = m_mapAttr.find(strKey.c_str());
+//     if (iter == m_mapAttr.end())
+//         return MAPATTR_RET_NOT_EXIST;
+// 
+//     SAFE_RELEASE(*ppGet);
+// 
+//     pUIApp->CreateTextRenderBaseByName(
+//             (BSTR)iter->second.c_str(), pBindObj, ppGet);
+//     if (*ppGet)
+//     {
+//         SERIALIZEDATA data = {0};
+//         data.pUIApplication = pUIApp;
+// 		data.pSkinRes = pBindObj ? pBindObj->GetSkinRes() : NULL;
+//         data.pMapAttrib = static_cast<IMapAttribute*>(this);
+//         data.szPrefix = szPrefix;
+//         data.nFlags = SERIALIZEFLAG_LOAD;
+//         if (bErase)
+//             data.nFlags |= SERIALIZEFLAG_LOAD_ERASEATTR;
+//         (*ppGet)->Serialize(&data);
+//     }
+//     else
+//     {
+//         lRet = MAPATTR_RET_INVLID_VALUE;
+//     }
+// 
+//     if (bErase)
+//         m_mapAttr.erase(iter);
+//     return lRet;
+// }
+//
+// long  CMapAttribute::GetAttr_Color(
+//         LPCTSTR szPrefix,
+//         LPCTSTR szKey, 
+//         bool bErase, 
+//         ISkinRes* pSkinRes,
+//         Color** ppColor)
+// {
+//     UIASSERT(pSkinRes);
+// 
+//     if (NULL == szKey || NULL == ppColor || !pSkinRes)
+//         return MAPATTR_RET_ERROR;
+// 
+//     LRESULT lRet = MAPATTR_RET_OK;
+//     String strKey;
+//     if (szPrefix)
+//         strKey = szPrefix;
+//     strKey.append(szKey);
+// 
+//     ATTRMAP::iterator iter = m_mapAttr.find(strKey.c_str());
+//     if (iter == m_mapAttr.end())
+//         return MAPATTR_RET_NOT_EXIST;
+// 
+//     SAFE_RELEASE(*ppColor);
+// 
+//     IColorRes* pColorRes = pSkinRes->GetColorRes();
+//     pColorRes->GetColor(iter->second.c_str(), ppColor);
+// 
+//     if (bErase)
+//         m_mapAttr.erase(iter);
+// 
+//     if (!(*ppColor))
+//         lRet = MAPATTR_RET_ERROR;
+// 
+//     return lRet;
+// }
 
 bool CMapAttribute::AddAttr(LPCTSTR szKey, LPCTSTR szValue) 
 {
@@ -497,7 +502,7 @@ void  CMapAttribute::CreateCopy(IMapAttribute** ppNewCopy)
     p->AddRef();
     *ppNewCopy = static_cast<IMapAttribute*>(p);
     p->m_mapAttr = m_mapAttr;
-	p->m_strTag = m_strTag;
+	//p->m_strTag = m_strTag;
 }
 
 // 将自己的属性拷贝给pDestMapAttrib，如果pDestMapAttrib中已经存在，则按钮bOverride参数判断是否覆盖
@@ -676,18 +681,18 @@ bool  CListAttribute::EraseAttr(LPCTSTR szKey)
     return true;
 }
 
-void  CListAttribute::SetTag(LPCTSTR szKey)
-{
-	if (szKey)
-		m_strTag = szKey;
-	else
-		m_strTag.clear();
-}
-
-LPCTSTR  CListAttribute::GetTag()
-{
-    return m_strTag.c_str();
-}
+// void  CListAttribute::SetTag(LPCTSTR szKey)
+// {
+// 	if (szKey)
+// 		m_strTag = szKey;
+// 	else
+// 		m_strTag.clear();
+// }
+// 
+// LPCTSTR  CListAttribute::GetTag()
+// {
+//     return m_strTag.c_str();
+// }
 
 void  CListAttribute::BeginEnum()
 {

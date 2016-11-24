@@ -43,17 +43,17 @@ public:
 
 	ISkinRes*        GetISkinRes();
     UIApplication*   GetUIApplication();
-    ISkinManager*    GetISkinManager();
+    ISkinManager&    GetISkinManager();
 
-    IImageManager*   GetIImageManager()   { return m_mgrImage.GetIImageManager(); }
-    IColorManager*   GetIColorManager()   { return m_mgrColor.GetIColorManager(); }
-    IFontManager*    GetIFontManager()    { return m_mgrFont.GetIFontManager(); }
-    IStyleManager*   GetIStyleManager()   { return m_mgrStyle.GetIStyleManager(); }
-    ILayoutManager*  GetILayoutManager()  { return m_mgrLayout.GetILayoutManager(); }
-    IImageRes*       GetIImageRes()       { return m_mgrImage.GetImageRes().GetIImageRes(); }
-    IFontRes*        GetIFontRes()        { return m_mgrFont.GetFontRes().GetIFontRes(); }
-    IColorRes*       GetIColorRes()       { return m_mgrColor.GetColorRes().GetIColorRes(); }
-    IStyleRes*       GetIStyleRes()       { return m_mgrStyle.GetStyleRes().GetIStyleRes(); }
+//     IImageManager*   GetIImageManager()   { return m_mgrImage.GetIImageManager(); }
+//     IColorManager*   GetIColorManager()   { return m_mgrColor.GetIColorManager(); }
+//     IFontManager*    GetIFontManager()    { return m_mgrFont.GetIFontManager(); }
+//     IStyleManager*   GetIStyleManager()   { return m_mgrStyle.GetIStyleManager(); }
+//     ILayoutManager*  GetILayoutManager()  { return m_mgrLayout.GetILayoutManager(); }
+//     IImageRes*       GetIImageRes()       { return m_mgrImage.GetImageRes().GetIImageRes(); }
+//     IFontRes*        GetIFontRes()        { return m_mgrFont.GetFontRes().GetIFontRes(); }
+//     IColorRes*       GetIColorRes()       { return m_mgrColor.GetColorRes().GetIColorRes(); }
+//     IStyleRes*       GetIStyleRes()       { return m_mgrStyle.GetStyleRes().GetIStyleRes(); }
 	
 
 	SkinManager&     GetSkinMgr()         { return m_mgrSkinRef; } //  内部调用
@@ -69,19 +69,12 @@ public:
 	ImageRes&  GetImageRes();
 	ColorRes&  GetColorRes();
 	FontRes&   GetFontRes();
+    StyleRes&  GetStyleRes();
 	I18nRes&   GetI18nRes();
 
-    UINT  GetImageCount()    { return m_mgrImage.GetImageCount(); }
-    UINT  GetColorCount()    { return m_mgrColor.GetColorCount(); }
-    UINT  GetFontCount()     { return m_mgrFont.GetFontCount(); }
-    UINT  GetStyleCount()    { return m_mgrStyle.GetStyleCount(); }
     UINT  GetXmlDocCount()   { return m_listDoc.size(); }
-
-	IImageResItem*  GetImageItemInfo(UINT nIndex);
-	IColorResItem*  GetColorItemInfo(UINT nIndex);
-	IFontResItem*  GetFontItemInfo(UINT nIndex);
-	UIDocument*  GetXmlDoc(UINT nIndex);
 	UIDocument*  GetXmlDocByName(LPCTSTR szName);
+    UIDocument*  GetXmlDoc(UINT nIndex);
 
 	void  OnNewUIDocument(UIDocument* pDoc);    
 	

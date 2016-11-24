@@ -15,7 +15,7 @@ public:
 
     virtual LPCTSTR  Get() override; 
     virtual void  Set(LPCTSTR) override;
-    virtual void  Editor(AttributeEditorProxy*, EditorAttributeFlag e) override;
+	virtual void  Editor(SERIALIZEDATA* pData, AttributeEditorProxy*, EditorAttributeFlag e) override;
 
 public:
     FlagsAttribute*  AddFlag(long, LPCTSTR);

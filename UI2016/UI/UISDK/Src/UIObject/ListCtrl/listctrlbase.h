@@ -80,8 +80,8 @@ public:
 		UIMSG_SERIALIZE(OnSerialize)
         UIMSG_FINALCONSTRUCT(FinalConstruct)            
         UIMSG_FINALRELEASE(FinalRelease)
-// 	UIALT_MSG_MAP(UIALT_CALLLESS)
-// 		UIMSG_WM_CREATEBYEDITOR(OnCreateByEditor)
+	UIALT_MSG_MAP(UIALT_CALLLESS)
+		UIMSG_CREATEBYEDITOR(OnCreateByEditor)
 	UI_END_MSG_MAP_CHAIN_PARENT(Control)
 
     IListCtrlBase*  GetIListCtrlBase();
@@ -108,7 +108,7 @@ protected:
 				IRenderTarget* pRenderTarget, ListItemBase* p);
     LRESULT  OnDelayRemoveItem(WPARAM w, LPARAM l);
     LRESULT  OnGesturePan(UINT, WPARAM, LPARAM);
-	// void  OnCreateByEditor(CREATEBYEDITORDATA* pData);
+	void  OnCreateByEditor(CREATEBYEDITORDATA* pData);
 
 public:
 	// 公用接口
@@ -147,6 +147,7 @@ public:
 	LPCTSTR   GetItemText(ListItemBase* pItem);
 	
 	ListItemBase*  GetItemByPos(UINT i, bool bVisibleOnly=true);
+    int  GetItemPos(ListItemBase*, bool bVisibleOnly = true);
     ListItemBase*  GetItemByWindowPoint(POINT pt);
     ListItemBase*  GetItemUnderCursor();
     ListItemBase*  GetItemById(long lId);
@@ -241,7 +242,6 @@ public:
 	// select 操作
     void  SelectItem(
             ListItemBase* pItem, 
-            bool bUpdate, 
             bool bNotify=true, 
             bool bMakeVisible=true);
     void  AddSelectItem(ListItemBase* pItem, bool bNotify);
@@ -287,7 +287,7 @@ public:
     void  FireSelectItemChanged(ListItemBase* pOldValue);
     void  ListItemDragDropEvent(
             UI::DROPTARGETEVENT_TYPE eEvent, 
-            IListItemBase* pItem);
+            ListItemBase* pItem);
     void  ListCtrlDragScroll();
 
     bool  Scroll2Y(int nY, bool bUpdate);
@@ -427,7 +427,17 @@ protected:
     map<long, IListItemBase*>  m_mapItem;
 
     // 绘制
-
     IRenderBase*   m_pFocusRender;
+
+public:
+	// event
+	signal<IListCtrlBase*>  select_changed;
+    signal<IListCtrlBase*, IListItemBase*>  click;
+    signal<IListCtrlBase*, IListItemBase*>  rclick;
+    signal<IListCtrlBase*, IListItemBase*>  mclick;
+    signal<IListCtrlBase*, IListItemBase*>  dbclick;
+
+    // 键盘消息 vKey / bool是否已处理
+    signal<IListCtrlBase*, UINT, bool&>  keydown;
 };
 }

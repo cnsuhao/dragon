@@ -185,7 +185,7 @@ void  AverageLayout::ArrangeObject_V(Object* pChildObj, CRect* prc)
         SWP_NOREDRAW|SWP_NOUPDATELAYOUTPOS|SWP_FORCESENDSIZEMSG);
 }
 
-void  AverageLayout::OnChildObjectVisibleChanged(IObject* pObj)
+void  AverageLayout::ChildObjectVisibleChanged(IObject* pObj)
 {
     UIASSERT (pObj);
 	UIASSERT(pObj->GetParentObject());

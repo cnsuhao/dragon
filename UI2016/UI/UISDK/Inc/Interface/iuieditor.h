@@ -111,13 +111,20 @@ namespace UI
         virtual void  EditorStringEnumAttribute(
                 IStringEnumAttribute*, 
                 EditorAttributeFlag e) PURE;
+		virtual void  EditorColorAttribute(
+				IColorAttribute*,
+				EditorAttributeFlag e) PURE;
+        virtual void  EditorRenderBase(
+                IRenderBaseAttribute* pAttribute, 
+                EditorAttributeFlag e) PURE;
+        virtual void  EditorTextRenderBase(
+                ITextRenderBaseAttribute* pAttribute,
+                EditorAttributeFlag e) PURE;
 
         // 获取对象列表，添加到工具箱中。
         // 调用LoadUIObjectListToUIEdirot时触发
         virtual void  OnToolBox_AddObject(
-                __in const TCHAR* szObjName, 
-                __in const TCHAR* szCategory, 
-                __in UINT nObType) = 0;
+                IObjectDescription*) = 0;
 	};
 
 	

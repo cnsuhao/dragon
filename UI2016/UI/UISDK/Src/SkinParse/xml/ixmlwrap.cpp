@@ -91,7 +91,7 @@ bool  IUIElement::SetAttribList2(IListAttribute* pListAttrib)
 //
 #define RETURN_IUIElementProxy(UIElementProxy_) \
     if (UIElementProxy_) \
-        return IUIElementProxy(UIElementProxy_.get()->GetIUIElement()); \
+        return IUIElementProxy(UIElementProxy_.detach()->GetIUIElement()); \
     else \
         return IUIElementProxy();
 
@@ -142,11 +142,19 @@ IUIElementProxy  IUIElement::AddChildAfter(LPCTSTR szNodeName, IUIElement* pInse
 
     RETURN_IUIElementProxy(proxy);
 }
-bool  IUIElement::MoveChildAfterChild(IUIElement* pChild2Move, IUIElement* pChildInsertAfter)
+// bool  IUIElement::MoveChildAfterChild(IUIElement* pChild2Move, IUIElement* pChildInsertAfter)
+// {
+//     return m_pImpl->MoveChildAfterChild(
+//             pChild2Move ? pChild2Move->GetImpl():NULL,
+//             pChildInsertAfter ? pChildInsertAfter->GetImpl():NULL);
+// }
+
+bool  IUIElement::MoveTo(IUIElement* pNewParent, IUIElement* pChildInsertAfter)
 {
-    return m_pImpl->MoveChildAfterChild(
-            pChild2Move ? pChild2Move->GetImpl():NULL,
-            pChildInsertAfter ? pChildInsertAfter->GetImpl():NULL);
+    return m_pImpl->MoveTo(
+        pNewParent ? pNewParent->GetImpl() : nullptr,
+        pChildInsertAfter ? pChildInsertAfter->GetImpl() : nullptr
+        );
 }
 
 IUIElementProxy  IUIElement::FirstChild()

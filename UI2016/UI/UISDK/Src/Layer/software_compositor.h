@@ -15,8 +15,8 @@ class SoftwareCompositor : public Compositor
 public:
     virtual Layer*  virtualCreateLayer() override;
 	virtual void  virtualBindHWND(HWND) override;
+    virtual void  virtualCommit(const RectArray& arrDirtyInWindow) override;
 	virtual void  UpdateDirty(__out_opt  RectArray& arrDirtyInWindow) override;
-	virtual void  Commit(const RectArray& arrDirtyInWindow) override;
 	virtual void  Resize(uint nWidth, uint nSize) override;
 
 private:

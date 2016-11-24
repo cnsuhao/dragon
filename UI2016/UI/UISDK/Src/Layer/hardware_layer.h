@@ -1,6 +1,6 @@
 #pragma once
 #include "layer.h"
-#if 0
+#if ENABLE_HARDCOMPOSITION
 namespace UI
 {
 class GpuLayerCommitContext;
@@ -24,13 +24,10 @@ protected:
 
     IRenderTarget*  GetRenderTarget();
 
-
 protected:
-    IRenderTarget*  m_pRenderTarget;
 
     // Ó²¼þºÏ³É
     IGpuRenderLayer*  m_pGpuTexture;
-
 };
 
 }

@@ -1,10 +1,10 @@
 #pragma once
 #include "compositor.h"
-#if 0
+#if ENABLE_HARDCOMPOSITION
 namespace UI
 {
-interface IHardwareComposition;
 class GpuLayerCommitContext;
+struct IHardwareComposition;
 
 class HardwareCompositor : public Compositor
 {
@@ -15,7 +15,7 @@ public:
     virtual void  virtualBindHWND(HWND) override;
 
     virtual void  UpdateDirty(__out_opt  RectArray& arrDirtyInWindow) override;
-    virtual void  Commit(HDC hDC, const RectArray& arrDirtyInWindow) override;
+    virtual void  Commit(const RectArray& arrDirtyInWindow) override;
     virtual void  Resize(uint nWidth, uint nSize) override;
 
     virtual Layer*  virtualCreateLayer() override;

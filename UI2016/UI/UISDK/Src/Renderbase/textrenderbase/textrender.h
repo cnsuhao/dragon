@@ -47,7 +47,7 @@ public:
         m_lparamDrawText = l;
     }
 
-	void     SetObject(UIApplication*  pUIApp, Object* pObject) { m_pUIApplication = pUIApp; m_pObject = pObject; }
+	void     SetObject(Object* pObject) { m_pObject = pObject; }
     Object*  GetObject() { return m_pObject; }
 
 	void  SetTextRenderType(const TEXTRENDER_TYPE& nType){ m_nTextRenderType = nType ; }
@@ -55,6 +55,7 @@ public:
 	
 	IColorRes*  GetSkinColorRes();
 	IFontRes*  GetSkinFontRes();
+    SkinRes*  GetSkinRes();
 
 	bool  IsThemeRender();
     void  CheckSkinTextureChanged();
@@ -69,7 +70,6 @@ public:
     LPCTSTR  GetHaloColorId();
 
 protected:
-    UIApplication*   m_pUIApplication;
     ITextRenderBase*  m_pITextRenderBase;
 
 	Object*  m_pObject;     // 绑定的对象，要绘制谁的文字
@@ -80,7 +80,6 @@ protected:
     Color*  m_pColorTextBkgnd;
     WPARAM  m_wparamDrawText;
     LPARAM  m_lparamDrawText;
-
 };
 
 class SimpleTextRender : public TextRenderBase
@@ -89,7 +88,8 @@ public:
 	SimpleTextRender(ISimpleTextRender* p);
 	~SimpleTextRender();
 
-    UI_DECLARE_TEXTRENDERBASE(SimpleTextRender, XML_TEXTRENDER_TYPE_SIMPLE, TEXTRENDER_TYPE_SIMPLE)
+    UI_DECLARE_TEXTRENDERBASE(
+        SimpleTextRender, XML_TEXTRENDER_TYPE_SIMPLE, TEXTRENDER_TYPE_SIMPLE)
 
 	UI_BEGIN_MSG_MAP()
         UIMSG_TEXTRENDERBASE_DRAWSTATE(DrawState)
@@ -106,9 +106,6 @@ public:
 	void  SetRenderFont(IRenderFont*);
 	void  SetColor(Color*  pColText);
 
-	void  LoadColor(LPCTSTR szColorId);
-	LPCTSTR  GetColorId();
-	
 	void  LoadFont(LPCTSTR szFontId);
 	LPCTSTR  GetFontId();
 
@@ -116,6 +113,10 @@ protected:
     ISimpleTextRender*  m_pISimpleTextRender;
 	Color*  m_pColorText;
 	IRenderFont*  m_pRenderFont;
+
+#ifdef EDITOR_MODE
+    String  m_strFontId;
+#endif
 };
 
 
@@ -126,7 +127,10 @@ public:
     ContrastColorTextRender(IContrastColorTextRender* p);
     ~ContrastColorTextRender();
 
-    UI_DECLARE_TEXTRENDERBASE(ContrastColorTextRender, XML_TEXTRENDER_TYPE_CONTRAST_COLOR, TEXTRENDER_TYPE_CONTRASTCOLOR)
+    UI_DECLARE_TEXTRENDERBASE(
+        ContrastColorTextRender, 
+        XML_TEXTRENDER_TYPE_CONTRAST_COLOR, 
+        TEXTRENDER_TYPE_CONTRASTCOLOR)
 
 	UI_BEGIN_MSG_MAP()
         UIMSG_TEXTRENDERBASE_DRAWSTATE(DrawState)
@@ -174,7 +178,10 @@ public:
     ContrastColorListTextRender(IContrastColorListTextRender* p);
     ~ContrastColorListTextRender();
 
-    UI_DECLARE_TEXTRENDERBASE(ContrastColorListTextRender, XML_TEXTRENDER_TYPE_CONTRASTCOLORLIST, TEXTRENDER_TYPE_CONTRASTCOLORLIST)
+    UI_DECLARE_TEXTRENDERBASE(
+        ContrastColorListTextRender,
+        XML_TEXTRENDER_TYPE_CONTRASTCOLORLIST, 
+        TEXTRENDER_TYPE_CONTRASTCOLORLIST)
 
 	UI_BEGIN_MSG_MAP()
         UIMSG_TEXTRENDERBASE_DRAWSTATE(DrawState)
@@ -220,7 +227,10 @@ public:
 	ColorListTextRender(IColorListTextRender* p);
 	~ColorListTextRender();
 
-    UI_DECLARE_TEXTRENDERBASE(ColorListTextRender, XML_TEXTRENDER_TYPE_COLORLIST, TEXTRENDER_TYPE_COLORLIST)
+    UI_DECLARE_TEXTRENDERBASE(
+        ColorListTextRender,
+        XML_TEXTRENDER_TYPE_COLORLIST, 
+        TEXTRENDER_TYPE_COLORLIST)
 
 	UI_BEGIN_MSG_MAP()
         UIMSG_TEXTRENDERBASE_DRAWSTATE(DrawState)
@@ -236,12 +246,8 @@ public:
     IRenderFont*  GetRenderFont();
 	void  SetRenderFont(IRenderFont*);
 
-    void  LoadFont(LPCTSTR szFontId){
-        _LoadFont(szFontId, m_pRenderFont);
-    }
-    LPCTSTR  GetFontId(){
-        return _SaveFont(m_pRenderFont);
-    }
+    void  LoadFont(LPCTSTR szFontId);
+    LPCTSTR  GetFontId();
 
     void  SetCount(long nCount);
     long  GetCount();
@@ -260,6 +266,10 @@ private:
 	vector<ColorPtr>  m_vTextColor;
 	IRenderFont*      m_pRenderFont;
 	int               m_nCount;
+
+#ifdef EDITOR_MODE
+    String  m_strFontId;
+#endif
 };
 #if 0
 	class FontListTextRender : public TextRenderBase
@@ -276,7 +286,10 @@ public:
 	FontColorListTextRender(IFontColorListTextRender* p);
 	~FontColorListTextRender();
 
-    UI_DECLARE_TEXTRENDERBASE(FontColorListTextRender, XML_TEXTRENDER_TYPE_FONTCOLORLIST, TEXTRENDER_TYPE_FONTCOLORLIST)
+    UI_DECLARE_TEXTRENDERBASE(
+        FontColorListTextRender,
+        XML_TEXTRENDER_TYPE_FONTCOLORLIST,
+        TEXTRENDER_TYPE_FONTCOLORLIST)
 
 	UI_BEGIN_MSG_MAP()
         UIMSG_TEXTRENDERBASE_DRAWSTATE(DrawState)

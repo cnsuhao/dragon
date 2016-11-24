@@ -64,7 +64,7 @@ public:
     FontRes(SkinRes*  m_pSkinRes);
 	~FontRes();
 
-    IFontRes*  GetIFontRes();
+    IFontRes&  GetIFontRes();
 	 
 	long  GetFontCount();
 	bool  GetFontResItem(long lIndex, IFontResItem** ppResItem);
@@ -75,8 +75,8 @@ public:
 public:
 	FontResItem* GetFontItem( int nIndex );
 	FontResItem* GetFontItem( const String& strID );
-	bool InsertFont( const String& strID, LOGFONT* pLogFont );
-	FontResItem* InsertFont( const String& strID, LOGFONT* pLogFont, WPARAM wParam, LPARAM lParam );
+	bool InsertFont(LPCTSTR szId, LOGFONT* pLogFont );
+    FontResItem* InsertFont(LPCTSTR szId, LOGFONT* pLogFont, WPARAM wParam, LPARAM lParam);
 	bool ModifyFont(const String& strID, LOGFONT* pLogFont );
 	bool RemoveFont(const String& strID );
 	void Clear();

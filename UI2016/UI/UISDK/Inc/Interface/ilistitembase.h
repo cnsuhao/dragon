@@ -57,7 +57,7 @@ typedef struct tagLISTITEMSTYLE
 }LISTITEMSTYLE, *LPLISTITEMSTYLE;
 
 interface __declspec(uuid("08D8FC93-CA95-42D4-B804-811F80D9F080"))
-UISDKAPI IListItemBase : public IMessage
+UIAPI IListItemBase : public IMessage
 {
     void  SetIListCtrlBase(IListCtrlBase* p);
     IListCtrlBase*  GetIListCtrlBase();
@@ -169,12 +169,13 @@ UISDKAPI IListItemBase : public IMessage
     bool  CreateRootPanel();
     void  DrawItemInnerControl(IRenderTarget* pRenderTarget);
     int   GetItemRenderState();
+    void  Invalidate();
 
 	UI_DECLARE_INTERFACE(ListItemBase);
 };
 
 class CustomListItem;
-interface UISDKAPI ICustomListItem : public IListItemBase
+interface UIAPI ICustomListItem : public IListItemBase
 {
 	IObject*  FindControl(LPCTSTR szId);
 

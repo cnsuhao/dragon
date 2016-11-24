@@ -389,18 +389,22 @@ void  ListCtrlMKMgrBase::OnLButtonUp(UIMSG* pMsg)
 //         ListItemBase*  pNewHover = GetItemByPos(ptWindow);
 //         if (pNewHover == pSave)
         {
-            LISTCTRL_CLICKNOTIFY_DATA data = {0};
-            if (pSave)
-                data.pDowmItem = pSave->GetIListItemBase();
-            data.wParam = pMsg->wParam;
-            data.lParam = pMsg->lParam;
+//             LISTCTRL_CLICKNOTIFY_DATA data = {0};
+//             if (pSave)
+//                 data.pDowmItem = pSave->GetIListItemBase();
+//             data.wParam = pMsg->wParam;
+//             data.lParam = pMsg->lParam;
+// 
+//             UIMSG  msg;
+//             msg.message = UI_MSG_NOTIFY;
+//             msg.nCode   = UI_NM_CLICK;
+//             msg.wParam  = (WPARAM)&data;
+//             msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
+//             msg.pMsgFrom->DoNotify(&msg);
 
-            UIMSG  msg;
-            msg.message = UI_MSG_NOTIFY;
-            msg.nCode   = UI_NM_CLICK;
-            msg.wParam  = (WPARAM)&data;
-            msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
-            msg.pMsgFrom->DoNotify(&msg);
+            m_pListCtrlBase->click.emit(
+                m_pListCtrlBase->GetIListCtrlBase(),
+                pSave ? pSave->GetIListItemBase() : NULL);
         }
     }
 }
@@ -426,18 +430,22 @@ void  ListCtrlMKMgrBase::OnLButtonDBClick(UIMSG* pMsg)
 
     if (!bHandled)
     {
-        LISTCTRL_CLICKNOTIFY_DATA data = {0};
-        if (m_pItemPress)
-            data.pDowmItem = m_pItemPress->GetIListItemBase();
-        data.wParam = pMsg->wParam;
-        data.lParam = pMsg->lParam;
+//         LISTCTRL_CLICKNOTIFY_DATA data = {0};
+//         if (m_pItemPress)
+//             data.pDowmItem = m_pItemPress->GetIListItemBase();
+//         data.wParam = pMsg->wParam;
+//         data.lParam = pMsg->lParam;
+//
+//         UIMSG  msg;
+//         msg.message = UI_MSG_NOTIFY;
+//         msg.nCode   = UI_NM_DBCLICK;
+//         msg.wParam  = (WPARAM)&data;
+//         msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
+//         msg.pMsgFrom->DoNotify(&msg);
 
-        UIMSG  msg;
-        msg.message = UI_MSG_NOTIFY;
-        msg.nCode   = UI_NM_DBCLICK;
-        msg.wParam  = (WPARAM)&data;
-        msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
-        msg.pMsgFrom->DoNotify(&msg);
+        m_pListCtrlBase->dbclick.emit(
+            m_pListCtrlBase->GetIListCtrlBase(),
+            m_pItemPress ? m_pItemPress->GetIListItemBase() : NULL);
     }
 }
 
@@ -472,18 +480,22 @@ void  ListCtrlMKMgrBase::OnRButtonUp(UIMSG* pMsg)
     }
     if (!bHandled)
     {
-        LISTCTRL_CLICKNOTIFY_DATA data = {0};
-        if (pSave)
-            data.pDowmItem = pSave->GetIListItemBase();
-        data.wParam = pMsg->wParam;
-        data.lParam = pMsg->lParam;
+//         LISTCTRL_CLICKNOTIFY_DATA data = {0};
+//         if (pSave)
+//             data.pDowmItem = pSave->GetIListItemBase();
+//         data.wParam = pMsg->wParam;
+//         data.lParam = pMsg->lParam;
+// 
+//         UIMSG  msg;
+//         msg.message = UI_MSG_NOTIFY;
+//         msg.nCode   = UI_NM_RCLICK;
+// 		msg.wParam = (WPARAM)&data;
+//         msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
+//         msg.pMsgFrom->DoNotify(&msg);
 
-        UIMSG  msg;
-        msg.message = UI_MSG_NOTIFY;
-        msg.nCode   = UI_NM_RCLICK;
-		msg.wParam = (WPARAM)&data;
-        msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
-        msg.pMsgFrom->DoNotify(&msg);
+        m_pListCtrlBase->rclick.emit(
+            m_pListCtrlBase->GetIListCtrlBase(),
+            pSave ? pSave->GetIListItemBase() : NULL);
     }
 }
 
@@ -517,18 +529,22 @@ void  ListCtrlMKMgrBase::OnMButtonUp(UIMSG* pMsg)
     {
         // 如果当前hover item改变了，由外部业务逻辑去判断是否处理
 
-        LISTCTRL_CLICKNOTIFY_DATA  data = {0};
-        if (pSave)
-            data.pDowmItem = pSave->GetIListItemBase();
-        data.wParam = pMsg->wParam;
-        data.lParam = pMsg->lParam;
+//         LISTCTRL_CLICKNOTIFY_DATA  data = {0};
+//         if (pSave)
+//             data.pDowmItem = pSave->GetIListItemBase();
+//         data.wParam = pMsg->wParam;
+//         data.lParam = pMsg->lParam;
+// 
+//         UIMSG  msg;
+//         msg.message = UI_MSG_NOTIFY;
+//         msg.nCode   = UI_NM_MCLICK;
+//         msg.wParam  = (WPARAM)&data;
+//         msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
+//         msg.pMsgFrom->DoNotify(&msg);
 
-        UIMSG  msg;
-        msg.message = UI_MSG_NOTIFY;
-        msg.nCode   = UI_NM_MCLICK;
-        msg.wParam  = (WPARAM)&data;
-        msg.pMsgFrom = m_pListCtrlBase->GetIListCtrlBase();
-        msg.pMsgFrom->DoNotify(&msg);
+        m_pListCtrlBase->mclick.emit(
+            m_pListCtrlBase->GetIListCtrlBase(),
+            pSave ? pSave->GetIListItemBase() : NULL);
     }
 }
 
@@ -1034,7 +1050,7 @@ void  SingleSelListCtrlMKMgr::handle_selection_change()
         if (m_pItemPress->IsSelectable())
         {
             // 只选这一个
-            m_pListCtrlBase->SelectItem(m_pItemPress, false);
+            m_pListCtrlBase->SelectItem(m_pItemPress);
         }
         else if (m_pItemPress->IsFocusable())
         {
@@ -1092,7 +1108,7 @@ void  SingleSelListCtrlMKMgr::OnRButtonDown(UIMSG* pMsg)
         if (m_pItemHover->IsSelectable())
         {
             // 只选这一个
-            m_pListCtrlBase->SelectItem(m_pItemHover, false);
+            m_pListCtrlBase->SelectItem(m_pItemHover);
         }
     }
     else
@@ -1158,7 +1174,7 @@ void  SingleSelListCtrlMKMgr::OnKeyDown_up(UIMSG* pMsg)
         if (pFirstSelectableItem)
         {
             if (pFirstSelectableItem->IsSelectable())
-                this->m_pListCtrlBase->SelectItem(pFirstSelectableItem, false);
+                this->m_pListCtrlBase->SelectItem(pFirstSelectableItem);
             else
                 this->m_pListCtrlBase->SetFocusItem(pFirstSelectableItem);
         }
@@ -1169,7 +1185,7 @@ void  SingleSelListCtrlMKMgr::OnKeyDown_up(UIMSG* pMsg)
         if (pPrevItem)
         {
             if (pPrevItem->IsSelectable())
-                this->m_pListCtrlBase->SelectItem(pPrevItem, false);
+                this->m_pListCtrlBase->SelectItem(pPrevItem);
             else
                 this->m_pListCtrlBase->SetFocusItem(pPrevItem);
         }
@@ -1184,7 +1200,7 @@ void  SingleSelListCtrlMKMgr::OnKeyDown_down(UIMSG* pMsg)
         if (pFirstSelectableItem)
         {
             if (pFirstSelectableItem->IsSelectable())
-                this->m_pListCtrlBase->SelectItem(pFirstSelectableItem, false);
+                this->m_pListCtrlBase->SelectItem(pFirstSelectableItem);
             else
                 this->m_pListCtrlBase->SetFocusItem(pFirstSelectableItem);
         }
@@ -1195,7 +1211,7 @@ void  SingleSelListCtrlMKMgr::OnKeyDown_down(UIMSG* pMsg)
         if (pNextItem)
         {
             if (pNextItem->IsSelectable())
-                this->m_pListCtrlBase->SelectItem(pNextItem, false);
+                this->m_pListCtrlBase->SelectItem(pNextItem);
             else
                 this->m_pListCtrlBase->SetFocusItem(pNextItem);
         }
@@ -1209,12 +1225,12 @@ void  SingleSelListCtrlMKMgr::OnKeyDown_space(UIMSG* pMsg)
 		ListItemBase* pFirstSelectableItem = m_pListCtrlBase->FindSelectableItemFrom(NULL);
 		if (pFirstSelectableItem)
 		{
-			this->m_pListCtrlBase->SelectItem(pFirstSelectableItem, false);
+			this->m_pListCtrlBase->SelectItem(pFirstSelectableItem);
 		}
 	}
 	else
 	{
-		this->m_pListCtrlBase->SelectItem(m_pItemFocus, false);
+		this->m_pListCtrlBase->SelectItem(m_pItemFocus);
 	}
 }
 void  SingleSelListCtrlMKMgr::OnKeyDown_prior(UIMSG* pMsg)
@@ -1224,7 +1240,7 @@ void  SingleSelListCtrlMKMgr::OnKeyDown_prior(UIMSG* pMsg)
         ListItemBase* pFirstSelectableItem = m_pListCtrlBase->FindSelectableItemFrom(NULL);
         if (pFirstSelectableItem)
         {
-            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem, false);
+            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem);
         }
     }
     else
@@ -1234,7 +1250,7 @@ void  SingleSelListCtrlMKMgr::OnKeyDown_prior(UIMSG* pMsg)
         
         this->m_pListCtrlBase->CalcFirstLastDrawItem();
         ListItemBase*  pNewFocusItem = m_pListCtrlBase->GetFirstDrawItem();
-        this->m_pListCtrlBase->SelectItem(pNewFocusItem, false);
+        this->m_pListCtrlBase->SelectItem(pNewFocusItem);
 
 
         this->m_pListCtrlBase->Invalidate();
@@ -1247,7 +1263,7 @@ void  SingleSelListCtrlMKMgr::OnKeyDown_next(UIMSG* pMsg)
         ListItemBase* pFirstSelectableItem = m_pListCtrlBase->FindSelectableItemFrom(NULL);
         if (pFirstSelectableItem)
         {
-            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem, false);
+            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem);
         }
     }
     else
@@ -1257,7 +1273,7 @@ void  SingleSelListCtrlMKMgr::OnKeyDown_next(UIMSG* pMsg)
 
         this->m_pListCtrlBase->CalcFirstLastDrawItem();
         ListItemBase*  pNewFocusItem = m_pListCtrlBase->GetLastDrawItem();
-        this->m_pListCtrlBase->SelectItem(pNewFocusItem, false);
+        this->m_pListCtrlBase->SelectItem(pNewFocusItem);
 
         this->m_pListCtrlBase->Invalidate();
     }
@@ -1269,7 +1285,7 @@ void  SingleSelListCtrlMKMgr::OnKeyDown_home(UIMSG* pMsg)
         ListItemBase* pFirstSelectableItem = m_pListCtrlBase->FindSelectableItemFrom(NULL);
         if (pFirstSelectableItem)
         {
-            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem, false);
+            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem);
         }
     }
     else
@@ -1279,7 +1295,7 @@ void  SingleSelListCtrlMKMgr::OnKeyDown_home(UIMSG* pMsg)
 
         this->m_pListCtrlBase->CalcFirstLastDrawItem();
         ListItemBase*  pNewFocusItem = m_pListCtrlBase->GetFirstDrawItem();
-        this->m_pListCtrlBase->SelectItem(pNewFocusItem, false);
+        this->m_pListCtrlBase->SelectItem(pNewFocusItem);
        
         this->m_pListCtrlBase->Invalidate();
     }
@@ -1291,7 +1307,7 @@ void  SingleSelListCtrlMKMgr::OnKeyDown_end(UIMSG* pMsg)
         ListItemBase* pFirstSelectableItem = m_pListCtrlBase->FindSelectableItemFrom(NULL);
         if (pFirstSelectableItem)
         {
-            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem, false);
+            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem);
         }
     }
     else
@@ -1301,7 +1317,7 @@ void  SingleSelListCtrlMKMgr::OnKeyDown_end(UIMSG* pMsg)
 
         this->m_pListCtrlBase->CalcFirstLastDrawItem();
         ListItemBase*  pNewFocusItem = m_pListCtrlBase->GetLastDrawItem();
-        this->m_pListCtrlBase->SelectItem(pNewFocusItem, false);
+        this->m_pListCtrlBase->SelectItem(pNewFocusItem);
         
         this->m_pListCtrlBase->Invalidate();
     }

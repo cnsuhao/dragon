@@ -62,8 +62,9 @@ namespace UI
 #define XML_DISABLE          _T("disable")
 #define XML_FILE             _T("file")
 #define XML_WINDOW           _T("window")
+#define XML_WINDOW_          _T("Window")
 #define XML_LISTITEM         _T("listitem")
-#define XML_LISTITEM_         _T("ListItem")
+#define XML_LISTITEM_        _T("ListItem")
 
 #define XML_ALIGN_LEFT       _T("left")
 #define XML_ALIGN_RIGHT      _T("right")
@@ -139,7 +140,7 @@ enum IMAGE_ITEM_TYPE
 // Object对象属性
 
 //#define XML_ID                   _T("id")            // 每个对象的标识符
-#define XML_STYLECLASS           _T("styleclass")    // 对象的样式类型
+#define XML_STYLECLASS           _T("style")         // 对象的样式类型
 #define XML_WIDTH                _T("width")         // 对象的宽度，可以为 auto | 数值
 #define XML_HEIGHT               _T("height")        // 对象的高度，可以为 auto | 数值
 #define XML_MARGIN               _T("margin")        // 对象的外边距
@@ -151,6 +152,10 @@ enum IMAGE_ITEM_TYPE
 #define XML_MAXHEIGHT            _T("maxheight")     // 对象的最大高度
 #define XML_AUTO                 _T("auto")          // 对象的宽和高设置为由内部内容决定
 #define XML_ASTERISK             _T("*")             // 对象的宽和高设置为平分
+#define XML_AVERAGE              _T("avg")           // 对象的宽和高设置为平均
+#define XML_PERCENT              _T("percent")       // 对象的宽和高设置为百分比 pct ?
+#define XML_PERCENT_CHAR         _T('%') 
+#define XML_AVERAGE_CHAR         _T('*')             // 暂不支持 x*,
 
 // EraseBkgnd
 #define XML_BACKGND_IS_TRANSPARENT        _T("transparent")             // 是否需要进行透明处理（刷上父对象的背景）0/1
@@ -166,6 +171,7 @@ enum VISIBILITY_TYPE
 #define  XML_VISIBILITY_VISIBLE           _T("visible")
 #define  XML_VISIBILITY_HIDDEN            _T("hidden")
 
+#define XML_RENDER                        _T("render")
 #define XML_RENDER_TYPE                   _T("render.type")             // 设置渲染类型
 #define XML_RENDER_TYPE_GRADIENT          _T("gradient")                // 横向渐变 Color + Color
 #define XML_RENDER_TYPE_IMAGE             _T("image")                   // 贴图Image + Color
@@ -501,7 +507,7 @@ enum LAYOUT_FLAG
     LAYOUT_ITEM_ALIGN_CENTER = 0x0020,
     LAYOUT_ITEM_ALIGN_VCENTER = 0x0040,
     LAYOUT_ITEM_ALIGN_FILL   = 0x0080,  // 填充剩余空间--stack布局
-	LAYOUT_FLAG_FORCE_DESIREDSIZE = 0x0100, // 强制使用控件自己的期望大小
+	// LAYOUT_FLAG_FORCE_DESIREDSIZE = 0x0100, // 强制使用控件自己的期望大小，废弃，再调一次get desired size得了
 
     LAYOUT_ITEM_ALIGN_LTRB = LAYOUT_ITEM_ALIGN_LEFT|LAYOUT_ITEM_ALIGN_TOP|LAYOUT_ITEM_ALIGN_RIGHT|LAYOUT_ITEM_ALIGN_BOTTOM,
 };
@@ -528,24 +534,8 @@ enum LAYOUT_FLAG
 // 1. 正常情况下，由于子控件采用的是lrtb对齐，将不测试自己的大小，而是直接依赖于父对象
 // 2. 在菜单窗口场景下，窗口的大小则是取决于菜单内容大小，但菜单又是lrtb对齐布局的，
 //    因此窗口在遍历时，菜单的desiredsize不应该依赖父对象，而是返回真实大小
-#define XML_LAYOUT_ALIGN_FORCE_DESIREDSIZE  _T("forcedesiredsize")
-
-
-#define XML_LAYOUT_WIDTH_TYPE     _T("width.type")
-#define XML_LAYOUT_HEIGHT_TYPE    _T("height.type")
-
-#define XML_LAYOUT_VALUE_TYPE_SET  _T("set")
-#define XML_LAYOUT_VALUE_TYPE_AUTO _T("auto")
-#define XML_LAYOUT_VALUE_TYPE_AVG  _T("avg")
-#define XML_LAYOUT_VALUE_TYPE_PERCENT  _T("percent")  // pct ?
-
-enum LAYOUT_VALUE_TYPE
-{
-	LAYOUT_VALUE_SET,
-	LAYOUT_VALUE_AUTO,
-	LAYOUT_VALUE_AVG,
-	LAYOUT_VALUE_PERCENT,
-};
+// 废弃，再调一次get desired size得了
+//#define XML_LAYOUT_ALIGN_FORCE_DESIREDSIZE  _T("xxxx")
 
 
 // enum LAYOUT_STACK_ITEM_ALIGN
@@ -618,13 +608,13 @@ typedef enum
 }BUTTON_RENDER_DRAW_FOCUS_TYPE;
 
 #define XML_BUTTON_AUTOSIZE_TYPE           _T("autosize")     // 当没有指定按钮大小时，如何计算其大小
-#define XML_BUTTON_AUTOSIZE_TYPE_BKIMAGE   _T("bkimage")      // 背景图片的大小决定按钮大小
+#define XML_BUTTON_AUTOSIZE_TYPE_BKIMAGE   _T("backimage")      // 背景图片的大小决定按钮大小
 #define XML_BUTTON_AUTOSIZE_TYPE_CONTENT   _T("content")      // 背景图片的内容(图标+文本)决定按钮大小
 #define XML_BUTTON_AUTOSIZE_TYPE_BKIMAGEHEIGHT_CONTENTWIDTH _T("bkimagehcontentw")  // 图片的高度+内容的宽度
 
 enum BUTTON_AUTO_SIZE_TYPE
 {
-    BUTTON_AUTOSIZE_TYPE_NONE,
+    BUTTON_AUTOSIZE_TYPE_NDEF,
     BUTTON_AUTOSIZE_TYPE_BKIMAGE,
     BUTTON_AUTOSIZE_TYPE_CONTENT,
     BUTTON_AUTOSIZE_TYPE_BKIMAGEHEIGHT_CONTENTWIDTH
@@ -717,6 +707,7 @@ enum PROGRESSBAR_SCROLL_DIRECTION_TYPE
 
 // Edit
 #define  XML_EDIT_TEXT                        _T("text")             // 文字内容
+#define  XML_EDIT_TEXT_ALIGN                  _T("align")            // 文字对齐方式
 
 #define  XML_EDIT_COLOR                       _T("color.text")       // 正常文字显示颜色
 #define  XML_EDIT_SELECT_COLOR                _T("color.select")     // 文字被选中时的颜色

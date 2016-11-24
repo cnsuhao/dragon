@@ -12,6 +12,7 @@
 #include "Inc\Interface\iuiapplication.h"
 #include "..\Base\Application\uiapplication.h"
 #include "..\UIObject\Window\windowbase.h"
+#include "Inc\Interface\ilayout.h"
 
 LayoutManager::LayoutManager(SkinRes* p)
 {
@@ -26,28 +27,59 @@ LayoutManager::~LayoutManager(void)
     SAFE_DELETE(m_pILayoutManager);
 }
 
-ILayoutManager*  LayoutManager::GetILayoutManager()
+ILayoutManager&  LayoutManager::GetILayoutManager()
 {
     if (NULL == m_pILayoutManager)
         m_pILayoutManager = new ILayoutManager(this);
 
-    return m_pILayoutManager;
+    return *m_pILayoutManager;
 }
 
 
-// 从0开始，加载一个窗口树
-// 允许szTagName为NULL，此时只匹配szId
-IObject*  LayoutManager::LoadLayout(LPCTSTR szWndName, LPCTSTR szWndId)
+// 用于实现界面插件化，将一部分控件放在另外一个窗口配置文件中。
+// LoadControlLayout将找到指定的窗口，将窗口下面的所有控件加载到指定的父控件下面
+Object*  LayoutManager::LoadControlLayout(
+            LPCTSTR szWndId, 
+            Object* pNewParemt,
+            IMessage* pNotifyTarget)
 {
-	UIElementProxy objUIElement = this->FindWindowElement(szWndName, szWndId);
+    if (!pNewParemt)
+        return nullptr;
 
+    UIElementProxy objUIElement = this->FindWindowElement(XML_WINDOW_, szWndId);
 	if (!objUIElement)
 	{
-		UI_LOG_FATAL(_T("未找到要加载的对象：name=%s, id=%s"), szWndName, szWndId);
+        UI_LOG_FATAL(_T("未找到要加载的对象：name=%s, id=%s"), 
+            XML_WINDOW_, szWndId);
 		return NULL;
 	}    
-	IObject* pObject = this->ParseElement(objUIElement.get(), NULL);
-	return pObject;
+
+    Object* pFirstChild = this->ParseChildElement(
+            objUIElement.get(), pNewParemt, pNotifyTarget);
+    if (!pFirstChild)
+        return nullptr;
+
+    ILayout*  pLayout = (ILayout*)UISendMessage(pNewParemt, UI_MSG_GETLAYOUT);
+    if (pLayout)
+    {
+        pLayout->ChildObjectVisibleChanged(pFirstChild->GetIObject());
+    }
+     
+    // 发送初始化通知( TBD: 这里只实现了给第一个对象发送通知，因此插件也只能有一个根结点）
+    Object* p = pFirstChild;
+    {
+        UISendMessage(p, UI_MSG_INITIALIZE);
+
+        UIMSG msg;
+        UIMSG msg2;
+        msg.message = UI_MSG_INITIALIZE;
+        msg2.message = UI_MSG_INITIALIZE2;
+        Object::ForwardMessageToChildObject2(p, &msg, &msg2);
+
+        UISendMessage(p, UI_MSG_INITIALIZE2);
+    }
+
+    return pFirstChild;
 }
 
 // 外部只知道一个窗口id，相拿到该窗口的tagname好调用uiapplication->createinstancebyname
@@ -230,18 +262,28 @@ bool  LayoutManager::testUIElement(
 
 
 // 递归，加载所有子对象及子对象的属性
-void  LayoutManager::ParseChildElement(
-            UIElement* pParentElement, IObject* pIObjParent)
+// 返回第一个子结点
+Object*  LayoutManager::ParseChildElement(
+            UIElement* pParentElement,
+            Object* pParent,
+            IMessage* pNotifyTarget)
 {
-	if (!pIObjParent || !pParentElement)
-		return;
+    if (!pParent || !pParentElement)
+		return nullptr;
+
+    Object* pFirstChild = nullptr;
 
     UIElementProxy child = pParentElement->FirstChild();
     while (child) 
     {
-        ParseElement(child.get(), pIObjParent);        
+        Object* pRet = ParseElement(child.get(), pParent, pNotifyTarget);
+        if (!pFirstChild)
+            pFirstChild = pRet;
+
         child = child->NextElement();
     } 
+
+    return pFirstChild;
 }
 
 bool IsTrue(LPCTSTR szValue)
@@ -256,7 +298,7 @@ bool IsTrue(LPCTSTR szValue)
 }
 
 // 得到一个元素指针，创建该元素及其子结点，并返回对象指针
-IObject*  LayoutManager::ParseElement(UIElement* pUIElement, IObject* pParent)
+Object*  LayoutManager::ParseElement(UIElement* pUIElement, Object* pParent, IMessage* pNotifyTarget)
 {
     UIApplication*  pUIApp = m_pSkinRes->GetUIApplication();
 
@@ -281,7 +323,7 @@ IObject*  LayoutManager::ParseElement(UIElement* pUIElement, IObject* pParent)
             eParseRet = func(
                     pUIElement->GetIUIElement(), 
                     m_pSkinRes->GetISkinRes(), 
-                    pParent, 
+                    pParent?pParent->GetIObject():nullptr, 
                     &pIObject);
 
 			if (eParseRet == ParseControl_Failed)
@@ -305,7 +347,7 @@ IObject*  LayoutManager::ParseElement(UIElement* pUIElement, IObject* pParent)
 	if (eParseRet < ParseControl_LoadObject)
 	{
         // 先单方面设置下父对象，用于font/bitmap创建时，获取到window的graphics type
-        pObj->SetParentObjectDirect(pParent->GetImpl());  
+        pObj->SetParentObjectDirect(pParent);  
         {
             // 自己的属性
 		    pObj->LoadAttributeFromXml(pUIElement, false);
@@ -319,11 +361,11 @@ IObject*  LayoutManager::ParseElement(UIElement* pUIElement, IObject* pParent)
 			s.ncobject = 1;
 			if (pObj->TestObjectStyle(s))
 			{
-				pParent->GetImpl()->AddNcChild(pObj);
+				pParent->AddNcChild(pObj);
 			}
 			else
 			{
-				pParent->GetImpl()->AddChild(pObj);
+				pParent->AddChild(pObj);
 			}
 		}
 	}
@@ -331,15 +373,27 @@ IObject*  LayoutManager::ParseElement(UIElement* pUIElement, IObject* pParent)
 	if (eParseRet < ParseControl_LoadDescendants)
 	{
 		// 遍历子对象
-		ParseChildElement(pUIElement, pIObject);
+		ParseChildElement(pUIElement, pIObject->GetImpl());
 	}
 
     // 默认将该控件添加一个notify object为窗口对象，并将msgmapid设置为0
-    WindowBase* pWindowBase = pObj->GetWindowObject(); 
-    if (pObj != pWindowBase && pWindowBase)
-        pObj->SetNotify(pWindowBase->GetIMessage(), 0);
+    if (pNotifyTarget == NOTIFY_TARGET_ROOT)
+    {
+        WindowBase* pWindowBase = pObj->GetWindowObject();
+        if (pObj != pWindowBase && pWindowBase)
+            pObj->SetNotify(pWindowBase->GetIMessage(), 0);
+    }
+    else if (pNotifyTarget == NOTIFY_TARGET_NULL)
+    {
 
-    return pIObject;
+    }
+    else
+    {
+        pObj->SetNotify(pNotifyTarget, 0);
+    }
+
+
+    return pObj;
 }
 
 
@@ -478,20 +532,14 @@ void  LayoutManager::ReloadChildObjects(
 
 HRESULT  LayoutManager::UIParseLayoutTagCallback(IUIElement* pElem, ISkinRes* pSkinRes)
 {
-    ILayoutManager*  pLayoutMgr = pSkinRes->GetLayoutManager();
-    if (NULL == pLayoutMgr)
-        return E_FAIL;
-
-    pLayoutMgr->GetImpl()->ParseNewElement(pElem->GetImpl());
+    ILayoutManager&  pLayoutMgr = pSkinRes->GetLayoutManager();
+    pLayoutMgr.GetImpl()->ParseNewElement(pElem->GetImpl());
 	return true;
 }
 HRESULT  LayoutManager::UIParseLayoutConfigTagCallback(IUIElement* pElem, ISkinRes* pSkinRes)
 {
-	ILayoutManager*  pLayoutMgr = pSkinRes->GetLayoutManager();
-	if (NULL == pLayoutMgr)
-		return E_FAIL;
-
-	pLayoutMgr->GetImpl()->ParseLayoutConfigTag(pElem->GetImpl());
+	ILayoutManager&  pLayoutMgr = pSkinRes->GetLayoutManager();
+	pLayoutMgr.GetImpl()->ParseLayoutConfigTag(pElem->GetImpl());
 	return S_OK;
 }
 
@@ -660,7 +708,6 @@ LPCTSTR  LayoutConfigItem::GetPath()
 
 //////////////////////////////////////////////////////////////////////////
 
-#if 0
 class LayoutWindowNodeList : public ILayoutWindowNodeList
 {
 public:
@@ -719,8 +766,7 @@ private:
     };
     vector<WindowInfo> m_array;
 };
-#endif
-#if 0
+
 bool  LayoutManager::LoadWindowNodeList(ILayoutWindowNodeList** ppInfo)
 {
     if (!ppInfo)
@@ -744,17 +790,16 @@ bool  LayoutManager::LoadWindowNodeList(ILayoutWindowNodeList** ppInfo)
         }
 
         //  遍历访<layout>下面的窗口结点
-        UIElement*  pChildElem = NULL;
         CComBSTR  bstrTagName;
         CComBSTR  bstrId;
 
         UIElementProxy childElem = pLayoutElem->FirstChild();
         while (childElem)
         {
-            pChildElem->GetAttrib(XML_ID, &bstrId);
+            childElem->GetAttrib(XML_ID, &bstrId);
             pResult->AddWindow(
                         szDocName, 
-                        pChildElem->GetTagName(),
+                        childElem->GetTagName(),
                         bstrId);
 
             childElem = childElem->NextElement();
@@ -777,5 +822,3 @@ bool  LayoutManager::LoadWindowNodeList(ILayoutWindowNodeList** ppInfo)
     }
     return true;
 }
-#endif
-//////////////////////////////////////////////////////////////////////////

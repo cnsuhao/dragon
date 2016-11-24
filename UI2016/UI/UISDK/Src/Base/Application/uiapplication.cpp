@@ -37,7 +37,7 @@ void  UIApplication::x_Init()
     HRESULT  hr = OleInitialize(0);  // 需要注册richedit的drag drop，因此用ole初始化
 	(hr);
 
-    m_bDesignMode = false;
+    m_bEditorMode = false;
     m_pUIEditor = NULL;
 
     m_skinMgr.SetUIApplication(this);
@@ -142,99 +142,6 @@ SkinRes* UIApplication::GetDefaultSkinRes()
 	return m_skinMgr.GetDefaultSkinRes();
 }
 
-ImageManager*  UIApplication::GetActiveSkinImageMgr()
-{
-	SkinRes* pSkinRes = GetDefaultSkinRes();
-	if (NULL == pSkinRes)
-		return NULL;
-
-	return &pSkinRes->GetImageManager();
-}
-ImageRes*  UIApplication::GetActiveSkinImageRes()
-{
-	ImageManager* pImageMgr = GetActiveSkinImageMgr();
-	if (NULL == pImageMgr)
-		return NULL;
-
-	return &pImageMgr->GetImageRes();
-}
-CursorRes*  UIApplication::GetActiveSkinCursorRes()
-{
-	ImageManager* pImageMgr =GetActiveSkinImageMgr();
-	if (NULL == pImageMgr)
-		return NULL;
-
-	return &pImageMgr->GetCursorRes();
-}
-GifRes*  UIApplication::GetActiveSkinGifRes()
-{
-	ImageManager* pImageMgr = GetActiveSkinImageMgr();
-	if (NULL == pImageMgr)
-		return NULL;
-
-	return &pImageMgr->GetGifRes();
-}
-FontManager*  UIApplication::GetActiveSkinFontMgr()
-{
-	SkinRes* pSkinRes = GetDefaultSkinRes();
-	if (NULL == pSkinRes)
-		return NULL;
-
-	return &pSkinRes->GetFontManager();
-}
-FontRes*  UIApplication::GetActiveSkinFontRes()
-{
-	FontManager* pFontMgr = GetActiveSkinFontMgr();
-	if (NULL == pFontMgr)
-		return NULL;
-
-	return &pFontMgr->GetFontRes();
-}
-ColorManager*  UIApplication::GetActiveSkinColorMgr()
-{
-	SkinRes* pSkinRes = GetDefaultSkinRes();
-	if (NULL == pSkinRes)
-		return NULL;
-
-	return &pSkinRes->GetColorManager();
-}
-
-ColorRes*  UIApplication::GetActiveSkinColorRes()
-{
-	ColorManager* pColorMgr = GetActiveSkinColorMgr();
-	if (NULL == pColorMgr)
-		return NULL;
-
-	return &pColorMgr->GetColorRes();
-}
-StyleManager*  UIApplication::GetActiveSkinStyleMgr()
-{
-	SkinRes* pSkinRes = GetDefaultSkinRes();
-	if (NULL == pSkinRes)
-		return NULL;
-
-	return &pSkinRes->GetStyleManager();
-}
-
-StyleRes*  UIApplication::GetActiveSkinStyleRes()
-{
-	StyleManager* pStyleMgr = GetActiveSkinStyleMgr();
-	if (NULL == pStyleMgr)
-		return NULL;
-
-	return &pStyleMgr->GetStyleRes();
-}
-
-LayoutManager*  UIApplication::GetActiveSkinLayoutMgr()
-{
-	SkinRes* pSkinRes = GetDefaultSkinRes();
-	if (NULL == pSkinRes)
-		return NULL;
-
-	return &pSkinRes->GetLayoutManager();
-}
-
-//
 //	一个空的窗口过程，因为UI这个窗口类的窗口过程最终要被修改成为一个类的成员函数，
 //  因此这里的窗口过程只是用来填充WNDCLASS参数。
 //
@@ -417,10 +324,10 @@ void  UIApplication::ClearRegisterUIObject()
 
 void UIApplication::RegisterDefaultUIObject()
 {
+    RegisterUIObject(PanelDescription::Get());
     RegisterUIObject(WindowDescription::Get());
     RegisterUIObject(CustomWindowDescription::Get());
     RegisterUIObject(HwndHostDescription::Get());
-	RegisterUIObject(PanelDescription::Get());
 //    RegisterUIObject(ScrollPanelDescription::Get());
 
 
@@ -664,10 +571,7 @@ void UIApplication::LoadUIObjectListToToolBox()
     UIOBJ_CREATE_DATA::iterator iter = m_vecUIObjectDesc.begin();
     for (; iter != m_vecUIObjectDesc.end(); iter++)
     {
-        m_pUIEditor->OnToolBox_AddObject(
-            (*iter)->GetTagName(), 
-            (*iter)->GetCategory(), 
-            (*iter)->GetMajorType());
+        m_pUIEditor->OnToolBox_AddObject((*iter));
     }
 }
 
@@ -757,4 +661,28 @@ bool  UIApplication::EnableGpuComposite()
 #endif
 
     return false;
+}
+
+
+bool  UIApplication::CreateRenderBaseByName(
+		LPCTSTR szName, IObject* pObject, IRenderBase** ppOut)
+{
+    ISkinRes* pSkinRes = NULL;
+	if (pObject)
+	{
+		pSkinRes = pObject->GetSkinRes();
+	}
+	else
+	{
+		SkinRes* p = GetDefaultSkinRes();
+		pSkinRes = p ? p->GetISkinRes() : NULL;
+	}
+
+    return m_renderBaseFactory.CreateRenderBaseByName(
+		pSkinRes, szName, pObject, ppOut); 
+}
+
+LPCTSTR  UIApplication::GetRenderBaseName(int nType)
+{
+	return m_renderBaseFactory.GetRenderBaseName(nType);
 }

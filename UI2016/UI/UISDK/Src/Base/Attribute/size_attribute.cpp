@@ -146,7 +146,7 @@ bool  SizeAttribute::IsDefaultValue()
 		return false;
 }
 
-void  SizeAttribute::Editor(AttributeEditorProxy* p, EditorAttributeFlag e)
+void  SizeAttribute::Editor(SERIALIZEDATA* pData, AttributeEditorProxy* p, EditorAttributeFlag e)
 {
     p->Size2Editor(this, e);
 }

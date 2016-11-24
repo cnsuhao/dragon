@@ -4,6 +4,7 @@
 #include "edit_desc.h"
 #include "Inc\Interface\imenu.h"
 #include "..\UISDK\Inc\Util\util.h"
+#include "TextFilter\digitfilter.h"
 
 
 
@@ -503,27 +504,29 @@ void EditData::Fire_Text_Changed(bool bInvokeSetText)
 	this->StringAnalysis();
 	this->CP2X(m_strText.length(), &m_nTextWidth);
 
-    UIMSG msg;
-    msg.pMsgFrom = m_pEdit->GetIEdit();
-    msg.message = UI_MSG_NOTIFY;
-    msg.nCode = UI_EN_CHANGE;
-	msg.wParam = bInvokeSetText?1:0;
-    m_pEdit->GetIEdit()->DoNotify(&msg);
+//     UIMSG msg;
+//     msg.pMsgFrom = m_pEdit->GetIEdit();
+//     msg.message = UI_MSG_NOTIFY;
+//     msg.nCode = UI_EN_CHANGE;
+// 	   msg.wParam = bInvokeSetText?1:0;
+//     m_pEdit->GetIEdit()->DoNotify(&msg);
+
+    m_pEdit->en_change.emit(
+        m_pEdit->GetIEdit(), bInvokeSetText);
 }
 
 void  EditData::SetTextFilterDigit()
 {
-	UIASSERT(0);
-// 	if (m_pTextFilter)
-// 	{
-// 		if (m_pTextFilter->GetType() == TFT_DIGIT)
-// 			return;
-// 
-// 		m_pTextFilter->Release(true);
-// 		m_pTextFilter = NULL;
-// 	}
-// 	DigitTextFilter* p = DigitTextFilter::CreateInstance(NULL);
-// 	m_pTextFilter = static_cast<ITextFilter*>(p);
+	if (m_pTextFilter)
+	{
+		if (m_pTextFilter->GetType() == TFT_DIGIT)
+			return;
+
+		m_pTextFilter->Release(true);
+		m_pTextFilter = NULL;
+	}
+	DigitTextFilter* p = DigitTextFilter::CreateInstance(NULL);
+	m_pTextFilter = static_cast<ITextFilter*>(p);
 }
 
 void  EditData::ClearTextFilter()
@@ -836,7 +839,7 @@ Edit::Edit(IEdit* p):MessageProxy(p)
     m_nTextHeight = NDEF;
 	m_nXCaretPos = 0;
     
-	m_lEditType = 0;
+	// m_lEditType = 0;
 
 	m_editData.BindToEdit(this);
 
@@ -916,14 +919,14 @@ long  Edit::GetMaxChar()
 	return m_editData.GetMaxChar();
 }
 
-int  Edit::GetEditType()
-{
-	return m_lEditType;
-}
-void Edit::SetEditType(int n)
-{
-    m_lEditType = n;
-}
+// int  Edit::GetEditType()
+// {
+// 	return m_lEditType;
+// }
+// void Edit::SetEditType(int n)
+// {
+//     m_lEditType = n;
+// }
 
 void  Edit::DeleteSelectionText(bool bUpdate)
 {
@@ -1119,17 +1122,21 @@ void  Edit::OnSerialize(SERIALIZEDATA* pData)
 		s.AddBool(XML_READONLY, this,
 			memfun_cast<pfnBoolSetter>(&Edit::SetReadOnly),
 			memfun_cast<pfnBoolGetter>(&Edit::IsReadOnly));
+
+        s.AddEnum(XML_EDIT_TEXT_ALIGN, *(long*)&m_textAlign)
+            ->AddOption(EDIT_TEXT_ALIGN_LEFT, XML_ALIGN_LEFT)
+            ->AddOption(EDIT_TEXT_ALIGN_CENTER, XML_ALIGN_CENTER);
     }
 }
 
-// void  Edit::OnCreateByEditor(CREATEBYEDITORDATA* pData)
-// {
-//     DO_PARENT_PROCESS_MAPID(IEdit, IControl, UIALT_CALLLESS);
-//     if (pData->rcInitPos.right == pData->rcInitPos.left)
-//         pData->rcInitPos.right = pData->rcInitPos.left + 200;
-//     if (pData->rcInitPos.bottom == pData->rcInitPos.top)
-//         pData->rcInitPos.bottom = pData->rcInitPos.top + 24;
-// }
+void  Edit::OnCreateByEditor(CREATEBYEDITORDATA* pData)
+{
+    DO_PARENT_PROCESS_MAPID(IEdit, IControl, UIALT_CALLLESS);
+    if (pData->rcInitPos.right == pData->rcInitPos.left)
+        pData->rcInitPos.right = pData->rcInitPos.left + 200;
+    if (pData->rcInitPos.bottom == pData->rcInitPos.top)
+        pData->rcInitPos.bottom = pData->rcInitPos.top + 24;
+}
 
 // {
 // 	if (!m_pIEdit->GetTextRender())
@@ -1438,6 +1445,13 @@ void  Edit::OnInitialize()
     s.enable_ime = 1;
 	s.clip_client = 1;  // 有 padding 时，文字不能出界
     m_pIEdit->ModifyObjectStyle(&s, 0);
+
+#ifdef EDITOR_MODE
+    if (m_pIEdit->GetUIApplication()->IsEditorMode())
+    {
+        SetText(TEXT("Edit"));
+    }
+#endif
 }
 
 void  Edit::OnStateChanged(UINT nMask)
@@ -1450,7 +1464,7 @@ void  Edit::OnStateChanged(UINT nMask)
 
 void Edit::OnEraseBkgnd(IRenderTarget* pRenderTarget)
 {
-    IRenderBase* pBkgndRender = m_pIEdit->GetBkRender();
+    IRenderBase* pBkgndRender = m_pIEdit->GetBackRender();
 	if (pBkgndRender)
 	{
 		CRect rc(0, 0, m_pIEdit->GetWidth(), m_pIEdit->GetHeight());
@@ -2191,32 +2205,41 @@ void Edit::OnKeyDown_Insert(bool bCtrlDown)
 }
 void  Edit::OnKeyDown_Return()
 {
-    UIMSG  msg;
-    msg.message = UI_MSG_NOTIFY;
-    msg.nCode = UI_EN_KEYDOWN;
-	msg.wParam = VK_RETURN;
-    msg.pMsgFrom = m_pIEdit;
-    m_pIEdit->DoNotify(&msg);
+//     UIMSG  msg;
+//     msg.message = UI_MSG_NOTIFY;
+//     msg.nCode = UI_EN_KEYDOWN;
+// 	msg.wParam = VK_RETURN;
+//     msg.pMsgFrom = m_pIEdit;
+//     m_pIEdit->DoNotify(&msg);
+
+    bool bHandled = keydown.emit(m_pIEdit, VK_RETURN);
+	(bHandled);
 }
 
 void  Edit::OnKeydown_Esc()
 {
-    UIMSG  msg;
-    msg.message = UI_MSG_NOTIFY;
-    msg.nCode = UI_EN_KEYDOWN;
-	msg.wParam = VK_ESCAPE;
-    msg.pMsgFrom = m_pIEdit;
-    m_pIEdit->DoNotify(&msg);
+//     UIMSG  msg;
+//     msg.message = UI_MSG_NOTIFY;
+//     msg.nCode = UI_EN_KEYDOWN;
+// 	msg.wParam = VK_ESCAPE;
+//     msg.pMsgFrom = m_pIEdit;
+//     m_pIEdit->DoNotify(&msg);
+
+	bool bHandled = keydown.emit(m_pIEdit, VK_ESCAPE);
+	(bHandled);
 }
 
 void  Edit::OnKeydown_Tab()
 {
-    UIMSG  msg;
-    msg.message = UI_MSG_NOTIFY;
-    msg.nCode = UI_EN_KEYDOWN;
-	msg.wParam = VK_TAB;
-    msg.pMsgFrom = m_pIEdit;
-    m_pIEdit->DoNotify(&msg);
+//     UIMSG  msg;
+//     msg.message = UI_MSG_NOTIFY;
+//     msg.nCode = UI_EN_KEYDOWN;
+// 	   msg.wParam = VK_TAB;
+//     msg.pMsgFrom = m_pIEdit;
+//     m_pIEdit->DoNotify(&msg);
+
+	bool bHandled = keydown.emit(m_pIEdit, VK_TAB);
+	(bHandled);
 }
 
 void Edit::OnKeyUp( UINT nChar, UINT nRepCnt, UINT nFlags)
@@ -2313,6 +2336,11 @@ void Edit::SetReadOnly(bool b)
 bool  Edit::IsRealFocus()
 {
 	return m_bRealFocus;
+}
+
+void  Edit::SetWantTab(bool b)
+{
+    m_editStyle.want_tab = b;
 }
 
 void  Edit::SetTextFilterDigit()

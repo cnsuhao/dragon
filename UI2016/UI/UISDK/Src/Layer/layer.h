@@ -1,6 +1,7 @@
 #pragma once
 #include "Src\Util\RectArray\rectarray.h"
 #include "Inc\Interface\irenderlayer.h"
+#include "transform3d.h"
 
 namespace UI
 {
@@ -72,6 +73,8 @@ public:
 	
     ILayer*  GetILayer();
     void  SetCompositorPtr(Compositor*);
+
+    IRenderTarget*  GetRenderTarget();
    
     bool  AddSubLayer(Layer*, Layer* pInsertBefore);
     void  MoveLayer2NewParentEnd(Layer* pOldParent, Layer* pNewParent);
@@ -117,7 +120,7 @@ public:
 protected:
 	virtual UIA::E_ANIMATE_TICK_RESULT  OnAnimateTick(UIA::IStoryboard*) override;
     virtual void  OnAnimateEnd(UIA::IStoryboard*, UIA::E_ANIMATE_END_REASON e) override;
-    virtual void  virtualOnSize(uint nWidth, uint nHeight) = 0;
+    virtual void  virtualOnSize(uint nWidth, uint nHeight) {};
 
 private:
     bool  do_add_sub_layer(Layer*);
@@ -127,6 +130,8 @@ private:
 protected:
     ILayer  m_iLayer;
     Compositor*  m_pCompositor;
+
+    IRenderTarget*  m_pRenderTarget;
 
 	// Layer Tree
 	Layer*  m_pParent;
@@ -151,7 +156,7 @@ protected:
 	byte  m_nOpacity;         // 设置的值
 	byte  m_nOpacity_Render;  // 动画过程中的值
 
-// 	Transform3D  m_transfrom3d;  // 动画过程中的值
+ 	Transform3D  m_transfrom3d;  // 动画过程中的值
  	float  m_fyRotate;   // 设置的值
     float  m_xTranslate; // 设置的值
     float  m_yTranslate; // 设置的值

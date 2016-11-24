@@ -136,35 +136,89 @@ bool  PugiXmlElement::AddChildAfter(UIElement*  pElem, UIElement* pInsertAfter)
 }
 
 
-bool  PugiXmlElement::MoveChildAfterChild(UIElement* pChild2Move, UIElement* pChildInsertAfter)
+// bool  PugiXmlElement::MoveChildAfterChild(UIElement* pChild2Move, UIElement* pChildInsertAfter)
+// {
+// 	if (!pChild2Move)
+// 		return false;
+// 
+// 	PugiXmlElement* _pChild2Move = static_cast<PugiXmlElement*>(pChild2Move);
+// 
+// 	if (pChildInsertAfter)
+// 	{
+// 		PugiXmlElement* _pChildInsertAfter = static_cast<PugiXmlElement*>(pChildInsertAfter);
+// 		pugi::xml_node new_node = m_node.insert_copy_after(_pChild2Move->m_node, _pChildInsertAfter->m_node);
+// 		if (new_node.empty())
+// 			return false;
+// 
+// 		m_node.remove_child(_pChild2Move->m_node);
+// 		_pChild2Move->m_node = new_node;
+// 	}
+// 	else
+// 	{
+// 		pugi::xml_node new_node = m_node.prepend_copy(_pChild2Move->m_node);
+// 		if (new_node.empty())
+// 			return false;
+// 
+// 		m_node.remove_child(_pChild2Move->m_node);
+// 		_pChild2Move->m_node = new_node;
+// 	}
+// 
+// 	return true;
+// }
+
+bool  PugiXmlElement::MoveTo(UIElement* _pNewParent, UIElement* _pChildInsertAfter)
 {
-	if (!pChild2Move)
-		return false;
+    if (!m_node)
+        return false;
 
-	PugiXmlElement* _pChild2Move = static_cast<PugiXmlElement*>(pChild2Move);
+    PugiXmlElement* pNewParent = 
+        static_cast<PugiXmlElement*>(_pNewParent);
+    PugiXmlElement* pInsertAfter = 
+        static_cast<PugiXmlElement*>(_pChildInsertAfter);
 
-	if (pChildInsertAfter)
-	{
-		PugiXmlElement* _pChildInsertAfter = static_cast<PugiXmlElement*>(pChildInsertAfter);
-		pugi::xml_node new_node = m_node.insert_copy_after(_pChild2Move->m_node, _pChildInsertAfter->m_node);
-		if (new_node.empty())
-			return false;
+    if (!pNewParent)
+    {
+        UIASSERT(0); // TODO:
+        return false;
+    }
+    pugi::xml_node new_node;
 
-		m_node.remove_child(_pChild2Move->m_node);
-		_pChild2Move->m_node = new_node;
-	}
-	else
-	{
-		pugi::xml_node new_node = m_node.prepend_copy(_pChild2Move->m_node);
-		if (new_node.empty())
-			return false;
+    if (pInsertAfter && pInsertAfter->m_node)
+    {
+        // 位置没有改变，直接返回
+        if (m_node.previous_sibling() == pInsertAfter->m_node)
+        {
+            UIASSERT(0);
+            return false;
+        }
 
-		m_node.remove_child(_pChild2Move->m_node);
-		_pChild2Move->m_node = new_node;
-	}
+        new_node = pNewParent->m_node.
+            insert_copy_after(m_node, pInsertAfter->m_node);
+    }
+    else
+    {
+        if (!m_node.previous_sibling())
+        {
+            // 位置没有改变，直接返回
+            UIASSERT(0);
+            return false;
+        }
+        new_node = pNewParent->m_node.prepend_copy(m_node);
+    }
 
-	return true;
+    if (new_node.empty())
+        return false;
+
+    // 将自己从父结点移除
+    if (m_node.parent())
+    {
+        m_node.parent().remove_child(m_node);
+    }
+    m_node = new_node;
+
+    return true;
 }
+
 
 // 如果为空，则表示插在最后面
 UIElementProxy  PugiXmlElement::AddChildBefore(LPCTSTR szNodeName, UIElement* pInsertBefore)
@@ -242,77 +296,115 @@ UIElementProxy PugiXmlElement::FindChild(LPCTSTR szChildName)
     return UIElementProxy(new PugiXmlElement(nodeChild, m_pDocument));
 }
 
-void  PugiXmlElement::GetAttribList(IMapAttribute** ppMapAttrib)
+
+void  PugiXmlElement::enum_attr(
+        const std::function<void(LPCTSTR, LPCTSTR)>& callback)
 {
-    UICreateIMapAttribute(ppMapAttrib);
 
-    (*ppMapAttrib)->SetTag(m_node.name());
-
-    for (pugi::xml_attribute attr = m_node.first_attribute(); 
-        !attr.empty(); 
+    for (pugi::xml_attribute attr = m_node.first_attribute();
+        !attr.empty();
         attr = attr.next_attribute())
     {
-        (*ppMapAttrib)->AddAttr(attr.name(), attr.as_string());
+        callback(attr.name(), attr.as_string());
     }
 
-	// 加载子结点中的属性
-	pugi::xml_node nodeProp = m_node.child(XML_PROP);
-	if (!nodeProp)
-		return;
-	/*
-	bkgnd.render.type = "color" bkgnd.render.color = "0xFFF" 等效于下面的形式：
+    // 加载子结点中的属性
+    pugi::xml_node nodeProp = m_node.child(XML_PROP);
+    if (!nodeProp)
+        return;
+    /*
+    bkgnd.render.type = "color" bkgnd.render.color = "0xFFF" 等效于下面的形式：
 
-	<prop>
-		<render key="bkgnd.render" type="color" color = "0xFFF"/>  // render tag名称未使用
-	</prop>
-	*/
+    <prop key="bkgnd.render" type="color" color = "0xFFF"/>  // render tag名称未使用
+    */
 
-	pugi::xml_node child = nodeProp.first_child();
-	while (child)
-	{
-		String strKey;
+    while (nodeProp)
+    {
+        String strKey;
 
-		// 如果没有配置key，或者key为空，则不加前缀
-		pugi::xml_attribute attr = child.attribute(XML_KEY);
-		if (!attr.empty())
-		{
-			strKey = attr.as_string();
-		}
+        // 如果没有配置key，或者key为空，则不加前缀
+        pugi::xml_attribute attr = nodeProp.attribute(XML_KEY);
+        if (!attr.empty())
+        {
+            strKey = attr.as_string();
+        }
 
-		attr = child.first_attribute();
-		for (; !attr.empty(); attr = attr.next_attribute())
-		{
-			if (0 == _tcscmp(attr.name(), XML_KEY))
-				continue;
+        attr = nodeProp.first_attribute();
+        for (; !attr.empty(); attr = attr.next_attribute())
+        {
+            if (0 == _tcscmp(attr.name(), XML_KEY))
+                continue;
 
-			if (strKey.empty())
-			{
-				(*ppMapAttrib)->AddAttr(attr.name(), attr.as_string());
-			}
-			else
-			{
-				String strName = strKey;
-				strName.append(TEXT("."));
-				strName.append(attr.name());
-				(*ppMapAttrib)->AddAttr(strName.c_str(), attr.as_string());
-			}
-		}
+            if (strKey.empty())
+            {
+                callback(attr.name(), attr.as_string());
+            }
+            else
+            {
+                String strName = strKey;
+                strName.append(TEXT("."));
+                strName.append(attr.name());
+                callback(strName.c_str(), attr.as_string());
+            }
+        }
 
-		child = child.next_sibling();
-	}
+        nodeProp = nodeProp.next_sibling(XML_PROP);
+    }
+}
+
+void  PugiXmlElement::GetAttribList(IMapAttribute** ppMapAttrib)
+{
+    // 有可能是增量获取
+    if (*ppMapAttrib == NULL)
+        UICreateIMapAttribute(ppMapAttrib);
+
+    //(*ppMapAttrib)->SetTag(m_node.name());
+
+    enum_attr([ppMapAttrib](LPCTSTR k, LPCTSTR v){
+        (*ppMapAttrib)->AddAttr(k, v);
+    });
 }
 void  PugiXmlElement::GetAttribList2(IListAttribute** ppListAttrib)
 {
     UICreateIListAttribute(ppListAttrib);
 
-    (*ppListAttrib)->SetTag(m_node.name());
+    //(*ppListAttrib)->SetTag(m_node.name());
 
-    for (pugi::xml_attribute attr = m_node.first_attribute(); 
-        !attr.empty(); 
-        attr = attr.next_attribute())
-    {
-        (*ppListAttrib)->AddAttr(attr.name(), attr.as_string());
-    }
+    enum_attr([ppListAttrib](LPCTSTR k, LPCTSTR v){
+        (*ppListAttrib)->AddAttr(k, v);
+    });
+}
+
+
+
+void  PugiXmlElement::set_attr_by_prefix(IListAttribute* pListAttrib, LPCTSTR szPrefix)
+{
+	UIASSERT(pListAttrib);
+	UIASSERT(szPrefix);
+
+	int nLength = _tcslen(szPrefix);
+
+	pListAttrib->BeginEnum();
+
+	LPCTSTR szKey = NULL;
+	LPCTSTR szValue = NULL;
+	pugi::xml_node propnode;
+	while (pListAttrib->EnumNext(&szKey, &szValue))
+	{
+		if (_tcsstr(szKey, szPrefix) == szKey)
+		{
+			if (!propnode)
+			{
+				propnode = m_node.prepend_child(XML_PROP);
+				propnode.append_attribute(XML_KEY).set_value(szPrefix);
+			}
+
+			// +1 补上后面的一个 . 
+			propnode.append_attribute(szKey+nLength+1).set_value(szValue);
+			pListAttrib->EraseAttr(szKey);
+		}
+	}
+	pListAttrib->EndEnum();
 }
 
 bool  PugiXmlElement::SetAttribList2(IListAttribute* pListAttrib)
@@ -321,8 +413,22 @@ bool  PugiXmlElement::SetAttribList2(IListAttribute* pListAttrib)
 		return false;
 
 	ClearAttrib();
-	pListAttrib->BeginEnum();
 
+	LPCTSTR szPrefixArray[] = { 
+		XML_BACKGND_RENDER_PREFIX XML_RENDER, 
+		XML_FOREGND_RENDER_PREFIX XML_RENDER,
+        XML_MASK_RENDER_PREFIX    XML_RENDER,
+		XML_TEXTRENDER,
+		XML_LAYOUT,        
+	};
+
+	int nCount = sizeof(szPrefixArray) / sizeof(LPCTSTR);
+	for (int i = 0; i < nCount; i++)
+	{
+		set_attr_by_prefix(pListAttrib, szPrefixArray[i]);
+	}
+
+	pListAttrib->BeginEnum();
 	LPCTSTR szKey = NULL;
 	LPCTSTR szValue = NULL;
 	while (pListAttrib->EnumNext(&szKey, &szValue))
@@ -398,6 +504,13 @@ bool  PugiXmlElement::ClearAttrib()
 	{
 		m_node.remove_attribute(*iter);
 	}
+
+    // 移除所有的prop子结点
+    pugi::xml_node nodeProp;
+    while (nodeProp = m_node.child(XML_PROP))
+    {
+        m_node.remove_child(nodeProp);
+    }
     return true;
 }
 
@@ -440,13 +553,13 @@ IUIDocument*  PugiXmlDocument::GetIUIDocument()
 void  PugiXmlDocument::SetSkinPath(LPCTSTR szPath)
 {
 	if (szPath)
-		m_strPath = szPath;
+        m_strSkinPath = szPath;
 	else
-		m_strPath.clear();
+        m_strSkinPath.clear();
 }
 LPCTSTR  PugiXmlDocument::GetSkinPath()
 {
-	return m_strPath.c_str();
+    return m_strSkinPath.c_str();
 }
 
 bool  PugiXmlDocument::LoadFile(LPCTSTR szFile)

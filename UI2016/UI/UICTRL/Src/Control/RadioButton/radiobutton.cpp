@@ -44,7 +44,7 @@ void RadioButton::virtualOnClicked()
                 if ((static_cast<IButtonBase*>(pPrevRadioButton))->IsChecked())
                 {
                     bFind = true;
-                    (static_cast<IButtonBase*>(pPrevRadioButton))->SetCheck(false, true);
+                    (static_cast<IButtonBase*>(pPrevRadioButton))->SetCheck(false);
                     break;
                 }
             }
@@ -72,7 +72,7 @@ void RadioButton::virtualOnClicked()
                     if ((static_cast<IButtonBase*>(pNextRadioButton))->IsChecked())
                     {
                         bFind = true;
-                        (static_cast<IButtonBase*>(pNextRadioButton))->SetCheck(false, true);
+                        (static_cast<IButtonBase*>(pNextRadioButton))->SetCheck(false);
                         break;
                     }
                 }

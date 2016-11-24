@@ -6,6 +6,7 @@
 #include "Src\ATL\image.h"
 #include "Inc\Util\util.h"
 #include "Inc\Interface\iuiapplication.h"
+#include "..\Layer\layer.h"
 
 // 内部全局方法
 namespace UI
@@ -113,8 +114,10 @@ void  UI_AttachFont(IRenderFont** pOut, HFONT hFont, GRAPHICS_RENDER_LIBRARY_TYP
 //
 void  UI_Split(const String& str, TCHAR szSep, vector<String>& vRet)
 {
-    int nIndex = 0;
+	if (str.empty())
+		return;
 
+    int nIndex = 0;
     while (true)
     {
         int nResult = (int)str.find( szSep, nIndex );
@@ -146,15 +149,6 @@ String&  GetTempBufferString()
 {
 	g_strGlobalTempBuffer.clear();
 	return g_strGlobalTempBuffer;
-}
-
-// 用于将一个RECT缩小一个PADDING/MARGIN的大小
-void DeflatRect(RECT* pfc, LPCRECT pDeflatRc)
-{
-	pfc->left += pDeflatRc->left;
-	pfc->top += pDeflatRc->top;
-	pfc->right -= pDeflatRc->right;
-	pfc->bottom -= pDeflatRc->bottom;
 }
 
 
@@ -201,5 +195,51 @@ HBITMAP CreateMemBitmap(int nWidth, int nHeight, int* pnPitch, byte** ppBits)
 //     CBuffer* p = new CBuffer;
 //     *pBuffer = p;
 // }
+
+void UIAnimateShow(UI::IObject* piObj, long)
+{
+    if (!piObj)
+        return;
+
+    Object* pObj = piObj->GetImpl();
+    bool bOldLayer = pObj->HasLayer();
+
+    if (!bOldLayer)
+        pObj->EnableLayer(true);
+
+    Layer* pLayer = pObj->GetLayer();
+    pLayer->SetOpacity(0, nullptr);
+    pObj->SetVisible(true);
+
+    LayerAnimateParam param = { 0 };
+    param.bBlock = true;
+    pLayer->SetOpacity(255, &param);
+
+    if (!bOldLayer)
+        pObj->EnableLayer(false);
+}
+void UIAnimateHide(UI::IObject* piObj, long)
+{
+    if (!piObj)
+        return;
+
+    Object* pObj = piObj->GetImpl();
+    bool bOldLayer = pObj->HasLayer();
+
+    if (!bOldLayer)
+        pObj->EnableLayer(true);
+
+    Layer* pLayer = pObj->GetLayer();
+
+    LayerAnimateParam param = { 0 };
+    param.bBlock = true;
+    pLayer->SetOpacity(0, &param);
+    pObj->SetVisible(false);
+
+    pLayer->SetOpacity(255, nullptr);
+
+    if (!bOldLayer)
+        pObj->EnableLayer(false);
+}
 
 } // namespace

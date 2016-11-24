@@ -9,6 +9,7 @@
 
 #include "Interface/imessage.h"
 #include "Interface/iobject.h"
+#include "Interface\ipanel.h"
 #include "Interface/iskinres.h"
 #include "Interface/iuiapplication.h"
 #include "Interface/renderlibrary.h"
@@ -18,6 +19,7 @@
 #include "Interface/itextrenderbase.h"
 #include "Interface/iattribute.h"
 #include "Interface/ianimate.h"
+#include "Interface/iuieditor.h"
 
 #include "Util/signalslot.h"
 #include "Util/bindable.h"

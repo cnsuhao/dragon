@@ -1060,7 +1060,7 @@ LRESULT  ListItemBase::OnGetRenderState(UINT, WPARAM, LPARAM)
 	bool bSelected = IsSelected();
 	// bool bFocus = IsFocus();
     bool bPress = IsPress();
-    bool bHover = IsHover();
+    bool bHover = IsHover() || IsDragDropHover();
     bool bCtrlFocus = m_pListCtrlBase->IsFocus();
 
 	int nRenderState = 0;
@@ -1152,8 +1152,6 @@ void  ListItemBase::SetIconFromFile(LPCTSTR szIconPath)
 
 void  ListItemBase::SetIconFromImageId(LPCTSTR szImageId)
 {
-	UIASSERT(0);
-#if 0
     SAFE_RELEASE(m_pIconRender);
     if (NULL == szImageId)
         return;
@@ -1161,31 +1159,32 @@ void  ListItemBase::SetIconFromImageId(LPCTSTR szImageId)
     if (NULL == m_pListCtrlBase)
         return;
 
-    IUIApplication*  pUIApplication = GetIListCtrlBase()->GetUIApplication();
-    if (NULL == pUIApplication)
+    ISkinRes*  pSkinRes = GetIListCtrlBase()->GetSkinRes();
+    if (NULL == pSkinRes)
     {
         UIASSERT(0);
         return;
     }
 
     UI::IRenderBitmap*  pRenderBitmap = NULL;
-    pUIApplication->GetActiveSkinImageRes()->GetBitmap(
+    pSkinRes->GetImageRes().GetBitmap(
         szImageId, 
-        GetIListCtrlBase()->GetGraphicsRenderLibraryType(), 
+        GRAPHICS_RENDER_LIBRARY_TYPE_GDI/*GetIListCtrlBase()->GetGraphicsRenderLibraryType()*/, 
         &pRenderBitmap);
     if (!pRenderBitmap)
         return;
 
-    pUIApplication->CreateRenderBase(
+    IUIApplication* pUIApp = pSkinRes->GetUIApplication();
+    pUIApp->CreateRenderBase(
         RENDER_TYPE_IMAGE, 
         GetIListCtrlBase(),
         &m_pIconRender);
 
-    IImageRender*  pImageForeRender = (IImageRender*)m_pIconRender->QueryInterface(uiiidof(IImageRender));
+    IImageRender*  pImageForeRender = (IImageRender*)m_pIconRender->
+        QueryInterface(__uuidof(IImageRender));
     pImageForeRender->SetRenderBitmap(pRenderBitmap);
     pImageForeRender->SetImageDrawType(UI::DRAW_BITMAP_CENTER);
     SAFE_RELEASE(pRenderBitmap);
-#endif
 }
 
 BOOL  ListItemBase::ProcessItemMKMessage(UIMSG* pMSG)
@@ -1283,4 +1282,10 @@ void  ListItemBase::GetParentOrFloatRect(RECT* prc)
         GetFloatRect(prc);
     else
         GetParentRect(prc);
+}
+
+void  ListItemBase::Invalidate()
+{
+    if (m_pListCtrlBase)
+        m_pListCtrlBase->InvalidateItem(this);
 }

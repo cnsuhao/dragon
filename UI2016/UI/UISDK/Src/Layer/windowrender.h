@@ -16,6 +16,7 @@ namespace UI
 class Object;
 class WindowBase;
 interface IWindowRender;
+interface IWindowCommitListener;
 class Compositor;
 class Layer;
 
@@ -40,7 +41,10 @@ public:
     void  SetCanCommit(bool b);
     bool  CanCommit();
 
-    void  OnInvalidate();
+    void  SetCommitListener(IWindowCommitListener*);
+    IWindowCommitListener*  GetCommitListener();
+
+    void  InvalidateNow();
     void  OnPaint(HDC hDC, RECT* prcInvalid);
 
 	Layer*  CreateLayer(Object*);
@@ -60,6 +64,7 @@ public:
 
 private:
     Compositor*  m_pCompositor;
+    IWindowCommitListener*  m_pCommitListener = nullptr;
 };
 
 }

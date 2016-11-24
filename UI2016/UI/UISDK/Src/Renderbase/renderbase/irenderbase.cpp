@@ -3,6 +3,8 @@
 #include "Src\Renderbase\renderbase\renderbase.h"
 #include "Src\Base\Object\object.h"
 #include "Inc\Interface\iuiapplication.h"
+#include "Src\Resource\colorres.h"
+#include "Src\Resource\imageres.h"
 
 namespace UI
 {
@@ -46,11 +48,19 @@ RENDER_TYPE  IRenderBase::GetType()
 }
 IColorRes*  IRenderBase::GetSkinColorRes()
 {
-    return __pImpl->GetSkinColorRes();
+    ColorRes* p = __pImpl->GetSkinColorRes();
+    if (p)
+        return &p->GetIColorRes();
+
+    return nullptr;
 }
 IImageRes*  IRenderBase::GetSkinImageRes()
 {
-    return __pImpl->GetSkinImageRes();
+    ImageRes* p = __pImpl->GetSkinImageRes();
+    if (p)
+        return &p->GetIImageRes();
+
+    return nullptr;
 }
 
 void  IRenderBase::Serialize(SERIALIZEDATA* pData)

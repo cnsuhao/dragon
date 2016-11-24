@@ -14,6 +14,8 @@ namespace UI
 
 RenderBaseAttribute::RenderBaseAttribute() 
 {
+    ReloadOnChanged();
+
     m_pIRenderBaseAttribute = NULL;
     m_ppBindValue = NULL;
     m_pObject = NULL;
@@ -44,27 +46,8 @@ void  RenderBaseAttribute::Set(LPCTSTR szType)
     }
 
     SAFE_RELEASE(*m_ppBindValue);
-    m_pUIApplication->GetIUIApplication()->CreateRenderBaseByName(
+    m_pUIApplication->CreateRenderBaseByName(
 		szType, m_pObject->GetIObject(), m_ppBindValue);
-
-	if (*m_ppBindValue)
-    {
-		IMapAttribute* pMapAttrib = NULL;
-		m_pObject->GetMapAttribute(&pMapAttrib);
-
-		SERIALIZEDATA data = { 0 };
-		data.pUIApplication = m_pUIApplication->GetIUIApplication();
-		data.pSkinRes = m_pSkinRes ? m_pSkinRes->GetISkinRes() : NULL;
-		data.pMapAttrib = pMapAttrib;
-		data.szPrefix = m_strPrefix.c_str();
-		data.nFlags = SERIALIZEFLAG_LOAD | SERIALIZEFLAG_LOAD_ERASEATTR;
-		(*m_ppBindValue)->Serialize(&data);
-
-		if (data.pUIApplication->IsDesignMode())
-			data.SetErase(false);
-
-		SAFE_RELEASE(pMapAttrib);
-    }
 }
 
 void  RenderBaseAttribute::Reset()
@@ -83,10 +66,47 @@ LPCTSTR  RenderBaseAttribute::Get()
 {
     if (!m_ppBindValue)
         return NULL;
+	if (!*m_ppBindValue)
+		return NULL;
 
-	UIASSERT(0);
-    //return (*m_ppBindValue)->GetName();
-	return NULL;
+	RENDER_TYPE eType = (*m_ppBindValue)->GetType();
+	RenderBaseFactory& factory = m_pUIApplication->GetRenderBaseFactory();
+	LPCTSTR szType = factory.GetRenderBaseName(eType);
+	return szType;
+}
+
+void  RenderBaseAttribute::do_child_action(SERIALIZEDATA* pData)
+{
+	// 子属性序列化
+	if (m_ppBindValue && *m_ppBindValue)
+	{
+		LPCTSTR szOldPrefix = pData->szPrefix;
+		LPCTSTR szOldParentKey = pData->szParentKey;
+
+		pData->szPrefix = m_strPrefix.c_str();
+		pData->szParentKey = GetKey();
+
+		(*m_ppBindValue)->Serialize(pData);
+
+		pData->szPrefix = szOldPrefix;
+		pData->szParentKey = szOldParentKey;
+	}
+}
+
+void  RenderBaseAttribute::Load(SERIALIZEDATA* pData)
+{
+	// 保存自己的类型
+	__super::Load(pData);
+
+	do_child_action(pData);
+}
+
+void  RenderBaseAttribute::Save(SERIALIZEDATA* pData)
+{
+	// 保存自己的类型
+	__super::Save(pData);
+
+	do_child_action(pData);
 }
 
 bool  RenderBaseAttribute::IsDefaultValue()
@@ -100,10 +120,18 @@ bool  RenderBaseAttribute::IsDefaultValue()
 	return false;
 }
 
-void  RenderBaseAttribute::Editor(AttributeEditorProxy* p, EditorAttributeFlag e)
+void  RenderBaseAttribute::Editor(
+		SERIALIZEDATA* pData,
+		AttributeEditorProxy* p,
+		EditorAttributeFlag e)
 {
-	UIASSERT(0);
-    //p->RenderBase2Editor(this, e);
+    p->RenderBase2Editor(this, e);
+
+	if (pData && e == EDITOR_ATTRIBUTE_ADD)
+	{
+		// 子属性序列化
+		do_child_action(pData);
+	}
 }
 
 IRenderBaseAttribute*  RenderBaseAttribute::GetIRenderBaseAttribute()

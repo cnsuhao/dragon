@@ -54,7 +54,8 @@ protected:
 
 	void  UpdatePasswordCharInEdit();
 	void  GetPasswordCharInEdit(String& str);
-	void  GetRealPassword(String& str);
+    void  GetRealPassword(String& str);
+    LPCTSTR  GetRealPassword(bool* pbIsDefault);
 
 	void  OnHookPasswordChar(string str);
 	void  SetHasInputContent(bool) {};
@@ -70,6 +71,7 @@ protected:
 
 	PASSWORDEDIT_MODE  m_eMode;  // 原文模式，直接显示密码（即普通edit模式）
 
+    bool  m_bShowDefaultIng;     // 显示默认密码
 	map<int, string>  m_rawPassword;
 };
 }

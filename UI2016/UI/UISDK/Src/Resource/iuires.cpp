@@ -12,6 +12,8 @@
 #include "../Base/Application/uiapplication.h"
 #include "../SkinParse/datasource/skindatasource.h"
 #include "skinmanager.h"
+#include "i18nres.h"
+#include "../Base/Object/object.h"
 
 
 
@@ -24,7 +26,7 @@ ColorManager*  IColorManager::GetImpl()
     return m_pImpl;
 }
 
-IColorRes*  IColorManager::GetColorRes()
+IColorRes&  IColorManager::GetColorRes()
 {
 	return m_pImpl->GetColorRes().GetIColorRes(); 
 }
@@ -67,7 +69,7 @@ ColorResItem*  IColorResItem::GetImpl()
 	return m_pImpl;
 }
 
-LPCTSTR IColorResItem::GetID() 
+LPCTSTR IColorResItem::GetId() 
 { 
 	return m_pImpl->GetId();
 }
@@ -89,7 +91,7 @@ ImageManager*  IImageManager::GetImpl()
     return m_pImpl; 
 }
 
-IImageRes*   IImageManager::GetImageRes() 
+IImageRes&   IImageManager::GetImageRes() 
 {
     return m_pImpl->GetImageRes().GetIImageRes();
 }
@@ -142,7 +144,7 @@ FontManager*  IFontManager::GetImpl()
     return m_pImpl;
 }
 
-IFontRes*  IFontManager::GetFontRes() 
+IFontRes&  IFontManager::GetFontRes() 
 { 
     return m_pImpl->GetFontRes().GetIFontRes(); 
 }
@@ -159,7 +161,7 @@ StyleManager*  IStyleManager::GetImpl()
     return m_pImpl;
 }
 
-IStyleRes*  IStyleManager::GetStyleRes() 
+IStyleRes&  IStyleManager::GetStyleRes() 
 {
     return m_pImpl->GetStyleRes().GetIStyleRes(); 
 }
@@ -173,23 +175,6 @@ IUIElement*  IStyleManager::GetStyleXmlElem(LPCTSTR szId)
     return NULL;
 }
 
-bool  IStyleManager::LoadStyle(
-                       LPCTSTR szTagName, 
-                       LPCTSTR szStyleClass,
-                       LPCTSTR szID, 
-                       IMapAttribute* pMapStyle)
-{ 
-    return m_pImpl->LoadStyle(szTagName, szStyleClass, szID, pMapStyle); 
-}
-bool  IStyleManager::ParseStyle(IMapAttribute* pMapAttrib)
-{ 
-    return m_pImpl->ParseStyle(pMapAttrib); 
-}
-bool  IStyleManager::ReverseParseStyle(IListAttribute* pListAttrib)
-{
-    return m_pImpl->ReverseParseStyle(pListAttrib);
-}
-
 //////////////////////////////////////////////////////////////////////////
 
 ILayoutManager::ILayoutManager(LayoutManager* p) 
@@ -201,21 +186,39 @@ LayoutManager*  ILayoutManager::GetImpl()
     return m_pImpl; 
 }
 
-// bool  ILayoutManager::LoadWindowNodeList(ILayoutWindowNodeList** pp) 
-// { 
-//     return m_pImpl->LoadWindowNodeList(pp); 
-// }
-IObject*  ILayoutManager::LoadLayout(LPCTSTR szWndName, LPCTSTR szWndId)
+bool  ILayoutManager::LoadWindowNodeList(ILayoutWindowNodeList** pp) 
+{ 
+    return m_pImpl->LoadWindowNodeList(pp); 
+}
+
+IObject*  ILayoutManager::LoadControlLayout(
+            LPCTSTR szWndId, IObject* pParent, IMessage* pNotifyTarget)
 {
-    return m_pImpl->LoadLayout(szWndName, szWndId);
+    Object* pObj = m_pImpl->LoadControlLayout(
+            szWndId, 
+            pParent?pParent->GetImpl():nullptr,
+            pNotifyTarget);
+
+    if (!pObj)
+        return nullptr;
+
+    return pObj->GetIObject();
 }
 IObject*  ILayoutManager::ParseElement(IUIElement* pUIElement, IObject* pParent)
 {
 	if (!pUIElement)
 		return NULL;
 
-    return m_pImpl->ParseElement(pUIElement->GetImpl(), pParent);
+    Object* pObj = m_pImpl->ParseElement(
+            pUIElement->GetImpl(),
+            pParent ? pParent->GetImpl():nullptr);
+
+    if (!pObj)
+        return nullptr;
+
+    return pObj->GetIObject();
 }
+
 bool  ILayoutManager::FindWindowElement(LPCTSTR szTagName, LPCTSTR szId, IUIElement** ppElem)
 {
     UIElementProxy p = m_pImpl->FindWindowElement(szTagName, szId);
@@ -613,6 +616,24 @@ IStyleResItem*  IStyleRes::FindItem(STYLE_SELECTOR_TYPE type, LPCTSTR szId)
 }
 
 
+bool  IStyleRes::LoadStyle(
+        LPCTSTR szTagName, 
+        LPCTSTR szStyleClass,
+        LPCTSTR szID, 
+        IMapAttribute* pMapStyle)
+{ 
+    return m_pImpl->LoadStyle(szTagName, szStyleClass, szID, pMapStyle); 
+}
+
+bool  IStyleRes::UnloadStyle(
+        LPCTSTR szTagName,
+        LPCTSTR szStyleClass,
+        LPCTSTR szID,
+        IListAttribute* pListAttribte)
+{
+    return m_pImpl->UnloadStyle(szTagName, szStyleClass, szID, pListAttribte);
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 
@@ -631,17 +652,21 @@ void  ISkinRes::SetParentSkinRes(ISkinRes* p)
 }
 
 IUIApplication*  ISkinRes::GetUIApplication()  { return m_pImpl->GetUIApplication()->GetIUIApplication(); }
-ISkinManager*    ISkinRes::GetSkinManager()    { return m_pImpl->GetISkinManager(); }
-IImageManager*   ISkinRes::GetImageManager()   { return m_pImpl->GetIImageManager(); }
-IColorManager*   ISkinRes::GetColorManager()   { return m_pImpl->GetIColorManager(); }
-IFontManager*    ISkinRes::GetFontManager()    { return m_pImpl->GetIFontManager(); }
-IStyleManager*   ISkinRes::GetStyleManager()   { return m_pImpl->GetIStyleManager(); }
-ILayoutManager*  ISkinRes::GetLayoutManager()  { return m_pImpl->GetILayoutManager(); }
+ISkinManager&    ISkinRes::GetSkinManager()    { return m_pImpl->GetSkinMgr().GetISkinManager(); }
+IImageManager&   ISkinRes::GetImageManager()   { return m_pImpl->GetImageManager().GetIImageManager(); }
+IColorManager&   ISkinRes::GetColorManager()   { return m_pImpl->GetColorManager().GetIColorManager(); }
+IFontManager&    ISkinRes::GetFontManager()    { return m_pImpl->GetFontManager().GetIFontManager(); }
+IStyleManager&   ISkinRes::GetStyleManager()   { return m_pImpl->GetStyleManager().GetIStyleManager(); }
+ILayoutManager&  ISkinRes::GetLayoutManager()  { return m_pImpl->GetLayoutManager().GetILayoutManager(); }
 
-IImageRes*  ISkinRes::GetImageRes()            { return m_pImpl->GetIImageRes(); }
-IFontRes*   ISkinRes::GetFontRes()             { return m_pImpl->GetIFontRes();  }
-IColorRes*  ISkinRes::GetColorRes()            { return m_pImpl->GetIColorRes(); }
-IStyleRes*  ISkinRes::GetStyleRes()            { return m_pImpl->GetIStyleRes(); }
+IImageRes&  ISkinRes::GetImageRes()            { return m_pImpl->GetImageRes().GetIImageRes(); }
+IFontRes&   ISkinRes::GetFontRes()             { return m_pImpl->GetFontRes().GetIFontRes(); }
+IColorRes&  ISkinRes::GetColorRes()            { return m_pImpl->GetColorRes().GetIColorRes(); }
+IStyleRes&  ISkinRes::GetStyleRes()            { return m_pImpl->GetStyleRes().GetIStyleRes(); }
+II18nRes&   ISkinRes::GetI18nRes()             
+{ 
+	return m_pImpl->GetI18nRes().GetII18nRes(); 
+}
 
 LPCTSTR  ISkinRes::GetName()              
 { 
@@ -735,4 +760,24 @@ ISkinRes*  ISkinManager::GetSkinResByIndex(uint i)
 		return p->GetISkinRes();
 
 	return NULL;
+}
+
+void  ISkinManager::SetCurrentLanguage(LPCTSTR szLang)
+{
+    m_pImpl->SetCurrentLanguage(szLang);
+}
+LPCTSTR  ISkinManager::GetCurrentLanguage()
+{
+    return m_pImpl->GetCurrentLanguage();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+II18nRes::II18nRes(I18nRes* p)
+{
+	m_pImpl = p;
+}
+LPCTSTR  II18nRes::MapConfigValue(LPCTSTR config)
+{
+    return m_pImpl->MapConfigValue(config);
 }

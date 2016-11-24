@@ -26,6 +26,7 @@ namespace UI
 		BUTTON_TYPE_TABCTRLBUTTON = 0x06,        // TAB控件上的迎宾馆
 		BUTTON_TYPE_HAVE_TEXT_LAST = 0x80,
 
+
 		BUTTON_TYPE_COMBOBOX = 0x81,             // 组合框中的按钮
 		BUTTON_TYPE_SCROLLLINEUP = 0x82,         // 滚动条按钮
 		BUTTON_TYPE_SCROLLLINEDOWN = 0x83,
@@ -34,13 +35,19 @@ namespace UI
 		BUTTON_TYPE_HSCROLLTHUMB = 0x86,         // 滚动条拖拽按钮
 		BUTTON_TYPE_VSCROLLTHUMB = 0x87,         // 滚动条拖拽按钮
 		BUTOTN_TYPE_SLIDERTRACKBUTTON = 0x88,    // 滑动条上面的按钮
+
+        // 系统类型
+        BUTTON_TYPE_MINIMIZE = 0x100,
+        BUTTON_TYPE_MAXIMIZE = 0x101,
+        BUTTON_TYPE_RESTORE = 0x102,
+        BUTTON_TYPE_CLOSE = 0x103,
 	};
 
 class ButtonBase;
-interface UICTRLAPI IButtonBase : public IControl
+struct UICTRL_API IButtonBase : public IControl
 {
     void  SetCheck(int nCheckState);
-    void  SetCheck(bool bCheck, bool bUpdate);
+    void  SetCheck(bool bCheck);
     void  SetChecked();
     void  SetUnChecked();
     int   GetCheck();
@@ -51,12 +58,13 @@ interface UICTRLAPI IButtonBase : public IControl
 };
 
 class Button;
-interface __declspec(uuid("DEBF57B2-C7C4-480B-A90D-427891E77502"))
-UICTRLAPI IButton : public IButtonBase
+interface UICTRL_API_UUID(DEBF57B2-C7C4-480B-A90D-427891E77502) IButton : public IButtonBase
 {
-    void  SetText(LPCTSTR  szText, bool bUpdate=true);
+    void  SetText(LPCTSTR  szText);
     LPCTSTR GetText();
     
+	void  Click();
+
     void  SetIconFromFile(LPCTSTR szIconPath);
     void  SetIconFromHBITMAP(HBITMAP hBitmap);   // 注：该HBITMAP最后由内部销毁
 

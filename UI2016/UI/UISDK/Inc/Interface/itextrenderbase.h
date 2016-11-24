@@ -33,11 +33,11 @@ enum TEXTRENDER_TYPE
 
 interface IRenderFont;
 class TextRenderBase; 
-interface UISDKAPI ITextRenderBase : public IMessage
+interface UIAPI ITextRenderBase : public IMessage
 {
     IRenderFont*  GetRenderFont();
 
-    void  SetObject(IUIApplication*  pUIApp, IObject* pObject);
+    void  SetObject(IObject* pObject);
     IObject*  GetObject();
 
     void  SetType(const TEXTRENDER_TYPE& nType);
@@ -68,7 +68,7 @@ protected:
 interface AttributeSerializerWrap;
 class ThemeTextRenderBase;
 
-// interface UISDKAPI IThemeTextRenderBase : public ITextRenderBase
+// interface UIAPI IThemeTextRenderBase : public ITextRenderBase
 // {
 // 	IThemeTextRenderBase() {};
 // 
@@ -81,7 +81,7 @@ class ThemeTextRenderBase;
 
 class SimpleTextRender;
 interface __declspec(uuid("230E9C5F-7F13-4307-85E7-088AB6F44C9D"))
-UISDKAPI ISimpleTextRender : public ITextRenderBase
+UIAPI ISimpleTextRender : public ITextRenderBase
 {
     void  SetRenderFont(IRenderFont*);
     void  SetColor(Color* pColText);
@@ -91,21 +91,21 @@ UISDKAPI ISimpleTextRender : public ITextRenderBase
 
 class ContrastColorTextRender;
 interface __declspec(uuid("43851BC4-E18A-457E-AFCC-C4D0C638F376"))
-UISDKAPI IContrastColorTextRender : public ITextRenderBase
+UIAPI IContrastColorTextRender : public ITextRenderBase
 {
     UI_DECLARE_INTERFACE(ContrastColorTextRender)
 };
 
 class ContrastColorListTextRender;
 interface __declspec(uuid("69A57DAA-1E49-4FCD-A334-03FA3A5FF420"))
-UISDKAPI IContrastColorListTextRender : public ITextRenderBase
+UIAPI IContrastColorListTextRender : public ITextRenderBase
 {
     UI_DECLARE_INTERFACE(ContrastColorListTextRender);
 };
 
 class ColorListTextRender;
 interface __declspec(uuid("9646EBCD-6F6C-4748-9603-847C57CF29D7"))
-UISDKAPI IColorListTextRender : public ITextRenderBase
+UIAPI IColorListTextRender : public ITextRenderBase
 {
     void  SetRenderFont(IRenderFont*);
     void  SetCount(int nCount);
@@ -116,7 +116,7 @@ UISDKAPI IColorListTextRender : public ITextRenderBase
 
 class FontColorListTextRender;
 interface __declspec(uuid("FE20349B-8D97-4C86-82A4-4A27C8F152C1"))
-UISDKAPI IFontColorListTextRender : public ITextRenderBase
+UIAPI IFontColorListTextRender : public ITextRenderBase
 {
     void  SetCount(int nCount);
 	void  SetColor(int nIndex, DWORD color);

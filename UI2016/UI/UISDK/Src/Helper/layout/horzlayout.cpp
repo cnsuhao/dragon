@@ -19,19 +19,12 @@ HorzLayout::~HorzLayout()
 }
 void  HorzLayout::Serialize(SERIALIZEDATA* pData)
 {
-    AttributeSerializer s(pData, TEXT("HorzLayout"));
-
+//     AttributeSerializer s(pData, TEXT("HorzLayout"));
+//
 //     s.AddLong(XML_LAYOUT_HORZ_GAP, this,
 //         memfun_cast<pfnLongSetter>(&HorzLayout::LoadGap),
 //         memfun_cast<pfnLongGetter>(&HorzLayout::SaveGap));
 // 
-//     s.AddEnum(XML_LAYOUT_Horz_DIRECTION, *(long*)&m_eDirection)
-//         ->AddOption(LAYOUT_Horz_LEFTTORIGHT, XML_LAYOUT_Horz_LEFTTORIGHT)
-//         ->AddOption(LAYOUT_Horz_RIGHTTOLEFT, XML_LAYOUT_Horz_RIGHTTOLEFT)
-//         ->AddOption(LAYOUT_Horz_LEFTANDRIGHT, XML_LAYOUT_Horz_LEFTANDRIGHT)
-//         ->AddOption(LAYOUT_Horz_TOPTOBOTTOM, XML_LAYOUT_Horz_TOPTOBOTTOM)
-//         ->AddOption(LAYOUT_Horz_BOTTOMTOTOP, XML_LAYOUT_Horz_BOTTOMTOTOP)
-//         ->AddOption(LAYOUT_Horz_TOPANDBOTTOM, XML_LAYOUT_Horz_TOPANDBOTTOM);
 }
 
 void  HorzLayout::LoadGap(long n)
@@ -71,19 +64,14 @@ SIZE  HorzLayout::Measure()
 		if (pChild->IsSelfCollapsed())
 			continue;
 
-		switch (pParam->m_eWidthValueType)
-		{
-		case LAYOUT_VALUE_SET:
-		{
-			s.cx += pParam->m_nConfigWidth;
-		}
-		break;
-		case LAYOUT_VALUE_AUTO:
+        if (pParam->m_eWidthType == WH_AUTO)
 		{
 			s.cx += pChild->GetDesiredSize().cx;
 		}
-		break;
-		}
+        else
+        {
+            s.cx += pParam->m_nConfigWidth;
+        }
 
 		RECT rMargin = { 0 };
 		pChild->GetMarginRegion(&rMargin);
@@ -91,51 +79,21 @@ SIZE  HorzLayout::Measure()
 		s.cx += rMargin.left + rMargin.right;
 
 		int nHeight = rMargin.top + rMargin.bottom;
-		switch (pParam->m_eHeightValueType)
-		{
-		case LAYOUT_VALUE_SET:
-		{
-			nHeight += pParam->m_nConfigHeight;
-		}
-		break;
-		case LAYOUT_VALUE_AUTO:
+
+        if (pParam->m_eHeightType == WH_AUTO)
 		{
 			nHeight += pChild->GetDesiredSize().cy;
 		}
-		break;
-		}
-		nMaxHeight = max(nMaxHeight, nHeight);
+        else
+        {
+            nHeight += pParam->m_nConfigHeight;
+        }
+
+        nMaxHeight = max(nMaxHeight, nHeight);
 	}
 	s.cy = nMaxHeight;
 
 	return s;
-#if 0
-	SIZE  size = {0,0};
-
-	// 通过子控件来获取自己所需要的大小
-	Object*  pChild = NULL;
-	while (pChild = this->m_pPanel->EnumChildObject(pChild))
-	{
-        if (pChild->IsSelfCollapsed())
-        {
-            continue;
-        }
-
-        HorzLayoutParam* pParam = s_GetObjectLayoutParam(pChild);
-        if (!pParam)
-        {
-            continue;
-        }
-
-		SIZE  s = pChild->GetDesiredSize();
-
-		size.cx += s.cx + m_nSpace;
-		if (size.cy < s.cy)
-			size.cy = s.cy;
-	}
-
-	return size;
-#endif
 }
 
 // 布局顺序：
@@ -146,8 +104,8 @@ SIZE  HorzLayout::Measure()
 struct ObjLayoutInfo
 {
 	Object*  pObj;
-	int width;
-	int height;
+	int width;  // 不包含margin
+	int height; // 不包含margin
 };
 
 void  HorzLayout::DoArrage(IObject* pIObjToArrage)
@@ -185,7 +143,6 @@ void  HorzLayout::DoArrage(IObject* pIObjToArrage)
 		if (pChild->IsSelfCollapsed())
 			continue;
 
-
 		//  计算布局顺序
 		int nIndex = nLeftCursor;
 		if (pParam->m_nConfigLayoutFlags & LAYOUT_ITEM_ALIGN_RIGHT)
@@ -206,25 +163,42 @@ void  HorzLayout::DoArrage(IObject* pIObjToArrage)
 		if (pParam->IsSizedByContent())
 		{
 			SIZE s = pChild->GetDesiredSize();
-			nObjWidth = s.cx;
-			nObjHeight = s.cy;
-		}
 
-		if (pParam->m_eWidthValueType == LAYOUT_VALUE_SET)
-		{
-			nObjWidth = pParam->m_nConfigWidth;
+			nObjWidth = s.cx - pChild->GetMarginW();
+			nObjHeight = s.cy - pChild->GetMarginH();
 		}
-		else if (pParam->m_eWidthValueType == LAYOUT_VALUE_AVG)
+        
+        if (pParam->m_eWidthType == WH_AVG)
 		{
 			// 本次循环结束后再计算
+            // 平均值中，不包含margin
 			nAvgCount++;
 			nObjWidth = 0;
 		}
+        else if (pParam->m_eWidthType == WH_PERCENT)
+        {
+            
+#if 0 // 比例中包含margin
+            nObjWidth = rcParent.Width() * pParam->m_nConfigWidth / 100;
+            nObjWidth -= pChild->GetMarginW();
 
-		if (pParam->m_eHeightValueType == LAYOUT_VALUE_SET)
+#else // 比例中不包含margin
+            nObjWidth = rcParent.Width() * pParam->m_nConfigWidth / 100;
+#endif
+        }
+        else if (pParam->m_eWidthType != WH_AUTO)
+        {
+            nObjWidth = pParam->m_nConfigWidth;
+        }
+
+        if (pParam->m_eHeightType == WH_SET)
 		{
 			nObjHeight = pParam->m_nConfigHeight;
 		}
+        else if (pParam->m_eHeightType == WH_PERCENT)
+        {
+            nObjHeight = rcParent.Height() * pParam->m_nConfigHeight / 100;
+        }
 
 		vecInfo[nIndex].pObj = pChild;
 		vecInfo[nIndex].width = nObjWidth;
@@ -267,7 +241,7 @@ void  HorzLayout::DoArrage(IObject* pIObjToArrage)
 		CRect rcObj;
 
 		// 如果是平均宽度，为其宽度赋值
-		if (pParam->m_eWidthValueType == LAYOUT_VALUE_AVG)
+        if (pParam->m_eWidthType == WH_AVG)
 		{
 			info.width = nAvgWidth + nAvgDiff;
 			nAvgDiff = 0;
@@ -322,84 +296,23 @@ void  HorzLayout::DoArrage(IObject* pIObjToArrage)
 			rcObj,
 			SWP_NOREDRAW | SWP_NOUPDATELAYOUTPOS | SWP_FORCESENDSIZEMSG);
 	}
-
-#if 0
-    Object* pObjToArrage = NULL;
-    if (pIObjToArrage)
-    {
-        pObjToArrage = pIObjToArrage->GetImpl();
-    }
-
-	int  nConsume1 = 0; // 当前已消耗的高度或宽度（从left/top开始计数）
-	int  nConsume2 = 0; // 当前已消耗的高度或宽度（从right/bottom开始计数）
-	
-	bool bStartToArrange = false;
-	if (NULL == pObjToArrage)
-    {
-		bStartToArrange = true;
-    }
-
-	Object* pChild = NULL;
-	while (pChild = m_pPanel->EnumChildObject(pChild))
-	{
-		if (pObjToArrage && pChild == pObjToArrage)
-        {
-			bStartToArrange = true;
-        }
-
-		// 放在IsSelfCollapsed之前。editor中也需要加载隐藏对象的布局属性
-		HorzLayoutParam* pParam = s_GetObjectLayoutParam(pChild);
-		if (!pParam)
-			continue;
-
-		if (pChild->IsSelfCollapsed())
-			continue;
-
-		SIZE s;
-		bool  bFill = pParam->GetConfigLayoutFlags() & LAYOUT_ITEM_ALIGN_FILL ? true:false;
-		if (bStartToArrange || bFill)  // fill mode的子控件会受其它子控件大小改变影响，因此需要每次都判断
-		{
-            s = pChild->GetDesiredSize();
-            if (bFill)
-            {
-                // 计算出剩下的对象的所需大小
-                Object* pChildTemp = pChild;
-                SIZE sNeedNext = {0, 0}; 
-                while (pChildTemp = m_pPanel->EnumChildObject(pChildTemp))
-                {
-                    if (!pChildTemp->IsSelfVisible())
-                    {
-                        continue;
-                    }
-
-                    SIZE sThis = pChildTemp->GetDesiredSize();
-					sNeedNext.cx += sThis.cx + m_nSpace;
-                }
-
-                CRect rcClient;
-                m_pPanel->GetClientRectInObject(&rcClient);
-                int  nPanelWidth  = rcClient.Width();
-                int  nPanelHeight = rcClient.Height();
-
-				s.cx = nPanelWidth - sNeedNext.cx - nConsume2 - nConsume1;
-            }
-		}
-		else
-		{
-			s.cx = pChild->GetWidth() + pChild->GetMarginW();
-			s.cy = pChild->GetHeight() + pChild->GetMarginH();
-		}
-
-		ArrangeObject_Left(pChild, nConsume1, nConsume2, s);
-	}
-#endif
 }
 
-void  HorzLayout::OnChildObjectVisibleChanged(IObject* pObj)
+void  HorzLayout::ChildObjectVisibleChanged(IObject* pObj)
 {
     UIASSERT (pObj);
 	UIASSERT(pObj->GetParentObject());
 	UIASSERT(pObj->GetParentObject()->GetImpl() == m_pPanel);
+
+    SetDirty(true);
+    m_pPanel->Invalidate();
+}
+
+void  HorzLayout::ChildObjectContentSizeChanged(IObject* pObj)
+{
+    UIASSERT(pObj);
+    UIASSERT(pObj->GetParentObject());
+    UIASSERT(pObj->GetParentObject()->GetImpl() == m_pPanel);
 
     SetDirty(true);
     m_pPanel->Invalidate();
@@ -410,10 +323,8 @@ HorzLayoutParam::HorzLayoutParam()
     m_nConfigWidth = AUTO;
     m_nConfigHeight = AUTO;
     m_nConfigLayoutFlags = 0;
-
-	m_eWidthValueType = LAYOUT_VALUE_SET;
-	m_eHeightValueType = LAYOUT_VALUE_SET;
 }
+
 HorzLayoutParam::~HorzLayoutParam()
 {
 
@@ -424,11 +335,11 @@ void  HorzLayoutParam::UpdateByRect()
     CRect  rcParent;
     m_pObj->GetParentRect(&rcParent);
 
-    if (m_nConfigWidth >= 0)
+    if (m_eWidthType == WH_SET)
     {
         m_nConfigWidth = rcParent.Width();
     }
-    if (m_nConfigHeight >= 0)
+    if (m_eHeightType == WH_SET)
     {
         m_nConfigHeight = rcParent.Height();
     }
@@ -437,20 +348,19 @@ void  HorzLayoutParam::Serialize(SERIALIZEDATA* pData)
 {
     AttributeSerializer s(pData, TEXT("HorzLayoutParam"));
     
-    s.AddLong(
-        XML_WIDTH,  this,
-        memfun_cast<pfnLongSetter>(&HorzLayoutParam::LoadConfigWidth), 
-        memfun_cast<pfnLongGetter>(&HorzLayoutParam::SaveConfigWidth)
-        )->AddAlias(AUTO, XML_AUTO)->SetDefault(AUTO)
-		->SetCompatibleKey(XML_LAYOUT_PREFIX XML_WIDTH);;
+    s.AddString(
+            XML_WIDTH,  this,
+            memfun_cast<pfnStringSetter>(&HorzLayoutParam::LoadConfigWidth), 
+            memfun_cast<pfnStringGetter>(&HorzLayoutParam::SaveConfigWidth)
+        )
+		->SetCompatibleKey(XML_LAYOUT_PREFIX XML_WIDTH);
 
-    s.AddLong(
-        XML_HEIGHT,  this,
-        memfun_cast<pfnLongSetter>(&HorzLayoutParam::LoadConfigHeight), 
-        memfun_cast<pfnLongGetter>(&HorzLayoutParam::SaveConfigHeight)
-        )->AddAlias(AUTO, XML_AUTO)->SetDefault(AUTO)
+    s.AddString(
+            XML_HEIGHT,  this,
+            memfun_cast<pfnStringSetter>(&HorzLayoutParam::LoadConfigHeight),
+            memfun_cast<pfnStringGetter>(&HorzLayoutParam::SaveConfigHeight)
+        )
 		->SetCompatibleKey(XML_LAYOUT_PREFIX XML_HEIGHT);;
-
 
     s.AddFlags(XML_LAYOUT_ITEM_ALIGN, m_nConfigLayoutFlags)
         ->AddFlag(LAYOUT_ITEM_ALIGN_LEFT,        XML_LAYOUT_ITEM_ALIGN_LEFT)
@@ -460,20 +370,6 @@ void  HorzLayoutParam::Serialize(SERIALIZEDATA* pData)
         ->AddFlag(LAYOUT_ITEM_ALIGN_CENTER,      XML_LAYOUT_ITEM_ALIGN_CENTER)
         ->AddFlag(LAYOUT_ITEM_ALIGN_VCENTER,     XML_LAYOUT_ITEM_ALIGN_VCENTER)
         ->AddFlag(LAYOUT_ITEM_ALIGN_FILL,        XML_LAYOUT_ITEM_ALIGN_FILL);
-
-	s.AddEnum(XML_LAYOUT_WIDTH_TYPE, *(long*)&m_eWidthValueType)
-		->AddOption(LAYOUT_VALUE_SET,     XML_LAYOUT_VALUE_TYPE_SET)
-		->AddOption(LAYOUT_VALUE_AUTO,    XML_LAYOUT_VALUE_TYPE_AUTO)
-		->AddOption(LAYOUT_VALUE_AVG,     XML_LAYOUT_VALUE_TYPE_AVG)
-		->AddOption(LAYOUT_VALUE_PERCENT, XML_LAYOUT_VALUE_TYPE_PERCENT)
-		->SetCompatibleKey(XML_LAYOUT_PREFIX XML_LAYOUT_WIDTH_TYPE);
-
-	s.AddEnum(XML_LAYOUT_HEIGHT_TYPE, *(long*)&m_eHeightValueType)
-		->AddOption(LAYOUT_VALUE_SET,     XML_LAYOUT_VALUE_TYPE_SET)
-		->AddOption(LAYOUT_VALUE_AUTO,    XML_LAYOUT_VALUE_TYPE_AUTO)
-		->AddOption(LAYOUT_VALUE_AVG,     XML_LAYOUT_VALUE_TYPE_AVG)
-		->AddOption(LAYOUT_VALUE_PERCENT, XML_LAYOUT_VALUE_TYPE_PERCENT)
-		->SetCompatibleKey(XML_LAYOUT_PREFIX XML_LAYOUT_HEIGHT_TYPE);
 }
 
 long  HorzLayoutParam::GetConfigWidth()
@@ -484,13 +380,15 @@ void  HorzLayoutParam::SetConfigWidth(long n)
 {
     m_nConfigWidth = n;
 }
-void  HorzLayoutParam::LoadConfigWidth(long n)
+
+void  HorzLayoutParam::LoadConfigWidth(LPCTSTR szText)
 {
-    m_nConfigWidth = ScaleByDpi(n);
+    LoadConfigWH(szText, m_nConfigWidth, m_eWidthType);
 }
-long  HorzLayoutParam::SaveConfigWidth()
+
+LPCTSTR HorzLayoutParam::SaveConfigWidth()
 {
-    return RestoreByDpi(m_nConfigWidth);
+    return SaveConfigWH(m_nConfigWidth, m_eWidthType);
 }
 
 long  HorzLayoutParam::GetConfigHeight()
@@ -501,13 +399,13 @@ void  HorzLayoutParam::SetConfigHeight(long n)
 {
     m_nConfigHeight = n;
 }
-void  HorzLayoutParam::LoadConfigHeight(long n)
+void  HorzLayoutParam::LoadConfigHeight(LPCTSTR szText)
 {
-    m_nConfigHeight = ScaleByDpi(n);
+    LoadConfigWH(szText, m_nConfigHeight, m_eHeightType);
 }
-long  HorzLayoutParam::SaveConfigHeight()
+LPCTSTR  HorzLayoutParam::SaveConfigHeight()
 {
-    return RestoreByDpi(m_nConfigHeight);
+    return SaveConfigWH(m_nConfigHeight, m_eHeightType);
 }
 
 void  HorzLayoutParam::SetConfigLayoutFlags(long n)
@@ -523,18 +421,15 @@ SIZE  HorzLayoutParam::CalcDesiredSize()
 {
     SIZE size = {0,0};
 
-    bool bWidthNotConfiged = m_nConfigWidth == AUTO ? true:false;
-    bool bHeightNotConfiged = m_nConfigHeight == AUTO ? true:false;;
-
-    if (bWidthNotConfiged || bHeightNotConfiged)
+    if (IsSizedByContent())
     {
         // 获取子对象所需要的空间
         UISendMessage(m_pObj, UI_MSG_GETDESIREDSIZE, (WPARAM)&size);
 
         // 如果有指定width、height的其中一个，那么忽略在上一步中得到的值
-        if (this->m_nConfigWidth != AUTO)
+        if (this->m_eWidthType != AUTO)
             size.cx = this->m_nConfigWidth;
-        if (this->m_nConfigHeight!= AUTO)
+        if (this->m_eHeightType != AUTO)
             size.cy = this->m_nConfigHeight;
     }
     else
@@ -552,7 +447,7 @@ SIZE  HorzLayoutParam::CalcDesiredSize()
 
 bool  HorzLayoutParam::IsSizedByContent()
 {
-    if (m_nConfigHeight != AUTO && m_nConfigWidth != AUTO)
+    if (m_eWidthType != AUTO && m_eHeightType != AUTO)
         return false;
 
     return true;

@@ -113,7 +113,7 @@ public:
 	ImageRes(SkinRes*  pSkinRes);
 	~ImageRes();
 
-	IImageRes*  GetIImageRes();
+	IImageRes&  GetIImageRes();
 
 	long  GetImageCount();
 	IImageResItem*  GetImageResItem(long lIndex);

@@ -22,6 +22,8 @@ public:
 		UIMSG_HANDLER_EX(UI_MSG_GETLAYOUT, OnGetLayoutPtr)
         UIMSG_QUERYINTERFACE(Panel)
 		UIMSG_SERIALIZE(OnSerialize)
+    UIALT_MSG_MAP(UIALT_CALLLESS)
+        UIMSG_CREATEBYEDITOR(OnCreateByEditor)
 	UI_END_MSG_MAP_CHAIN_PARENT(Object)
 
     IPanel* GetIPanel() { return m_pIPanel; }
@@ -47,13 +49,7 @@ protected:
 	LRESULT  OnGetLayoutPtr(UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void  OnSerialize(SERIALIZEDATA* pData);
 	void  OnGetDesiredSize(SIZE* pSize);  // √¸√˚Œ™On,±‹√‚”Îobject::GetDesiredSize≥ÂÕª 
-
-protected:
-    void  LoadTextureRender(LPCTSTR szName) { load_renderbase(szName, m_pTextureRender); }
-    void  LoadMaskRender(LPCTSTR szName) { load_renderbase(szName, m_pMaskRender); }
-    LPCTSTR  GetTextureRenderName() { return get_renderbase_name(m_pTextureRender); }
-    LPCTSTR  GetMaskRenderName() { return get_renderbase_name(m_pMaskRender); }
-
+    void  OnCreateByEditor(CREATEBYEDITORDATA*);
 private:
     
 protected:

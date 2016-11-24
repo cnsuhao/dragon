@@ -126,6 +126,10 @@ int   IScrollBarManager::GetVScrollPage()
 { 
     return m_pImpl->GetVScrollPage();
 }
+void  IScrollBarManager::SetVScrollPage(int nY)
+{
+    return m_pImpl->SetVScrollPage(nY);
+}
 
 void  IScrollBarManager::GetScrollRange(int *pX, int* pY)            
 { 

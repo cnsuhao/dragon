@@ -39,10 +39,10 @@ LPCTSTR  IObject::GetId()
 {
 	return __pImpl->GetId();
 }
-// void  IObject::SetId(LPCTSTR szText)             
-// {
-// 	__pImpl->SetId(szText); 
-// }
+void  IObject::SetId(LPCTSTR szText)
+{
+	__pImpl->SetId(szText); 
+}
 
 IWindowBase*  IObject::GetWindowObject() 
 { 
@@ -52,23 +52,6 @@ IWindowBase*  IObject::GetWindowObject()
     else
         return NULL;
 }
-// 
-// IRenderLayer*   IObject::GetRenderLayer2()
-// {
-// 	RenderLayer* p = __pImpl->GetRenderLayer2();
-// 	if (p)
-// 		return p->GetIRenderLayer2();
-// 	else
-// 		return NULL;
-// }
-// IRenderLayer*   IObject::GetSelfRenderLayer2()
-// {
-//     RenderLayer* p = __pImpl->GetSelfRenderLayer2();
-//     if (p)
-//         return p->GetIRenderLayer2();
-//     else
-//         return NULL;
-// }
 
 ILayer*  IObject::GetLayer()
 {
@@ -77,6 +60,11 @@ ILayer*  IObject::GetLayer()
         return NULL;
 
     return p->GetILayer();
+}
+
+void  IObject::EnableLayer(bool b)
+{
+	return __pImpl->EnableLayer(b);
 }
 
 HWND  IObject::GetHWND()                                   
@@ -99,15 +87,16 @@ ISkinRes*  IObject::GetSkinRes()
 
 	return p->GetISkinRes();
 }
-// void  IObject::SetOutRef(void** ppOutRef)                  
-// {
-// 	__pImpl->SetOutRef(ppOutRef); 
-// }
-// 
-// void  IObject::InitDefaultAttrib()                          
-// {
-// 	__pImpl->InitDefaultAttrib(); 
-// }
+
+void  IObject::SetOutRef(void** ppOutRef)                  
+{
+	__pImpl->SetOutRef(ppOutRef); 
+}
+
+void  IObject::InitDefaultAttrib()                          
+{
+	__pImpl->InitDefaultAttrib(); 
+}
 void  IObject::SetObjectPos(int x, int y, int cx, int cy, int nFlag)
 { 
 	__pImpl->SetObjectPos(x, y, cx, cy, nFlag);
@@ -295,19 +284,35 @@ void  IObject::SetForcePress(bool b, bool bNotify)
 // 	__pImpl->SortChildByZorder();
 // }
 
-IObject*  IObject::FindChildObject(LPCTSTR szObjId) 
+IObject*  IObject::FindObject(LPCTSTR szObjId) 
 {
-    Object* p = __pImpl->FindChildObject(szObjId); 
+    Object* p = __pImpl->FindObject(szObjId); 
     if (p)
         return p->GetIObject();
     return NULL;
 }
-IObject*  IObject::FindNcChildObject(LPCTSTR szObjId)
+
+IObject*  IObject::TryFindObject(LPCTSTR szObjId)
 {
-	Object* p = __pImpl->FindNcChildObject(szObjId); 
+    Object* p = __pImpl->TryFindObject(szObjId);
+    if (p)
+        return p->GetIObject();
+    return NULL;
+}
+
+IObject*  IObject::FindNcObject(LPCTSTR szObjId)
+{
+	Object* p = __pImpl->FindNcObject(szObjId); 
 	if (p)
 		return p->GetIObject();
 	return NULL;
+}
+IObject*  IObject::FindObject(UUID uuid)
+{
+    Object* p = __pImpl->FindObject(uuid);
+    if (p)
+        return p->GetIObject();
+    return NULL;
 }
 IObject*  IObject::GetParentObject()  
 {
@@ -330,13 +335,13 @@ IObject*  IObject::GetChildObject()
 //         return p->GetIObject();
 //     return NULL;
 // }
-// IObject*  IObject::GetLastChildObject()
-// { 
-//     Object* p = __pImpl->GetLastChildObject(); 
-//     if (p)
-//         return p->GetIObject();
-//     return NULL;
-// }
+IObject*  IObject::GetLastChildObject()
+{ 
+    Object* p = __pImpl->GetLastChildObject(); 
+    if (p)
+        return p->GetIObject();
+    return NULL;
+}
 IObject*  IObject::GetNextObject()
 { 
     Object* p = __pImpl->GetNextObject(); 
@@ -368,55 +373,55 @@ IObject*  IObject::GetPrevObject()
 // 	return pObject->GetIObject();
 // }
 // 
-// IObject*  IObject::EnumChildObject(IObject* p)  
-// {
-//     Object* pObject = NULL;
-//     if (p)
-//         pObject = p->GetImpl();
-// 
-//     Object* pRet = __pImpl->EnumChildObject(pObject); 
-//     if (pRet)
-//         return pRet->GetIObject();
-// 
-//     return NULL;
-// }
-// IObject*  IObject::REnumChildObject(IObject* p) 
-// { 
-//     Object* pObject = NULL;
-//     if (p)
-//         pObject = p->GetImpl();
-// 
-//     Object* pRet = __pImpl->REnumChildObject(pObject); 
-//     if (pRet)
-//         return pRet->GetIObject();
-// 
-//     return NULL;
-// }
-// IObject*  IObject::EnumNcChildObject(IObject* p) 
-// {
-//     Object* pObject = NULL;
-//     if (p)
-//         pObject = p->GetImpl();
-// 
-//     Object* pRet = __pImpl->EnumNcChildObject(pObject); 
-//     if (pRet)
-//         return pRet->GetIObject();
-// 
-//     return NULL;
-// }
-// 
-// IObject*  IObject::EnumAllChildObject(IObject* p) 
-// { 
-//     Object* pObject = NULL;
-//     if (p)
-//         pObject = p->GetImpl();
-// 
-//     Object* pRet = __pImpl->EnumAllChildObject(pObject);
-//     if (NULL == pRet)
-//         return NULL;
-// 
-//     return pRet->GetIObject();
-// }
+IObject*  IObject::EnumChildObject(IObject* p)  
+{
+    Object* pObject = NULL;
+    if (p)
+        pObject = p->GetImpl();
+
+    Object* pRet = __pImpl->EnumChildObject(pObject); 
+    if (pRet)
+        return pRet->GetIObject();
+
+    return NULL;
+}
+IObject*  IObject::REnumChildObject(IObject* p) 
+{ 
+    Object* pObject = NULL;
+    if (p)
+        pObject = p->GetImpl();
+
+    Object* pRet = __pImpl->REnumChildObject(pObject); 
+    if (pRet)
+        return pRet->GetIObject();
+
+    return NULL;
+}
+IObject*  IObject::EnumNcChildObject(IObject* p) 
+{
+    Object* pObject = NULL;
+    if (p)
+        pObject = p->GetImpl();
+
+    Object* pRet = __pImpl->EnumNcChildObject(pObject); 
+    if (pRet)
+        return pRet->GetIObject();
+
+    return NULL;
+}
+
+IObject*  IObject::EnumAllChildObject(IObject* p) 
+{ 
+    Object* pObject = NULL;
+    if (p)
+        pObject = p->GetImpl();
+
+    Object* pRet = __pImpl->EnumAllChildObject(pObject);
+    if (NULL == pRet)
+        return NULL;
+
+    return pRet->GetIObject();
+}
 // IObject*  IObject::EnumParentObject(IObject* p)
 // { 
 //     Object* pObject = NULL;
@@ -536,15 +541,15 @@ IObject*  IObject::GetPrevObject()
 //     if (p)
 //         __pImpl->AddChild(p->GetImpl()); 
 // }
-// void  IObject::InsertChild(IObject* pObj, IObject* pInsertAfter)
-// {
-//     Object*  pInsertAfterImpl = NULL;
-//     if (pInsertAfter)
-//         pInsertAfterImpl = pInsertAfter->GetImpl();
-// 
-//     if (pObj)
-//         __pImpl->InsertChild(pObj->GetImpl(), pInsertAfterImpl);
-// }
+void  IObject::InsertChild(IObject* pObj, IObject* pInsertAfter)
+{
+    Object*  pInsertAfterImpl = NULL;
+    if (pInsertAfter)
+        pInsertAfterImpl = pInsertAfter->GetImpl();
+
+    if (pObj)
+        __pImpl->InsertChild(pObj->GetImpl(), pInsertAfterImpl);
+}
 // void  IObject::AddNcChild(IObject*p) 
 // {
 //     if (p)
@@ -568,20 +573,20 @@ IObject*  IObject::GetPrevObject()
 // 
 //     __pImpl->InsertBefore(p);
 // }
-// bool  IObject::IsMyChild(IObject* pChild, bool bFindInGrand) 
-// {
-//     if (NULL == pChild)
-//         return false;
-// 
-//     return __pImpl->IsMyChild(pChild->GetImpl(), bFindInGrand); 
-// }
-// bool  IObject::RemoveChildInTree(IObject* pChild) 
-// { 
-//     if (NULL == pChild)
-//         return false;
-// 
-//     return __pImpl->RemoveChildInTree(pChild->GetImpl()); 
-// }
+bool  IObject::IsMyChild(IObject* pChild, bool bFindInGrand) 
+{
+    if (NULL == pChild)
+        return false;
+
+    return __pImpl->IsMyChild(pChild->GetImpl(), bFindInGrand); 
+}
+bool  IObject::RemoveChildInTree(IObject* pChild) 
+{ 
+    if (NULL == pChild)
+        return false;
+
+    return __pImpl->RemoveChildInTree(pChild->GetImpl()); 
+}
 // void  IObject::RemoveMeInTheTree() 
 // { 
 //     __pImpl->RemoveMeInTheTree(); 
@@ -667,10 +672,10 @@ void  IObject::GetObjectClientRect(RECT* prc)
 {
 	__pImpl->GetObjectClientRect(prc); 
 }
-// void  IObject::GetClientRectInWindow(RECT* prc)
-// { 
-// 	__pImpl->GetClientRectInWindow(prc); 
-// }
+void  IObject::GetClientRectInWindow(RECT* prc)
+{ 
+	__pImpl->GetClientRectInWindow(prc); 
+}
 void  IObject::GetParentRect(RECT* prc)       
 { 
 	__pImpl->GetParentRect(prc); 
@@ -751,10 +756,10 @@ int  IObject::GetHeight()
 // 	return __pImpl->GetHeightWithMargins();
 // }
 
-// ILayoutParam*  IObject::GetLayoutParam() 
-// { 
-// 	return __pImpl->GetLayoutParam();
-// }
+ILayoutParam*  IObject::GetSafeLayoutParam() 
+{ 
+	return __pImpl->GetSafeLayoutParam();
+}
 // void  IObject::CreateLayoutParam()
 // {
 // 	__pImpl->CreateLayoutParam();
@@ -820,18 +825,18 @@ ITextRenderBase*  IObject::GetTextRender()
 { 
 	return __pImpl->GetTextRender();
 }
-IRenderBase*  IObject::GetBkRender()       
+IRenderBase*  IObject::GetBackRender()       
 { 
-	return __pImpl->GetBkRender();
+	return __pImpl->GetBackRender();
 }
 IRenderBase*  IObject::GetForeRender()     
 {
 	return __pImpl->GetForeRender();
 }
-// void  IObject::SetBkgndRender(IRenderBase* p)   
-// {
-// 	__pImpl->SetBkgndRender(p); 
-// }
+void  IObject::SetBackRender(IRenderBase* p)
+{
+	__pImpl->SetBackRender(p); 
+}
 // void  IObject::SetForegndRender(IRenderBase* p) 
 // { 
 // 	__pImpl->SetForegndRender(p);
@@ -845,15 +850,15 @@ IRenderBase*  IObject::GetForeRender()
 // { 
 // 	__pImpl->SetAttributeByPrefix(szPrefix, pMatAttrib, bReload, bErase); 
 // }
-// void  IObject::ParseStyleAndSetAttribute(IMapAttribute* pMatAttrib, bool bReload) 
-// {
-// 	__pImpl->ParseStyleAndLoadAttribute(pMatAttrib, bReload); 
-// }
-// void  IObject::LoadAttributeFromXml(IUIElement* pXmlElement, bool bReload)
-// {
-//     __pImpl->LoadAttributeFromXml(
-//             pXmlElement ? pXmlElement->GetImpl():NULL, bReload);
-// }
+void  IObject::LoadAttributeFromMap(IMapAttribute* pMatAttrib, bool bReload)
+{
+	__pImpl->LoadAttributeFromMap(pMatAttrib, bReload); 
+}
+void  IObject::LoadAttributeFromXml(IUIElement* pXmlElement, bool bReload)
+{
+    __pImpl->LoadAttributeFromXml(
+            pXmlElement ? pXmlElement->GetImpl():NULL, bReload);
+}
 // LPCTSTR  IObject::GetAttribute(LPCTSTR szKey, bool bErase) 
 // { 
 // 	return __pImpl->GetAttribute(szKey, bErase);
@@ -879,14 +884,7 @@ SIZE  IObject::GetDesiredSize()
 // { 
 // 	return __pImpl->TakeBkgndSnapshot(); 
 // }
-// LPCTSTR  IObject::GetToolTipText()
-// {
-//     return __pImpl->GetToolTipText();
-// }
-// void  IObject::SetToolTipText(LPCTSTR szText)
-// {
-//     __pImpl->SetToolTipText(szText);
-// }
+
 bool  IObject::SetMouseCapture(int nNotifyMsgId)
 { 
 	return __pImpl->SetMouseCapture(nNotifyMsgId);
@@ -934,4 +932,13 @@ void  IObject::AddNcChild(IObject*p)
 void  IObject::RemoveMeInTheTree()
 {
 	__pImpl->RemoveMeInTheTree();
+}
+
+void IObject::ForwardMessageToChildObject(UIMSG* pMsg)
+{
+    Object::ForwardMessageToChildObject(__pImpl, pMsg);
+}
+void IObject::ForwardMessageToChildObject2(UIMSG* pMsg, UIMSG* pMsg2)
+{
+    Object::ForwardMessageToChildObject2(__pImpl, pMsg, pMsg2);
 }

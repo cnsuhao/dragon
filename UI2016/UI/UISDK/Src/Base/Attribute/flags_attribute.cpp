@@ -104,7 +104,7 @@ FlagsAttribute*  FlagsAttribute::AddFlag(long l, LPCTSTR sz)
     return this;
 }
 
-void  FlagsAttribute::Editor(AttributeEditorProxy* p, EditorAttributeFlag e)
+void  FlagsAttribute::Editor(SERIALIZEDATA* pData, AttributeEditorProxy* p, EditorAttributeFlag e)
 {
      p->Flags2Editor(this, e);
 }

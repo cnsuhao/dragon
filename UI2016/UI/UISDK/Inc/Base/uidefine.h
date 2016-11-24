@@ -2,11 +2,13 @@
 #define _UIDEFINE_H_
 
 // 导入导出定义
-#ifdef UISDK_EXPORTS
-#define UISDKAPI __declspec(dllexport)
+#ifdef UI_EXPORTS
+#define UIAPI __declspec(dllexport)
 #else
-#define UISDKAPI __declspec(dllimport)
+#define UIAPI __declspec(dllimport)
 #endif
+
+#define UIAPI_UUID(guid)  __declspec(uuid(#guid)) UIAPI
 
 namespace UI
 {
@@ -14,8 +16,12 @@ namespace UI
 	// 特殊含义常量
 	enum
 	{
+        WH_SET = 0,   // 默认，指定
 		NDEF = -1,    // 没有定义的变量
 		AUTO = -2,    // 自动调整（如width/height=auto）
+        WH_AUTO = AUTO,
+        WH_AVG = -3,
+        WH_PERCENT = -4
 	};
 
 	enum E_BOOL_CREATE_IMPL
@@ -129,9 +135,6 @@ protected:                                                  \
     static_cast<IParentInterface*>(m_p##IMyInterface)->nvProcessMessage(GetCurMsg(), MsgMapId, 0); \
     SetMsgHandled(TRUE)
 
-#ifndef interface
-#define interface struct
-#endif
 
 typedef RECT  REGION4;
 inline  int RECTW(LPCRECT prc) { return prc->right - prc->left; }
@@ -141,27 +144,6 @@ inline  int RECTH(RECT& rc)  { return rc.bottom - rc.top; }
 
 #define RGBA(r,g,b,a)  (((BYTE)(r))|((WORD)(((BYTE)(g))<<8))|(DWORD(((BYTE)(b))<<16))|((DWORD)(((BYTE)(a))<<24)))
 
-
-//
-//	release版本下断言输出，可以利用debugview.exe看到断言错误
-//  remark: __FILE__ ...这些都是char*类型的
-//
-// #ifdef ASSERT
-// #undef ASSERT  // 避免使用ASSERT，请使用UIASSERT
-// #endif
-
-#ifdef _DEBUG
-#define UIASSERT(x)   \
-	if(!(x))                          \
-	{                                 \
-		char szInfo[2048] = "";       \
-		sprintf_s(szInfo, 2047, "UIASSERT expr(%s) %s(L%d) ## %s\r\n", #x, __FILE__, __LINE__, __FUNCTION__ );  \
-		::OutputDebugStringA(szInfo); \
-		DebugBreak(); \
-	} 
-#else
-#define UIASSERT(x)    
-#endif
 
 // 是否处理返回值 
 enum HANDLED_VALUE
@@ -176,6 +158,11 @@ public:
 	virtual ~IRootInterface() = 0 {};  // 确保delete时能调用到派生类的析构函数
 };
 
+// 编辑器的一切功能不好实现，只能将一些代码加进UISDK工程
+// 这些代码都用这个宏包起来，在release模式下面不启用
+#ifdef _DEBUG
+#define EDITOR_MODE
+#endif
 
 // 对象序列化消息。用于取代WM_SETATTRIBUTE
 enum SERIALIZEFLAG
@@ -249,7 +236,6 @@ enum OBJECT_STATE_BIT
 #define SWP_FORCEUPDATEOBJECT       0x10000000   // 即使大小没有改变，也强制柠檬素，用于走通逻辑
 
 
-
 #define UI_DECLARE_RENDERBASE(className, xml, rendertype)   \
     static LPCTSTR  GetXmlName() { return xml; }       \
     static int  GetType() { return rendertype; }      
@@ -286,6 +272,17 @@ enum OBJECT_STATE_BIT
 #define WND_POPUP_CONTROL_NAME          _T("UI_PopupControl")
 #define WND_DRAGBITMAPWND_CLASS_NAME    _T("UI_DragBitmapWnd")
 
+// 窗口创建完成后，获取xml中的控件
+#define INIT_CONTROL(x, id) \
+    x = (decltype(x))m_pWindow->FindObject(id);
+#define INIT_CONTROL2(x, id) \
+    (decltype(x))m_pWindow->FindObject(id);
+
+
+// 单例类。放在类里的最后面声明
+#define SINGLE_INSTANCE(classname) \
+    public: \
+        static classname& Get() { static classname s; return s; }
 }
 
 

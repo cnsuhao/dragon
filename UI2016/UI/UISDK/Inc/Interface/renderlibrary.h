@@ -10,6 +10,7 @@ interface IRenderTarget;
 class ImageData;
 interface IRenderFont;
 interface IGpuRenderLayer;    
+
 class C9Region;
 
 // 绘制图片的统一参数，避免需要重写多个DrawBitmap函数

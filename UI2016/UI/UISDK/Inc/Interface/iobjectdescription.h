@@ -70,9 +70,9 @@ enum LAYER_TYPE
 	LAYER_3D       = 3,
 };
 
-#define  CATEGORY_CONTROL    _T("Kernel/Control");
-#define  CATEGORY_CONTAINER  _T("Kernel/Container");
-#define  CATEGORY_WINDOW     _T("Kernel/Window");
+#define  CATEGORY_CONTROL    _T("Control");
+#define  CATEGORY_CONTAINER  _T("Container");
+#define  CATEGORY_WINDOW     _T("Window");
 
 interface  IObjectDescription
 {

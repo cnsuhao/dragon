@@ -324,7 +324,7 @@ Compositor* UI::WindowRender::get_create_compositor()
     return m_pCompositor;
 }
 
-void  WindowRender::OnInvalidate()
+void  WindowRender::InvalidateNow()
 {
     if (m_pCompositor)
         m_pCompositor->DoInvalidate();
@@ -345,4 +345,13 @@ void WindowRender::BindHWND(HWND hWnd)
 {
     if (m_pCompositor)
         m_pCompositor->BindHWND(hWnd);
+}
+
+void WindowRender::SetCommitListener(IWindowCommitListener* p)
+{
+    m_pCommitListener = p;
+}
+IWindowCommitListener*  WindowRender::GetCommitListener()
+{
+    return m_pCommitListener;
 }

@@ -12,6 +12,7 @@ GlowWindowWrap::GlowWindowWrap()
 
 GlowWindowWrap::~GlowWindowWrap()
 {
+    Enable(false);
 }
 
 void  GlowWindowWrap::Init(ICustomWindow* pWnd)
@@ -31,16 +32,67 @@ void  GlowWindowWrap::Enable(bool b)
 	}
 	else
 	{
-		m_leftGW.Destroy();
-		m_topGW.Destroy();
-		m_rightGW.Destroy();
-		m_bottomGW.Destroy();
+        if (m_leftGW.m_hWnd)
+            m_leftGW.Destroy();
+        if (m_topGW.m_hWnd)
+            m_topGW.Destroy();
+        if (m_rightGW.m_hWnd)
+            m_rightGW.Destroy();
+        if (m_bottomGW.m_hWnd)
+            m_bottomGW.Destroy();
 	}
 }
 
 void  GlowWindowWrap::UpdateRgn()
 {
 
+}
+
+BOOL UI::GlowWindowWrap::ProcessWindowMessage(
+        HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult, DWORD dwMsgMapID /*= 0*/)
+{
+    if (uMsg == WM_SIZE)
+    {
+        if (wParam == SIZE_MAXIMIZED)
+        {
+            Hide();
+        }
+        else if (wParam == SIZE_RESTORED)
+        {
+            if (IsWindowVisible(hWnd))
+            {
+                Show();
+            }
+        }
+    }
+
+    return FALSE;
+}
+
+void  GlowWindowWrap::Show()
+{
+    if (m_leftGW.m_hWnd && m_leftGW.IsWindowVisible())
+        return;
+
+    if (m_leftGW.m_hWnd)
+        m_leftGW.ShowWindow(SW_SHOWNOACTIVATE);
+    if (m_topGW.m_hWnd)
+        m_topGW.ShowWindow(SW_SHOWNOACTIVATE);
+    if (m_rightGW.m_hWnd)
+        m_rightGW.ShowWindow(SW_SHOWNOACTIVATE);
+    if (m_bottomGW.m_hWnd)
+        m_bottomGW.ShowWindow(SW_SHOWNOACTIVATE);
+}
+void  GlowWindowWrap::Hide()
+{
+    if (m_leftGW.m_hWnd)
+        m_leftGW.ShowWindow(SW_HIDE);
+    if (m_topGW.m_hWnd)
+        m_topGW.ShowWindow(SW_HIDE);
+    if (m_rightGW.m_hWnd)
+        m_rightGW.ShowWindow(SW_HIDE);
+    if (m_bottomGW.m_hWnd)
+        m_bottomGW.ShowWindow(SW_HIDE);
 }
 
 GlowWindow::GlowWindow()
@@ -131,6 +183,19 @@ void GlowWindow::commit()
 	m_buffer.ReleaseDC();
 }
 
+//
+// Owner窗口:  只有重叠窗口和弹出窗口才能是Owner窗口, 子窗口不能为Owner窗口, 
+//            Owner窗口销毁前, 他的所有的Owned窗口都将被自动销毁,当Owner
+//            窗口隐藏时他的所有Owned窗口不会隐藏。但当Owner最小化是他的Owned
+//            窗口会被隐藏。一个Owner窗口的所有Owned窗口都将在Owner窗口的
+//            前面显示, 而不会在其后面显示。
+//
+// Owned窗口:  一个Owned窗口总是在Z - Order顺序中一般是在他的Owner窗口之前,
+//            Owned窗口的生命可以被他的Owner窗口控制, Owned窗口的显示并不局
+//            限于他的Owner窗口区域, 一个Owned窗口在建立后不能改变他的owner
+//            窗口, 子窗口, 弹出窗口, 重叠窗口都可以做Owned窗口。
+//
+//
 void  GlowWindow::Create(HWND hWnd, GLOW_WINDOW_ALIGN eAlign)
 {
 	UIASSERT(hWnd);
@@ -180,13 +245,21 @@ void  GlowWindow::Create(HWND hWnd, GLOW_WINDOW_ALIGN eAlign)
 	break;
 	}
 
+    long lStyle = WS_POPUP;
+    //if (hWnd && ::IsWindowVisible(hWnd))
+    //    lStyle |= WS_VISIBLE;
+
 	// 先使用这个做为父窗口，解决同步激活的问题。
-	__super::Create(hWnd/*NULL*/, &rc, NULL, WS_POPUP | WS_VISIBLE, WS_EX_TOOLWINDOW | WS_EX_LAYERED | WS_EX_TRANSPARENT);
+    __super::Create(hWnd/*NULL*/, &rc, NULL, lStyle,
+        WS_EX_TOOLWINDOW | WS_EX_LAYERED /*| WS_EX_TRANSPARENT*/);
 	UIASSERT(m_hWnd);
+
+    
 
 	SyncWindowData data;
 	data.m_hWnd = m_hWnd;
 	data.m_bAnchorOn = true;
+    data.m_bSyncVisible = true;
 	data.m_nMask = SWDS_MASK_ALL;
 
 	switch (eAlign)

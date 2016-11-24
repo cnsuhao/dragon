@@ -95,7 +95,7 @@ void  MultiSelListCtrlMKMgr::OnLButtonDown(UIMSG* pMsg)
             // 如果自己被选中了，可能是要进行拖拽操作，则不操作。但如果没有发现拖拽，则在UP中将选项设置为自己
             if (!bCtrlDown && !bShiftDown && !pItemPress->IsSelected())
             {
-                m_pListCtrlBase->SelectItem(pItemPress, false);
+                m_pListCtrlBase->SelectItem(pItemPress);
             }
         }
         else if (pItemPress->IsFocusable())
@@ -159,7 +159,7 @@ void  MultiSelListCtrlMKMgr::OnLButtonUp(UIMSG* pMsg)
 
             if (pItemPress == pFirstSelect)
             {
-                m_pListCtrlBase->SelectItem(pFirstSelect, false);
+                m_pListCtrlBase->SelectItem(pFirstSelect);
                 return;
             }
 
@@ -219,7 +219,7 @@ void  MultiSelListCtrlMKMgr::OnLButtonUp(UIMSG* pMsg)
                 ListItemBase*  pNewHover = GetItemByPos(ptWnd);
                 if (pItemPress == pNewHover)
                 {
-                    m_pListCtrlBase->SelectItem(pItemPress, false);
+                    m_pListCtrlBase->SelectItem(pItemPress);
                 }
             }
         }
@@ -256,7 +256,7 @@ void  MultiSelListCtrlMKMgr::OnRButtonDown(UIMSG* pMsg)
             else
             {
                 // 只选这一个
-                m_pListCtrlBase->SelectItem(m_pItemHover, false);
+                m_pListCtrlBase->SelectItem(m_pItemHover);
             }
 
         }
@@ -329,7 +329,7 @@ void  MultiSelListCtrlMKMgr::OnKeyDown_up(UIMSG* pMsg)
         if (pFirstVisbleItem)
         {
             this->SetFocusItem(pFirstVisbleItem);
-            this->m_pListCtrlBase->SelectItem(pFirstVisbleItem, false);
+            this->m_pListCtrlBase->SelectItem(pFirstVisbleItem);
         }
         return;
     }
@@ -398,11 +398,11 @@ void  MultiSelListCtrlMKMgr::OnKeyDown_up(UIMSG* pMsg)
     {
         if (pPrevItem)
         {
-            this->m_pListCtrlBase->SelectItem(pPrevItem, false);
+            this->m_pListCtrlBase->SelectItem(pPrevItem);
         }
         else if (!m_pItemFocus->IsSelected())
         {
-            this->m_pListCtrlBase->SelectItem(m_pItemFocus, false);
+            this->m_pListCtrlBase->SelectItem(m_pItemFocus);
         }
     }
 }
@@ -415,7 +415,7 @@ void  MultiSelListCtrlMKMgr::OnKeyDown_down(UIMSG* pMsg)
         if (pFirstVisbleItem)
         {
             this->SetFocusItem(pFirstVisbleItem);
-            this->m_pListCtrlBase->SelectItem(pFirstVisbleItem, false);
+            this->m_pListCtrlBase->SelectItem(pFirstVisbleItem);
         }
         return;
     }
@@ -485,11 +485,11 @@ void  MultiSelListCtrlMKMgr::OnKeyDown_down(UIMSG* pMsg)
     {
         if (pNextItem)
         {
-            this->m_pListCtrlBase->SelectItem(pNextItem, false);
+            this->m_pListCtrlBase->SelectItem(pNextItem);
         }
         else if (!m_pItemFocus->IsSelected())
         {
-            this->m_pListCtrlBase->SelectItem(m_pItemFocus, false);
+            this->m_pListCtrlBase->SelectItem(m_pItemFocus);
         }
     }
 }
@@ -502,12 +502,12 @@ void  MultiSelListCtrlMKMgr::OnKeyDown_space(UIMSG* pMsg)
         ListItemBase* pFirstSelectableItem = m_pListCtrlBase->FindSelectableItemFrom(NULL);
         if (pFirstSelectableItem)
         {
-            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem, false);
+            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem);
         }
     }
     else
     {
-        this->m_pListCtrlBase->SelectItem(m_pItemFocus, false);
+        this->m_pListCtrlBase->SelectItem(m_pItemFocus);
     }
 }
 void  MultiSelListCtrlMKMgr::OnKeyDown_prior(UIMSG* pMsg)
@@ -517,7 +517,7 @@ void  MultiSelListCtrlMKMgr::OnKeyDown_prior(UIMSG* pMsg)
         ListItemBase* pFirstSelectableItem = m_pListCtrlBase->FindSelectableItemFrom(NULL);
         if (pFirstSelectableItem)
         {
-            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem, false);
+            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem);
         }
     }
     else
@@ -530,7 +530,7 @@ void  MultiSelListCtrlMKMgr::OnKeyDown_prior(UIMSG* pMsg)
 
         this->m_pListCtrlBase->CalcFirstLastDrawItem();
         ListItemBase*  pNewFocusItem = m_pListCtrlBase->GetFirstDrawItem();
-        this->m_pListCtrlBase->SelectItem(pNewFocusItem, false);
+        this->m_pListCtrlBase->SelectItem(pNewFocusItem);
     }
 }
 void  MultiSelListCtrlMKMgr::OnKeyDown_next(UIMSG* pMsg)
@@ -540,7 +540,7 @@ void  MultiSelListCtrlMKMgr::OnKeyDown_next(UIMSG* pMsg)
         ListItemBase* pFirstSelectableItem = m_pListCtrlBase->FindSelectableItemFrom(NULL);
         if (pFirstSelectableItem)
         {
-            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem, false);
+            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem);
         }
     }
     else
@@ -550,7 +550,7 @@ void  MultiSelListCtrlMKMgr::OnKeyDown_next(UIMSG* pMsg)
 
         this->m_pListCtrlBase->CalcFirstLastDrawItem();
         ListItemBase*  pNewFocusItem = m_pListCtrlBase->GetLastDrawItem();
-        this->m_pListCtrlBase->SelectItem(pNewFocusItem, false);
+        this->m_pListCtrlBase->SelectItem(pNewFocusItem);
 
         this->m_pListCtrlBase->Invalidate();
     }
@@ -563,7 +563,7 @@ void  MultiSelListCtrlMKMgr::OnKeyDown_home(UIMSG* pMsg)
         ListItemBase* pFirstSelectableItem = m_pListCtrlBase->FindSelectableItemFrom(NULL);
         if (pFirstSelectableItem)
         {
-            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem, false);
+            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem);
         }
     }
     else
@@ -573,7 +573,7 @@ void  MultiSelListCtrlMKMgr::OnKeyDown_home(UIMSG* pMsg)
 
         this->m_pListCtrlBase->CalcFirstLastDrawItem();
         ListItemBase*  pNewFocusItem = m_pListCtrlBase->GetFirstDrawItem();
-        this->m_pListCtrlBase->SelectItem(pNewFocusItem, false);
+        this->m_pListCtrlBase->SelectItem(pNewFocusItem);
 
         this->m_pListCtrlBase->Invalidate();
     }
@@ -585,7 +585,7 @@ void  MultiSelListCtrlMKMgr::OnKeyDown_end(UIMSG* pMsg)
         ListItemBase* pFirstSelectableItem = m_pListCtrlBase->FindSelectableItemFrom(NULL);
         if (pFirstSelectableItem)
         {
-            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem, false);
+            this->m_pListCtrlBase->SelectItem(pFirstSelectableItem);
         }
     }
     else
@@ -595,7 +595,7 @@ void  MultiSelListCtrlMKMgr::OnKeyDown_end(UIMSG* pMsg)
         
         this->m_pListCtrlBase->CalcFirstLastDrawItem();
         ListItemBase*  pNewFocusItem = m_pListCtrlBase->GetLastDrawItem();
-        this->m_pListCtrlBase->SelectItem(pNewFocusItem, false);
+        this->m_pListCtrlBase->SelectItem(pNewFocusItem);
         
         this->m_pListCtrlBase->Invalidate();
     }

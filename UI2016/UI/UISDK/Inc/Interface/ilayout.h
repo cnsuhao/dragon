@@ -105,7 +105,8 @@ interface ILayout : public IRootInterface
     virtual void  Arrange(IObject* pObjToArrage=NULL) = 0;
     virtual void  Serialize(SERIALIZEDATA* pData) = 0;
     virtual ILayoutParam*  CreateLayoutParam(IObject* pObj) = 0;  
-    virtual void  OnChildObjectVisibleChanged(IObject* pObj) = 0;
+    virtual void  ChildObjectVisibleChanged(IObject* pObj) = 0;
+    virtual void  ChildObjectContentSizeChanged(IObject* pObj) = 0;
     virtual bool  IsDirty() = 0;
 };
 

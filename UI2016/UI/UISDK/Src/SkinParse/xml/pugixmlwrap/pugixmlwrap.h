@@ -34,7 +34,8 @@ public:
     virtual bool  AddChildAfter(UIElement*  pElem, UIElement* pInsertAfter) override;
     virtual UIElementProxy  AddChildBefore(LPCTSTR szNodeName, UIElement* pInsertBefore) override;
     virtual UIElementProxy  AddChildAfter(LPCTSTR szNodeName, UIElement* pInsertAfter) override;
-    virtual bool  MoveChildAfterChild(UIElement* pChild2Move, UIElement* pChildInsertAfter) override;
+    // virtual bool  MoveChildAfterChild(UIElement* pChild2Move, UIElement* pChildInsertAfter) override;
+    virtual bool  MoveTo(UIElement* pNewParent, UIElement* pChildInsertAfter) override;
     virtual bool  RemoveChild(UIElement*) override;
     virtual bool  RemoveSelfInParent() override;
 	virtual UIElementProxy  FirstChild() override;
@@ -54,6 +55,9 @@ public:
 
     virtual bool  GetAttribInt(LPCTSTR szKey, int* pInt) override;
     virtual bool  AddAttribInt(LPCTSTR szKey, int nInt) override;
+
+	void  set_attr_by_prefix(IListAttribute* pListAttrib, LPCTSTR szPrefix);
+    void  enum_attr(const std::function<void(LPCTSTR, LPCTSTR)>& callback);
 
 private:
     long  m_lRef;

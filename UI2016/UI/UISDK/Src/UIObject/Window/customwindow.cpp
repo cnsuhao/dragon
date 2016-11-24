@@ -300,7 +300,8 @@ LRESULT  CustomWindow::_OnDwmCompositionChanged(UINT uMsg, WPARAM wParam, LPARAM
 //         }
 //
 //
-LRESULT  CustomWindow::_OnWindowPosChanging(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+LRESULT  CustomWindow::_OnWindowPosChanging(
+            UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
     __super::_OnWindowPosChanging(uMsg, wParam, lParam, bHandled);
     LPWINDOWPOS lpPos = (LPWINDOWPOS)lParam;
@@ -648,6 +649,22 @@ void  CustomWindow::OnSysCommand(UINT nID, CPoint point)
 //     }
 
     SetMsgHandled(FALSE);
+}
+
+void  CustomWindow::OnLButtonDblClk(UINT nFlags, POINT point)
+{
+	SetMsgHandled(FALSE);
+	if (::IsZoomed(m_hWnd))
+	{
+		::PostMessage(m_hWnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+	}
+	else
+	{
+		if (WS_MAXIMIZEBOX & GetWindowLong(m_hWnd, GWL_STYLE))
+		{
+			::PostMessage(m_hWnd, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+		}
+	}
 }
 
 // 注：不要响应UIMSG的WM_SIZE。因为在WindowBase::_OnSize中就已经开始更新窗口了，因

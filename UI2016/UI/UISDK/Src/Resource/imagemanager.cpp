@@ -34,12 +34,12 @@ ImageManager::~ImageManager(void)
 	m_listUIElement.Clear();
 }
 
-IImageManager*  ImageManager::GetIImageManager()
+IImageManager&  ImageManager::GetIImageManager()
 {
-    if (NULL == m_pIImageManager)
+    if (!m_pIImageManager)
         m_pIImageManager = new IImageManager(this);
 
-    return m_pIImageManager;
+    return *m_pIImageManager;
 }
 
 
@@ -121,7 +121,7 @@ bool ImageManager::RemoveImageItem(const TCHAR* szId)
 		return false;
 
     UIApplication* pUIApp = m_pSkinRes->GetUIApplication();
-    if (!pUIApp->IsDesignMode())
+    if (!pUIApp->IsEditorMode())
     {
 	    if (false == m_resImage.RemoveImage(szId))
 	    {
@@ -146,19 +146,6 @@ bool ImageManager::RemoveImageItem(const TCHAR* szId)
 	return true;
 }
 
-int ImageManager::GetImageCount( )
-{
-	return m_resImage.GetImageCount();
-}
-IImageResItem* ImageManager::GetImageItemInfo(int nIndex)
-{
-	ImageResItem* pItem = m_resImage.GetImageItem2(nIndex);
-    if (NULL == pItem)
-        return NULL;
-
-	return pItem->GetIImageResItem();
-}
-
 ImageRes&  ImageManager::GetImageRes()
 {
 	return m_resImage;
@@ -177,11 +164,8 @@ GifRes&  ImageManager::GetGifRes()
 
 HRESULT  ImageManager::UIParseImageTagCallback(IUIElement* pElem, ISkinRes* pSkinRes)
 {
-    IImageManager*  pImageMgr = pSkinRes->GetImageManager();
-    if (NULL == pImageMgr)
-        return E_FAIL;
-
-    return pImageMgr->GetImpl()->ParseNewElement(pElem->GetImpl());
+    IImageManager&  pImageMgr = pSkinRes->GetImageManager();
+    return pImageMgr.GetImpl()->ParseNewElement(pElem->GetImpl());
 }
 
 HRESULT  ImageManager::ParseNewElement(UIElement* pElem)

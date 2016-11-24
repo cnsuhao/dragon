@@ -21,7 +21,7 @@ public:
 	FontManager(SkinRes* p);
 	~FontManager(void);
    
-    IFontManager*  GetIFontManager();
+    IFontManager&  GetIFontManager();
 	FontRes&  GetFontRes();
 
 public:
@@ -32,7 +32,7 @@ public:
     static HRESULT  UIParseFontTagCallback(IUIElement*, ISkinRes* pSkinRes);
 private:
     HRESULT  ParseNewElement(UIElement* pElem);
-    void  OnNewChild(UIElement* pElem);
+    void  OnNewChild(UIElement* pElem, HDC);
 
 private:
 	// Êý¾Ý³Ö¾Ã²ã

@@ -298,6 +298,10 @@ IListItemBase*  IListCtrlBase::GetItemByPos(int i, bool bVisibleOnly)
         return p->GetIListItemBase();
     return NULL;
 }
+int  IListCtrlBase::GetItemPos(IListItemBase* p, bool bVisibleOnly)
+{
+    return __pImpl->GetItemPos(p?p->GetImpl():NULL, bVisibleOnly);
+}
 IListItemBase*  IListCtrlBase::GetItemUnderCursor()
 {
     ListItemBase* p = __pImpl->GetItemUnderCursor(); 
@@ -410,9 +414,9 @@ void  IListCtrlBase::SetFocusRender(IRenderBase* p)
 {
     __pImpl->SetFocusRender(p); 
 }
-void  IListCtrlBase::SelectItem(IListItemBase* pItem, bool bUpdate, bool bNotify) 
+void  IListCtrlBase::SelectItem(IListItemBase* pItem, bool bNotify) 
 {
-    __pImpl->SelectItem(pItem ? pItem->GetImpl():NULL, bUpdate, bNotify); 
+    __pImpl->SelectItem(pItem ? pItem->GetImpl():NULL, bNotify); 
 }
 
 void  IListCtrlBase::ClearSelectItem(bool bNotify)
@@ -595,7 +599,8 @@ void  IListCtrlBase::SetScrollPos(int nX, int nY, bool bUpdate)
 }
 void  IListCtrlBase::ListItemDragDropEvent(UI::DROPTARGETEVENT_TYPE eEvent, IListItemBase* pItem)
 {
-    __pImpl->ListItemDragDropEvent(eEvent, pItem); 
+    __pImpl->ListItemDragDropEvent(
+        eEvent, pItem?pItem->GetImpl():NULL); 
 }
 void  IListCtrlBase::ListCtrlDragScroll()
 {
@@ -605,6 +610,32 @@ void  IListCtrlBase::ListCtrlDragScroll()
 bool  IListCtrlBase::IsItemRectVisibleInScreen(LPCRECT prc)
 {
     return __pImpl->IsItemRectVisibleInScreen(prc);
+}
+
+
+signal<IListCtrlBase*>&  IListCtrlBase::SelectChangedEvent()
+{
+	return __pImpl->select_changed;
+}
+signal<IListCtrlBase*, IListItemBase*>&  IListCtrlBase::ClickEvent()
+{
+    return __pImpl->click;
+}
+signal<IListCtrlBase*, IListItemBase*>&  IListCtrlBase::RClickEvent()
+{
+    return __pImpl->rclick;
+}
+signal<IListCtrlBase*, IListItemBase*>&  IListCtrlBase::MClickEvent()
+{
+    return __pImpl->mclick;
+}
+signal<IListCtrlBase*, IListItemBase*>&  IListCtrlBase::DBClickEvent()
+{
+    return __pImpl->dbclick;
+}
+signal<IListCtrlBase*, UINT, bool&>&  IListCtrlBase::KeyDownEvent()
+{
+    return __pImpl->keydown;
 }
 
 // void  IListCtrlBase::SetListItemRectChangedCallback(

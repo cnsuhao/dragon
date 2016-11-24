@@ -375,6 +375,7 @@ static void  improve_timer_resolution(HMODULE& hModuleWinmm)
             ((pfntimeBeginPeriod)func)(MINIMUM_TIMER_RESOLUTION);
     }
 }
+
 static void  restore_timer_resolution(HMODULE& hModuleWinmm)
 {
     if (!hModuleWinmm)
@@ -389,6 +390,8 @@ static void  restore_timer_resolution(HMODULE& hModuleWinmm)
     if (func)
         ((timeEndPeriod)func)(MINIMUM_TIMER_RESOLUTION);
 }
+
+void  /*VSYNC_API*/ WaitForVerticalBlank();
 
 void AnimateManager::SetTimer()
 {
@@ -409,6 +412,13 @@ void AnimateManager::SetTimer()
 
     if (0 == m_nFps)
         m_nFps = 60;
+
+    // TODO: 不靠谱，没解决
+//     if (m_nFps == 60)
+//     {
+//         //  尝试等待垂直同步后再开始计时，以达到每一帧都在屏幕扫描完成之后
+//         WaitForVerticalBlank();
+//     }
 
     int nPeriod = 1000/m_nFps;  // 计时器周期
 

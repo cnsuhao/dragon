@@ -40,25 +40,25 @@ ISkinRes*  IUIApplication::LoadSkinRes(LPCTSTR szSkinResPath)
 	return NULL;
 }
 
-void  IUIApplication::SetDesignMode(bool b)
+void  IUIApplication::SetEditorMode(bool b)
 {
-	m_pImpl->SetDesignMode(b); 
+	m_pImpl->SetEditorMode(b); 
 }
 void  IUIApplication::SetUIEditorPtr(IUIEditor* p)
 {
 	m_pImpl->SetUIEditorPtr(p); 
 }
 
-bool  IUIApplication::IsDesignMode()
+bool  IUIApplication::IsEditorMode()
 { 
-	return m_pImpl->IsDesignMode();
+	return m_pImpl->IsEditorMode();
 }
 IUIEditor*  IUIApplication::GetUIEditorPtr()
 {
     return m_pImpl->GetUIEditorPtr(); 
 }
 
-ISkinManager*  IUIApplication::GetSkinMgr()    
+ISkinManager&  IUIApplication::GetSkinMgr()    
 { 
     return m_pImpl->GetSkinMgr().GetISkinManager();
 }
@@ -81,84 +81,6 @@ ISkinRes*  IUIApplication::GetDefaultSkinRes()
 		return p->GetISkinRes();
 	return NULL;
 }
-IImageManager*  IUIApplication::GetActiveSkinImageMgr()
-{
-    ImageManager* p = m_pImpl->GetActiveSkinImageMgr();
-	if (p)
-		return p->GetIImageManager();
-	return NULL;
-}
-IImageRes*  IUIApplication::GetActiveSkinImageRes()
-{
-    ImageRes* p = m_pImpl->GetActiveSkinImageRes(); 
-	if (p)
-		return p->GetIImageRes();
-	return NULL;
-}
-ICursorRes*  IUIApplication::GetActiveSkinCursorRes()
-{
-    CursorRes* p = m_pImpl->GetActiveSkinCursorRes();
-	if (p)
-		return p->GetICursorRes();
-	return NULL;
-}
-IGifRes*  IUIApplication::GetActiveSkinGifRes()
-{
-    GifRes* p = m_pImpl->GetActiveSkinGifRes();
-	if (p)
-		return p->GetIGifRes();
-	return NULL;
-}
-IFontManager* IUIApplication::GetActiveSkinFontMgr()
-{
-    FontManager* p = m_pImpl->GetActiveSkinFontMgr();
-	if (p)
-		return p->GetIFontManager();
-	return NULL;
-}
-IFontRes*  IUIApplication::GetActiveSkinFontRes()
-{ 
-    FontRes* p = m_pImpl->GetActiveSkinFontRes();
-	if (p)
-		return p->GetIFontRes();
-	return NULL;
-}
-IColorManager*  IUIApplication::GetActiveSkinColorMgr() 
-{ 
-    ColorManager* p = m_pImpl->GetActiveSkinColorMgr(); 
-	if (p)
-		return p->GetIColorManager();
-	return NULL;
-}
-IColorRes*  IUIApplication::GetActiveSkinColorRes() 
-{
-    ColorRes* p = m_pImpl->GetActiveSkinColorRes(); 
-	if (p)
-		return p->GetIColorRes();
-	return NULL;
-}
-IStyleManager*  IUIApplication::GetActiveSkinStyleMgr() 
-{ 
-    StyleManager* p = m_pImpl->GetActiveSkinStyleMgr();
-	if (p)
-		return p->GetIStyleManager();
-	return NULL;
-}
-IStyleRes*  IUIApplication::GetActiveSkinStyleRes() 
-{
-    StyleRes* p = m_pImpl->GetActiveSkinStyleRes();
-	if (p)
-		return p->GetIStyleRes();
-	return NULL;
-}
-ILayoutManager* IUIApplication::GetActiveSkinLayoutMgr() 
-{
-    LayoutManager* p = m_pImpl->GetActiveSkinLayoutMgr(); 
-	if (p)
-		return p->GetILayoutManager();
-	return NULL;
-}
-
 void  IUIApplication::RestoreRegisterUIObject()      
 {
     m_pImpl->RestoreRegisterUIObject(); 
@@ -198,15 +120,25 @@ bool  IUIApplication::RegisterUIRenderBaseCreateData(
 {
     return m_pImpl->GetRenderBaseFactory().RegisterUIRenderBaseCreateData(szName, nType, pfunc); 
 }
-bool  IUIApplication::CreateRenderBaseByName(LPCTSTR szName, IObject* pObject, IRenderBase** ppOut)
-{
-    ISkinRes* pSkinRes = NULL;
-    if (pObject)
-        pSkinRes = pObject->GetSkinRes();
-    else
-        pSkinRes = GetDefaultSkinRes();
-    return m_pImpl->GetRenderBaseFactory().CreateRenderBaseByName(pSkinRes, szName, pObject, ppOut); 
-}
+
+// bool  IUIApplication::CreateRenderBaseByName(
+// 		LPCTSTR szName, IObject* pObject, IRenderBase** ppOut)
+// {
+//     ISkinRes* pSkinRes = NULL;
+//     if (pObject)
+//         pSkinRes = pObject->GetSkinRes();
+//     else
+//         pSkinRes = GetDefaultSkinRes();
+// 
+//     return m_pImpl->GetRenderBaseFactory().CreateRenderBaseByName(
+// 		pSkinRes, szName, pObject, ppOut); 
+// }
+// 
+// LPCTSTR  IUIApplication::GetRenderBaseName(int nType)
+// {
+// 	return m_pImpl->GetRenderBaseFactory().GetRenderBaseName(nType);
+// }
+
 bool  IUIApplication::CreateRenderBase(int nType, IObject* pObject, IRenderBase** ppOut) 
 { 
     ISkinRes* pSkinRes = NULL;
@@ -215,10 +147,6 @@ bool  IUIApplication::CreateRenderBase(int nType, IObject* pObject, IRenderBase*
     else
         pSkinRes = GetDefaultSkinRes();
     return m_pImpl->GetRenderBaseFactory().CreateRenderBase(pSkinRes, nType, pObject, ppOut);
-}
-LPCTSTR  IUIApplication::GetRenderBaseName(int nType)
-{
-    return m_pImpl->GetRenderBaseFactory().GetRenderBaseName(nType);
 }
 void  IUIApplication::EnumRenderBaseName(pfnEnumRenderBaseNameCallback callback, WPARAM wParam, LPARAM lParam)
 {

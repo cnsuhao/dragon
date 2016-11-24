@@ -25,7 +25,7 @@ public:
     virtual SIZE  Measure() override;
 	virtual void  DoArrage(IObject* pObjToArrage = NULL) override;
 	virtual void  Serialize(SERIALIZEDATA*) override;
-    virtual void  OnChildObjectVisibleChanged(IObject* pObj) override;
+    virtual void  ChildObjectVisibleChanged(IObject* pObj) override;
 
     void  ArrangeObject_H(Object* pChildObj, CRect* prc);
     void  ArrangeObject_V(Object* pChildObj, CRect* prc);

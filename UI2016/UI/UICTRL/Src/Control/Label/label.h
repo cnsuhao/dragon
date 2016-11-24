@@ -19,8 +19,8 @@ public:
         UIMSG_QUERYINTERFACE(Label)
         UIMSG_SERIALIZE(OnSerialize)
         UIMSG_FINALCONSTRUCT(FinalConstruct)
-//     UIALT_MSG_MAP(UIALT_CALLLESS)
-//         UIMSG_WM_CREATEBYEDITOR(OnCreateByEditor)
+    UIALT_MSG_MAP(UIALT_CALLLESS)
+        UIMSG_CREATEBYEDITOR(OnCreateByEditor)
 	UI_END_MSG_MAP_CHAIN_PARENT_Ixxx(Label, IControl)
 
 public:
@@ -39,7 +39,7 @@ protected:
 	void  GetDesiredSize(SIZE* pSize);
     //void  OnLButtonUp(UINT nFlags, POINT point);
     HRESULT  FinalConstruct(ISkinRes* p);
-    //void  OnCreateByEditor(CREATEBYEDITORDATA* pData);
+    void  OnCreateByEditor(CREATEBYEDITORDATA* pData);
 
     //void  OnClicked(POINT* pt);
 
@@ -66,29 +66,29 @@ public:
 		UIMSG_GETDESIREDSIZE(GetDesiredSize)
 		UIMSG_QUERYINTERFACE(PictureCtrl)
 		UIMSG_FINALCONSTRUCT(FinalConstruct)
-//     UIALT_MSG_MAP(UIALT_CALLLESS)
-//         UIMSG_WM_CREATEBYEDITOR(OnCreateByEditor)
+    UIALT_MSG_MAP(UIALT_CALLLESS)
+        UIMSG_CREATEBYEDITOR(OnCreateByEditor)
     UI_END_MSG_MAP_CHAIN_PARENT_Ixxx(PictureCtrl, IControl)
+
+public:
+    bool SetImageByPath(LPCTSTR szPath);
+    bool SetImageById(LPCTSTR szId);
 
 private:
 	void  GetDesiredSize(SIZE* pSize);
 	void  OnPaint(IRenderTarget* pRenderTarget);
 	HRESULT  FinalConstruct(ISkinRes* p);
-    //void  OnCreateByEditor(CREATEBYEDITORDATA* pData);
+    void  OnCreateByEditor(CREATEBYEDITORDATA* pData);
 
 protected:
     IPictureCtrl*  m_pIPictureCtrl;
 };
 
 
-interface IGifImageRender;
+struct IGifImageRender;
 //
 //	动画图片
-//
 //	TODO: 增加PNG序列动画类型
-//
-//  注:
-//      1. 为了避免gif在隐藏的情况下仍然在走计时器刷新，将Start操作交给外部调用
 //
 class GifCtrl : public MessageProxy
 {
@@ -98,12 +98,12 @@ public:
 
 	UI_BEGIN_MSG_MAP()
 		UIMSG_PAINT(OnPaint)
-		MSG_WM_MOVE(OnMove)
         UIMSG_GETDESIREDSIZE(OnGetDesiredSize)
-		//UIMSG_WM_GIFFRAME_TICK(OnGifFrameTick)
+		UIMSG_WM_GIFFRAME_TICK(OnGifFrameTick)
+        UIMSG_VISIBLE_CHANGED(OnVisibleChanged)
+        UIMSG_SERIALIZE(OnSerialize)
         UIMSG_QUERYINTERFACE(GifCtrl)
         UIMSG_FINALCONSTRUCT(FinalConstruct)
-        //UIMSG_WM_SETATTRIBUTE(SetAttribute)
 	UI_END_MSG_MAP_CHAIN_PARENT_Ixxx(GifCtrl, IControl)
 
     IGifCtrl*  GetIGifCtrl() { return m_pIGifCtrl; }
@@ -116,16 +116,15 @@ public:
 public:
 	// virtual 函数
 	void  OnGetDesiredSize(SIZE* pSize);
-	void  SetAttribute(IMapAttribute* pMapAttrib, bool bReload);
+    void  OnSerialize(SERIALIZEDATA* pData);
 	HRESULT  FinalConstruct(ISkinRes* p);
 
 	void  OnPaint(IRenderTarget* pRenderTarget);
-	void  OnMove(CPoint ptPos);
 	void  OnGifFrameTick(WPARAM wParam, LPARAM lParam);
+    void  OnVisibleChanged(BOOL bVisible, IObject* pObjChanged);
 
 private:
     IGifCtrl*  m_pIGifCtrl;
-
 	IGifImageRender*  m_pGifRender;
 };
 }

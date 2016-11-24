@@ -22,7 +22,7 @@ interface IWindowTransparent
 
 class  AeroWindowWrap;
 interface __declspec(uuid("2D186EE2-267B-474D-9AF7-644D0DC73AF8"))
-UISDKAPI IAeroWindowWrap
+UIAPI IAeroWindowWrap
 {
 public:
     IAeroWindowWrap(AeroWindowWrap*  p);
@@ -38,7 +38,7 @@ public:
 
 class  LayeredWindowWrap;
 interface __declspec(uuid("DCBB2201-67EB-4081-B64B-80066BC3B29C"))
-UISDKAPI ILayeredWindowWrap
+UIAPI ILayeredWindowWrap
 {
 public:
     ILayeredWindowWrap(LayeredWindowWrap*  p);

@@ -1,33 +1,25 @@
 ﻿<skin>
-  <layout>
-    <CustomWindow id="LoginWnd" width="268" height="364" transparent.type="layered" padding="20">
-      <prop>
-        <x key="back.render" type="image" image="bkg"/>
-      </prop>
-      <Edit id="edit" text="This is a edit control!!">
-        <prop>
-          <x width="202" height="30" padding="3"/>
-          <x key="back.render" type="color" color="0xFFFF" border="1" border.color="0xF333"/>
-          <x key="color" text="0xF00F" select="0xFF00" select.back="0xFFF0" quiet="0xF0F"/>
-        </prop>
-      </Edit>
-      <Button id="btn"  text="登录">
-        <prop>
-          <x key="layout" width="201" height="58" bottom="30" align="center"/>
-        </prop>
-      </Button>
-    </CustomWindow>
-  </layout>
+    <layout>
+        <CustomWindow id="LoginWnd" width="500" height="500" transparent.type="layered" padding="20" layout.type="canvas" resizecapability="all" resizeborder="10">
+            <prop key="back.render" type="image" image="bkg" image.drawtype="stretch" image.9region="20"/>
+            <xPanel id="test" width="50" height="50">
+                <prop key="back.render" type="color" color="0xF00" />
+            </xPanel>
 
-  <image>
-    <image id="bkg" path="login_bg.png"/>
-  </image>
-  <style>
-    <Button handcursor="1">
-      <prop>
-        <x key="back.render" type="imagelist" image="btn" image.drawtype="stretch" image.9region="10"/>
-        <x key="text.render" type="colorlist"  align="center|vcenter" color="0xFFF;0xeee;0xFFF;"/>
-      </prop>
-    </Button>
-  </style>
+            <xGif id="gif" layout.left="100" layout.top="250" width="250" height="250" gif="test_gif" autoplay="1"/>
+            <RichText id="richtext" layout.left="0" layout.right="0" layout.top="0" layout.bottom="50" editable="readonly" page.halign="left" page.valign="top"/>
+            <Button id="btnInsert" width="100"  height="30" layout.bottom="0" layout.left="0" text="插入" style="imagebutton"/>
+          
+            <xButton id="btn" width="*"     height="30" text="1" margin="10,0,0,0" style="imagebutton"/>
+            <xButton id="btn" width="50%"   height="30" text="2" margin="10,0,0,0" style="imagebutton"/>
+            <xButton id="btn" width="50"    height="30" text="3" margin="10,0,0,0" style="imagebutton"/>
+            <xButton id="btn" width="auto"  height="30" text="4444444" margin="10,0,0,0" style="imagebutton"/>
+
+            <xCef id="cef" layout.left="0" layout.right="0" layout.top="0" layout.bottom="0"/>
+        </CustomWindow>
+    </layout>
+    <image>
+        <image id="bkg" path="login_bg.png"/>
+        <gif id="test_gif" path="test.gif"/>
+    </image>
 </skin>

@@ -19,9 +19,11 @@
 #include <vector>
 #include <map>
 #include <stack>
+#include <functional>
 using namespace std;
 
 #include <atlbase.h>
+// #include <Src\Atl\atlstdthunk.h> <-- 会崩溃，先不用了
 #include <../3rd/wtl90/Include/atlapp.h>
 #include <../3rd/wtl90/Include/atlcrack.h>
 

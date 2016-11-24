@@ -11,9 +11,6 @@ public:
     ~CMapAttribute();
     CMapAttribute(const CMapAttribute& o);
     
-	virtual void  SetTag(LPCTSTR szKey);
-	virtual LPCTSTR  GetTag();
-
     virtual bool  HasAttrib(LPCTSTR szKey);
     virtual LPCTSTR GetAttr(LPCTSTR szKey, bool bErase);
     virtual LPCTSTR GetAttr(LPCTSTR szPrefix, LPCTSTR szKey, bool bErase);
@@ -25,26 +22,6 @@ public:
     virtual long  GetAttr_intarray(LPCTSTR szPrefix, LPCTSTR szKey, bool bErase, int* pIntArray, unsigned int nSize);
 	virtual long  GetAttr_REGION4(LPCTSTR szPrefix, LPCTSTR szKey, bool bErase, REGION4* prcGet);
     virtual long  GetAttr_Image9Region(LPCTSTR szPrefix, LPCTSTR szKey, bool bErase, C9Region* pRegion);
-    virtual long  GetAttr_RenderBase(
-                LPCTSTR szPrefix, 
-                LPCTSTR szKey,
-                bool bErase,
-                IUIApplication* pUIApp, 
-                IObject* pBindObj, 
-                IRenderBase** ppGet);
-    virtual long  GetAttr_TextRenderBase(
-                LPCTSTR szPrefix, 
-                LPCTSTR szKey,
-                bool bErase, 
-                IUIApplication* pUIApp, 
-                IObject* pBindObj, 
-                ITextRenderBase** ppGet);
-    virtual long  GetAttr_Color(
-                LPCTSTR szPrefix,
-                LPCTSTR szKey, 
-                bool bErase, 
-                IUIApplication* pUIApp,
-                Color** ppColor);
 
     virtual bool  AddAttr(LPCTSTR szKey, LPCTSTR szValue);
 	virtual bool  AddAttr_bool(LPCTSTR szKey, bool bValue);
@@ -66,9 +43,8 @@ public:
     void  AddAttr(const String& strKey, const String& strValue);
 
 protected:
-	String   m_strTag;      // 标签名，用于充分模拟xml标签数据
+//	String   m_strTag;      // 标签名，用于充分模拟xml标签数据
     ATTRMAP  m_mapAttr;
-    String   m_strTemp;     // 用于删除要查找的对象时，能保存一份要删除的字符串引用
     int      m_lRef;
 
     ATTRMAP::iterator  m_iterEnum;
@@ -92,8 +68,8 @@ public:
     CListAttribute();
     ~CListAttribute();
 
-	virtual void  SetTag(LPCTSTR szKey);
-    virtual LPCTSTR  GetTag();
+// 	virtual void  SetTag(LPCTSTR szKey);
+//     virtual LPCTSTR  GetTag();
 
     virtual bool  AddAttr(LPCTSTR szKey, LPCTSTR szValue);
     virtual LPCTSTR  GetAttr(LPCTSTR szKey);
@@ -110,7 +86,7 @@ private:
     ListAttrItem* FindItem(LPCTSTR szKey);
 
 private:
-	String   m_strTag; 
+//	String   m_strTag; 
     ListAttrItem*  m_pFirstItem;
     ListAttrItem*  m_pLastItem;
 

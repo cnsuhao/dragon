@@ -132,7 +132,7 @@ EnumAttribute*  EnumAttribute::FillGraphicsRenderLibraryData()
 	return this;
 }
 
-void  EnumAttribute::Editor(AttributeEditorProxy* p, EditorAttributeFlag e)
+void  EnumAttribute::Editor(SERIALIZEDATA* pData, AttributeEditorProxy* p, EditorAttributeFlag e)
 {
 	p->Enum2Editor(this, e);
 }

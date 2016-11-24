@@ -298,6 +298,9 @@
     <Filter Include="02. Src\01. UI对象基类\04. attribute\11. color">
       <UniqueIdentifier>{43e9f708-305b-4f9e-b802-a2e6b70193b2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02. Src\10. 工具\10. math">
+      <UniqueIdentifier>{9bd1deb8-6165-4a6b-9725-833dea21f3c0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Other/stdafx.h">
@@ -588,9 +591,6 @@
     <ClInclude Include="Src\Util\Timeout\timeout.h">
       <Filter>02. Src\10. 工具\06. Timeout</Filter>
     </ClInclude>
-    <ClInclude Include="Src\UIObject\Window\SyncWindowHelper.h">
-      <Filter>02. Src\02. UI对象\03. window</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Renderbase\renderbase\renderbase.h">
       <Filter>02. Src\08. 渲染基类\renderbase</Filter>
     </ClInclude>
@@ -878,6 +878,30 @@
     </ClInclude>
     <ClInclude Include="Src\Base\Attribute\color_attribute.h">
       <Filter>02. Src\01. UI对象基类\04. attribute\11. color</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Layer\transform3d.h">
+      <Filter>02. Src\07. 分层</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\math\matrix.h">
+      <Filter>02. Src\10. 工具\10. math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\math\math.h">
+      <Filter>02. Src\10. 工具\10. math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\math\quad.h">
+      <Filter>02. Src\10. 工具\10. math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\math\point.h">
+      <Filter>02. Src\10. 工具\10. math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\math\rect.h">
+      <Filter>02. Src\10. 工具\10. math</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Base\Object\object_desc.h">
+      <Filter>02. Src\01. UI对象基类\02. object</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\UIObject\Window\sync_window.h">
+      <Filter>02. Src\02. UI对象\03. window</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1396,6 +1420,27 @@
     </ClCompile>
     <ClCompile Include="Src\Base\Attribute\color_attribute.cpp">
       <Filter>02. Src\01. UI对象基类\04. attribute\11. color</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Animate\VSync.cpp">
+      <Filter>02. Src\11. 动画\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Layer\transform3d.cpp">
+      <Filter>02. Src\07. 分层</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\math\matrix.cpp">
+      <Filter>02. Src\10. 工具\10. math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\math\math.cpp">
+      <Filter>02. Src\10. 工具\10. math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\math\quad.cpp">
+      <Filter>02. Src\10. 工具\10. math</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Base\Attribute\attributebase.cpp">
+      <Filter>02. Src\01. UI对象基类\04. attribute</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\UIObject\Window\sync_window.cpp">
+      <Filter>02. Src\02. UI对象\03. window</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

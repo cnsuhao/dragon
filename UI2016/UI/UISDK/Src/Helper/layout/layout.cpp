@@ -5,6 +5,7 @@
 #include "Src\Base\Object\object.h"
 #include "Src\UIObject\Window\windowbase.h"
 #include "Src\Helper\layout\canvaslayout.h"
+#include "Src\Util\DPI\dpihelper.h"
 
 #if 0
 
@@ -337,4 +338,72 @@ void  DesktopLayout::Arrange(WindowBase*  pWindow)
 
 	// 递归
 	//pWindow->GetLayout()->Arrange(NULL); // <-- SetObjectPos会触发OnSize，在Window的OnSize消息中会进行layout处理，因此这里可以不调用
+}
+
+namespace UI
+{
+
+
+    void  LoadConfigWH(LPCTSTR szText, long& wh, long& whtype)
+    {
+        if (!szText || !szText[0] || 0 == _tcscmp(szText, XML_AUTO))
+        {
+            whtype = WH_AUTO;
+            wh = 0;
+            return;
+        }
+
+        int nLength = _tcslen(szText);
+        if (szText[nLength - 1] == XML_AVERAGE_CHAR)
+        {
+            // 只支持平均分配，不支持平均系数
+            whtype = WH_AVG;
+            wh = 0;
+            return;
+        }
+
+        if (szText[nLength - 1] == XML_PERCENT_CHAR)
+        {
+            String str(szText);
+            str[nLength - 1] = 0;
+
+            whtype = WH_PERCENT;
+            wh = _ttoi(str.c_str());
+            return;
+        }
+
+        wh = ScaleByDpi(_ttoi(szText));
+        whtype = WH_SET;
+    }
+
+    LPCTSTR  SaveConfigWH(long wh, long whtype)
+    {
+        LPTSTR szBuffer = GetTempBuffer();
+
+        switch (whtype)
+        {
+        case WH_AUTO:
+            return NULL;
+
+        case WH_SET:
+        {
+            _stprintf(szBuffer, TEXT("%d"), RestoreByDpi(wh));
+            return szBuffer;
+        }
+
+        case WH_AVG:
+        {
+            szBuffer[0] = XML_AVERAGE_CHAR;
+            return szBuffer;
+        }
+
+        case WH_PERCENT:
+        {
+            _stprintf(szBuffer, TEXT("%d%%"), wh);
+            return szBuffer;
+        }
+        }
+        return NULL;
+    }
+
 }

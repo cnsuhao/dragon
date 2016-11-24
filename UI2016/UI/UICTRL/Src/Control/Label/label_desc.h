@@ -79,7 +79,7 @@ public:
 	}
 	virtual const GUID&  GetGUID() override
 	{
-		return __uuidof(IPictureCtrl);
+        return __uuidof(IPictureCtrl);
 	}
 
 	virtual void  GetDefaultSize(long& w, long h) override

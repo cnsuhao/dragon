@@ -92,30 +92,47 @@
     <ClInclude Include="Inc\inc.h" />
     <ClInclude Include="Inc\Interface\ibutton.h" />
     <ClInclude Include="Inc\Interface\icheckbutton.h" />
+    <ClInclude Include="Inc\Interface\icombobox.h" />
     <ClInclude Include="Inc\Interface\iedit.h" />
+    <ClInclude Include="Inc\Interface\ihyperlink.h" />
     <ClInclude Include="Inc\Interface\ilabel.h" />
+    <ClInclude Include="Inc\Interface\ilistbox.h" />
     <ClInclude Include="Inc\Interface\imenu.h" />
     <ClInclude Include="Inc\Interface\iradiobutton.h" />
     <ClInclude Include="Inc\Interface\irichedit.h" />
+    <ClInclude Include="Inc\Interface\irichtext.h" />
+    <ClInclude Include="Inc\Interface\iscrollbar.h" />
+    <ClInclude Include="Inc\Interface\itreeview.h" />
     <ClInclude Include="Inc\private_inc.h" />
     <ClInclude Include="Other/stdafx.h" />
     <ClInclude Include="Other/targetver.h" />
     <ClInclude Include="Other/UICTRL.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Src\Control\Button\button.h" />
     <ClInclude Include="Src\Control\Button\button_desc.h" />
+    <ClInclude Include="Src\Control\Button\system_button.h" />
     <ClInclude Include="Src\Control\Caret\caret.h" />
     <ClInclude Include="Src\Control\Caret\controldraw\controldrawcaret.h" />
     <ClInclude Include="Src\Control\Caret\icaret.h" />
     <ClInclude Include="Src\Control\CheckButton\checkbutton.h" />
     <ClInclude Include="Src\Control\CheckButton\checkbutton_desc.h" />
+    <ClInclude Include="Src\Control\ComboBox\combobox.h" />
+    <ClInclude Include="Src\Control\ComboBox\combobox_desc.h" />
     <ClInclude Include="Src\Control\Edit\edit.h" />
     <ClInclude Include="Src\Control\Edit\edit_accessible.h" />
     <ClInclude Include="Src\Control\Edit\edit_desc.h" />
     <ClInclude Include="Src\Control\Edit\instantedit.h" />
     <ClInclude Include="Src\Control\Edit\password_edit.h" />
+    <ClInclude Include="Src\Control\Edit\TextFilter\digitfilter.h" />
+    <ClInclude Include="Src\Control\Edit\TextFilter\numberfilterbase.h" />
+    <ClInclude Include="Src\Control\HyperLink\hyperlink.h" />
+    <ClInclude Include="Src\Control\HyperLink\hyperlink_desc.h" />
     <ClInclude Include="Src\Control\Label\label.h" />
     <ClInclude Include="Src\Control\Label\label_desc.h" />
     <ClInclude Include="Src\Control\ListBase\PopupControlWindow\popupcontrolwindow.h" />
+    <ClInclude Include="Src\Control\ListBox\listbox.h" />
+    <ClInclude Include="Src\Control\ListBox\listboxitem.h" />
+    <ClInclude Include="Src\Control\ListBox\listbox_desc.h" />
     <ClInclude Include="Src\Control\Menu\item\menupopupitem.h" />
     <ClInclude Include="Src\Control\Menu\item\menuseparatoritem.h" />
     <ClInclude Include="Src\Control\Menu\item\menustringitem.h" />
@@ -125,6 +142,82 @@
     <ClInclude Include="Src\Control\Menu\scrollbar\menuscrollbar.h" />
     <ClInclude Include="Src\Control\RadioButton\radiobutton.h" />
     <ClInclude Include="Src\Control\RadioButton\radiobutton_desc.h" />
+    <ClInclude Include="Src\Control\RichText\model\doc.h" />
+    <ClInclude Include="Src\Control\RichText\model\element\element.h" />
+    <ClInclude Include="Src\Control\RichText\model\element\imageelement.h" />
+    <ClInclude Include="Src\Control\RichText\model\element\textelement.h" />
+    <ClInclude Include="Src\Control\RichText\model\font.h" />
+    <ClInclude Include="Src\Control\RichText\model\layout_context.h" />
+    <ClInclude Include="Src\Control\RichText\model\line.h" />
+    <ClInclude Include="Src\Control\RichText\model\link.h" />
+    <ClInclude Include="Src\Control\RichText\model\message.h" />
+    <ClInclude Include="Src\Control\RichText\model\mousekey.h" />
+    <ClInclude Include="Src\Control\RichText\model\node.h" />
+    <ClInclude Include="Src\Control\RichText\model\page.h" />
+    <ClInclude Include="Src\Control\RichText\model\paragraph.h" />
+    <ClInclude Include="Src\Control\RichText\model\parse.h" />
+    <ClInclude Include="Src\Control\RichText\model\run.h" />
+    <ClInclude Include="Src\Control\RichText\model\selection.h" />
+    <ClInclude Include="Src\Control\RichText\model\style.h" />
+    <ClInclude Include="Src\Control\RichText\parser\htmlconv.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Src\Control\RichText\parser\htmlnode_a.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Src\Control\RichText\parser\htmlnode_b.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Src\Control\RichText\parser\htmlnode_big.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Src\Control\RichText\parser\htmlnode_br.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Src\Control\RichText\parser\htmlnode_del.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Src\Control\RichText\parser\htmlnode_font.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Src\Control\RichText\parser\htmlnode_i.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Src\Control\RichText\parser\htmlnode_img.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Src\Control\RichText\parser\htmlnode_small.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Src\Control\RichText\parser\htmlnode_u.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Src\Control\RichText\parser\htmlparser.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="Src\Control\RichText\richtext.h" />
+    <ClInclude Include="Src\Control\RichText\richtext_desc.h" />
+    <ClInclude Include="Src\Control\RichText\uniscribe\uniscribehelper.h" />
+    <ClInclude Include="Src\Control\ScrollBar\hscrollbar_creator.h" />
+    <ClInclude Include="Src\Control\ScrollBar\scrollbar_desc.h" />
+    <ClInclude Include="Src\Control\ScrollBar\systemscrollbar.h" />
+    <ClInclude Include="Src\Control\ScrollBar\vscrollbar_creator.h" />
+    <ClInclude Include="Src\Control\TreeView\normaltreeitem.h" />
+    <ClInclude Include="Src\Control\TreeView\treeitem.h" />
+    <ClInclude Include="Src\Control\TreeView\treeview.h" />
+    <ClInclude Include="Src\Control\TreeView\treeview_desc.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Other/dllmain.cpp">
@@ -143,18 +236,28 @@
     <ClCompile Include="Src\controlapi.cpp" />
     <ClCompile Include="Src\Control\Button\button.cpp" />
     <ClCompile Include="Src\Control\Button\ibutton.cpp" />
+    <ClCompile Include="Src\Control\Button\system_button.cpp" />
     <ClCompile Include="Src\Control\Caret\caret.cpp" />
     <ClCompile Include="Src\Control\Caret\controldraw\controldrawcaret.cpp" />
     <ClCompile Include="Src\Control\CheckButton\checkbutton.cpp" />
     <ClCompile Include="Src\Control\CheckButton\icheckbutton.cpp" />
+    <ClCompile Include="Src\Control\ComboBox\combobox.cpp" />
+    <ClCompile Include="Src\Control\ComboBox\icombobox.cpp" />
     <ClCompile Include="Src\Control\Edit\edit.cpp" />
     <ClCompile Include="Src\Control\Edit\edit_accessible.cpp" />
     <ClCompile Include="Src\Control\Edit\iedit.cpp" />
     <ClCompile Include="Src\Control\Edit\instantedit.cpp" />
     <ClCompile Include="Src\Control\Edit\password_edit.cpp" />
+    <ClCompile Include="Src\Control\Edit\TextFilter\digitfilter.cpp" />
+    <ClCompile Include="Src\Control\Edit\TextFilter\numberfilterbase.cpp" />
+    <ClCompile Include="Src\Control\HyperLink\hyperlink.cpp" />
+    <ClCompile Include="Src\Control\HyperLink\ihyperlink.cpp" />
     <ClCompile Include="Src\Control\Label\ilabel.cpp" />
     <ClCompile Include="Src\Control\Label\label.cpp" />
     <ClCompile Include="Src\Control\ListBase\PopupControlWindow\popupcontrolwindow.cpp" />
+    <ClCompile Include="Src\Control\ListBox\ilistbox.cpp" />
+    <ClCompile Include="Src\Control\ListBox\listbox.cpp" />
+    <ClCompile Include="Src\Control\ListBox\listboxitem.cpp" />
     <ClCompile Include="Src\Control\Menu\imenu.cpp" />
     <ClCompile Include="Src\Control\Menu\item\menupopupitem.cpp" />
     <ClCompile Include="Src\Control\Menu\item\menuseparatoritem.cpp" />
@@ -164,6 +267,88 @@
     <ClCompile Include="Src\Control\Menu\scrollbar\menuscrollbar.cpp" />
     <ClCompile Include="Src\Control\RadioButton\iradiobutton.cpp" />
     <ClCompile Include="Src\Control\RadioButton\radiobutton.cpp" />
+    <ClCompile Include="Src\Control\RichText\irichtext.cpp" />
+    <ClCompile Include="Src\Control\RichText\model\doc.cpp" />
+    <ClCompile Include="Src\Control\RichText\model\element\element.cpp" />
+    <ClCompile Include="Src\Control\RichText\model\element\imageelement.cpp" />
+    <ClCompile Include="Src\Control\RichText\model\element\textelement.cpp" />
+    <ClCompile Include="Src\Control\RichText\model\font.cpp" />
+    <ClCompile Include="Src\Control\RichText\model\layout_context.cpp" />
+    <ClCompile Include="Src\Control\RichText\model\line.cpp" />
+    <ClCompile Include="Src\Control\RichText\model\link.cpp" />
+    <ClCompile Include="Src\Control\RichText\model\message.cpp" />
+    <ClCompile Include="Src\Control\RichText\model\mousekey.cpp" />
+    <ClCompile Include="Src\Control\RichText\model\node.cpp" />
+    <ClCompile Include="Src\Control\RichText\model\page.cpp" />
+    <ClCompile Include="Src\Control\RichText\model\paragraph.cpp" />
+    <ClCompile Include="Src\Control\RichText\model\parse.cpp" />
+    <ClCompile Include="Src\Control\RichText\model\run.cpp" />
+    <ClCompile Include="Src\Control\RichText\model\selection.cpp" />
+    <ClCompile Include="Src\Control\RichText\model\style.cpp" />
+    <ClCompile Include="Src\Control\RichText\parser\htmlconv.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\Control\RichText\parser\htmlnode_a.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\Control\RichText\parser\htmlnode_b.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\Control\RichText\parser\htmlnode_big.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\Control\RichText\parser\htmlnode_br.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\Control\RichText\parser\htmlnode_del.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\Control\RichText\parser\htmlnode_font.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\Control\RichText\parser\htmlnode_i.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\Control\RichText\parser\htmlnode_img.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\Control\RichText\parser\htmlnode_small.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\Control\RichText\parser\htmlnode_u.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\Control\RichText\parser\htmlparser.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Src\Control\RichText\richtext.cpp" />
+    <ClCompile Include="Src\Control\RichText\uniscribe\uniscribehelper.cpp" />
+    <ClCompile Include="Src\Control\ScrollBar\hscrollbar_creator.cpp" />
+    <ClCompile Include="Src\Control\ScrollBar\iscrollbar.cpp" />
+    <ClCompile Include="Src\Control\ScrollBar\systemscrollbar.cpp" />
+    <ClCompile Include="Src\Control\ScrollBar\vscrollbar_creator.cpp" />
+    <ClCompile Include="Src\Control\TreeView\itreeview.cpp" />
+    <ClCompile Include="Src\Control\TreeView\normaltreeitem.cpp" />
+    <ClCompile Include="Src\Control\TreeView\treeitem.cpp" />
+    <ClCompile Include="Src\Control\TreeView\treeview.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="UICTRL.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="png1.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

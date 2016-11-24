@@ -23,7 +23,7 @@ public:
 
     ColorRes&  GetColorRes();
     HRESULT  ParseNewElement(UIElement* pElem);
-    IColorManager*  GetIColorManager();
+    IColorManager&  GetIColorManager();
 
 public:
     void  Clear();

@@ -1,0 +1,59 @@
+﻿<skin>
+  <layout>
+    <CustomWindow id="LoginWnd" width="268" height="364" transparent.type="layered" padding="20" layout.type="vert">
+      <prop>
+        <x key="back.render" type="image" image="bkg"/>
+      </prop>
+      <Edit id="edit" text="edit control">
+        <prop>
+          <x width="200" height="30" padding="3" layout.left="10"/>
+          <x key="back.render" type="color" color="0xFFFF" border="1" border.color="0xF333"/>
+          <x key="color" text="0xF00F" select="0xFF00" select.back="0xFFF0" quiet="0xF0F"/>
+        </prop>
+      </Edit>
+
+      <ListBox id="listbox" border="1" itemheight="30">
+        <prop>
+          <x key="layout" width="200" height="100" top="50" left="10"/>
+          <x key="back.render" type="color" border="1" border.color="#000"/>
+          <x key="fore.render" type="colorlist" color=";;;;#03B;#03B;#03B;;"/>
+          <x key="text.render" type="colorlist" color=";;;;#FFF;#FFF;#FFF;;"/>
+        </prop>
+
+        <VScrollBar ncchild="1" id="__vscrollbar" width="11">
+          <Button id="__scrollbar_thumb" back.render.type="color" back.render.color="#eee"/>
+        </VScrollBar>
+      </ListBox>
+
+      <ComboBox id="combobox" height="30" width="200" border="1">
+        <prop>
+          <x key="back.render" type="color" border="1" border.color="#000"/>
+        </prop>
+        <Edit id="__combo_edit" readonly="1"/>
+        <Button id="__combo_button" width="20" height="20" back.render.type="color" back.render.color="#eee"/>
+      </ComboBox>
+      
+      <Button id="btn"  text="登录" style="imagebutton" tooltip="#ok">
+        <prop>
+          <x key="layout" width="201" height="58" bottom="30" align="center"/>
+        </prop>
+      </Button>
+    </CustomWindow>
+
+      <ListItem id="listitem">
+          <Button id="btn" style="imagebutton" width="50" height="30" layout.right="10" layout.top="0"/>
+      </ListItem>
+  </layout>
+
+  <image>
+    <image id="bkg" path="login_bg.png"/>
+  </image>
+  <style>
+    <class id="imagebutton" handcursor="1">
+      <prop>
+        <x key="back.render" type="imagelist" image="btn" image.drawtype="stretch" image.9region="10"/>
+        <x key="text.render" type="colorlist"  align="center|vcenter" color="0xFFF;0xeee;0xFFF;"/>
+      </prop>
+    </class>
+  </style>
+</skin>

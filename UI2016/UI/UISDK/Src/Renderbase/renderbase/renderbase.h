@@ -7,6 +7,8 @@ namespace UI
 	interface IRenderBase;
 	interface IRenderBitmap;
 	class UIApplication;
+    class ColorRes;
+    class ImageRes;
 
 const UINT  WINDOW_BKGND_RENDER_STATE_ACTIVE  = 0;   // 窗口激活样式
 const UINT  WINDOW_BKGND_RENDER_STATE_INACTIVE = 1;   // 窗口非激活样式
@@ -38,8 +40,10 @@ public:
 
 	void  SetRenderType( const RENDER_TYPE& nType ){ m_nRenderType = nType ; }
 	RENDER_TYPE  GetRenderType() { return m_nRenderType; }
-	IColorRes*  GetSkinColorRes();
-	IImageRes*  GetSkinImageRes();
+
+    SkinRes*  GetSkinRes();
+	ColorRes*  GetSkinColorRes();
+	ImageRes*  GetSkinImageRes();
 	
 	void  _LoadColor(LPCTSTR szColorId, Color*& pColorRef);
 	void  _LoadBitmap(LPCTSTR szBitmapId, IRenderBitmap*& pBitmapRef);

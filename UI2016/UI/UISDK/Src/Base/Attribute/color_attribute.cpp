@@ -53,6 +53,13 @@ void  ColorAttribute::Set(LPCTSTR szColorId)
 		
 		ColorRes& colorRes = m_pSkinRes->GetColorRes();
 		colorRes.GetColor(szColorId, m_ppBindValue);
+
+#ifdef EDITOR_MODE
+        if (*m_ppBindValue)
+        {
+            (*m_ppBindValue)->SetResId(szColorId);
+        }
+#endif
 	}
 }
 
@@ -64,17 +71,23 @@ void  ColorAttribute::Reset()
 	}
 	else
 	{
-
 	}
 }
 
 LPCTSTR  ColorAttribute::Get()
 {
-    if (!m_ppBindValue)
+    if (!m_ppBindValue || !*m_ppBindValue)
         return NULL;
+    
+#ifdef EDITOR_MODE
+    LPCTSTR szText = (*m_ppBindValue)->GetResId();
+    if (szText)
+        return szText;
+#endif
 
-    //return (*m_ppBindValue)->GetName()
-    return NULL;
+    LPTSTR szBuffer = GetTempBuffer();
+    (*m_ppBindValue)->ToWebString(szBuffer);
+    return szBuffer;
 }
 
 bool  ColorAttribute::IsDefaultValue()
@@ -88,11 +101,9 @@ bool  ColorAttribute::IsDefaultValue()
 	return false;
 }
 
-
-void  ColorAttribute::Editor(AttributeEditorProxy* p, EditorAttributeFlag e)
+void  ColorAttribute::Editor(SERIALIZEDATA* pData, AttributeEditorProxy* p, EditorAttributeFlag e)
 {
-	UIASSERT(0);
-    // p->TextRenderBase2Editor(this, e);
+	p->Color2Editor(this, e);
 }
 
 IColorAttribute*  ColorAttribute::GetIColorAttribute()

@@ -29,14 +29,12 @@ StyleManager::~StyleManager(void)
 	m_listUIElement.Clear();
 }
 
-IStyleManager*  StyleManager::GetIStyleManager()
+IStyleManager&  StyleManager::GetIStyleManager()
 {
-    if (NULL == m_pIStyleManager)
-	{
+    if (!m_pIStyleManager)
         m_pIStyleManager = new IStyleManager(this);
-	}
 
-    return m_pIStyleManager;
+    return *m_pIStyleManager;
 }
 
 
@@ -50,67 +48,76 @@ int StyleManager::GetStyleCount( )
 	return m_StyleRes.GetCount();
 }
 
-bool StyleManager::LoadStyle(LPCTSTR szTagName, LPCTSTR szStyleClass, LPCTSTR szID, IMapAttribute* pMapStyle)
-{
-	return m_StyleRes.LoadStyle(szTagName, szStyleClass, szID, pMapStyle);
-}
 
 StyleRes&  StyleManager::GetStyleRes()
 {
 	return m_StyleRes;
 }
 
+//
+// 废弃，只保留LoadStyle，精简对外接口
+//
 // 从xml中将一个结点的所有属性读取出来后，解析其styleclass属性
-bool  StyleManager::ParseStyle(IMapAttribute* pMapAttrib)
-{
-    if (!pMapAttrib)
-        return false;
-
-    String strId, strStyleClass, strName;  // 避免pMapAttrib->GetAttr返回临时变量。
-    {
-        LPCTSTR  szId = pMapAttrib->GetAttr(XML_ID, false);
-        if (szId)
-            strId = szId;
-
-        LPCTSTR  szStyleClass = pMapAttrib->GetAttr(XML_STYLECLASS, false);
-        if (szStyleClass)
-            strStyleClass = szStyleClass;
-
-		LPCTSTR  szName = pMapAttrib->GetTag();
-		if (szName)
-			strName = szName;
-    }
-    return this->LoadStyle(strName.c_str(), strStyleClass.c_str(), strId.c_str(), pMapAttrib); 
-}
+// bool  StyleManager::ParseStyle(IMapAttribute* pMapAttrib)
+// {
+//     if (!pMapAttrib)
+//         return false;
+// 
+//     // 避免pMapAttrib->GetAttr返回临时变量。
+//     String strId, strStyleClass, strName;  
+//     {
+//         LPCTSTR  szId = pMapAttrib->GetAttr(XML_ID, false);
+//         if (szId)
+//             strId = szId;
+// 
+//         LPCTSTR  szStyleClass = pMapAttrib->GetAttr(XML_STYLECLASS, false);
+//         if (szStyleClass)
+//             strStyleClass = szStyleClass;
+// 
+// 		LPCTSTR  szName = pMapAttrib->GetTag();
+// 		if (szName)
+// 			strName = szName;
+//     }
+// 
+//     return this->LoadStyle(
+//                 strName.c_str(), 
+//                 strStyleClass.c_str(), 
+//                 strId.c_str(),
+//                 pMapAttrib); 
+// }
 
 // 将pListAttrib中已属于style的属性删除掉，用于保存到xml中
-bool  StyleManager::ReverseParseStyle(IListAttribute* pListAttrib)
-{
-    if (!pListAttrib)
-        return false;
-
-    String strId, strStyleClass, strName;  // 避免pMapAttrib->GetAttr返回临时变量。
-    {
-        LPCTSTR  szId = pListAttrib->GetAttr(XML_ID);
-        if (szId)
-            strId = szId;
-
-        LPCTSTR  szStyleClass = pListAttrib->GetAttr(XML_STYLECLASS);
-        if (szStyleClass)
-            strStyleClass = szStyleClass;
-
-        LPCTSTR  szName = pListAttrib->GetTag();
-        if (szName)
-            strName = szName;
-    }
-
-    return m_StyleRes.FilterStyle(strId.c_str(), strStyleClass.c_str(), strName.c_str(), pListAttrib);
-}
+// bool  StyleManager::ReverseParseStyle(IListAttribute* pListAttrib)
+// {
+//     if (!pListAttrib)
+//         return false;
+// 
+//     String strId, strStyleClass, strName;  // 避免pMapAttrib->GetAttr返回临时变量。
+//     {
+//         LPCTSTR  szId = pListAttrib->GetAttr(XML_ID);
+//         if (szId)
+//             strId = szId;
+// 
+//         LPCTSTR  szStyleClass = pListAttrib->GetAttr(XML_STYLECLASS);
+//         if (szStyleClass)
+//             strStyleClass = szStyleClass;
+// 
+//         LPCTSTR  szName = pListAttrib->GetTag();
+//         if (szName)
+//             strName = szName;
+//     }
+// 
+//     return m_StyleRes.UnloadStyle(
+//         strId.c_str(), strStyleClass.c_str(), strName.c_str(), pListAttrib);
+// }
 
 //
 // 解析一个继承字符串所属的样式类型，如将#button解析为 id选择类型，id=button
 //
-bool  StyleManager::ParseInheritString(const String& strInherit, STYLE_SELECTOR_TYPE& eStyletype, TCHAR* szStyleName)
+bool  StyleManager::ParseInheritString(
+        const String& strInherit,
+        STYLE_SELECTOR_TYPE& eStyletype, 
+        TCHAR* szStyleName)
 {
     if (strInherit.length() <= 0 || NULL == szStyleName )
         return false;
@@ -132,7 +139,10 @@ bool  StyleManager::ParseInheritString(const String& strInherit, STYLE_SELECTOR_
     }
     return true;
 }
-bool  StyleManager::MakeInheritString(const STYLE_SELECTOR_TYPE& eStyletype, const String& strStypeName, TCHAR* szInherit)
+bool  StyleManager::MakeInheritString(
+    const STYLE_SELECTOR_TYPE& eStyletype, 
+    const String& strStypeName, 
+    TCHAR* szInherit)
 {
     if (strStypeName.length() <= 0 || NULL == szInherit )
         return false;
@@ -170,7 +180,8 @@ bool  StyleManager::MakeInheritString(const STYLE_SELECTOR_TYPE& eStyletype, con
 //	Return
 //		解析成功返回TRUE，失败返回FALSE。只要树中有一个返回FALSE，这棵树全部返回FALSE。
 //
-bool  StyleManager::parse_inherit(tree<StyleResItem*>* pTreeItem, StyleRes* pStyleRes)
+bool  StyleManager::parse_inherit(
+        tree<StyleResItem*>* pTreeItem, StyleRes* pStyleRes)
 {
     if (NULL == pTreeItem || NULL == pTreeItem->data )
         return false;
@@ -232,11 +243,8 @@ bool  StyleManager::parse_inherit(tree<StyleResItem*>* pTreeItem, StyleRes* pSty
 HRESULT  StyleManager::UIParseStyleTagCallback(
             IUIElement* pElem, ISkinRes* pSkinRes)
 {
-    IStyleManager*  pStyleMgr = pSkinRes->GetStyleManager();
-    if (NULL == pStyleMgr)
-        return E_FAIL;
-
-    return pStyleMgr->GetImpl()->ParseNewElement(pElem->GetImpl());
+    IStyleManager&  pStyleMgr = pSkinRes->GetStyleManager();
+    return pStyleMgr.GetImpl()->ParseNewElement(pElem->GetImpl());
 }
 
 HRESULT  StyleManager::ParseNewElement(UIElement* pElem)
